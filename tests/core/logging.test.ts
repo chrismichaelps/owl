@@ -7,6 +7,7 @@ import {
   withContext,
 } from "../../src/core/logging/index.js"
 
+/** @Owl.Tests.Core.Logging.Behavior - Structured log emission tests */
 describe("OwlLogger", () => {
   it("log runs without error", async () => {
     const program = Effect.gen(function* () {

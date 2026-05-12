@@ -10,6 +10,7 @@ import type {
   InferenceResponse,
 } from "../../core/schema/index.js"
 
+/** @Owl.Providers.xAI.Capabilities - Grok model specifications */
 const XAI_CAPABILITIES: readonly ProviderCapability[] = [
   {
     providerId: "xai",
@@ -25,11 +26,13 @@ const XAI_CAPABILITIES: readonly ProviderCapability[] = [
   },
 ]
 
+/** @Owl.Providers.xAI.Adapter - service definition */
 export class XAIAdapter extends Context.Tag("XAIAdapter")<
   XAIAdapter,
   LLMProviderService
->() {}
+>() { }
 
+/** @Owl.Providers.xAI.Implementation - Production layer logic */
 export const XAIAdapterLive = Layer.effect(
   XAIAdapter,
   Effect.gen(function* () {

@@ -2,6 +2,7 @@
 import { ROUTING_WEIGHTS } from "../../core/constants/index.js"
 import type { ProviderCapability, RoutingContext } from "../types.js"
 
+/** @Owl.Providers.Router.Scoring.Weights - Static demand and weight coefficients */
 const REASONING_SCORES: Record<string, number> = {
   high: 1.0,
   medium: 0.6,
@@ -16,6 +17,7 @@ const MODE_REASONING_DEMAND: Record<string, number> = {
   economy: 0.1,
 }
 
+/** @Owl.Providers.Router.Scoring.Algorithm - Multi-dimensional selection logic */
 export function scoreProvider(
   cap: ProviderCapability,
   ctx: RoutingContext,
@@ -50,6 +52,7 @@ export function scoreProvider(
   return score
 }
 
+/** @Owl.Providers.Router.Scoring.Selection - Entry point for provider resolution */
 export function selectBestProvider(
   capabilities: readonly ProviderCapability[],
   ctx: RoutingContext,

@@ -2,6 +2,7 @@
 import { Config, Context, Layer, Effect } from "effect"
 import type { Mode } from "../schema/index.js"
 
+/** @Owl.Core.Config.Contract - Environment variable interface */
 export interface OwlConfig {
   readonly anthropicApiKey: string
   readonly openaiApiKey: string | undefined
@@ -14,11 +15,13 @@ export interface OwlConfig {
   readonly telemetryEnabled: boolean
 }
 
+/** @Owl.Core.Config.Adapter - Effect-TS service definition */
 export class OWL_CONFIG extends Context.Tag("OWL_CONFIG")<
   OWL_CONFIG,
   OwlConfig
 >() {}
 
+/** @Owl.Core.Config.Implementation - Type-safe environment resolution */
 const owlConfigEffect = Effect.gen(function* () {
   const anthropicApiKey = yield* Config.string("ANTHROPIC_API_KEY")
   const openaiApiKey = yield* Config.option(Config.string("OPENAI_API_KEY"))

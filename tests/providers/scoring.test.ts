@@ -9,6 +9,7 @@ import type {
   RoutingContext,
 } from "../../src/providers/types.js"
 
+/** @Owl.Tests.Providers.Scoring.Metadata - Mock model and context definitions */
 const ANTHROPIC_OPUS: ProviderCapability = {
   providerId: "anthropic",
   modelId: "claude-opus-4-7",
@@ -53,6 +54,7 @@ const DEEP_CTX: RoutingContext = {
   latencyBudgetMs: 60000,
 }
 
+/** @Owl.Tests.Providers.Scoring.Logic - Algorithm behavior verification */
 describe("provider scoring", () => {
   it("economy mode prefers cheaper models", () => {
     const opusScore = scoreProvider(ANTHROPIC_OPUS, ECONOMY_CTX)

@@ -9,6 +9,7 @@ import {
   type Mode,
 } from "../../src/core/schema/index.js"
 
+/** @Owl.Tests.Core.Schema.Validation - Round-trip schema verification */
 describe("core schemas", () => {
   it("ModeSchema validates known modes", () => {
     const decode = Schema.decodeUnknownSync(ModeSchema)

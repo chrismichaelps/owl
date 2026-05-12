@@ -9,6 +9,7 @@ import {
   ConfigError,
 } from "../../src/core/errors/index.js"
 
+/** @Owl.Tests.Core.Errors.Tagged - Structural validation of Effect-TS errors */
 describe("tagged errors", () => {
   it("ProviderError is a tagged error", () => {
     const err = new ProviderError({

@@ -10,6 +10,7 @@ import {
 import type { LLMProviderService } from "../../src/providers/types.js"
 import type { InferenceRequest } from "../../src/core/schema/index.js"
 
+/** @Owl.Tests.Providers.Router.Stubs - Mock provider definitions */
 const makeStubProvider = (id: string): LLMProviderService => ({
   id,
   capabilities: [
@@ -46,6 +47,7 @@ const makeStubProvider = (id: string): LLMProviderService => ({
   healthCheck: () => Effect.succeed(true),
 })
 
+/** @Owl.Tests.Providers.Router.Logic - Selection and error path tests */
 describe("ProviderRouter", () => {
   it("routes to registered provider", async () => {
     const stub = makeStubProvider("anthropic")

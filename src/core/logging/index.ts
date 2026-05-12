@@ -2,6 +2,7 @@
 
 import { Context, Effect, Layer } from "effect"
 
+/** @Owl.Core.Logging.Service - Structured log emission interface */
 export interface OwlLoggerService {
   readonly debug: (
     msg: string,
@@ -21,6 +22,7 @@ export interface OwlLoggerService {
   ) => Effect.Effect<void>
 }
 
+/** @Owl.Core.Logging.Adapter - Effect-TS service definition */
 export class OwlLogger extends Context.Tag("OwlLogger")<
   OwlLogger,
   OwlLoggerService
@@ -47,6 +49,7 @@ const makeLogger = (): OwlLoggerService => ({
 
 export const OwlLoggerLive = Layer.succeed(OwlLogger, makeLogger())
 
+/** @Owl.Core.Logging.Context - Contextual logging middleware */
 export const withContext = <A, E, R>(
   logger: OwlLoggerService,
   ctx: Record<string, unknown>,

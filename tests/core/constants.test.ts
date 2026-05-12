@@ -8,6 +8,7 @@ import {
   MODE_TOKEN_BUDGETS,
 } from "../../src/core/constants/index.js"
 
+/** @Owl.Tests.Core.Constants.Contract - System-wide threshold verification */
 describe("system constants", () => {
   it("TOKEN_LIMITS covers all modes", () => {
     expect(TOKEN_LIMITS.CONTEXT_WINDOW_DEFAULT).toBe(200000)

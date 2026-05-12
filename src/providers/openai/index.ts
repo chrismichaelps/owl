@@ -15,6 +15,7 @@ import type {
   InferenceResponse,
 } from "../../core/schema/index.js"
 
+/** @Owl.Providers.OpenAI.Capabilities - Model specifications and competitive pricing */
 const OPENAI_CAPABILITIES: readonly ProviderCapability[] = [
   {
     providerId: "openai",
@@ -42,11 +43,13 @@ const OPENAI_CAPABILITIES: readonly ProviderCapability[] = [
   },
 ]
 
+/** @Owl.Providers.OpenAI.Adapter - service definition */
 export class OpenAIAdapter extends Context.Tag("OpenAIAdapter")<
   OpenAIAdapter,
   LLMProviderService
->() {}
+>() { }
 
+/** @Owl.Providers.OpenAI.Implementation - Production layer logic */
 export const OpenAIAdapterLive = Layer.effect(
   OpenAIAdapter,
   Effect.gen(function* () {

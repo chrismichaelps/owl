@@ -13,6 +13,7 @@ import type {
 } from "../../core/schema/index.js"
 import type { AnyProviderError } from "../types.js"
 
+/** @Owl.Providers.Router.Service - Coordinator interface for multi-provider strategies */
 export interface ProviderRouterService {
   readonly route: (
     ctx: RoutingContext,
@@ -29,6 +30,7 @@ export interface ProviderRouterService {
   readonly listProviders: () => Effect.Effect<readonly string[]>
 }
 
+/** @Owl.Providers.Router.Adapter - Effect-TS service definition */
 export class ProviderRouter extends Context.Tag("ProviderRouter")<
   ProviderRouter,
   ProviderRouterService
@@ -44,6 +46,7 @@ export const registerProvider = (
     )._register(provider)
   })
 
+/** @Owl.Providers.Router.Implementation - BACKBONE seam logic */
 export const ProviderRouterLive = Layer.effect(
   ProviderRouter,
   Effect.gen(function* () {

@@ -2,6 +2,7 @@
 import { describe, it, expect } from "vitest"
 import { Effect, Exit } from "effect"
 
+/** @Owl.Tests.Smoke.Bootstrap - Core Effect-TS runtime validation */
 describe("bootstrap", () => {
   it("runs an Effect successfully", async () => {
     const program = Effect.succeed(42)

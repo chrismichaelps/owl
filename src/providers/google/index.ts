@@ -10,6 +10,7 @@ import type {
   InferenceResponse,
 } from "../../core/schema/index.js"
 
+/** @Owl.Providers.Google.Capabilities - Multimodal model specifications */
 const GOOGLE_CAPABILITIES: readonly ProviderCapability[] = [
   {
     providerId: "google",
@@ -25,11 +26,13 @@ const GOOGLE_CAPABILITIES: readonly ProviderCapability[] = [
   },
 ]
 
+/** @Owl.Providers.Google.Adapter - service definition */
 export class GoogleAdapter extends Context.Tag("GoogleAdapter")<
   GoogleAdapter,
   LLMProviderService
->() {}
+>() { }
 
+/** @Owl.Providers.Google.Implementation - Production layer logic */
 export const GoogleAdapterLive = Layer.effect(
   GoogleAdapter,
   Effect.gen(function* () {

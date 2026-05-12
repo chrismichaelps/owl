@@ -10,6 +10,7 @@ import {
   type StreamChunk,
 } from "../../src/providers/types.js"
 
+/** @Owl.Tests.Providers.Types.Validation - Interface contract enforcement */
 describe("provider types", () => {
   it("ProviderCapabilitySchema validates capability", () => {
     const cap = Schema.decodeUnknownSync(ProviderCapabilitySchema)({

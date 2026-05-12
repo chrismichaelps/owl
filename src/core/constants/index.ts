@@ -1,5 +1,6 @@
 /** @Owl.Core.Constants - All system-wide constants. No magic values anywhere else. */
 
+/** @Owl.Core.Constants.Budgets - Token and mode-specific constraints */
 export const TOKEN_LIMITS = {
   CONTEXT_WINDOW_DEFAULT: 200_000,
   MAX_OUTPUT_TOKENS: 8_192,
@@ -17,6 +18,7 @@ export const MODE_TOKEN_BUDGETS: Record<string, number> = {
   god: 200_000,
 } as const
 
+/** @Owl.Core.Constants.Networking - Timeout and retry policies */
 export const PROVIDER_TIMEOUTS = {
   DEFAULT_MS: 30_000,
   STREAM_CHUNK_TIMEOUT_MS: 5_000,
@@ -32,6 +34,7 @@ export const RETRY_CONFIG = {
   JITTER_FACTOR: 0.1,
 } as const
 
+/** @Owl.Core.Constants.FMCF - Governance and metric thresholds */
 export const DEPTH_THRESHOLDS = {
   DEEP: 0.7,
   SHALLOW: 0.4,
@@ -48,6 +51,7 @@ export const SEAM_CAPACITY_SCORES = {
   INTERNAL: 0,
 } as const
 
+/** @Owl.Core.Constants.Routing - Weights for provider selection */
 export const ROUTING_WEIGHTS = {
   COMPLEXITY: 0.35,
   COST: 0.25,
@@ -65,6 +69,7 @@ export const TUI_PANEL_WIDTHS = {
   RIGHT: 0.25,
 } as const
 
+/** @Owl.Core.Constants.Registry - Centralized HTTP status codes */
 export const HTTP_STATUS = {
   OK: 200,
   UNAUTHORIZED: 401,

@@ -14,6 +14,7 @@ import type {
   ProviderRateLimitError,
 } from "../core/errors/index.js"
 
+/** @Owl.Providers.Types.Capability - Model and pricing metadata schema */
 export const ProviderCapabilitySchema = Schema.Struct({
   providerId: Schema.String,
   modelId: Schema.String,
@@ -30,6 +31,7 @@ export type ProviderCapability = Schema.Schema.Type<
   typeof ProviderCapabilitySchema
 >
 
+/** @Owl.Providers.Types.Routing - Selection context and constraints */
 export const RoutingContextSchema = Schema.Struct({
   taskId: Schema.String,
   mode: Schema.String,
@@ -42,6 +44,7 @@ export const RoutingContextSchema = Schema.Struct({
 })
 export type RoutingContext = Schema.Schema.Type<typeof RoutingContextSchema>
 
+/** @Owl.Providers.Types.Streaming - Chunk-based response contracts */
 export const StreamChunkSchema = Schema.Struct({
   type: Schema.Literal("text", "thinking", "tool_use", "stop"),
   content: Schema.optional(Schema.String),
@@ -62,6 +65,7 @@ export type AnyProviderError =
   | ProviderAuthError
   | ProviderRateLimitError
 
+/** @Owl.Providers.Types.Service - The unified LLM adapter interface */
 export interface LLMProviderService {
   readonly id: string
   readonly capabilities: readonly ProviderCapability[]
@@ -87,6 +91,7 @@ export class LLMProvider extends Context.Tag("LLMProvider")<
   LLMProviderService
 >() {}
 
+/** @Owl.Providers.Types.Decision - Final routing outcome and metadata */
 export const RoutingDecisionSchema = Schema.Struct({
   selectedProvider: Schema.String,
   selectedModel: Schema.String,

@@ -9,6 +9,7 @@ import type {
   InferenceResponse,
 } from "../../core/schema/index.js"
 
+/** @Owl.Providers.Ollama.Capabilities - Local model specifications */
 const OLLAMA_CAPABILITIES: readonly ProviderCapability[] = [
   {
     providerId: "ollama",
@@ -36,11 +37,13 @@ const OLLAMA_CAPABILITIES: readonly ProviderCapability[] = [
   },
 ]
 
+/** @Owl.Providers.Ollama.Adapter - Effect-TS service definition */
 export class OllamaAdapter extends Context.Tag("OllamaAdapter")<
   OllamaAdapter,
   LLMProviderService
 >() {}
 
+/** @Owl.Providers.Ollama.Implementation - Production layer logic */
 export const OllamaAdapterLive = Layer.effect(
   OllamaAdapter,
   Effect.gen(function* () {

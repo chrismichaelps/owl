@@ -1,6 +1,7 @@
 /** @Owl.Core.Schema - Schema-first type definitions for the Owl system */
 import { Schema } from "effect"
 
+/** @Owl.Core.Schema.Primitives - Base literals and enums */
 export const ModeSchema = Schema.Literal(
   "standard",
   "deep",
@@ -13,6 +14,7 @@ export type Mode = Schema.Schema.Type<typeof ModeSchema>
 export const MessageRoleSchema = Schema.Literal("user", "assistant", "system")
 export type MessageRole = Schema.Schema.Type<typeof MessageRoleSchema>
 
+/** @Owl.Core.Schema.Chat - Messaging and task contracts */
 export const MessageSchema = Schema.Struct({
   role: MessageRoleSchema,
   content: Schema.String,
@@ -29,6 +31,7 @@ export const TaskSchema = Schema.Struct({
 })
 export type Task = Schema.Schema.Type<typeof TaskSchema>
 
+/** @Owl.Core.Schema.Provider - Capability and usage models */
 export const ProviderIdSchema = Schema.Literal(
   "anthropic",
   "openai",
@@ -58,6 +61,7 @@ export const TokenUsageSchema = Schema.Struct({
 })
 export type TokenUsage = Schema.Schema.Type<typeof TokenUsageSchema>
 
+/** @Owl.Core.Schema.Inference - Request/Response lifecycle types */
 export const InferenceRequestSchema = Schema.Struct({
   taskId: Schema.String,
   messages: Schema.Array(MessageSchema),
@@ -104,6 +108,7 @@ export const MutationSchema = Schema.Struct({
 })
 export type Mutation = Schema.Schema.Type<typeof MutationSchema>
 
+/** @Owl.Core.Schema.Governance - FMCF registry and seam metadata */
 export const SeamCapacitySchema = Schema.Literal(
   "BACKBONE",
   "CRITICAL",

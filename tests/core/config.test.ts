@@ -3,6 +3,7 @@ import { describe, it, expect } from "vitest"
 import { Effect, ConfigProvider, Layer } from "effect"
 import { OWL_CONFIG, OWLConfigLive } from "../../src/core/config/index.js"
 
+/** @Owl.Tests.Core.Config.Resolution - Environment-to-interface mapping tests */
 describe("OWL_CONFIG", () => {
   it("reads ANTHROPIC_API_KEY from environment", async () => {
     const configProviderLayer = Layer.setConfigProvider(

@@ -1,6 +1,7 @@
 /** @Owl.Core.Errors - All tagged error types for the Owl system */
 import { Data } from "effect"
 
+/** @Owl.Core.Errors.Providers - Upstream LLM service failure modes */
 export class ProviderError extends Data.TaggedError("ProviderError")<{
   readonly provider: string
   readonly message: string
@@ -40,6 +41,7 @@ export class ProviderStreamError extends Data.TaggedError(
   readonly cause: unknown
 }> {}
 
+/** @Owl.Core.Errors.Tokens - Budgeting and counting failures */
 export class TokenBudgetExceededError extends Data.TaggedError(
   "TokenBudgetExceededError",
 )<{
@@ -52,6 +54,7 @@ export class TokenCountError extends Data.TaggedError("TokenCountError")<{
   readonly message: string
 }> {}
 
+/** @Owl.Core.Errors.Governance - FMCF architectural and forensic violations */
 export class GovernanceViolationError extends Data.TaggedError(
   "GovernanceViolationError",
 )<{
@@ -75,6 +78,7 @@ export class SeamTestGateError extends Data.TaggedError("SeamTestGateError")<{
   readonly missingRequirements: readonly string[]
 }> {}
 
+/** @Owl.Core.Errors.Mutations - File manipulation and rollback failures */
 export class MutationError extends Data.TaggedError("MutationError")<{
   readonly stage: string
   readonly file: string
@@ -99,6 +103,7 @@ export class DiffGenerationError extends Data.TaggedError(
   readonly reason: string
 }> {}
 
+/** @Owl.Core.Errors.Infrastructure - System-level command and config failures */
 export class CommandParseError extends Data.TaggedError("CommandParseError")<{
   readonly input: string
   readonly reason: string
@@ -125,6 +130,7 @@ export class OrchestratorError extends Data.TaggedError("OrchestratorError")<{
   readonly reason: string
 }> {}
 
+/** @Owl.Core.Errors.Orchestration - High-level engine and context failures */
 export class ContextOverflowError extends Data.TaggedError(
   "ContextOverflowError",
 )<{

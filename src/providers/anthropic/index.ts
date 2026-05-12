@@ -26,6 +26,7 @@ import type {
   InferenceResponse,
 } from "../../core/schema/index.js"
 
+/** @Owl.Providers.Anthropic.Capabilities - High-fidelity model specifications */
 const ANTHROPIC_CAPABILITIES: readonly ProviderCapability[] = [
   {
     providerId: "anthropic",
@@ -65,6 +66,7 @@ const ANTHROPIC_CAPABILITIES: readonly ProviderCapability[] = [
   },
 ]
 
+/** @Owl.Providers.Anthropic.ErrorMapping - Resilient error translation */
 const mapAnthropicError = (
   e: unknown,
 ):
@@ -104,11 +106,13 @@ const mapAnthropicError = (
   })
 }
 
+/** @Owl.Providers.Anthropic.Adapter - service definition */
 export class AnthropicAdapter extends Context.Tag("AnthropicAdapter")<
   AnthropicAdapter,
   LLMProviderService
->() {}
+>() { }
 
+/** @Owl.Providers.Anthropic.Implementation - Production layer logic */
 export const AnthropicAdapterLive = Layer.effect(
   AnthropicAdapter,
   Effect.gen(function* () {

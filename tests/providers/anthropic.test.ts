@@ -7,6 +7,7 @@ import {
 } from "../../src/providers/anthropic/index.js"
 import { OWLConfigLive } from "../../src/core/config/index.js"
 
+/** @Owl.Tests.Providers.Anthropic.Behavior - Specialized adapter logic verification */
 describe("AnthropicAdapter", () => {
   it("exposes anthropic capabilities", async () => {
     const configLayer = Layer.setConfigProvider(
