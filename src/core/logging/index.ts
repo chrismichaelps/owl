@@ -1,7 +1,6 @@
 /** @Owl.Core.Logging - Structured logging service backed by Effect Logger */
-import { Context, Effect, Layer } from "effect"
 
-// ─── Logger Interface ─────────────────────────────────────────────────────────
+import { Context, Effect, Layer } from "effect"
 
 export interface OwlLoggerService {
   readonly debug: (
@@ -22,14 +21,10 @@ export interface OwlLoggerService {
   ) => Effect.Effect<void>
 }
 
-// ─── Tag ─────────────────────────────────────────────────────────────────────
-
 export class OwlLogger extends Context.Tag("OwlLogger")<
   OwlLogger,
   OwlLoggerService
->() {}
-
-// ─── Implementation ───────────────────────────────────────────────────────────
+>() { }
 
 const makeLogger = (): OwlLoggerService => ({
   debug: (msg, ctx) =>
@@ -51,8 +46,6 @@ const makeLogger = (): OwlLoggerService => ({
 })
 
 export const OwlLoggerLive = Layer.succeed(OwlLogger, makeLogger())
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 export const withContext = <A, E, R>(
   logger: OwlLoggerService,

@@ -1,5 +1,5 @@
 ---
-State_ID: BigInt(0x0000000000000012)
+State_ID: BigInt(0x0000000000000035)
 Grammar_Lock: "@root/hashes/grammar/typescript/typescript.hash.md"
 Fidelity: DECLARED
 ---
@@ -13,6 +13,7 @@ Fidelity: DECLARED
 - `RETRY_CONFIG` — MAX_ATTEMPTS=3, BASE_DELAY_MS=1s, MAX_DELAY_MS=30s
 - `DEPTH_THRESHOLDS` — DEEP=0.7, SHALLOW=0.4
 - `ROUTING_WEIGHTS`, `SEAM_CAPACITY_SCORES`, `TUI_*`
+- `HTTP_STATUS` — OK, UNAUTHORIZED, TOO_MANY_REQUESTS, ANTHROPIC_OVERLOADED (529), etc.
 
 ### [Governance]
 - depth_score: 0.15 — SHALLOW (pure constants, no logic)

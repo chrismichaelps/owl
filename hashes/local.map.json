@@ -1,6 +1,6 @@
 {
   "shard_id": "@root/src",
-  "state_anchor": "BigInt:0x0000000000000020",
+  "state_anchor": "BigInt:0x000000000000003a",
   "parent_bridge": "@root/hashes/local.map.json",
   "git_anchor": "HEAD",
   "cache_integrity": "VERIFIED",
@@ -52,6 +52,46 @@
       "dependencies": [],
       "fidelity_level": "Active",
       "sig_id": "SIG-core-logging-00000001"
+    },
+    "providers/anthropic": {
+      "file_path": "@root/src/providers/anthropic/index.ts",
+      "hash_reference": "@root/hashes/src/providers/anthropic/index.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": ["@root/hashes/src/core/config/index.hash.md", "@root/hashes/src/core/constants/index.hash.md"],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-providers-anthropic-00000001"
+    },
+    "providers/openai": {
+      "file_path": "@root/src/providers/openai/index.ts",
+      "hash_reference": "@root/hashes/src/providers/openai/index.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": ["@root/hashes/src/core/config/index.hash.md", "@root/hashes/src/core/constants/index.hash.md"],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-providers-openai-00000001"
+    },
+    "providers/google": {
+      "file_path": "@root/src/providers/google/index.ts",
+      "hash_reference": "@root/hashes/src/providers/google/index.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": ["@root/hashes/src/core/config/index.hash.md"],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-providers-google-00000001"
+    },
+    "providers/xai": {
+      "file_path": "@root/src/providers/xai/index.ts",
+      "hash_reference": "@root/hashes/src/providers/xai/index.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": ["@root/hashes/src/core/config/index.hash.md"],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-providers-xai-00000001"
+    },
+    "providers/ollama": {
+      "file_path": "@root/src/providers/ollama/index.ts",
+      "hash_reference": "@root/hashes/src/providers/ollama/index.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": ["@root/hashes/src/core/config/index.hash.md"],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-providers-ollama-00000001"
     }
   }
 }
