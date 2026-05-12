@@ -1,0 +1,215 @@
+{
+  "last_updated": "2026-05-12T15:00:00Z",
+  "seams": [
+    {
+      "id": "seam-provider-router",
+      "name": "ProviderRouter",
+      "module": "@root/src/providers/router/index.ts",
+      "subsystem": "Providers",
+      "context_ref": "docs/CONTEXT.md#ProviderRouter",
+      "classification": {
+        "capacity": "BACKBONE",
+        "capacity_score": 9,
+        "lifecycle_state": "HYPOTHETICAL",
+        "last_reclassified": "2026-05-12T15:00:00Z",
+        "reclassification_reason": "Initial classification — 5 production adapters planned (Anthropic, OpenAI, Google, xAI, Ollama)"
+      },
+      "adapters": [],
+      "production_adapter_count": 0,
+      "health": {
+        "drift_score": 0,
+        "drift_status": "HEALTHY",
+        "interface_violations": 0,
+        "adapter_staleness_days": 0,
+        "caller_bypass_rate_pct": 0,
+        "last_health_check": "2026-05-12T15:00:00Z"
+      },
+      "metrics": {
+        "depth_score": 0.0,
+        "interface_stability": 1.0,
+        "coupling_complexity": 0.0,
+        "change_frequency_per_quarter": 0
+      },
+      "deepening": {
+        "status": "PENDING",
+        "adr_ref": null,
+        "deepening_date": null
+      },
+      "collapse": {
+        "eligible": false,
+        "eligible_since": null,
+        "collapse_date": null,
+        "collapse_reason": null
+      },
+      "notes": "Primary intelligence routing seam — backbone because 5 production adapters are planned from day one."
+    },
+    {
+      "id": "seam-engine-provider",
+      "name": "EngineToProvider",
+      "module": "@root/src/engine/orchestrator/index.ts",
+      "subsystem": "Engine",
+      "context_ref": "docs/CONTEXT.md#Provider",
+      "classification": {
+        "capacity": "CRITICAL",
+        "capacity_score": 7,
+        "lifecycle_state": "HYPOTHETICAL",
+        "last_reclassified": "2026-05-12T15:00:00Z",
+        "reclassification_reason": "Initial classification — core execution path, single routing boundary"
+      },
+      "adapters": [],
+      "production_adapter_count": 0,
+      "health": {
+        "drift_score": 0,
+        "drift_status": "HEALTHY",
+        "interface_violations": 0,
+        "adapter_staleness_days": 0,
+        "caller_bypass_rate_pct": 0,
+        "last_health_check": "2026-05-12T15:00:00Z"
+      },
+      "metrics": {
+        "depth_score": 0.0,
+        "interface_stability": 1.0,
+        "coupling_complexity": 0.0,
+        "change_frequency_per_quarter": 0
+      },
+      "deepening": {
+        "status": "PENDING",
+        "adr_ref": null,
+        "deepening_date": null
+      },
+      "collapse": {
+        "eligible": false,
+        "eligible_since": null,
+        "collapse_date": null,
+        "collapse_reason": null
+      },
+      "notes": "Critical because engine failure = all task execution stops."
+    },
+    {
+      "id": "seam-editor-governance",
+      "name": "EditorToGovernance",
+      "module": "@root/src/editor/pipeline/index.ts",
+      "subsystem": "Editor",
+      "context_ref": "docs/CONTEXT.md#Governance",
+      "classification": {
+        "capacity": "CRITICAL",
+        "capacity_score": 8,
+        "lifecycle_state": "HYPOTHETICAL",
+        "last_reclassified": "2026-05-12T15:00:00Z",
+        "reclassification_reason": "Initial classification — every mutation must pass governance validation"
+      },
+      "adapters": [],
+      "production_adapter_count": 0,
+      "health": {
+        "drift_score": 0,
+        "drift_status": "HEALTHY",
+        "interface_violations": 0,
+        "adapter_staleness_days": 0,
+        "caller_bypass_rate_pct": 0,
+        "last_health_check": "2026-05-12T15:00:00Z"
+      },
+      "metrics": {
+        "depth_score": 0.0,
+        "interface_stability": 1.0,
+        "coupling_complexity": 0.0,
+        "change_frequency_per_quarter": 0
+      },
+      "deepening": {
+        "status": "PENDING",
+        "adr_ref": null,
+        "deepening_date": null
+      },
+      "collapse": {
+        "eligible": false,
+        "eligible_since": null,
+        "collapse_date": null,
+        "collapse_reason": null
+      },
+      "notes": "Constitutional seam — governance cannot be bypassed by any mutation."
+    },
+    {
+      "id": "seam-tui-engine",
+      "name": "TUIToEngine",
+      "module": "@root/src/tui/App.tsx",
+      "subsystem": "TUI",
+      "context_ref": "docs/CONTEXT.md#TUI",
+      "classification": {
+        "capacity": "CRITICAL",
+        "capacity_score": 6,
+        "lifecycle_state": "HYPOTHETICAL",
+        "last_reclassified": "2026-05-12T15:00:00Z",
+        "reclassification_reason": "Initial classification — TUI is the presentation layer only; all logic in engine"
+      },
+      "adapters": [],
+      "production_adapter_count": 0,
+      "health": {
+        "drift_score": 0,
+        "drift_status": "HEALTHY",
+        "interface_violations": 0,
+        "adapter_staleness_days": 0,
+        "caller_bypass_rate_pct": 0,
+        "last_health_check": "2026-05-12T15:00:00Z"
+      },
+      "metrics": {
+        "depth_score": 0.0,
+        "interface_stability": 1.0,
+        "coupling_complexity": 0.0,
+        "change_frequency_per_quarter": 0
+      },
+      "deepening": {
+        "status": "NOT_NEEDED",
+        "adr_ref": null,
+        "deepening_date": null
+      },
+      "collapse": {
+        "eligible": false,
+        "eligible_since": null,
+        "collapse_date": null,
+        "collapse_reason": null
+      },
+      "notes": "Presentation seam — TUI must never contain business logic."
+    },
+    {
+      "id": "seam-fmcf-registry",
+      "name": "FMCFToRegistry",
+      "module": "@root/src/fmcf/registry/index.ts",
+      "subsystem": "FMCF",
+      "context_ref": "docs/CONTEXT.md#Registry",
+      "classification": {
+        "capacity": "BACKBONE",
+        "capacity_score": 10,
+        "lifecycle_state": "HYPOTHETICAL",
+        "last_reclassified": "2026-05-12T15:00:00Z",
+        "reclassification_reason": "Initial classification — central brain, every role reads/writes registry"
+      },
+      "adapters": [],
+      "production_adapter_count": 0,
+      "health": {
+        "drift_score": 0,
+        "drift_status": "HEALTHY",
+        "interface_violations": 0,
+        "adapter_staleness_days": 0,
+        "caller_bypass_rate_pct": 0,
+        "last_health_check": "2026-05-12T15:00:00Z"
+      },
+      "metrics": {
+        "depth_score": 0.0,
+        "interface_stability": 1.0,
+        "coupling_complexity": 0.0,
+        "change_frequency_per_quarter": 0
+      },
+      "deepening": {
+        "status": "PENDING",
+        "adr_ref": null,
+        "deepening_date": null
+      },
+      "collapse": {
+        "eligible": false,
+        "eligible_since": null,
+        "collapse_date": null,
+        "collapse_reason": null
+      },
+      "notes": "Constitutional seam — Hash Registry is the single source of truth."
+    }
+  ]
+}

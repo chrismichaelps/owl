@@ -1,0 +1,19 @@
+{
+  "created": "2026-05-12T15:00:00Z",
+  "maturity": "EXPLORING",
+  "phase": "pre_implementation",
+  "distribution": {
+    "deep": 0,
+    "medium": 0,
+    "shallow": 0,
+    "total_modules": 0
+  },
+  "seams": {
+    "backbone": 2,
+    "critical": 3,
+    "exploratory": 0,
+    "internal": 0,
+    "collapse_eligible": 0
+  },
+  "notes": "Baseline recorded before first implementation commit. Metrics will be updated after Phase 1 completes."
+}

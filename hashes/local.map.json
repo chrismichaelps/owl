@@ -1,0 +1,8 @@
+{
+  "shard_id": "@root/src",
+  "state_anchor": "BigInt:0x0000000000000000",
+  "parent_bridge": "@root/hashes/local.map.json",
+  "git_anchor": "abf5048",
+  "cache_integrity": "VERIFIED",
+  "nodes": {}
+}

@@ -1,0 +1,113 @@
+{
+  "graph_version": "1.0",
+  "state_anchor": "BigInt:0x0000000000000000",
+  "description": "Directional dependency edges. When upstream changes, all downstream nodes are flagged DIRTY.",
+  "grammar_refs": {
+    "typescript": "@root/hashes/grammar/typescript/typescript.hash.md",
+    "effect": "@root/hashes/grammar/effect/effect.hash.md",
+    "vitest": "@root/hashes/grammar/vitest/vitest.hash.md"
+  },
+  "edges": [
+    {
+      "from": "subsystem-core",
+      "to": "subsystem-providers",
+      "seam_id": null,
+      "seam_capacity": "INTERNAL",
+      "type": "LAYER_DEPENDENCY",
+      "impact": "HIGH",
+      "reason": "Core errors, schemas, and config are consumed by all subsystems"
+    },
+    {
+      "from": "subsystem-core",
+      "to": "subsystem-tokens",
+      "seam_id": null,
+      "seam_capacity": "INTERNAL",
+      "type": "LAYER_DEPENDENCY",
+      "impact": "HIGH",
+      "reason": "Core primitives used by token efficiency engine"
+    },
+    {
+      "from": "subsystem-core",
+      "to": "subsystem-fmcf",
+      "seam_id": null,
+      "seam_capacity": "INTERNAL",
+      "type": "LAYER_DEPENDENCY",
+      "impact": "HIGH",
+      "reason": "Core primitives used by FMCF runtime"
+    },
+    {
+      "from": "subsystem-core",
+      "to": "subsystem-engine",
+      "seam_id": null,
+      "seam_capacity": "INTERNAL",
+      "type": "LAYER_DEPENDENCY",
+      "impact": "HIGH",
+      "reason": "Core primitives used by orchestration engine"
+    },
+    {
+      "from": "subsystem-providers",
+      "to": "subsystem-engine",
+      "seam_id": "seam-engine-provider",
+      "seam_capacity": "CRITICAL",
+      "type": "SCHEMA_CONTRACT",
+      "impact": "HIGH",
+      "reason": "Engine routes tasks through ProviderRouter — seam boundary"
+    },
+    {
+      "from": "subsystem-tokens",
+      "to": "subsystem-engine",
+      "seam_id": null,
+      "seam_capacity": "INTERNAL",
+      "type": "LAYER_DEPENDENCY",
+      "impact": "MEDIUM",
+      "reason": "Engine uses token pruning and budget enforcement"
+    },
+    {
+      "from": "subsystem-fmcf",
+      "to": "subsystem-editor",
+      "seam_id": "seam-editor-governance",
+      "seam_capacity": "CRITICAL",
+      "type": "SCHEMA_CONTRACT",
+      "impact": "HIGH",
+      "reason": "All mutations must pass FMCF governance validation"
+    },
+    {
+      "from": "subsystem-engine",
+      "to": "subsystem-editor",
+      "seam_id": null,
+      "seam_capacity": "INTERNAL",
+      "type": "LAYER_DEPENDENCY",
+      "impact": "HIGH",
+      "reason": "Engine orchestrates mutations through editing pipeline"
+    },
+    {
+      "from": "subsystem-engine",
+      "to": "subsystem-commands",
+      "seam_id": null,
+      "seam_capacity": "INTERNAL",
+      "type": "LAYER_DEPENDENCY",
+      "impact": "MEDIUM",
+      "reason": "Commands dispatch to engine for execution"
+    },
+    {
+      "from": "subsystem-engine",
+      "to": "subsystem-tui",
+      "seam_id": "seam-tui-engine",
+      "seam_capacity": "CRITICAL",
+      "type": "SCHEMA_CONTRACT",
+      "impact": "MEDIUM",
+      "reason": "TUI consumes engine event streams for rendering"
+    },
+    {
+      "from": "subsystem-commands",
+      "to": "subsystem-tui",
+      "seam_id": null,
+      "seam_capacity": "INTERNAL",
+      "type": "LAYER_DEPENDENCY",
+      "impact": "LOW",
+      "reason": "TUI captures and dispatches commands to registry"
+    }
+  ],
+  "dirty_propagation_rule": "When a node's fidelity_level becomes DIRTY, recursively mark all reachable downstream nodes DIRTY.",
+  "propagation_weight": "BACKBONE edges propagate impact HIGH by default; CRITICAL edges propagate as declared; EXPLORATORY and INTERNAL edges propagate LOW."
+}

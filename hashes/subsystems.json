@@ -1,0 +1,313 @@
+{
+  "last_updated": "2026-05-12T15:00:00Z",
+  "subsystems": [
+    {
+      "id": "subsystem-core",
+      "name": "Core",
+      "description": "Foundational primitives: tagged errors, schemas, config, constants, and structured logging.",
+      "owner_team": "owl-core",
+      "maturity": "EXPLORING",
+      "modules": [
+        "@root/src/core/errors/index.ts",
+        "@root/src/core/schema/index.ts",
+        "@root/src/core/config/index.ts",
+        "@root/src/core/constants/index.ts",
+        "@root/src/core/logging/index.ts"
+      ],
+      "internal_seams": [],
+      "external_seams": [],
+      "invariants": [
+        "MUST NOT: import from any other src/ subsystem — Core has zero inbound dependencies",
+        "MUST NOT: use Promise-based async patterns — all async is Effect-native",
+        "MUST NOT: use any — all types must be explicit or inferred from Schema"
+      ],
+      "sub_subsystems": [],
+      "context_refs": [],
+      "adr_refs": [],
+      "health": {
+        "org_alignment_score": 1.0,
+        "teams_touching": 1,
+        "optimal_teams": 1,
+        "last_assessed": "2026-05-12T15:00:00Z"
+      }
+    },
+    {
+      "id": "subsystem-providers",
+      "name": "Providers",
+      "description": "Multi-provider LLM router and adapter layer — Anthropic, OpenAI, Google, xAI, Ollama.",
+      "owner_team": "owl-providers",
+      "maturity": "EXPLORING",
+      "modules": [
+        "@root/src/providers/types.ts",
+        "@root/src/providers/router/index.ts",
+        "@root/src/providers/router/scoring.ts",
+        "@root/src/providers/anthropic/index.ts",
+        "@root/src/providers/openai/index.ts",
+        "@root/src/providers/google/index.ts",
+        "@root/src/providers/xai/index.ts",
+        "@root/src/providers/ollama/index.ts"
+      ],
+      "internal_seams": [
+        "seam-provider-router"
+      ],
+      "external_seams": [
+        "seam-engine-provider"
+      ],
+      "invariants": [
+        "MUST NOT: import from TUI, Editor, or Commands subsystems",
+        "MUST NOT: leak provider SDK types into the router interface — use Schema-derived types",
+        "MUST NOT: make direct HTTP calls outside adapter modules — all HTTP in adapters only",
+        "ALL provider errors MUST be wrapped into tagged ProviderError variants before crossing the seam"
+      ],
+      "sub_subsystems": [],
+      "context_refs": [
+        "docs/CONTEXT.md#Provider",
+        "docs/CONTEXT.md#ProviderRouter"
+      ],
+      "adr_refs": [],
+      "health": {
+        "org_alignment_score": 1.0,
+        "teams_touching": 1,
+        "optimal_teams": 1,
+        "last_assessed": "2026-05-12T15:00:00Z"
+      }
+    },
+    {
+      "id": "subsystem-tokens",
+      "name": "Tokens",
+      "description": "Token efficiency engine — Markov pruning, context cache, seam-aware loading, budget enforcement.",
+      "owner_team": "owl-tokens",
+      "maturity": "EXPLORING",
+      "modules": [
+        "@root/src/tokens/pruning/index.ts",
+        "@root/src/tokens/cache/index.ts",
+        "@root/src/tokens/budget/index.ts"
+      ],
+      "internal_seams": [],
+      "external_seams": [],
+      "invariants": [
+        "MUST NOT: import from TUI or Commands subsystems",
+        "MUST NOT: perform any LLM inference — token counting only",
+        "ALL budget violations MUST surface as tagged TokenBudgetExceededError"
+      ],
+      "sub_subsystems": [],
+      "context_refs": [
+        "docs/CONTEXT.md#Token",
+        "docs/CONTEXT.md#TokenBudget"
+      ],
+      "adr_refs": [],
+      "health": {
+        "org_alignment_score": 1.0,
+        "teams_touching": 1,
+        "optimal_teams": 1,
+        "last_assessed": "2026-05-12T15:00:00Z"
+      }
+    },
+    {
+      "id": "subsystem-fmcf",
+      "name": "FMCF",
+      "description": "FMCF v3.5 runtime engine — roles, seam analysis, hash registry manager, governance enforcement.",
+      "owner_team": "owl-fmcf",
+      "maturity": "EXPLORING",
+      "modules": [
+        "@root/src/fmcf/roles/architect.ts",
+        "@root/src/fmcf/roles/dna-engineer.ts",
+        "@root/src/fmcf/roles/shadow.ts",
+        "@root/src/fmcf/roles/guardian.ts",
+        "@root/src/fmcf/seam/index.ts",
+        "@root/src/fmcf/registry/index.ts",
+        "@root/src/fmcf/governance/index.ts"
+      ],
+      "internal_seams": [
+        "seam-fmcf-registry"
+      ],
+      "external_seams": [
+        "seam-editor-governance"
+      ],
+      "invariants": [
+        "MUST NOT: import from TUI subsystem",
+        "MUST NOT: perform LLM inference — analysis only",
+        "MUST NOT: write implementation files — registry updates only",
+        "ALL governance violations MUST surface as tagged GovernanceViolationError"
+      ],
+      "sub_subsystems": [],
+      "context_refs": [
+        "docs/CONTEXT.md#Governance",
+        "docs/CONTEXT.md#Registry",
+        "docs/CONTEXT.md#Seam"
+      ],
+      "adr_refs": [],
+      "health": {
+        "org_alignment_score": 1.0,
+        "teams_touching": 1,
+        "optimal_teams": 1,
+        "last_assessed": "2026-05-12T15:00:00Z"
+      }
+    },
+    {
+      "id": "subsystem-engine",
+      "name": "Engine",
+      "description": "Agent orchestration engine — main agent loop, context management, session memory, tool execution.",
+      "owner_team": "owl-engine",
+      "maturity": "EXPLORING",
+      "modules": [
+        "@root/src/engine/orchestrator/index.ts",
+        "@root/src/engine/context/index.ts",
+        "@root/src/engine/memory/index.ts"
+      ],
+      "internal_seams": [],
+      "external_seams": [
+        "seam-engine-provider",
+        "seam-tui-engine"
+      ],
+      "invariants": [
+        "MUST NOT: import from TUI subsystem — events flow through reactive streams",
+        "MUST NOT: hold mutable state outside Effect Ref — no global variables",
+        "ALL provider calls MUST go through ProviderRouter seam — never direct adapter calls"
+      ],
+      "sub_subsystems": [],
+      "context_refs": [
+        "docs/CONTEXT.md#Task",
+        "docs/CONTEXT.md#Session",
+        "docs/CONTEXT.md#Mode"
+      ],
+      "adr_refs": [],
+      "health": {
+        "org_alignment_score": 1.0,
+        "teams_touching": 1,
+        "optimal_teams": 1,
+        "last_assessed": "2026-05-12T15:00:00Z"
+      }
+    },
+    {
+      "id": "subsystem-editor",
+      "name": "Editor",
+      "description": "7-stage mutation pipeline — diff generation, TLI execution, approval flow, rollback system.",
+      "owner_team": "owl-editor",
+      "maturity": "EXPLORING",
+      "modules": [
+        "@root/src/editor/pipeline/index.ts",
+        "@root/src/editor/diff/index.ts",
+        "@root/src/editor/tli/index.ts",
+        "@root/src/editor/rollback/index.ts"
+      ],
+      "internal_seams": [],
+      "external_seams": [
+        "seam-editor-governance"
+      ],
+      "invariants": [
+        "MUST NOT: write files without governance approval",
+        "MUST NOT: bypass rollback registration — every file write must be recorded",
+        "MUST NOT: perform full-file rewrites — TLI only"
+      ],
+      "sub_subsystems": [],
+      "context_refs": [
+        "docs/CONTEXT.md#Mutation",
+        "docs/CONTEXT.md#Pipeline",
+        "docs/CONTEXT.md#Diff",
+        "docs/CONTEXT.md#Rollback"
+      ],
+      "adr_refs": [],
+      "health": {
+        "org_alignment_score": 1.0,
+        "teams_touching": 1,
+        "optimal_teams": 1,
+        "last_assessed": "2026-05-12T15:00:00Z"
+      }
+    },
+    {
+      "id": "subsystem-commands",
+      "name": "Commands",
+      "description": "Slash command system — parser, registry, all 30+ commands dispatched to engine subsystems.",
+      "owner_team": "owl-commands",
+      "maturity": "EXPLORING",
+      "modules": [
+        "@root/src/commands/parser.ts",
+        "@root/src/commands/registry.ts",
+        "@root/src/commands/core/task.ts",
+        "@root/src/commands/core/deep.ts",
+        "@root/src/commands/core/quick.ts",
+        "@root/src/commands/core/plan.ts",
+        "@root/src/commands/power/raw.ts",
+        "@root/src/commands/power/god.ts",
+        "@root/src/commands/power/economy.ts",
+        "@root/src/commands/analysis/analyze.ts",
+        "@root/src/commands/analysis/brain.ts",
+        "@root/src/commands/analysis/seams.ts",
+        "@root/src/commands/analysis/depth.ts",
+        "@root/src/commands/analysis/friction.ts",
+        "@root/src/commands/analysis/grill.ts",
+        "@root/src/commands/editing/edit.ts",
+        "@root/src/commands/editing/inject.ts",
+        "@root/src/commands/editing/create.ts",
+        "@root/src/commands/editing/refactor.ts",
+        "@root/src/commands/editing/diff.ts",
+        "@root/src/commands/editing/apply.ts",
+        "@root/src/commands/editing/undo.ts",
+        "@root/src/commands/management/role.ts",
+        "@root/src/commands/management/registry.ts",
+        "@root/src/commands/management/audit.ts",
+        "@root/src/commands/management/status.ts",
+        "@root/src/commands/management/clear.ts",
+        "@root/src/commands/management/memory.ts",
+        "@root/src/commands/management/model.ts"
+      ],
+      "internal_seams": [],
+      "external_seams": [],
+      "invariants": [
+        "MUST NOT: contain business logic — commands dispatch only",
+        "MUST NOT: directly call provider adapters — all through engine",
+        "ALL commands MUST be registered in CommandRegistry before use"
+      ],
+      "sub_subsystems": [],
+      "context_refs": [
+        "docs/CONTEXT.md#Command"
+      ],
+      "adr_refs": [],
+      "health": {
+        "org_alignment_score": 1.0,
+        "teams_touching": 1,
+        "optimal_teams": 1,
+        "last_assessed": "2026-05-12T15:00:00Z"
+      }
+    },
+    {
+      "id": "subsystem-tui",
+      "name": "TUI",
+      "description": "Terminal user interface — three-panel Ink layout, status bar, streaming rendering, keyboard navigation.",
+      "owner_team": "owl-tui",
+      "maturity": "EXPLORING",
+      "modules": [
+        "@root/src/tui/App.tsx",
+        "@root/src/tui/panels/LeftPanel.tsx",
+        "@root/src/tui/panels/CenterPanel.tsx",
+        "@root/src/tui/panels/RightPanel.tsx",
+        "@root/src/tui/status/StatusBar.tsx",
+        "@root/src/tui/components/DiffView.tsx",
+        "@root/src/tui/components/MetricsView.tsx",
+        "@root/src/tui/components/ApprovalPrompt.tsx"
+      ],
+      "internal_seams": [],
+      "external_seams": [
+        "seam-tui-engine"
+      ],
+      "invariants": [
+        "MUST NOT: contain business logic or provider calls",
+        "MUST NOT: read files directly — all data through engine event streams",
+        "MUST NOT: manage mutations — dispatch commands only"
+      ],
+      "sub_subsystems": [],
+      "context_refs": [
+        "docs/CONTEXT.md#TUI",
+        "docs/CONTEXT.md#Diff"
+      ],
+      "adr_refs": [],
+      "health": {
+        "org_alignment_score": 1.0,
+        "teams_touching": 1,
+        "optimal_teams": 1,
+        "last_assessed": "2026-05-12T15:00:00Z"
+      }
+    }
+  ]
+}
