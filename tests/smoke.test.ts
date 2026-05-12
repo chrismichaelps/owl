@@ -1,3 +1,4 @@
+/** @Owl.Tests.Smoke - System-wide integration smoke tests */
 import { describe, it, expect } from "vitest"
 import { Effect, Exit } from "effect"
 

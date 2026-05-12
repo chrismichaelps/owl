@@ -1,3 +1,4 @@
+/** @Owl.Tests.Core.Constants - Core constants and budget tests */
 import { describe, it, expect } from "vitest"
 import {
   TOKEN_LIMITS,

@@ -1,3 +1,4 @@
+/** @Owl.Tests.Providers.Types - Provider interface contract tests */
 import { describe, it, expect } from "vitest"
 import { Schema } from "effect"
 import {

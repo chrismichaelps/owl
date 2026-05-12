@@ -1,3 +1,4 @@
+/** @Owl.Tests.Core.Logging - Core logging service tests */
 import { describe, it, expect } from "vitest"
 import { Effect } from "effect"
 import {

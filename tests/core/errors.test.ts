@@ -1,3 +1,4 @@
+/** @Owl.Tests.Core.Errors - Core error logic tests */
 import { describe, it, expect } from "vitest"
 import { Effect, Exit, Cause } from "effect"
 import {
