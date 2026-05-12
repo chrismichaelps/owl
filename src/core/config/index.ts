@@ -17,7 +17,7 @@ export interface OwlConfig {
 export class OWL_CONFIG extends Context.Tag("OWL_CONFIG")<
   OWL_CONFIG,
   OwlConfig
->() { }
+>() {}
 
 const owlConfigEffect = Effect.gen(function* () {
   const anthropicApiKey = yield* Config.string("ANTHROPIC_API_KEY")

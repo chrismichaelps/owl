@@ -4,7 +4,10 @@ import * as Stream from "effect/Stream"
 import { ProviderError } from "../../core/errors/index.js"
 import { OWL_CONFIG } from "../../core/config/index.js"
 import type { LLMProviderService, ProviderCapability } from "../types.js"
-import type { InferenceRequest, InferenceResponse } from "../../core/schema/index.js"
+import type {
+  InferenceRequest,
+  InferenceResponse,
+} from "../../core/schema/index.js"
 
 const OLLAMA_CAPABILITIES: readonly ProviderCapability[] = [
   {
@@ -44,7 +47,9 @@ export const OllamaAdapterLive = Layer.effect(
     const config = yield* OWL_CONFIG
     const baseUrl = config.ollamaBaseUrl
 
-    const complete = (request: InferenceRequest): Effect.Effect<InferenceResponse, ProviderError> =>
+    const complete = (
+      request: InferenceRequest,
+    ): Effect.Effect<InferenceResponse, ProviderError> =>
       Effect.tryPromise({
         try: async () => {
           const startMs = Date.now()
@@ -65,13 +70,19 @@ export const OllamaAdapterLive = Layer.effect(
             taskId: request.taskId,
             content: data.response,
             stopReason: "end_turn" as const,
-            usage: { inputTokens: 0, outputTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0 },
+            usage: {
+              inputTokens: 0,
+              outputTokens: 0,
+              cacheReadTokens: 0,
+              cacheWriteTokens: 0,
+            },
             model: request.model,
             provider: "ollama" as const,
             latencyMs: Date.now() - startMs,
           } satisfies InferenceResponse
         },
-        catch: (e) => new ProviderError({ provider: "ollama", message: String(e) }),
+        catch: (e) =>
+          new ProviderError({ provider: "ollama", message: String(e) }),
       })
 
     const healthCheck = (): Effect.Effect<boolean, ProviderError> =>
@@ -80,7 +91,8 @@ export const OllamaAdapterLive = Layer.effect(
           const response = await fetch(`${baseUrl}/api/tags`)
           return response.ok
         },
-        catch: (e) => new ProviderError({ provider: "ollama", message: String(e) }),
+        catch: (e) =>
+          new ProviderError({ provider: "ollama", message: String(e) }),
       })
 
     return {
@@ -88,7 +100,8 @@ export const OllamaAdapterLive = Layer.effect(
       capabilities: OLLAMA_CAPABILITIES,
       complete,
       stream: () => Stream.empty,
-      countTokens: (_text, _model) => Effect.succeed(Math.ceil(_text.length / 4)),
+      countTokens: (_text, _model) =>
+        Effect.succeed(Math.ceil(_text.length / 4)),
       healthCheck,
     } satisfies LLMProviderService
   }),

@@ -9,9 +9,7 @@ import { OWLConfigLive } from "../../src/core/config/index.js"
 describe("AnthropicAdapter", () => {
   it("exposes anthropic capabilities", async () => {
     const configLayer = Layer.setConfigProvider(
-      ConfigProvider.fromMap(
-        new Map([["ANTHROPIC_API_KEY", "sk-ant-test"]]),
-      ),
+      ConfigProvider.fromMap(new Map([["ANTHROPIC_API_KEY", "sk-ant-test"]])),
     )
 
     const program = Effect.gen(function* () {
@@ -34,9 +32,7 @@ describe("AnthropicAdapter", () => {
 
   it("adapter id is anthropic", async () => {
     const configLayer = Layer.setConfigProvider(
-      ConfigProvider.fromMap(
-        new Map([["ANTHROPIC_API_KEY", "sk-ant-test"]]),
-      ),
+      ConfigProvider.fromMap(new Map([["ANTHROPIC_API_KEY", "sk-ant-test"]])),
     )
 
     const program = Effect.gen(function* () {

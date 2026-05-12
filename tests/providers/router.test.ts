@@ -30,7 +30,12 @@ const makeStubProvider = (id: string): LLMProviderService => ({
       taskId: _req.taskId,
       content: `response from ${id}`,
       stopReason: "end_turn" as const,
-      usage: { inputTokens: 100, outputTokens: 50, cacheReadTokens: 0, cacheWriteTokens: 0 },
+      usage: {
+        inputTokens: 100,
+        outputTokens: 50,
+        cacheReadTokens: 0,
+        cacheWriteTokens: 0,
+      },
       model: `${id}-model`,
       provider: "anthropic" as const,
       latencyMs: 100,

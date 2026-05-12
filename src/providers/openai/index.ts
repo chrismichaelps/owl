@@ -2,10 +2,7 @@
 import OpenAI from "openai"
 import { Context, Effect, Layer, Schedule } from "effect"
 import * as Stream from "effect/Stream"
-import {
-  ProviderError,
-  ProviderStreamError,
-} from "../../core/errors/index.js"
+import { ProviderError, ProviderStreamError } from "../../core/errors/index.js"
 import { OWL_CONFIG } from "../../core/config/index.js"
 import { RETRY_CONFIG } from "../../core/constants/index.js"
 import type {
@@ -13,7 +10,10 @@ import type {
   ProviderCapability,
   StreamChunk,
 } from "../types.js"
-import type { InferenceRequest, InferenceResponse } from "../../core/schema/index.js"
+import type {
+  InferenceRequest,
+  InferenceResponse,
+} from "../../core/schema/index.js"
 
 const OPENAI_CAPABILITIES: readonly ProviderCapability[] = [
   {
@@ -22,7 +22,7 @@ const OPENAI_CAPABILITIES: readonly ProviderCapability[] = [
     contextWindow: 128_000,
     maxOutputTokens: 16_384,
     inputCostPer1k: 0.0025,
-    outputCostPer1k: 0.010,
+    outputCostPer1k: 0.01,
     supportsStreaming: true,
     reasoningDepth: "high",
     supportsFunctionCalling: true,
@@ -73,7 +73,10 @@ export const OpenAIAdapterLive = Layer.effect(
         countTokens: (_text, _model) => Effect.succeed(0),
         healthCheck: () =>
           Effect.fail(
-            new ProviderError({ provider: "openai", message: "not configured" }),
+            new ProviderError({
+              provider: "openai",
+              message: "not configured",
+            }),
           ),
       } satisfies LLMProviderService
     }
@@ -164,7 +167,8 @@ export const OpenAIAdapterLive = Layer.effect(
       capabilities: OPENAI_CAPABILITIES,
       complete,
       stream,
-      countTokens: (_text, _model) => Effect.succeed(Math.ceil(_text.length / 4)),
+      countTokens: (_text, _model) =>
+        Effect.succeed(Math.ceil(_text.length / 4)),
       healthCheck: () => Effect.succeed(true),
     } satisfies LLMProviderService
   }),

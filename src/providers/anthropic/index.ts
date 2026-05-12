@@ -11,14 +11,20 @@ import {
   ProviderStreamError,
 } from "../../core/errors/index.js"
 import { OWL_CONFIG } from "../../core/config/index.js"
-import { HTTP_STATUS, PROVIDER_TIMEOUTS, RETRY_CONFIG } from "../../core/constants/index.js"
+import {
+  HTTP_STATUS,
+  PROVIDER_TIMEOUTS,
+  RETRY_CONFIG,
+} from "../../core/constants/index.js"
 import type {
   LLMProviderService,
   ProviderCapability,
   StreamChunk,
 } from "../types.js"
-import type { InferenceRequest, InferenceResponse } from "../../core/schema/index.js"
-
+import type {
+  InferenceRequest,
+  InferenceResponse,
+} from "../../core/schema/index.js"
 
 const ANTHROPIC_CAPABILITIES: readonly ProviderCapability[] = [
   {
@@ -61,7 +67,11 @@ const ANTHROPIC_CAPABILITIES: readonly ProviderCapability[] = [
 
 const mapAnthropicError = (
   e: unknown,
-): ProviderError | ProviderAuthError | ProviderRateLimitError | ProviderTimeoutError => {
+):
+  | ProviderError
+  | ProviderAuthError
+  | ProviderRateLimitError
+  | ProviderTimeoutError => {
   if (e instanceof Anthropic.AuthenticationError) {
     return new ProviderAuthError({ provider: "anthropic", reason: e.message })
   }
@@ -85,7 +95,8 @@ const mapAnthropicError = (
       statusCode: HTTP_STATUS.ANTHROPIC_OVERLOADED,
     })
   }
-  const statusCode = e instanceof Anthropic.APIError ? (e.status as number) : undefined
+  const statusCode =
+    e instanceof Anthropic.APIError ? (e.status as number) : undefined
   return new ProviderError({
     provider: "anthropic",
     message: e instanceof Error ? e.message : String(e),
@@ -96,7 +107,7 @@ const mapAnthropicError = (
 export class AnthropicAdapter extends Context.Tag("AnthropicAdapter")<
   AnthropicAdapter,
   LLMProviderService
->() { }
+>() {}
 
 export const AnthropicAdapterLive = Layer.effect(
   AnthropicAdapter,
@@ -112,7 +123,10 @@ export const AnthropicAdapterLive = Layer.effect(
       request: InferenceRequest,
     ): Effect.Effect<
       InferenceResponse,
-      ProviderError | ProviderAuthError | ProviderRateLimitError | ProviderTimeoutError
+      | ProviderError
+      | ProviderAuthError
+      | ProviderRateLimitError
+      | ProviderTimeoutError
     > =>
       Effect.tryPromise({
         try: async () => {
@@ -135,7 +149,8 @@ export const AnthropicAdapterLive = Layer.effect(
           return {
             taskId: request.taskId,
             content,
-            stopReason: (response.stop_reason ?? "end_turn") as InferenceResponse["stopReason"],
+            stopReason: (response.stop_reason ??
+              "end_turn") as InferenceResponse["stopReason"],
             usage: {
               inputTokens: response.usage.input_tokens,
               outputTokens: response.usage.output_tokens,

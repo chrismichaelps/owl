@@ -14,8 +14,6 @@ import type {
   ProviderRateLimitError,
 } from "../core/errors/index.js"
 
-
-
 export const ProviderCapabilitySchema = Schema.Struct({
   providerId: Schema.String,
   modelId: Schema.String,
@@ -32,8 +30,6 @@ export type ProviderCapability = Schema.Schema.Type<
   typeof ProviderCapabilitySchema
 >
 
-
-
 export const RoutingContextSchema = Schema.Struct({
   taskId: Schema.String,
   mode: Schema.String,
@@ -45,8 +41,6 @@ export const RoutingContextSchema = Schema.Struct({
   preferredProvider: Schema.optional(Schema.String),
 })
 export type RoutingContext = Schema.Schema.Type<typeof RoutingContextSchema>
-
-
 
 export const StreamChunkSchema = Schema.Struct({
   type: Schema.Literal("text", "thinking", "tool_use", "stop"),
@@ -61,16 +55,12 @@ export const StreamChunkSchema = Schema.Struct({
 })
 export type StreamChunk = Schema.Schema.Type<typeof StreamChunkSchema>
 
-
-
 export type AnyProviderError =
   | ProviderError
   | ProviderStreamError
   | ProviderTimeoutError
   | ProviderAuthError
   | ProviderRateLimitError
-
-
 
 export interface LLMProviderService {
   readonly id: string
@@ -92,14 +82,10 @@ export interface LLMProviderService {
   readonly healthCheck: () => Effect.Effect<boolean, ProviderError>
 }
 
-
-
 export class LLMProvider extends Context.Tag("LLMProvider")<
   LLMProvider,
   LLMProviderService
 >() {}
-
-
 
 export const RoutingDecisionSchema = Schema.Struct({
   selectedProvider: Schema.String,

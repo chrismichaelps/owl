@@ -7,7 +7,10 @@ import type {
   RoutingContext,
   RoutingDecision,
 } from "../types.js"
-import type { InferenceRequest, InferenceResponse } from "../../core/schema/index.js"
+import type {
+  InferenceRequest,
+  InferenceResponse,
+} from "../../core/schema/index.js"
 import type { AnyProviderError } from "../types.js"
 
 export interface ProviderRouterService {
@@ -18,7 +21,10 @@ export interface ProviderRouterService {
   readonly complete: (
     ctx: RoutingContext,
     request: Omit<InferenceRequest, "model">,
-  ) => Effect.Effect<InferenceResponse, AnyProviderError | ProviderUnavailableError>
+  ) => Effect.Effect<
+    InferenceResponse,
+    AnyProviderError | ProviderUnavailableError
+  >
 
   readonly listProviders: () => Effect.Effect<readonly string[]>
 }
@@ -26,14 +32,16 @@ export interface ProviderRouterService {
 export class ProviderRouter extends Context.Tag("ProviderRouter")<
   ProviderRouter,
   ProviderRouterService
->() { }
+>() {}
 
 export const registerProvider = (
   router: ProviderRouterService,
   provider: LLMProviderService,
 ): Effect.Effect<void> =>
   Effect.sync(() => {
-    ; (router as unknown as { _register: (p: LLMProviderService) => void })._register(provider)
+    ;(
+      router as unknown as { _register: (p: LLMProviderService) => void }
+    )._register(provider)
   })
 
 export const ProviderRouterLive = Layer.effect(
@@ -84,7 +92,10 @@ export const ProviderRouterLive = Layer.effect(
     const complete = (
       ctx: RoutingContext,
       request: Omit<InferenceRequest, "model">,
-    ): Effect.Effect<InferenceResponse, AnyProviderError | ProviderUnavailableError> =>
+    ): Effect.Effect<
+      InferenceResponse,
+      AnyProviderError | ProviderUnavailableError
+    > =>
       Effect.gen(function* () {
         const decision = yield* route(ctx)
         const registry = yield* Ref.get(registryRef)

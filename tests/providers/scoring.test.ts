@@ -3,7 +3,10 @@ import {
   scoreProvider,
   selectBestProvider,
 } from "../../src/providers/router/scoring.js"
-import type { ProviderCapability, RoutingContext } from "../../src/providers/types.js"
+import type {
+  ProviderCapability,
+  RoutingContext,
+} from "../../src/providers/types.js"
 
 const ANTHROPIC_OPUS: ProviderCapability = {
   providerId: "anthropic",

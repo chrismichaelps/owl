@@ -5,7 +5,10 @@ import * as Stream from "effect/Stream"
 import { ProviderError, ProviderStreamError } from "../../core/errors/index.js"
 import { OWL_CONFIG } from "../../core/config/index.js"
 import type { LLMProviderService, ProviderCapability } from "../types.js"
-import type { InferenceRequest, InferenceResponse } from "../../core/schema/index.js"
+import type {
+  InferenceRequest,
+  InferenceResponse,
+} from "../../core/schema/index.js"
 
 const XAI_CAPABILITIES: readonly ProviderCapability[] = [
   {
@@ -37,12 +40,24 @@ export const XAIAdapterLive = Layer.effect(
         id: "xai",
         capabilities: XAI_CAPABILITIES,
         complete: () =>
-          Effect.fail(new ProviderError({ provider: "xai", message: "XAI_API_KEY not configured" })),
+          Effect.fail(
+            new ProviderError({
+              provider: "xai",
+              message: "XAI_API_KEY not configured",
+            }),
+          ),
         stream: () =>
-          Stream.fail(new ProviderStreamError({ provider: "xai", cause: "not configured" })),
+          Stream.fail(
+            new ProviderStreamError({
+              provider: "xai",
+              cause: "not configured",
+            }),
+          ),
         countTokens: () => Effect.succeed(0),
         healthCheck: () =>
-          Effect.fail(new ProviderError({ provider: "xai", message: "not configured" })),
+          Effect.fail(
+            new ProviderError({ provider: "xai", message: "not configured" }),
+          ),
       } satisfies LLMProviderService
     }
 
@@ -51,7 +66,9 @@ export const XAIAdapterLive = Layer.effect(
       baseURL: "https://api.x.ai/v1",
     })
 
-    const complete = (request: InferenceRequest): Effect.Effect<InferenceResponse, ProviderError> =>
+    const complete = (
+      request: InferenceRequest,
+    ): Effect.Effect<InferenceResponse, ProviderError> =>
       Effect.tryPromise({
         try: async () => {
           const startMs = Date.now()
@@ -78,7 +95,8 @@ export const XAIAdapterLive = Layer.effect(
             latencyMs: Date.now() - startMs,
           } satisfies InferenceResponse
         },
-        catch: (e) => new ProviderError({ provider: "xai", message: String(e) }),
+        catch: (e) =>
+          new ProviderError({ provider: "xai", message: String(e) }),
       })
 
     return {
@@ -86,7 +104,8 @@ export const XAIAdapterLive = Layer.effect(
       capabilities: XAI_CAPABILITIES,
       complete,
       stream: () => Stream.empty,
-      countTokens: (_text, _model) => Effect.succeed(Math.ceil(_text.length / 4)),
+      countTokens: (_text, _model) =>
+        Effect.succeed(Math.ceil(_text.length / 4)),
       healthCheck: () => Effect.succeed(true),
     } satisfies LLMProviderService
   }),

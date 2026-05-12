@@ -1,6 +1,10 @@
 import { describe, it, expect } from "vitest"
 import { Effect } from "effect"
-import { OwlLogger, OwlLoggerLive, withContext } from "../../src/core/logging/index.js"
+import {
+  OwlLogger,
+  OwlLoggerLive,
+  withContext,
+} from "../../src/core/logging/index.js"
 
 describe("OwlLogger", () => {
   it("log runs without error", async () => {

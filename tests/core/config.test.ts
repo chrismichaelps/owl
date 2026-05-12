@@ -30,9 +30,7 @@ describe("OWL_CONFIG", () => {
 
   it("uses defaults when optional vars are absent", async () => {
     const configProviderLayer = Layer.setConfigProvider(
-      ConfigProvider.fromMap(
-        new Map([["ANTHROPIC_API_KEY", "sk-ant-test"]]),
-      ),
+      ConfigProvider.fromMap(new Map([["ANTHROPIC_API_KEY", "sk-ant-test"]])),
     )
 
     const program = Effect.gen(function* () {

@@ -32,8 +32,7 @@ export function scoreProvider(
   // Reasoning score: matches mode demand
   const reasoningDepthScore = REASONING_SCORES[cap.reasoningDepth] ?? 0.5
   const modeReasoningDemand = MODE_REASONING_DEMAND[ctx.mode] ?? 0.5
-  const reasoningScore =
-    1 - Math.abs(reasoningDepthScore - modeReasoningDemand)
+  const reasoningScore = 1 - Math.abs(reasoningDepthScore - modeReasoningDemand)
 
   // Latency score: smaller models are faster
   const latencyScore = cap.maxOutputTokens <= 4096 ? 0.8 : 0.6
@@ -74,7 +73,10 @@ export function selectBestProvider(
 
   // If preferred provider had no matches, fall back to all providers
   if (best === null && ctx.preferredProvider) {
-    return selectBestProvider(capabilities, { ...ctx, preferredProvider: undefined })
+    return selectBestProvider(capabilities, {
+      ...ctx,
+      preferredProvider: undefined,
+    })
   }
 
   return best

@@ -24,7 +24,7 @@ export interface OwlLoggerService {
 export class OwlLogger extends Context.Tag("OwlLogger")<
   OwlLogger,
   OwlLoggerService
->() { }
+>() {}
 
 const makeLogger = (): OwlLoggerService => ({
   debug: (msg, ctx) =>
