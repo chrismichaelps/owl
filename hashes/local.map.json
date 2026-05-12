@@ -1,8 +1,8 @@
 {
   "shard_id": "@root/src",
-  "state_anchor": "BigInt:0x0000000000000002",
+  "state_anchor": "BigInt:0x0000000000000020",
   "parent_bridge": "@root/hashes/local.map.json",
-  "git_anchor": "44a17ae7e05b03b0eb671680d905bac99d0e47c9",
+  "git_anchor": "HEAD",
   "cache_integrity": "VERIFIED",
   "nodes": {
     "main": {
@@ -12,6 +12,46 @@
       "dependencies": [],
       "fidelity_level": "Active",
       "sig_id": "SIG-main-44a17ae7"
+    },
+    "core/errors": {
+      "file_path": "@root/src/core/errors/index.ts",
+      "hash_reference": "@root/hashes/src/core/errors/index.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-core-errors-00000001"
+    },
+    "core/schema": {
+      "file_path": "@root/src/core/schema/index.ts",
+      "hash_reference": "@root/hashes/src/core/schema/index.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-core-schema-00000001"
+    },
+    "core/config": {
+      "file_path": "@root/src/core/config/index.ts",
+      "hash_reference": "@root/hashes/src/core/config/index.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": ["@root/hashes/src/core/schema/index.hash.md"],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-core-config-00000001"
+    },
+    "core/constants": {
+      "file_path": "@root/src/core/constants/index.ts",
+      "hash_reference": "@root/hashes/src/core/constants/index.hash.md",
+      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-core-constants-00000001"
+    },
+    "core/logging": {
+      "file_path": "@root/src/core/logging/index.ts",
+      "hash_reference": "@root/hashes/src/core/logging/index.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-core-logging-00000001"
     }
   }
 }
