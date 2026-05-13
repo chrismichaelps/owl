@@ -184,7 +184,7 @@
       "name": "Editor",
       "description": "7-stage mutation pipeline — diff generation, TLI execution, approval flow, rollback system.",
       "owner_team": "owl-editor",
-      "maturity": "EXPLORING",
+      "maturity": "BUILDING",
       "modules": [
         "@root/src/editor/pipeline/index.ts",
         "@root/src/editor/diff/index.ts",
@@ -212,8 +212,9 @@
         "org_alignment_score": 1.0,
         "teams_touching": 1,
         "optimal_teams": 1,
-        "last_assessed": "2026-05-12T15:00:00Z"
-      }
+        "last_assessed": "2026-05-13T02:00:00Z"
+      },
+      "last_updated": "2026-05-13T02:00:00Z"
     },
     {
       "id": "subsystem-commands",
