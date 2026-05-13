@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-05-12T21:00:00Z",
+  "last_updated": "2026-05-12T22:00:00Z",
   "subsystems": [
     {
       "id": "subsystem-core",
@@ -149,7 +149,7 @@
       "name": "Engine",
       "description": "Agent orchestration engine — main agent loop, context management, session memory, tool execution.",
       "owner_team": "owl-engine",
-      "maturity": "EXPLORING",
+      "maturity": "BUILDING",
       "modules": [
         "@root/src/engine/orchestrator/index.ts",
         "@root/src/engine/context/index.ts",
@@ -176,7 +176,7 @@
         "org_alignment_score": 1.0,
         "teams_touching": 1,
         "optimal_teams": 1,
-        "last_assessed": "2026-05-12T15:00:00Z"
+        "last_assessed": "2026-05-12T22:00:00Z"
       }
     },
     {
