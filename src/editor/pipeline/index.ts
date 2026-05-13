@@ -1,9 +1,9 @@
 /** @Owl.Editor.Pipeline - 7-stage Mutation pipeline: Analysis→Planning→Diff→Impact→Approval→TLI→Verification */
 import { Context, Effect, Layer } from "effect"
-import {
+import { GovernanceViolationError } from "../../core/errors/index.js"
+import type {
   MutationError,
   TLIError,
-  GovernanceViolationError,
   DiffGenerationError,
   RollbackError,
 } from "../../core/errors/index.js"
@@ -93,7 +93,7 @@ export const EditingPipelineLive = Layer.effect(
           }
         }
 
-        // ── Stage 2: Contract Planning ────────────────────────────────
+        // Stage 2: Contract Planning
         // Dry-run: validate all targets can find their old_strings.
         const prepared: TLIResult[] = []
         for (const target of input.targets) {
@@ -101,14 +101,18 @@ export const EditingPipelineLive = Layer.effect(
           prepared.push(result)
         }
 
-        // ── Stage 3: Diff Generation ──────────────────────────────────
+        // Stage 3: Diff Generation
         const diffs: FileDiff[] = []
         for (const p of prepared) {
-          const diff = yield* diffGen.generate(p.file, p.oldContent, p.newContent)
+          const diff = yield* diffGen.generate(
+            p.file,
+            p.oldContent,
+            p.newContent,
+          )
           diffs.push(diff)
         }
 
-        // ── Stage 4: Impact Analysis ──────────────────────────────────
+        // Stage 4: Impact Analysis
         // Collect Shard Split warnings; block if any trigger.
         const shardSplitWarnings: string[] = []
         for (const diff of diffs) {
@@ -129,7 +133,7 @@ export const EditingPipelineLive = Layer.effect(
           )
         }
 
-        // ── Stage 5: Approval ─────────────────────────────────────────
+        // Stage 5: Approval
         // For non-interactive use, autoApprove:true bypasses the prompt.
         // Production TUI approval is wired in from seam-tui-engine.
         const approved = input.autoApprove
@@ -145,7 +149,7 @@ export const EditingPipelineLive = Layer.effect(
           } satisfies PipelineResult
         }
 
-        // ── Stage 6: TLI Execution ────────────────────────────────────
+        // Stage 6: TLI Execution
         // Register rollback before each write so restore is always possible.
         const mutationResults: PipelineMutationResult[] = []
         for (let i = 0; i < prepared.length; i++) {
@@ -157,12 +161,10 @@ export const EditingPipelineLive = Layer.effect(
           yield* rollback.register(input.mutationId, p.file, p.oldContent)
           yield* tli.write(p.file, p.newContent, input.projectRoot).pipe(
             Effect.catchAll((err) =>
-              rollback
-                .rollback(input.mutationId, input.projectRoot)
-                .pipe(
-                  Effect.flatMap(() => Effect.fail(err)),
-                  Effect.catchAll(() => Effect.fail(err)),
-                ),
+              rollback.rollback(input.mutationId, input.projectRoot).pipe(
+                Effect.flatMap(() => Effect.fail(err)),
+                Effect.catchAll(() => Effect.fail(err)),
+              ),
             ),
           )
           mutationResults.push({
@@ -173,7 +175,7 @@ export const EditingPipelineLive = Layer.effect(
           })
         }
 
-        // ── Stage 7: Verification ─────────────────────────────────────
+        // Stage 7: Verification
         // Confirm written content matches expected newContent.
         for (const result of mutationResults) {
           const scope = yield* governance.validateTLIScope(

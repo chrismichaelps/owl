@@ -25,10 +25,7 @@ export function convertLeadingTabsToSpaces(
   str: string,
   spacesPerTab = 2,
 ): string {
-  return str.replace(
-    /^\t+/gm,
-    (tabs) => " ".repeat(tabs.length * spacesPerTab),
-  )
+  return str.replace(/^\t+/gm, (tabs) => " ".repeat(tabs.length * spacesPerTab))
 }
 
 export type MatchResult =
@@ -61,7 +58,7 @@ export function findExactMatch(
   if (occurrences > 1 && !replaceAll) {
     return {
       found: false,
-      reason: `String found ${occurrences} times — use replaceAll:true or narrow the search string`,
+      reason: `String found ${String(occurrences)} times — use replaceAll:true or narrow the search string`,
     }
   }
   return { found: true, count: occurrences }

@@ -78,7 +78,7 @@ export function formatUnifiedDiff(
   const header = `--- a/${filePath}\n+++ b/${filePath}`
   const body = hunks
     .map((h) => {
-      const range = `@@ -${h.oldStart},${h.oldLines} +${h.newStart},${h.newLines} @@`
+      const range = `@@ -${String(h.oldStart)},${String(h.oldLines)} +${String(h.newStart)},${String(h.newLines)} @@`
       return [range, ...h.lines].join("\n")
     })
     .join("\n")

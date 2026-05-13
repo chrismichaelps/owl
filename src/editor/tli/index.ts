@@ -69,7 +69,7 @@ export const TLIExecutorLive = Layer.effect(
             new MutationError({
               stage: "planning",
               file: target.file,
-              reason: `File exceeds maximum size (${EDITOR_CONSTANTS.MAX_FILE_SIZE_BYTES} bytes)`,
+              reason: `File exceeds maximum size (${String(EDITOR_CONSTANTS.MAX_FILE_SIZE_BYTES)} bytes)`,
             }),
           )
         }
