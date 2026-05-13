@@ -1,8 +1,9 @@
 ---
 State_ID: BigInt(0x0000000000000002)
-Git_SHA: 44a17ae7e05b03b0eb671680d905bac99d0e47c9
-Source_SHA256: b31cb8764054852270b7e5388e8403f3b248298a263670b5ee5cd95c0eba2764
+Git_SHA: ad091135d8d9083717a044f82e0307e4c2defb32
+Source_SHA256: 7d3876cbd574c9d43a9f56765e7b438ea6d9b212e5a3e21a5be9272a8f92ca74
 Grammar_Lock: "@root/hashes/grammar/typescript/typescript.hash.md"
+Fidelity: ACTIVE
 ---
 
 ## @Owl.Entry (src/main.ts)

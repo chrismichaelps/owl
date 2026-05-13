@@ -1,5 +1,7 @@
 ---
 State_ID: BigInt(0x000000000000001D)
+Git_SHA: 294e356d4d34312c38c61285f5cd02bc78814018
+Source_SHA256: b4a3a86eaf18868063675b1e1f6c590389c19da780ce7a1f49608f8c3a44168d
 Grammar_Lock: "@root/hashes/grammar/typescript/typescript.hash.md"
 Fidelity: DECLARED
 ---
