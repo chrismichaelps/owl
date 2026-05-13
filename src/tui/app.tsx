@@ -88,6 +88,10 @@ export const App: React.FC<AppProps> = ({
     dispatch({ type: "ADD_LOG", msg: `Mode → ${newMode}` })
   }, [])
 
+  const handleCommand = useCallback((_raw: string) => {
+    // Full CommandRegistry dispatch wired in Task 5
+  }, [])
+
   return (
     <Box flexDirection="column" height="100%">
       {/* Three-panel main area */}
@@ -110,6 +114,7 @@ export const App: React.FC<AppProps> = ({
         mode={mode}
         disabled={isProcessing}
         onSubmit={handleSubmit}
+        onCommand={handleCommand}
         onModeChange={handleModeChange}
       />
 

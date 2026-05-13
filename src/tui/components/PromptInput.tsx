@@ -1,7 +1,8 @@
-/** @Owl.TUI.Components.PromptInput - Bottom input: REPL-style prompt with mode prefix */
+/** @Owl.TUI.Components.PromptInput - REPL prompt with mode prefix, history nav, slash dispatch */
 import React, { memo, useState } from "react"
 import { Box, Text, useInput } from "ink"
 import type { Mode } from "../../core/schema/index.js"
+import { usePromptHistory } from "../hooks/usePromptHistory.js"
 
 const MODE_COLOR: Record<Mode, string> = {
   standard: "green",
@@ -11,56 +12,79 @@ const MODE_COLOR: Record<Mode, string> = {
   god: "red",
 }
 
+const SLASH_MODE_MAP: Partial<Record<string, Mode>> = {
+  "/task": "standard",
+  "/quick": "quick",
+  "/deep": "deep",
+  "/economy": "economy",
+  "/god": "god",
+}
+
+function detectSlashMode(value: string): Mode | null {
+  for (const [prefix, mode] of Object.entries(SLASH_MODE_MAP)) {
+    if (value === prefix || value.startsWith(prefix + " ")) {
+      return mode ?? null
+    }
+  }
+  return null
+}
+
 interface PromptInputProps {
   readonly mode: Mode
   readonly disabled: boolean
   readonly onSubmit: (prompt: string, mode: Mode) => void
+  readonly onCommand: (raw: string) => void
   readonly onModeChange: (mode: Mode) => void
 }
 
 export const PromptInput: React.FC<PromptInputProps> = memo(
-  ({ mode, disabled, onSubmit, onModeChange }) => {
+  ({ mode, disabled, onSubmit, onCommand, onModeChange }) => {
     const [value, setValue] = useState("")
+    const { push, up, down, reset } = usePromptHistory()
 
     useInput(
       (input, key) => {
         if (disabled) return
 
+        if (key.upArrow) {
+          const entry = up(value)
+          setValue(entry)
+          return
+        }
+
+        if (key.downArrow) {
+          const entry = down()
+          setValue(entry)
+          return
+        }
+
         if (key.return) {
           const trimmed = value.trim()
           if (trimmed.length === 0) return
 
-          // Slash command mode switching
-          if (trimmed === "/quick" || trimmed.startsWith("/quick ")) {
-            onModeChange("quick")
-            const rest = trimmed.slice("/quick".length).trim()
-            if (rest.length > 0) onSubmit(rest, "quick")
-            setValue("")
-            return
-          }
-          if (trimmed === "/deep" || trimmed.startsWith("/deep ")) {
-            onModeChange("deep")
-            const rest = trimmed.slice("/deep".length).trim()
-            if (rest.length > 0) onSubmit(rest, "deep")
-            setValue("")
-            return
-          }
-          if (trimmed === "/economy" || trimmed.startsWith("/economy ")) {
-            onModeChange("economy")
-            const rest = trimmed.slice("/economy".length).trim()
-            if (rest.length > 0) onSubmit(rest, "economy")
-            setValue("")
-            return
-          }
-          if (trimmed === "/task" || trimmed.startsWith("/task ")) {
-            onModeChange("standard")
-            const rest = trimmed.slice("/task".length).trim()
-            if (rest.length > 0) onSubmit(rest, "standard")
-            setValue("")
-            return
+          push(trimmed)
+          reset()
+
+          if (trimmed.startsWith("/")) {
+            // Detect mode-switching slash commands
+            const detected = detectSlashMode(trimmed)
+            if (detected !== null) {
+              onModeChange(detected)
+              // If there's a prompt after the slash command, submit it
+              const firstSpace = trimmed.indexOf(" ")
+              if (firstSpace !== -1) {
+                const rest = trimmed.slice(firstSpace + 1).trim()
+                if (rest.length > 0) {
+                  onSubmit(rest, detected)
+                }
+              }
+            } else {
+              onCommand(trimmed)
+            }
+          } else {
+            onSubmit(trimmed, mode)
           }
 
-          onSubmit(trimmed, mode)
           setValue("")
           return
         }
@@ -70,7 +94,6 @@ export const PromptInput: React.FC<PromptInputProps> = memo(
           return
         }
 
-        // Suppress non-printable / control sequences
         if (!key.ctrl && !key.meta && input.length > 0) {
           setValue((v) => v + input)
         }
@@ -78,10 +101,17 @@ export const PromptInput: React.FC<PromptInputProps> = memo(
       { isActive: !disabled },
     )
 
+    const detectedMode = value.length > 0 ? detectSlashMode(value) : null
+    const displayMode = detectedMode ?? mode
+
     return (
-      <Box borderStyle="single" borderColor={MODE_COLOR[mode]} paddingX={1}>
-        <Text color={MODE_COLOR[mode]} bold>
-          [{mode}]
+      <Box
+        borderStyle="single"
+        borderColor={MODE_COLOR[displayMode]}
+        paddingX={1}
+      >
+        <Text color={MODE_COLOR[displayMode]} bold>
+          [{displayMode}]
         </Text>
         <Text> ❯ </Text>
         <Text>
