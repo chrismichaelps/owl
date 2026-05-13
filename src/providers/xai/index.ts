@@ -2,7 +2,7 @@
 import OpenAI from "openai"
 import { Context, Effect, Layer } from "effect"
 import * as Stream from "effect/Stream"
-import { ProviderError, ProviderStreamError } from "../../core/errors/index.js"
+import { ProviderError } from "../../core/errors/index.js"
 import { OWL_CONFIG } from "../../core/config/index.js"
 import type { LLMProviderService, ProviderCapability } from "../types.js"
 import type {
@@ -43,11 +43,6 @@ export const XAIAdapterLive = Layer.effect(
       apiKey: config.xaiApiKey,
       baseURL: "https://api.x.ai/v1",
     })
-
-    /** @Owl.Providers.xAI.Retry - Exponential backoff retry schedule */
-    const retrySchedule = Schedule.exponential("1 seconds", 2).pipe(
-      Schedule.intersect(Schedule.recurs(RETRY_CONFIG.MAX_ATTEMPTS - 1)),
-    )
 
     const complete = (
       request: InferenceRequest,

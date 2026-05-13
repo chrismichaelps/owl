@@ -10,6 +10,7 @@
   "scripts": {
     "build": "tsc --project tsconfig.json",
     "dev": "tsx src/main.ts",
+    "owl": "tsx src/cli/index.ts",
     "start": "node dist/main.js",
     "test": "vitest run",
     "test:watch": "vitest",
