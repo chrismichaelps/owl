@@ -79,3 +79,23 @@ export const HTTP_STATUS = {
   GATEWAY_TIMEOUT: 504,
   ANTHROPIC_OVERLOADED: 529,
 } as const
+
+/** @Owl.Core.Constants.Editor - Mutation pipeline and TLI constraints */
+export const EDITOR_CONSTANTS = {
+  DIFF_CONTEXT_LINES: 3,
+  DIFF_TIMEOUT_MS: 5_000,
+  MAX_FILE_SIZE_BYTES: 1_073_741_824,
+  AMPERSAND_TOKEN: "<<:AMPERSAND_TOKEN:>>",
+  DOLLAR_TOKEN: "<<:DOLLAR_TOKEN:>>",
+} as const
+
+export const PIPELINE_STAGES = [
+  "analysis",
+  "planning",
+  "diff",
+  "impact",
+  "approval",
+  "tli",
+  "verification",
+] as const
+export type PipelineStage = (typeof PIPELINE_STAGES)[number]
