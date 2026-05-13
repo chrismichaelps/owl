@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-05-12T22:00:00Z",
+  "last_updated": "2026-05-13T18:24:00Z",
   "subsystems": [
     {
       "id": "subsystem-core",
@@ -221,7 +221,7 @@
       "name": "Commands",
       "description": "Slash command system — parser, registry, all 30+ commands dispatched to engine subsystems.",
       "owner_team": "owl-commands",
-      "maturity": "EXPLORING",
+      "maturity": "BUILDING",
       "modules": [
         "@root/src/commands/parser.ts",
         "@root/src/commands/registry.ts",
@@ -269,8 +269,9 @@
         "org_alignment_score": 1.0,
         "teams_touching": 1,
         "optimal_teams": 1,
-        "last_assessed": "2026-05-12T15:00:00Z"
-      }
+        "last_assessed": "2026-05-13T18:24:00Z"
+      },
+      "last_updated": "2026-05-13T18:24:00Z"
     },
     {
       "id": "subsystem-tui",
