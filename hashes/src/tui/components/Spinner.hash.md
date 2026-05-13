@@ -1,6 +1,6 @@
 ---
-State_ID: BigInt(0x0000000000000036)
-Git_SHA: ff25474c0fce993cc6657f6c7d440faedf06aac9
+State_ID: BigInt(0x000000000000002a)
+Git_SHA: bcdd88c9e2f1a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c
 Source_SHA256: 264ea86bd099f515bc937ccc190666da11c5ac62bfa35ded29db235c94ec9f66
 Grammar_Lock: "@root/hashes/grammar/react/react.hash.md"
 Fidelity: DECLARED
@@ -9,20 +9,19 @@ Fidelity: DECLARED
 ## @Owl.TUI.Components.Spinner (src/tui/components/Spinner.tsx)
 
 ### [Signatures]
-- `Spinner() => React.ReactElement`
+- `Spinner(props: SpinnerProps) => ReactElement`
 
 ### [Governance]
-- depth_score: 0.50 — MEDIUM (animation logic)
-- seam_capacity: INTERNAL (tui component)
-- leverage: LOW (visual feedback only)
-- SIG_ID: SIG-tui-comp-spinner-00000001
+- depth_score: 0.55 — SHALLOW (simple animation)
+- seam_capacity: INTERNAL (loading indicator)
+- leverage: LOW (visual feedback)
+- SIG_ID: SIG-tui-components-spinner-00000001
 
 ### [Linkage]
 - Grammar: `@root/hashes/grammar/react/react.hash.md`
-- Parent: `@root/hashes/src/tui/components/OutputPanel.hash.md`
-- Imports: []
+- Parent: `@root/hashes/src/tui/app.hash.md`
 
 ### [Architecture]
-- Animated Braille-based spinner for inference states
-- Uses React useEffect for frame-by-frame animation (80ms interval)
-- Zero-dependency implementation for maximum stability
+- ASCII spinner animation (◐ ◓ ◑ ◔ cycle)
+- Configurable label and color
+- 100ms animation interval

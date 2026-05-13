@@ -1,6 +1,6 @@
 ---
-State_ID: BigInt(0x0000000000000031)
-Git_SHA: ff25474c0fce993cc6657f6c7d440faedf06aac9
+State_ID: BigInt(0x0000000000000030)
+Git_SHA: af2fbe939e075d19e000ab3703eeeb07b1dbec3a
 Source_SHA256: 7c24fc54418d174410910e981f4a204920ce40d8ba77b7edd6a2e242e6b8545b
 Grammar_Lock: "@root/hashes/grammar/react/react.hash.md"
 Fidelity: DECLARED
@@ -9,20 +9,20 @@ Fidelity: DECLARED
 ## @Owl.TUI.App (src/tui/app.tsx)
 
 ### [Signatures]
-- `App(props: AppProps) => React.ReactElement`
+- `OwlApp(props: OwlAppProps) => ReactElement`
 
 ### [Governance]
-- depth_score: 0.70 — DEEP (composition of 3-panel layout + orchestrator wiring)
-- seam_capacity: BACKBONE (ui root)
-- leverage: HIGH (wires TUI state to Engine Orchestrator)
+- depth_score: 0.82 — DEEP (main layout shell)
+- seam_capacity: BACKBONE (connects all TUI components)
+- leverage: CRITICAL (renders entire UI)
 - SIG_ID: SIG-tui-app-00000001
 
 ### [Linkage]
 - Grammar: `@root/hashes/grammar/react/react.hash.md`
-- Parent: `@root/hashes/src/cli/index.hash.md`
-- Imports: `@root/src/tui/components/*.js`, `@root/src/tui/state.js`, `@root/src/engine/orchestrator/index.js`
+- Child: `@root/hashes/src/tui/state.hash.md`, `@root/hashes/src/tui/components/*.hash.md`
+- Uses: `@root/src/tui/state.js`, `@root/src/tui/components/*.js`
 
 ### [Architecture]
-- Root TUI component orchestrating the 3-panel layout
-- Manages mode state and task submission via Orchestrator
-- Handles async Effect execution within the React lifecycle
+- Root application shell using Ink + React
+- Manages OwlAppState via useReducer hook
+- Integrates all TUI panel components into unified layout
