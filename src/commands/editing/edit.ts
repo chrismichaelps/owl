@@ -1,0 +1,57 @@
+/** @Owl.Commands.Editing.Edit - Surgical string replacement via TLI: /edit <file> "<old>" "<new>" */
+import { Effect } from "effect"
+import { CommandParseError } from "../../core/errors/index.js"
+import type { EditingPipelineService } from "../../editor/pipeline/index.js"
+import type { CommandHandler, CommandResult } from "../types.js"
+
+export function makeEditCommand(
+  pipeline: EditingPipelineService,
+  projectRoot: string,
+): CommandHandler {
+  return {
+    name: "edit",
+    description:
+      'Apply a surgical string replacement: /edit <file> "<old>" "<new>"',
+    execute: (args): Effect.Effect<CommandResult, CommandParseError> => {
+      const [file, oldString, newString] = args
+      if (
+        file === undefined ||
+        oldString === undefined ||
+        newString === undefined
+      ) {
+        return Effect.fail(
+          new CommandParseError({
+            input: "/edit",
+            reason: 'Usage: /edit <file> "<old_string>" "<new_string>"',
+          }),
+        )
+      }
+      return pipeline
+        .execute({
+          mutationId: "edit-" + Date.now().toString(36),
+          targets: [{ file, oldString, newString }],
+          projectRoot,
+          autoApprove: true,
+        })
+        .pipe(
+          Effect.map((result) => ({
+            output:
+              result.results.length > 0
+                ? "Edited " +
+                  file +
+                  " — " +
+                  String(result.results[0]?.diff.linesAdded ?? 0) +
+                  " lines added, " +
+                  String(result.results[0]?.diff.linesRemoved ?? 0) +
+                  " removed"
+                : "No changes applied",
+          })),
+          Effect.catchAll((err) =>
+            Effect.fail(
+              new CommandParseError({ input: "/edit", reason: String(err) }),
+            ),
+          ),
+        )
+    },
+  }
+}
