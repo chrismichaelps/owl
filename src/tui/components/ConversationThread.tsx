@@ -7,7 +7,7 @@ interface ConversationThreadProps {
   readonly turns: readonly ConversationTurn[]
 }
 
-function TurnRow({
+const TurnRow = memo(function TurnRow({
   turn,
 }: {
   readonly turn: ConversationTurn
@@ -33,7 +33,7 @@ function TurnRow({
       </Box>
     </Box>
   )
-}
+})
 
 export const ConversationThread: React.FC<ConversationThreadProps> = memo(
   ({ turns }) => (
