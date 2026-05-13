@@ -24,9 +24,7 @@ describe("CommandRegistry", () => {
         yield* registry.register(stubHandler("foo"))
         const handler = yield* registry.lookup("foo")
         return handler.name
-      }).pipe(
-        Effect.catchAll(() => Effect.succeed("error")),
-      ),
+      }).pipe(Effect.catchAll(() => Effect.succeed("error"))),
     )
     expect(result).toBe("foo")
   })

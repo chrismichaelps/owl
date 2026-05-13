@@ -10,7 +10,9 @@ describe("parseCommand", () => {
   })
 
   it("parses a command with multiple args", async () => {
-    const result = await Effect.runPromise(parseCommand("/task write a function"))
+    const result = await Effect.runPromise(
+      parseCommand("/task write a function"),
+    )
     expect(result.name).toBe("task")
     expect(result.args).toEqual(["write", "a", "function"])
   })

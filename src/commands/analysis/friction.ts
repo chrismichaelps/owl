@@ -34,7 +34,10 @@ export function makeFrictionCommand(
           Effect.map((r) => ({ output: r.content })),
           Effect.catchAll((err) =>
             Effect.fail(
-              new CommandParseError({ input: "/friction", reason: String(err) }),
+              new CommandParseError({
+                input: "/friction",
+                reason: String(err),
+              }),
             ),
           ),
         )

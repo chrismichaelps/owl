@@ -14,7 +14,10 @@ export function makeGodCommand(
       const prompt = args.join(" ").trim()
       if (prompt.length === 0) {
         return Effect.fail(
-          new CommandParseError({ input: "/god", reason: "Prompt is required" }),
+          new CommandParseError({
+            input: "/god",
+            reason: "Prompt is required",
+          }),
         )
       }
       return orchestrator

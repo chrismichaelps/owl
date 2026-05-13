@@ -14,7 +14,10 @@ export function makeRawCommand(
       const prompt = args.join(" ").trim()
       if (prompt.length === 0) {
         return Effect.fail(
-          new CommandParseError({ input: "/raw", reason: "Prompt is required" }),
+          new CommandParseError({
+            input: "/raw",
+            reason: "Prompt is required",
+          }),
         )
       }
       return orchestrator

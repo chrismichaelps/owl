@@ -9,7 +9,8 @@ export function makeEconomyCommand(
 ): CommandHandler {
   return {
     name: "economy",
-    description: "Run a task in economy mode (2k token budget): /economy <prompt>",
+    description:
+      "Run a task in economy mode (2k token budget): /economy <prompt>",
     execute: (args): Effect.Effect<CommandResult, CommandParseError> => {
       const prompt = args.join(" ").trim()
       if (prompt.length === 0) {

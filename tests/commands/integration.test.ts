@@ -1,7 +1,10 @@
 /** @Owl.Tests.Commands.Integration - Parse-to-dispatch pipeline integration tests */
 import { describe, expect, it } from "vitest"
 import { Effect } from "effect"
-import { CommandRegistry, CommandRegistryLive } from "../../src/commands/registry.js"
+import {
+  CommandRegistry,
+  CommandRegistryLive,
+} from "../../src/commands/registry.js"
 import { parseCommand } from "../../src/commands/parser.js"
 import type { CommandHandler } from "../../src/commands/types.js"
 
@@ -21,11 +24,17 @@ describe("Commands integration: parse → dispatch", () => {
         const registry = yield* CommandRegistry
         yield* registry.register(echoHandler("task"))
         const parsed = yield* parseCommand("/task do the thing").pipe(
-          Effect.catchAll(() => Effect.succeed({ name: "", args: [] as readonly string[], raw: "" })),
+          Effect.catchAll(() =>
+            Effect.succeed({
+              name: "",
+              args: [] as readonly string[],
+              raw: "",
+            }),
+          ),
         )
-        const out = yield* registry.dispatch(parsed).pipe(
-          Effect.catchAll(() => Effect.succeed({ output: "error" })),
-        )
+        const out = yield* registry
+          .dispatch(parsed)
+          .pipe(Effect.catchAll(() => Effect.succeed({ output: "error" })))
         return out.output
       }),
     )
@@ -37,12 +46,20 @@ describe("Commands integration: parse → dispatch", () => {
       Effect.gen(function* () {
         const registry = yield* CommandRegistry
         yield* registry.register(echoHandler("edit"))
-        const parsed = yield* parseCommand('/edit "src/foo.ts" "old" "new"').pipe(
-          Effect.catchAll(() => Effect.succeed({ name: "", args: [] as readonly string[], raw: "" })),
+        const parsed = yield* parseCommand(
+          '/edit "src/foo.ts" "old" "new"',
+        ).pipe(
+          Effect.catchAll(() =>
+            Effect.succeed({
+              name: "",
+              args: [] as readonly string[],
+              raw: "",
+            }),
+          ),
         )
-        const out = yield* registry.dispatch(parsed).pipe(
-          Effect.catchAll(() => Effect.succeed({ output: "error" })),
-        )
+        const out = yield* registry
+          .dispatch(parsed)
+          .pipe(Effect.catchAll(() => Effect.succeed({ output: "error" })))
         return out.output
       }),
     )
@@ -54,7 +71,13 @@ describe("Commands integration: parse → dispatch", () => {
       Effect.gen(function* () {
         const registry = yield* CommandRegistry
         const parsed = yield* parseCommand("/unknown").pipe(
-          Effect.catchAll(() => Effect.succeed({ name: "unknown", args: [] as readonly string[], raw: "/unknown" })),
+          Effect.catchAll(() =>
+            Effect.succeed({
+              name: "unknown",
+              args: [] as readonly string[],
+              raw: "/unknown",
+            }),
+          ),
         )
         return yield* registry.dispatch(parsed)
       }).pipe(Effect.provide(CommandRegistryLive)),
