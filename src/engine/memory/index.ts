@@ -11,14 +11,14 @@ export interface SessionTurn {
 
 interface MemoryState {
   readonly sessionId: string
-  readonly turns: ReadonlyArray<SessionTurn>
+  readonly turns: readonly SessionTurn[]
 }
 
 export interface SessionMemoryService {
   readonly startSession: (sessionId?: string) => Effect.Effect<string>
   readonly getSessionId: () => Effect.Effect<string>
   readonly recordTurn: (turn: SessionTurn) => Effect.Effect<void>
-  readonly getTurns: () => Effect.Effect<ReadonlyArray<SessionTurn>>
+  readonly getTurns: () => Effect.Effect<readonly SessionTurn[]>
   readonly summarize: () => Effect.Effect<string>
 }
 
@@ -40,9 +40,7 @@ export const SessionMemoryLive = Layer.effect(
 
     const startSession = (sessionId?: string): Effect.Effect<string> => {
       const id = sessionId ?? generateSessionId()
-      return Ref.set(stateRef, { sessionId: id, turns: [] }).pipe(
-        Effect.as(id),
-      )
+      return Ref.set(stateRef, { sessionId: id, turns: [] }).pipe(Effect.as(id))
     }
 
     const getSessionId = (): Effect.Effect<string> =>
@@ -54,14 +52,16 @@ export const SessionMemoryLive = Layer.effect(
         turns: [...s.turns, turn],
       }))
 
-    const getTurns = (): Effect.Effect<ReadonlyArray<SessionTurn>> =>
+    const getTurns = (): Effect.Effect<readonly SessionTurn[]> =>
       Ref.get(stateRef).pipe(Effect.map((s) => s.turns))
 
     const summarize = (): Effect.Effect<string> =>
       Ref.get(stateRef).pipe(
         Effect.map((s) => {
           const totalTokens = s.turns.reduce((sum, t) => sum + t.tokensUsed, 0)
-          return `Session ${s.sessionId}: ${s.turns.length} turns, ${totalTokens} tokens used`
+          return `Session ${s.sessionId}: ${String(s.turns.length)} turns, ${String(
+            totalTokens,
+          )} tokens used`
         }),
       )
 

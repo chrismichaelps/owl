@@ -9,10 +9,10 @@ import type { Message } from "../../core/schema/index.js"
 
 export interface ContextManagerService {
   readonly addMessage: (msg: Message) => Effect.Effect<void>
-  readonly getMessages: () => Effect.Effect<ReadonlyArray<Message>>
+  readonly getMessages: () => Effect.Effect<readonly Message[]>
   readonly getWindowedMessages: (
     budget: number,
-  ) => Effect.Effect<ReadonlyArray<Message>>
+  ) => Effect.Effect<readonly Message[]>
   readonly setSystemPrompt: (prompt: string) => Effect.Effect<void>
   readonly getSystemPrompt: () => Effect.Effect<string | undefined>
   readonly estimateTokens: () => Effect.Effect<number>
@@ -27,18 +27,18 @@ export class ContextManager extends Context.Tag("ContextManager")<
 export const ContextManagerLive = Layer.effect(
   ContextManager,
   Effect.gen(function* () {
-    const messagesRef = yield* Ref.make<ReadonlyArray<Message>>([])
+    const messagesRef = yield* Ref.make<readonly Message[]>([])
     const systemPromptRef = yield* Ref.make<string | undefined>(undefined)
 
     const addMessage = (msg: Message): Effect.Effect<void> =>
       Ref.update(messagesRef, (msgs) => [...msgs, msg])
 
-    const getMessages = (): Effect.Effect<ReadonlyArray<Message>> =>
+    const getMessages = (): Effect.Effect<readonly Message[]> =>
       Ref.get(messagesRef)
 
     const getWindowedMessages = (
       budget: number,
-    ): Effect.Effect<ReadonlyArray<Message>> =>
+    ): Effect.Effect<readonly Message[]> =>
       Effect.gen(function* () {
         const msgs = yield* Ref.get(messagesRef)
         const currentTokens = estimateConversationTokens(msgs)

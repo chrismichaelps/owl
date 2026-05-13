@@ -1,10 +1,6 @@
 import { describe, it, expect } from "vitest"
-import { Effect, ConfigProvider, Exit, Cause } from "effect"
-import {
-  TokenBudget,
-  TokenBudgetLive,
-} from "../../src/tokens/budget/index.js"
-import { TokenBudgetExceededError } from "../../src/core/errors/index.js"
+import { Effect, Exit, Cause } from "effect"
+import { TokenBudget, TokenBudgetLive } from "../../src/tokens/budget/index.js"
 
 const testLayer = TokenBudgetLive
 

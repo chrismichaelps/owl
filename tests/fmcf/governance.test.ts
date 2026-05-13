@@ -6,13 +6,11 @@ import {
 } from "../../src/fmcf/governance/index.js"
 import { DEEPENING_FLOW } from "../../src/fmcf/roles/architect.js"
 
-const run = <A>(eff: Effect.Effect<A, never, GovernanceEngine>) =>
+const run = <A, E>(eff: Effect.Effect<A, E, GovernanceEngine>) =>
   Effect.runPromise(eff.pipe(Effect.provide(GovernanceEngineLive)))
 
 const runExit = <A, E>(eff: Effect.Effect<A, E, GovernanceEngine>) =>
-  Effect.runPromiseExit(
-    eff.pipe(Effect.provide(GovernanceEngineLive)) as Effect.Effect<A, E, never>,
-  )
+  Effect.runPromiseExit(eff.pipe(Effect.provide(GovernanceEngineLive)))
 
 describe("GovernanceEngine.validateImportInvariant", () => {
   const coreInvariants = [
@@ -115,11 +113,7 @@ describe("GovernanceEngine.validateRoleTransition", () => {
     const exit = await runExit(
       Effect.gen(function* () {
         const gov = yield* GovernanceEngine
-        yield* gov.validateRoleTransition(
-          "architect",
-          "shadow",
-          DEEPENING_FLOW,
-        )
+        yield* gov.validateRoleTransition("architect", "shadow", DEEPENING_FLOW)
       }),
     )
     expect(Exit.isFailure(exit)).toBe(true)
@@ -136,11 +130,7 @@ describe("GovernanceEngine.validateRoleTransition", () => {
     const exit = await runExit(
       Effect.gen(function* () {
         const gov = yield* GovernanceEngine
-        yield* gov.validateRoleTransition(
-          "shadow",
-          "architect",
-          DEEPENING_FLOW,
-        )
+        yield* gov.validateRoleTransition("shadow", "architect", DEEPENING_FLOW)
       }),
     )
     expect(Exit.isFailure(exit)).toBe(true)

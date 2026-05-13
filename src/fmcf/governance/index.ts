@@ -15,7 +15,7 @@ export interface GovernanceEngineService {
     file: string,
     changedLines: number,
     totalLines: number,
-  ) => Effect.Effect<"OK" | "SHARD_SPLIT", never>
+  ) => Effect.Effect<"OK" | "SHARD_SPLIT">
 
   readonly validateRoleTransition: (
     from: RoleId,
@@ -67,11 +67,9 @@ export const GovernanceEngineLive = Layer.succeed(GovernanceEngine, {
     _file: string,
     changedLines: number,
     totalLines: number,
-  ): Effect.Effect<"OK" | "SHARD_SPLIT", never> => {
+  ): Effect.Effect<"OK" | "SHARD_SPLIT"> => {
     const ratio = changedLines / totalLines
-    return Effect.succeed(
-      ratio >= SHARD_SPLIT_THRESHOLD ? "SHARD_SPLIT" : "OK",
-    )
+    return Effect.succeed(ratio >= SHARD_SPLIT_THRESHOLD ? "SHARD_SPLIT" : "OK")
   },
 
   validateRoleTransition: (

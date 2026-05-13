@@ -12,7 +12,7 @@ export interface PruneOptions {
 
 /** @Owl.Tokens.Pruning.Result - Output contract for pruning operations */
 export interface PruneResult {
-  readonly messages: ReadonlyArray<Message>
+  readonly messages: readonly Message[]
   readonly pruned: boolean
   readonly savedTokens: number
   readonly originalTokens: number
@@ -28,16 +28,16 @@ export function estimateMessageTokens(msg: Message): number {
 }
 
 export function estimateConversationTokens(
-  messages: ReadonlyArray<Message>,
+  messages: readonly Message[],
 ): number {
   return messages.reduce((sum, m) => sum + estimateMessageTokens(m), 0)
 }
 
 /** @Owl.Tokens.Pruning.Window - Markov invariant: V_{n+1} = f(V_n, V_{n-1}) */
 export function extractMarkovWindow(
-  messages: ReadonlyArray<Message>,
+  messages: readonly Message[],
   windowSize: number,
-): ReadonlyArray<Message> {
+): readonly Message[] {
   const pairsToKeep = windowSize * 2
   if (messages.length <= pairsToKeep) return messages
   return messages.slice(messages.length - pairsToKeep)
@@ -49,7 +49,7 @@ export function shouldPrune(currentTokens: number, budget: number): boolean {
 
 /** @Owl.Tokens.Pruning.Engine - Stateless transformation: prune then truncate to fit */
 export function pruneMessages(
-  messages: ReadonlyArray<Message>,
+  messages: readonly Message[],
   options: PruneOptions,
 ): Effect.Effect<PruneResult> {
   return Effect.sync(() => {
@@ -85,9 +85,9 @@ export function pruneMessages(
 }
 
 function truncateToFit(
-  messages: ReadonlyArray<Message>,
+  messages: readonly Message[],
   budget: number,
-): ReadonlyArray<Message> {
+): readonly Message[] {
   let remaining = budget
   const result: Message[] = []
 

@@ -32,14 +32,14 @@ export const TokenBudgetLive = Layer.effect(
   TokenBudget,
   Effect.gen(function* () {
     const stateRef = yield* Ref.make<BudgetState>({
-      sessionBudget: MODE_TOKEN_BUDGETS["standard"] ?? 32000,
+      sessionBudget: MODE_TOKEN_BUDGETS.standard ?? 32000,
       consumed: 0,
       mode: "standard",
     })
 
     const initSession = (mode: string, budget?: number): Effect.Effect<void> =>
       Ref.set(stateRef, {
-        sessionBudget: budget ?? (MODE_TOKEN_BUDGETS[mode] ?? 32000),
+        sessionBudget: budget ?? MODE_TOKEN_BUDGETS[mode] ?? 32000,
         consumed: 0,
         mode,
       })
@@ -64,9 +64,7 @@ export const TokenBudgetLive = Layer.effect(
       })
 
     const remaining = (): Effect.Effect<number> =>
-      Ref.get(stateRef).pipe(
-        Effect.map((s) => s.sessionBudget - s.consumed),
-      )
+      Ref.get(stateRef).pipe(Effect.map((s) => s.sessionBudget - s.consumed))
 
     const totalConsumed = (): Effect.Effect<number> =>
       Ref.get(stateRef).pipe(Effect.map((s) => s.consumed))

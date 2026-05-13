@@ -10,9 +10,9 @@ const run = <A>(eff: Effect.Effect<A, never, SessionMemory>) =>
   Effect.runPromise(eff.pipe(Effect.provide(SessionMemoryLive)))
 
 const makeTurn = (n: number): SessionTurn => ({
-  taskId: `task-${n}`,
-  prompt: `prompt ${n}`,
-  response: `response ${n}`,
+  taskId: `task-${String(n)}`,
+  prompt: `prompt ${String(n)}`,
+  response: `response ${String(n)}`,
   tokensUsed: 100 * n,
   timestamp: new Date().toISOString(),
 })
@@ -104,7 +104,7 @@ describe("SessionMemory.summarize", () => {
         return yield* mem.summarize()
       }),
     )
-    expect(summary).toContain("2")   // turn count
+    expect(summary).toContain("2") // turn count
     expect(summary).toContain("300") // total tokens
   })
 })

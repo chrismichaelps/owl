@@ -1,9 +1,6 @@
 import { describe, it, expect } from "vitest"
 import { Effect } from "effect"
-import {
-  SeamAnalyzer,
-  SeamAnalyzerLive,
-} from "../../src/fmcf/seam/index.js"
+import { SeamAnalyzer, SeamAnalyzerLive } from "../../src/fmcf/seam/index.js"
 import type { SeamMetrics } from "../../src/fmcf/seam/index.js"
 
 const run = <A>(eff: Effect.Effect<A, never, SeamAnalyzer>) =>

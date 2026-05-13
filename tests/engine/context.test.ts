@@ -26,8 +26,16 @@ describe("ContextManager.addMessage / getMessages", () => {
     const msgs = await run(
       Effect.gen(function* () {
         const cm = yield* ContextManager
-        const msg1: Message = { role: "user", content: "hello", timestamp: now() }
-        const msg2: Message = { role: "assistant", content: "hi there", timestamp: now() }
+        const msg1: Message = {
+          role: "user",
+          content: "hello",
+          timestamp: now(),
+        }
+        const msg2: Message = {
+          role: "assistant",
+          content: "hi there",
+          timestamp: now(),
+        }
         yield* cm.addMessage(msg1)
         yield* cm.addMessage(msg2)
         return yield* cm.getMessages()
@@ -55,7 +63,11 @@ describe("ContextManager.estimateTokens", () => {
       Effect.gen(function* () {
         const cm = yield* ContextManager
         // "hello world" = 11 chars → round(11/4)=3 + 4 overhead = 7
-        yield* cm.addMessage({ role: "user", content: "hello world", timestamp: now() })
+        yield* cm.addMessage({
+          role: "user",
+          content: "hello world",
+          timestamp: now(),
+        })
         return yield* cm.estimateTokens()
       }),
     )
@@ -69,7 +81,11 @@ describe("ContextManager.getWindowedMessages", () => {
       Effect.gen(function* () {
         const cm = yield* ContextManager
         yield* cm.addMessage({ role: "user", content: "hi", timestamp: now() })
-        yield* cm.addMessage({ role: "assistant", content: "hello", timestamp: now() })
+        yield* cm.addMessage({
+          role: "assistant",
+          content: "hello",
+          timestamp: now(),
+        })
         return yield* cm.getWindowedMessages(10_000)
       }),
     )
@@ -125,7 +141,11 @@ describe("ContextManager.clear", () => {
       Effect.gen(function* () {
         const cm = yield* ContextManager
         yield* cm.addMessage({ role: "user", content: "hi", timestamp: now() })
-        yield* cm.addMessage({ role: "assistant", content: "hello", timestamp: now() })
+        yield* cm.addMessage({
+          role: "assistant",
+          content: "hello",
+          timestamp: now(),
+        })
         yield* cm.clear()
         const msgs = yield* cm.getMessages()
         return msgs.length

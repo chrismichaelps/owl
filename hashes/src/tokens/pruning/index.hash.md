@@ -1,5 +1,5 @@
 ---
-State_ID: BigInt(0x000000000000001C)
+State_ID: BigInt(0x000000000000001D)
 Grammar_Lock: "@root/hashes/grammar/typescript/typescript.hash.md"
 Fidelity: DECLARED
 ---

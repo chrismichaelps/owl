@@ -60,9 +60,7 @@ const testLayer = OrchestratorLive.pipe(
 )
 
 const run = <A, E>(eff: Effect.Effect<A, E, Orchestrator>) =>
-  Effect.runPromise(
-    eff.pipe(Effect.provide(testLayer)) as Effect.Effect<A, never>,
-  )
+  Effect.runPromise(eff.pipe(Effect.provide(testLayer)) as Effect.Effect<A>)
 
 describe("Orchestrator.run", () => {
   it("returns an InferenceResponse for a valid task", async () => {

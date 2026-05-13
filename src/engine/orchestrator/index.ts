@@ -10,10 +10,7 @@ import type {
   InferenceResponse,
   Message,
 } from "../../core/schema/index.js"
-import {
-  MODE_TOKEN_BUDGETS,
-  TOKEN_LIMITS,
-} from "../../core/constants/index.js"
+import { MODE_TOKEN_BUDGETS, TOKEN_LIMITS } from "../../core/constants/index.js"
 import { estimateConversationTokens } from "../../tokens/pruning/index.js"
 
 export interface OrchestratorService {
@@ -55,9 +52,7 @@ export const OrchestratorLive = Layer.effect(
         yield* ctx.addMessage(userMsg)
 
         const budget =
-          MODE_TOKEN_BUDGETS[task.mode] ??
-          MODE_TOKEN_BUDGETS["standard"] ??
-          32_000
+          MODE_TOKEN_BUDGETS[task.mode] ?? MODE_TOKEN_BUDGETS.standard ?? 32_000
         const windowedMsgs = yield* ctx.getWindowedMessages(budget)
         const estimatedTokens = estimateConversationTokens(windowedMsgs)
         const systemPrompt = yield* ctx.getSystemPrompt()
@@ -92,8 +87,7 @@ export const OrchestratorLive = Layer.effect(
           taskId: task.id,
           prompt: task.prompt,
           response: response.content,
-          tokensUsed:
-            response.usage.inputTokens + response.usage.outputTokens,
+          tokensUsed: response.usage.inputTokens + response.usage.outputTokens,
           timestamp: new Date().toISOString(),
         })
 

@@ -22,7 +22,7 @@ describe("Second-Order Markov pruning", () => {
   })
 
   it("extractMarkovWindow keeps last 2 exchange pairs", () => {
-    const messages: ReadonlyArray<Message> = [
+    const messages: readonly Message[] = [
       makeMsg("user", "msg1"),
       makeMsg("assistant", "resp1"),
       makeMsg("user", "msg2"),
@@ -37,10 +37,16 @@ describe("Second-Order Markov pruning", () => {
   })
 
   it("pruneMessages reduces token count when over budget", async () => {
-    const messages: ReadonlyArray<Message> = Array.from({ length: 20 }, (_, i) =>
+    const messages: readonly Message[] = Array.from({ length: 20 }, (_, i) =>
       i % 2 === 0
-        ? makeMsg("user", `This is a long user message number ${i} with lots of words to fill tokens`)
-        : makeMsg("assistant", `This is a long assistant response number ${i} with lots of words to fill tokens`),
+        ? makeMsg(
+            "user",
+            `This is a long user message number ${String(i)} with lots of words to fill tokens`,
+          )
+        : makeMsg(
+            "assistant",
+            `This is a long assistant response number ${String(i)} with lots of words to fill tokens`,
+          ),
     )
 
     const result = await Effect.runPromise(
@@ -53,7 +59,7 @@ describe("Second-Order Markov pruning", () => {
   })
 
   it("pruneMessages leaves messages unchanged when under budget", async () => {
-    const messages: ReadonlyArray<Message> = [
+    const messages: readonly Message[] = [
       makeMsg("user", "hi"),
       makeMsg("assistant", "hello"),
     ]
