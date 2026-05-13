@@ -58,6 +58,19 @@ export const App: React.FC<AppProps> = ({
         dispatch({ type: "SET_ROLE", role: "Forensic Guardian" })
         dispatch({ type: "ADD_LOG", msg: "✓ Registry sync complete" })
         dispatch({ type: "SET_RESPONSE", response })
+        dispatch({
+          type: "ADD_TURN",
+          turn: {
+            id: taskId,
+            prompt,
+            response: response.content,
+            provider: response.provider,
+            latencyMs: response.latencyMs,
+            inputTokens: response.usage.inputTokens,
+            outputTokens: response.usage.outputTokens,
+            timestamp: new Date().toISOString(),
+          },
+        })
       })
 
       void runtime.runPromise(effect).catch((err: unknown) => {
@@ -86,7 +99,7 @@ export const App: React.FC<AppProps> = ({
         />
         <OutputPanel
           status={state.status}
-          response={state.response}
+          turns={state.turns}
           error={state.error}
         />
         <MetaPanel state={state} />

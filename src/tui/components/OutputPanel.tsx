@@ -1,18 +1,18 @@
-/** @Owl.TUI.Components.OutputPanel - Center panel: LLM response + spinner */
+/** @Owl.TUI.Components.OutputPanel - Center panel: conversation thread + active spinner */
 import React, { memo } from "react"
 import { Box, Text } from "ink"
-import type { ResponseSnapshot } from "../state.js"
-import type { AgentStatus } from "../state.js"
+import type { AgentStatus, ConversationTurn } from "../state.js"
+import { ConversationThread } from "./ConversationThread.js"
 import { Spinner } from "./Spinner.js"
 
 interface OutputPanelProps {
   readonly status: AgentStatus
-  readonly response: ResponseSnapshot | null
+  readonly turns: readonly ConversationTurn[]
   readonly error: string | null
 }
 
 export const OutputPanel: React.FC<OutputPanelProps> = memo(
-  ({ status, response, error }) => (
+  ({ status, turns, error }) => (
     <Box
       flexDirection="column"
       borderStyle="round"
@@ -20,12 +20,9 @@ export const OutputPanel: React.FC<OutputPanelProps> = memo(
       paddingX={1}
       flexGrow={1}
     >
-      {/* Header */}
       <Text bold color="greenBright">
         ◉ Response
       </Text>
-
-      {/* Content */}
       <Box flexDirection="column" flexGrow={1} marginTop={1}>
         {error !== null ? (
           <Text color="red">{error}</Text>
@@ -33,25 +30,10 @@ export const OutputPanel: React.FC<OutputPanelProps> = memo(
           <Spinner label="Routing to provider…" color="yellow" />
         ) : status === "inferring" ? (
           <Spinner label="Inferring…" color="cyan" />
-        ) : response !== null ? (
-          <Text>{response.content}</Text>
         ) : (
-          <Text color="gray" dimColor>
-            Send a prompt to get started. Type your task below.
-          </Text>
+          <ConversationThread turns={turns} />
         )}
       </Box>
-
-      {/* Model tag when complete */}
-      {response !== null && status === "complete" ? (
-        <Box marginTop={1}>
-          <Text color="gray" dimColor>
-            {response.model} · {String(response.latencyMs)}ms ·{" "}
-            {String(response.usage.inputTokens)}↑{" "}
-            {String(response.usage.outputTokens)}↓
-          </Text>
-        </Box>
-      ) : null}
     </Box>
   ),
 )
