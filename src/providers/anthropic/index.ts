@@ -117,8 +117,11 @@ export const AnthropicAdapterLive = Layer.effect(
   AnthropicAdapter,
   Effect.gen(function* () {
     const config = yield* OWL_CONFIG
+
+    /** @Owl.Providers.Anthropic.Client - Anthropic SDK client */
     const client = new Anthropic({ apiKey: config.anthropicApiKey })
 
+    /** @Owl.Providers.Anthropic.Retry - Exponential backoff retry schedule */
     const retrySchedule = Schedule.exponential("1 seconds", 2).pipe(
       Schedule.intersect(Schedule.recurs(RETRY_CONFIG.MAX_ATTEMPTS - 1)),
     )

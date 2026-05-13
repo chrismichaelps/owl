@@ -7,6 +7,7 @@ import {
 } from "../../tokens/pruning/index.js"
 import type { Message } from "../../core/schema/index.js"
 
+/** @Owl.Engine.Context.Service - Context window management interface */
 export interface ContextManagerService {
   readonly addMessage: (msg: Message) => Effect.Effect<void>
   readonly getMessages: () => Effect.Effect<readonly Message[]>
@@ -19,11 +20,13 @@ export interface ContextManagerService {
   readonly clear: () => Effect.Effect<void>
 }
 
+/** @Owl.Engine.Context.Tag - Service tag for context management */
 export class ContextManager extends Context.Tag("ContextManager")<
   ContextManager,
   ContextManagerService
 >() {}
 
+/** @Owl.Engine.Context.Live - Ref-backed pruning-aware context storage */
 export const ContextManagerLive = Layer.effect(
   ContextManager,
   Effect.gen(function* () {

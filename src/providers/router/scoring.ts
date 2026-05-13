@@ -9,6 +9,7 @@ const REASONING_SCORES: Record<string, number> = {
   low: 0.3,
 }
 
+/** @Owl.Providers.Router.Scoring.Demand - Mode-based reasoning requirements */
 const MODE_REASONING_DEMAND: Record<string, number> = {
   god: 1.0,
   deep: 0.9,

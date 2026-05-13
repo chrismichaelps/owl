@@ -13,6 +13,7 @@ import type {
 import { MODE_TOKEN_BUDGETS, TOKEN_LIMITS } from "../../core/constants/index.js"
 import { estimateConversationTokens } from "../../tokens/pruning/index.js"
 
+/** @Owl.Engine.Orchestrator.Service - Main agent loop interface */
 export interface OrchestratorService {
   readonly run: (
     task: Task,
@@ -23,11 +24,13 @@ export interface OrchestratorService {
   readonly getSessionSummary: () => Effect.Effect<string>
 }
 
+/** @Owl.Engine.Orchestrator.Tag - Service tag for orchestration */
 export class Orchestrator extends Context.Tag("Orchestrator")<
   Orchestrator,
   OrchestratorService
 >() {}
 
+/** @Owl.Engine.Orchestrator.Live - Production layer composing context, memory, router */
 export const OrchestratorLive = Layer.effect(
   Orchestrator,
   Effect.gen(function* () {

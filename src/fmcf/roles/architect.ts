@@ -2,14 +2,17 @@
 import { Context, Effect, Layer, Ref } from "effect"
 import { GovernanceViolationError } from "../../core/errors/index.js"
 
+/** @Owl.FMCF.Roles.Architect.Id - Valid role identifiers */
 export type RoleId = "architect" | "dna-engineer" | "shadow" | "guardian"
 
+/** @Owl.FMCF.Roles.Architect.Definition - Role contract structure */
 export interface RoleDefinition {
   readonly id: RoleId
   readonly responsibilities: readonly string[]
   readonly prohibited: readonly string[]
 }
 
+/** @Owl.FMCF.Roles.Architect.Flow - Sequential role progression */
 export const DEEPENING_FLOW: readonly RoleId[] = [
   "architect",
   "dna-engineer",
@@ -17,6 +20,7 @@ export const DEEPENING_FLOW: readonly RoleId[] = [
   "guardian",
 ]
 
+/** @Owl.FMCF.Roles.Architect.Role - Architect responsibilities and prohibitions */
 export const ARCHITECT_ROLE: RoleDefinition = {
   id: "architect",
   responsibilities: [
@@ -29,6 +33,7 @@ export const ARCHITECT_ROLE: RoleDefinition = {
   prohibited: ["write-code", "write-contracts", "edit-registry"],
 }
 
+/** @Owl.FMCF.Roles.Architect.Service - Role context management interface */
 export interface RoleContextService {
   readonly current: () => Effect.Effect<RoleId>
   readonly transition: (
@@ -37,11 +42,13 @@ export interface RoleContextService {
   readonly reset: () => Effect.Effect<void>
 }
 
+/** @Owl.FMCF.Roles.Architect.Tag - Service tag for role context */
 export class RoleContext extends Context.Tag("RoleContext")<
   RoleContext,
   RoleContextService
 >() {}
 
+/** @Owl.FMCF.Roles.Architect.Live - Ref-backed role state management */
 export const RoleContextLive = Layer.effect(
   RoleContext,
   Effect.gen(function* () {

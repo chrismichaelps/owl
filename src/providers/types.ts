@@ -58,6 +58,7 @@ export const StreamChunkSchema = Schema.Struct({
 })
 export type StreamChunk = Schema.Schema.Type<typeof StreamChunkSchema>
 
+/** @Owl.Providers.Types.Error - Union of all provider error types */
 export type AnyProviderError =
   | ProviderError
   | ProviderStreamError
@@ -86,12 +87,12 @@ export interface LLMProviderService {
   readonly healthCheck: () => Effect.Effect<boolean, ProviderError>
 }
 
+/** @Owl.Providers.Types.Tag - Service tag for LLM providers */
 export class LLMProvider extends Context.Tag("LLMProvider")<
   LLMProvider,
   LLMProviderService
 >() {}
 
-/** @Owl.Providers.Types.Decision - Final routing outcome and metadata */
 export const RoutingDecisionSchema = Schema.Struct({
   selectedProvider: Schema.String,
   selectedModel: Schema.String,

@@ -28,6 +28,7 @@ export class OwlLogger extends Context.Tag("OwlLogger")<
   OwlLoggerService
 >() {}
 
+/** @Owl.Core.Logging.Factory - Logger implementation factory */
 const makeLogger = (): OwlLoggerService => ({
   debug: (msg, ctx) =>
     Effect.logDebug(msg).pipe(
@@ -47,6 +48,7 @@ const makeLogger = (): OwlLoggerService => ({
     ),
 })
 
+/** @Owl.Core.Logging.Live - Production logger layer */
 export const OwlLoggerLive = Layer.succeed(OwlLogger, makeLogger())
 
 /** @Owl.Core.Logging.Context - Contextual logging middleware */

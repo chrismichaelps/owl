@@ -55,37 +55,10 @@ export const OpenAIAdapterLive = Layer.effect(
   Effect.gen(function* () {
     const config = yield* OWL_CONFIG
 
-    if (!config.openaiApiKey) {
-      return {
-        id: "openai",
-        capabilities: OPENAI_CAPABILITIES,
-        complete: () =>
-          Effect.fail(
-            new ProviderError({
-              provider: "openai",
-              message: "OPENAI_API_KEY not configured",
-            }),
-          ),
-        stream: () =>
-          Stream.fail(
-            new ProviderStreamError({
-              provider: "openai",
-              cause: "OPENAI_API_KEY not configured",
-            }),
-          ),
-        countTokens: (_text, _model) => Effect.succeed(0),
-        healthCheck: () =>
-          Effect.fail(
-            new ProviderError({
-              provider: "openai",
-              message: "not configured",
-            }),
-          ),
-      } satisfies LLMProviderService
-    }
-
+    /** @Owl.Providers.OpenAI.Client - OpenAI SDK client */
     const client = new OpenAI({ apiKey: config.openaiApiKey })
 
+    /** @Owl.Providers.OpenAI.Retry - Exponential backoff retry schedule */
     const retrySchedule = Schedule.exponential("1 seconds", 2).pipe(
       Schedule.intersect(Schedule.recurs(RETRY_CONFIG.MAX_ATTEMPTS - 1)),
     )

@@ -38,36 +38,16 @@ export const XAIAdapterLive = Layer.effect(
   Effect.gen(function* () {
     const config = yield* OWL_CONFIG
 
-    if (!config.xaiApiKey) {
-      return {
-        id: "xai",
-        capabilities: XAI_CAPABILITIES,
-        complete: () =>
-          Effect.fail(
-            new ProviderError({
-              provider: "xai",
-              message: "XAI_API_KEY not configured",
-            }),
-          ),
-        stream: () =>
-          Stream.fail(
-            new ProviderStreamError({
-              provider: "xai",
-              cause: "not configured",
-            }),
-          ),
-        countTokens: () => Effect.succeed(0),
-        healthCheck: () =>
-          Effect.fail(
-            new ProviderError({ provider: "xai", message: "not configured" }),
-          ),
-      } satisfies LLMProviderService
-    }
-
+    /** @Owl.Providers.xAI.Client - OpenAI-compatible xAI client */
     const client = new OpenAI({
       apiKey: config.xaiApiKey,
       baseURL: "https://api.x.ai/v1",
     })
+
+    /** @Owl.Providers.xAI.Retry - Exponential backoff retry schedule */
+    const retrySchedule = Schedule.exponential("1 seconds", 2).pipe(
+      Schedule.intersect(Schedule.recurs(RETRY_CONFIG.MAX_ATTEMPTS - 1)),
+    )
 
     const complete = (
       request: InferenceRequest,

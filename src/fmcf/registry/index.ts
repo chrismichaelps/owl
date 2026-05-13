@@ -5,6 +5,7 @@ import { NodeFileSystem } from "@effect/platform-node"
 import { HashRegistryError } from "../../core/errors/index.js"
 import path from "node:path"
 
+/** @Owl.FMCF.Registry.Subsystem - Subsystem entry from registry */
 export interface SubsystemEntry {
   readonly id: string
   readonly name: string
@@ -12,6 +13,7 @@ export interface SubsystemEntry {
   readonly invariants: readonly string[]
 }
 
+/** @Owl.FMCF.Registry.Seam - Seam entry from registry */
 export interface SeamEntry {
   readonly id: string
   readonly name: string
@@ -19,6 +21,7 @@ export interface SeamEntry {
   readonly capacity: string
 }
 
+/** @Owl.FMCF.Registry.Service - Hash Registry reader interface */
 export interface HashRegistryService {
   readonly readSubsystems: () => Effect.Effect<
     readonly SubsystemEntry[],
@@ -33,11 +36,13 @@ export interface HashRegistryService {
   ) => Effect.Effect<boolean, HashRegistryError>
 }
 
+/** @Owl.FMCF.Registry.Tag - Service tag for hash registry */
 export class HashRegistry extends Context.Tag("HashRegistry")<
   HashRegistry,
   HashRegistryService
 >() {}
 
+/** @Owl.FMCF.Registry.Reader - JSON file reader with error handling */
 const readJson = <T>(
   fs: FileSystem.FileSystem,
   filePath: string,
@@ -62,6 +67,7 @@ const readJson = <T>(
     ),
   )
 
+/** @Owl.FMCF.Registry.Live - File-system-backed registry reader */
 export const HashRegistryLive = (registryRoot: string) =>
   Layer.effect(
     HashRegistry,

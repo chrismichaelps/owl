@@ -6,4 +6,5 @@ const main = Effect.sync(() => {
   console.log("Owl — AI coding agent")
 })
 
+/** @Owl.Entry.Run - Synchronous effect execution */
 Effect.runSync(main)

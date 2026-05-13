@@ -36,6 +36,7 @@ export class ProviderRouter extends Context.Tag("ProviderRouter")<
   ProviderRouterService
 >() {}
 
+/** @Owl.Providers.Router.Register - Provider registration helper */
 export const registerProvider = (
   router: ProviderRouterService,
   provider: LLMProviderService,
@@ -50,6 +51,7 @@ export const registerProvider = (
 export const ProviderRouterLive = Layer.effect(
   ProviderRouter,
   Effect.gen(function* () {
+    /** @Owl.Providers.Router.Registry - In-memory provider registry */
     const registryRef = yield* Ref.make<Map<string, LLMProviderService>>(
       new Map(),
     )

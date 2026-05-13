@@ -48,6 +48,8 @@ export const OllamaAdapterLive = Layer.effect(
   OllamaAdapter,
   Effect.gen(function* () {
     const config = yield* OWL_CONFIG
+
+    /** @Owl.Providers.Ollama.BaseUrl - Local Ollama server endpoint */
     const baseUrl = config.ollamaBaseUrl
 
     const complete = (

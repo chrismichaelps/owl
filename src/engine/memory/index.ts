@@ -1,6 +1,7 @@
 /** @Owl.Engine.Memory - In-memory session turn history with session lifecycle management */
 import { Context, Effect, Layer, Ref } from "effect"
 
+/** @Owl.Engine.Memory.Turn - Immutable session turn record */
 export interface SessionTurn {
   readonly taskId: string
   readonly prompt: string
@@ -9,11 +10,13 @@ export interface SessionTurn {
   readonly timestamp: string
 }
 
+/** @Owl.Engine.Memory.State - Internal mutable session state */
 interface MemoryState {
   readonly sessionId: string
   readonly turns: readonly SessionTurn[]
 }
 
+/** @Owl.Engine.Memory.Service - Session memory interface */
 export interface SessionMemoryService {
   readonly startSession: (sessionId?: string) => Effect.Effect<string>
   readonly getSessionId: () => Effect.Effect<string>
@@ -22,14 +25,17 @@ export interface SessionMemoryService {
   readonly summarize: () => Effect.Effect<string>
 }
 
+/** @Owl.Engine.Memory.Tag - Service tag for session memory */
 export class SessionMemory extends Context.Tag("SessionMemory")<
   SessionMemory,
   SessionMemoryService
 >() {}
 
+/** @Owl.Engine.Memory.IdGenerator - Session ID factory */
 const generateSessionId = (): string =>
   `sess-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
 
+/** @Owl.Engine.Memory.Live - Ref-backed in-memory session storage */
 export const SessionMemoryLive = Layer.effect(
   SessionMemory,
   Effect.gen(function* () {

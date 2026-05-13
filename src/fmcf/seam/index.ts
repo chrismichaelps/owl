@@ -6,6 +6,7 @@ import {
 } from "../../core/constants/index.js"
 import type { SeamCapacity, DepthStatus } from "../../core/schema/index.js"
 
+/** @Owl.FMCF.Seam.Metrics - DEPTH_SCORE computation inputs */
 export interface SeamMetrics {
   readonly leverage: number
   readonly locality: number
@@ -13,6 +14,7 @@ export interface SeamMetrics {
   readonly complexityTax: number
 }
 
+/** @Owl.FMCF.Seam.Analysis - Complete seam assessment result */
 export interface SeamAnalysis {
   readonly seamId: string
   readonly depthScore: number
@@ -21,6 +23,7 @@ export interface SeamAnalysis {
   readonly collapseEligible: boolean
 }
 
+/** @Owl.FMCF.Seam.Service - Seam analyzer interface */
 export interface SeamAnalyzerService {
   readonly computeDepthScore: (metrics: SeamMetrics) => number
   readonly classifyDepthStatus: (score: number) => DepthStatus
@@ -36,16 +39,19 @@ export interface SeamAnalyzerService {
   ) => boolean
 }
 
+/** @Owl.FMCF.Seam.Tag - Service tag for seam analysis */
 export class SeamAnalyzer extends Context.Tag("SeamAnalyzer")<
   SeamAnalyzer,
   SeamAnalyzerService
 >() {}
 
+/** @Owl.FMCF.Seam.Score - DEPTH_SCORE computation helper */
 const computeScore = (m: SeamMetrics): number =>
   Math.round(
     ((m.leverage + m.locality + m.testability) / 3 - m.complexityTax) * 100,
   ) / 100
 
+/** @Owl.FMCF.Seam.Classifier - Score to depth status mapper */
 const toDepthStatus = (score: number): DepthStatus =>
   score >= DEPTH_THRESHOLDS.DEEP
     ? "DEEP"
@@ -53,9 +59,11 @@ const toDepthStatus = (score: number): DepthStatus =>
       ? "SHALLOW"
       : "MEDIUM"
 
+/** @Owl.FMCF.Seam.Age - Months since date helper */
 const monthsSince = (d: Date): number =>
   (Date.now() - d.getTime()) / (1000 * 60 * 60 * 24 * 30)
 
+/** @Owl.FMCF.Seam.Live - Stateless seam analysis implementation */
 export const SeamAnalyzerLive = Layer.succeed(SeamAnalyzer, {
   computeDepthScore: (metrics: SeamMetrics): number => computeScore(metrics),
 

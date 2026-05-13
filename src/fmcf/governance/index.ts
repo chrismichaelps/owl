@@ -4,6 +4,7 @@ import { GovernanceViolationError } from "../../core/errors/index.js"
 import { SHARD_SPLIT_THRESHOLD } from "../../core/constants/index.js"
 import type { RoleId } from "../roles/architect.js"
 
+/** @Owl.FMCF.Governance.Service - Constitutional enforcement interface */
 export interface GovernanceEngineService {
   readonly validateImportInvariant: (
     subsystemId: string,
@@ -24,11 +25,13 @@ export interface GovernanceEngineService {
   ) => Effect.Effect<void, GovernanceViolationError>
 }
 
+/** @Owl.FMCF.Governance.Tag - Service tag for constitutional enforcement */
 export class GovernanceEngine extends Context.Tag("GovernanceEngine")<
   GovernanceEngine,
   GovernanceEngineService
 >() {}
 
+/** @Owl.FMCF.Governance.Validation - Helper for invariant violation detection */
 const violatesInvariant = (
   invariants: readonly string[],
   importedFrom: string,
