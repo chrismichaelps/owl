@@ -118,7 +118,7 @@ export const CommandRegistryLive = Layer.effect(
 /** @Owl.Commands.Registry.makeCommandRegistryLive - Full composition root: yields all services, registers all handlers */
 export const makeCommandRegistryLive = (
   projectRoot: string,
-): Layer.Layer<CommandRegistry> =>
+): Layer.Layer<CommandRegistry, never, Orchestrator | ContextManager | SessionMemory | RoleContext | RollbackSystem | EditingPipeline> =>
   Layer.effect(
     CommandRegistry,
     Effect.gen(function* () {
