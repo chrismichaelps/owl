@@ -99,3 +99,10 @@ export const PIPELINE_STAGES = [
   "verification",
 ] as const
 export type PipelineStage = (typeof PIPELINE_STAGES)[number]
+
+/** @Owl.Core.Constants.Commands - Command parsing and dispatch constraints */
+export const COMMAND_CONSTANTS = {
+  ID_PREFIX: "cmd",
+  MIN_PROMPT_LENGTH: 1,
+  MAX_PROMPT_LENGTH: 10_000,
+} as const
