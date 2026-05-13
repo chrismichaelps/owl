@@ -3,10 +3,6 @@
  * Tests for the pure parseArgs() function.
  * Zero I/O — passes synthetic argv arrays directly.
  */
-// ESLint cannot resolve Effect's Result type in test context
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { describe, it, expect } from "vitest"
 import { parseArgs, VALID_MODES } from "../../src/cli/args.js"
 

@@ -1,6 +1,6 @@
 /** @Owl.Commands.Editing.Create - Create a new file: /create <file> "<content>" */
 import { Effect } from "effect"
-import { FileSystem } from "@effect/platform"
+import type { FileSystem } from "@effect/platform"
 import { CommandParseError } from "../../core/errors/index.js"
 import path from "node:path"
 import type { CommandHandler, CommandResult } from "../types.js"

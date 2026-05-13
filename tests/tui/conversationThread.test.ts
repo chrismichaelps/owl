@@ -1,4 +1,8 @@
 // tests/tui/conversationThread.test.ts
+// ESLint cannot resolve Effect's Result type in test context
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { describe, it, expect } from "vitest"
 import { owlReducer, INITIAL_STATE } from "../../src/tui/state"
 
