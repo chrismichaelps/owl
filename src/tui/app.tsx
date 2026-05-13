@@ -1,5 +1,5 @@
 /** @Owl.TUI.App - Root Ink app: 3-panel layout + REPL prompt, wired to Orchestrator */
-import React, { useCallback, useReducer, useState } from "react"
+import React, { useCallback, useEffect, useReducer, useState } from "react"
 import { Box, useApp } from "ink"
 import { Effect } from "effect"
 import { LogPanel } from "./components/LogPanel.js"
@@ -11,10 +11,13 @@ import { owlReducer, INITIAL_STATE } from "./state.js"
 import type { Mode } from "../core/schema/index.js"
 import type { OwlRuntime } from "../cli/runtime.js"
 import { Orchestrator } from "../engine/orchestrator/index.js"
+import { CommandRegistry } from "../commands/registry.js"
+import { parseCommand } from "../commands/parser.js"
 
 interface AppProps {
   readonly runtime: OwlRuntime
   readonly initialMode?: Mode
+  readonly initialPrompt?: string | null
 }
 
 let taskCounter = 0
@@ -22,6 +25,7 @@ let taskCounter = 0
 export const App: React.FC<AppProps> = ({
   runtime,
   initialMode = "standard",
+  initialPrompt,
 }) => {
   useApp() // access to exit()
   const [state, dispatch] = useReducer(owlReducer, INITIAL_STATE)
@@ -88,9 +92,31 @@ export const App: React.FC<AppProps> = ({
     dispatch({ type: "ADD_LOG", msg: `Mode → ${newMode}` })
   }, [])
 
-  const handleCommand = useCallback((_raw: string) => {
-    // Full CommandRegistry dispatch wired in Task 5
-  }, [])
+  const handleCommand = useCallback(
+    (raw: string) => {
+      const effect = Effect.gen(function* () {
+        const registry = yield* CommandRegistry
+        const parsed = yield* parseCommand(raw)
+        const result = yield* registry.dispatch(parsed)
+        dispatch({
+          type: "ADD_LOG",
+          msg: `[cmd] ${result.output.slice(0, 60)}`,
+        })
+      })
+      void runtime.runPromise(effect).catch((err: unknown) => {
+        const msg = err instanceof Error ? err.message : String(err)
+        dispatch({ type: "ADD_LOG", msg: `✗ Cmd error: ${msg.slice(0, 55)}` })
+      })
+    },
+    [runtime],
+  )
+
+  useEffect(() => {
+    if (initialPrompt != null && initialPrompt.trim().length > 0) {
+      handleSubmit(initialPrompt.trim(), mode)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // intentionally empty — fire once on mount only
 
   return (
     <Box flexDirection="column" height="100%">

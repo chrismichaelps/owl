@@ -6,11 +6,15 @@ import { makeOwlRuntime } from "./runtime.js"
 import { parseArgs } from "./args.js"
 
 async function main(): Promise<void> {
-  const { mode } = parseArgs(process.argv.slice(2))
-  const runtime = makeOwlRuntime()
+  const { mode, prompt } = parseArgs(process.argv.slice(2))
+  const runtime = makeOwlRuntime(process.cwd())
 
   const { waitUntilExit } = render(
-    React.createElement(App, { runtime, initialMode: mode }),
+    React.createElement(App, {
+      runtime,
+      initialMode: mode,
+      initialPrompt: prompt,
+    }),
   )
 
   await waitUntilExit()
