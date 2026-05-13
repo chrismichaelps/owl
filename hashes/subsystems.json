@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-05-12T20:12:00Z",
+  "last_updated": "2026-05-12T21:00:00Z",
   "subsystems": [
     {
       "id": "subsystem-core",
@@ -108,7 +108,7 @@
       "name": "FMCF",
       "description": "FMCF v3.5 runtime engine — roles, seam analysis, hash registry manager, governance enforcement.",
       "owner_team": "owl-fmcf",
-      "maturity": "EXPLORING",
+      "maturity": "BUILDING",
       "modules": [
         "@root/src/fmcf/roles/architect.ts",
         "@root/src/fmcf/roles/dna-engineer.ts",
@@ -141,7 +141,7 @@
         "org_alignment_score": 1.0,
         "teams_touching": 1,
         "optimal_teams": 1,
-        "last_assessed": "2026-05-12T15:00:00Z"
+        "last_assessed": "2026-05-12T21:00:00Z"
       }
     },
     {
