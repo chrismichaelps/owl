@@ -15,6 +15,18 @@ export type ActiveRole =
   | "Forensic Guardian"
   | null
 
+/** @Owl.TUI.State.Turn - One completed conversation turn */
+export interface ConversationTurn {
+  readonly id: string
+  readonly prompt: string
+  readonly response: string
+  readonly provider: ProviderId
+  readonly latencyMs: number
+  readonly inputTokens: number
+  readonly outputTokens: number
+  readonly timestamp: string
+}
+
 /** @Owl.TUI.State.Response - Plain response snapshot (safe subset of InferenceResponse) */
 export interface ResponseSnapshot {
   readonly taskId: string
@@ -36,6 +48,7 @@ export interface OwlAppState {
   readonly provider: ProviderId | null
   readonly latencyMs: number | null
   readonly turnCount: number
+  readonly turns: readonly ConversationTurn[]
 }
 
 export type OwlAction =
@@ -44,6 +57,7 @@ export type OwlAction =
   | { readonly type: "ADD_LOG"; readonly msg: string }
   | { readonly type: "SET_RESPONSE"; readonly response: ResponseSnapshot }
   | { readonly type: "SET_ERROR"; readonly error: string }
+  | { readonly type: "ADD_TURN"; readonly turn: ConversationTurn }
   | { readonly type: "RESET" }
 
 export const INITIAL_STATE: OwlAppState = {
@@ -57,6 +71,7 @@ export const INITIAL_STATE: OwlAppState = {
   provider: null,
   latencyMs: null,
   turnCount: 0,
+  turns: [],
 }
 
 export function owlReducer(state: OwlAppState, action: OwlAction): OwlAppState {
@@ -89,12 +104,15 @@ export function owlReducer(state: OwlAppState, action: OwlAction): OwlAppState {
       }
     case "SET_ERROR":
       return { ...state, status: "error", error: action.error }
+    case "ADD_TURN":
+      return { ...state, turns: [...state.turns, action.turn] }
     case "RESET":
       return {
         ...INITIAL_STATE,
         totalInputTokens: state.totalInputTokens,
         totalOutputTokens: state.totalOutputTokens,
         turnCount: state.turnCount,
+        turns: state.turns,
       }
   }
 }
