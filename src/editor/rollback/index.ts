@@ -106,9 +106,7 @@ export const RollbackSystemLive = Layer.effect(
     const getEntries = (
       mutationId: string,
     ): Effect.Effect<readonly RollbackEntry[]> =>
-      Ref.get(storeRef).pipe(
-        Effect.map((store) => store.get(mutationId) ?? []),
-      )
+      Ref.get(storeRef).pipe(Effect.map((store) => store.get(mutationId) ?? []))
 
     const clear = (mutationId: string): Effect.Effect<void> =>
       Ref.update(storeRef, (store) => {
