@@ -30,7 +30,7 @@ const XAI_CAPABILITIES: readonly ProviderCapability[] = [
 export class XAIAdapter extends Context.Tag("XAIAdapter")<
   XAIAdapter,
   LLMProviderService
->() { }
+>() {}
 
 /** @Owl.Providers.xAI.Implementation - Production layer logic */
 export const XAIAdapterLive = Layer.effect(

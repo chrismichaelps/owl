@@ -30,7 +30,7 @@ const GOOGLE_CAPABILITIES: readonly ProviderCapability[] = [
 export class GoogleAdapter extends Context.Tag("GoogleAdapter")<
   GoogleAdapter,
   LLMProviderService
->() { }
+>() {}
 
 /** @Owl.Providers.Google.Implementation - Production layer logic */
 export const GoogleAdapterLive = Layer.effect(

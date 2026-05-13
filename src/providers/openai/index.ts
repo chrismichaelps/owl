@@ -47,7 +47,7 @@ const OPENAI_CAPABILITIES: readonly ProviderCapability[] = [
 export class OpenAIAdapter extends Context.Tag("OpenAIAdapter")<
   OpenAIAdapter,
   LLMProviderService
->() { }
+>() {}
 
 /** @Owl.Providers.OpenAI.Implementation - Production layer logic */
 export const OpenAIAdapterLive = Layer.effect(

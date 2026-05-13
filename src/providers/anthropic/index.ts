@@ -110,7 +110,7 @@ const mapAnthropicError = (
 export class AnthropicAdapter extends Context.Tag("AnthropicAdapter")<
   AnthropicAdapter,
   LLMProviderService
->() { }
+>() {}
 
 /** @Owl.Providers.Anthropic.Implementation - Production layer logic */
 export const AnthropicAdapterLive = Layer.effect(
