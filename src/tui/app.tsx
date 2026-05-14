@@ -136,6 +136,7 @@ export const App: React.FC<AppProps> = ({
           status={state.status}
           turns={state.turns}
           error={state.error}
+          streamingContent={state.streamingContent}
         />
         <MetaPanel state={state} />
       </Box>

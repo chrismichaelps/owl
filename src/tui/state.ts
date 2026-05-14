@@ -49,6 +49,7 @@ export interface OwlAppState {
   readonly latencyMs: number | null
   readonly turnCount: number
   readonly turns: readonly ConversationTurn[]
+  readonly streamingContent: string
 }
 
 export type OwlAction =
@@ -58,6 +59,8 @@ export type OwlAction =
   | { readonly type: "SET_RESPONSE"; readonly response: ResponseSnapshot }
   | { readonly type: "SET_ERROR"; readonly error: string }
   | { readonly type: "ADD_TURN"; readonly turn: ConversationTurn }
+  | { readonly type: "APPEND_STREAM"; readonly text: string }
+  | { readonly type: "CLEAR_STREAM" }
   | { readonly type: "RESET" }
 
 export const INITIAL_STATE: OwlAppState = {
@@ -72,6 +75,7 @@ export const INITIAL_STATE: OwlAppState = {
   latencyMs: null,
   turnCount: 0,
   turns: [],
+  streamingContent: "",
 }
 
 export function owlReducer(state: OwlAppState, action: OwlAction): OwlAppState {
@@ -106,6 +110,13 @@ export function owlReducer(state: OwlAppState, action: OwlAction): OwlAppState {
       return { ...state, status: "error", error: action.error }
     case "ADD_TURN":
       return { ...state, turns: [...state.turns, action.turn] }
+    case "APPEND_STREAM":
+      return {
+        ...state,
+        streamingContent: state.streamingContent + action.text,
+      }
+    case "CLEAR_STREAM":
+      return { ...state, streamingContent: "" }
     case "RESET":
       return {
         ...INITIAL_STATE,

@@ -9,10 +9,11 @@ interface OutputPanelProps {
   readonly status: AgentStatus
   readonly turns: readonly ConversationTurn[]
   readonly error: string | null
+  readonly streamingContent: string
 }
 
 export const OutputPanel: React.FC<OutputPanelProps> = memo(
-  ({ status, turns, error }) => (
+  ({ status, turns, error, streamingContent }) => (
     <Box
       flexDirection="column"
       borderStyle="round"
@@ -29,7 +30,14 @@ export const OutputPanel: React.FC<OutputPanelProps> = memo(
         ) : status === "routing" ? (
           <Spinner label="Routing to provider…" color="yellow" />
         ) : status === "inferring" ? (
-          <Spinner label="Inferring…" color="cyan" />
+          <Box flexDirection="column">
+            <Spinner label="Inferring…" color="cyan" />
+            {streamingContent.length > 0 ? (
+              <Box marginTop={1}>
+                <Text wrap="wrap">{streamingContent}</Text>
+              </Box>
+            ) : null}
+          </Box>
         ) : (
           <ConversationThread turns={turns} />
         )}
