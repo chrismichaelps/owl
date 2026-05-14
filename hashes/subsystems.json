@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-05-14T21:08:00Z",
+  "last_updated": "2026-05-14T21:20:00Z",
   "subsystems": [
     {
       "id": "subsystem-core",
@@ -157,7 +157,8 @@
       "modules": [
         "@root/src/engine/orchestrator/index.ts",
         "@root/src/engine/context/index.ts",
-        "@root/src/engine/memory/index.ts"
+        "@root/src/engine/memory/index.ts",
+        "@root/src/engine/metrics/index.ts"
       ],
       "internal_seams": [],
       "external_seams": [
@@ -173,15 +174,17 @@
       "context_refs": [
         "docs/CONTEXT.md#Task",
         "docs/CONTEXT.md#Session",
-        "docs/CONTEXT.md#Mode"
+        "docs/CONTEXT.md#Mode",
+        "docs/CONTEXT.md#UsageMetrics"
       ],
       "adr_refs": [],
       "health": {
         "org_alignment_score": 1.0,
         "teams_touching": 1,
         "optimal_teams": 1,
-        "last_assessed": "2026-05-12T22:00:00Z"
-      }
+        "last_assessed": "2026-05-14T21:20:00Z"
+      },
+      "last_updated": "2026-05-14T21:20:00Z"
     },
     {
       "id": "subsystem-editor",
@@ -267,16 +270,17 @@
       "sub_subsystems": [],
       "context_refs": [
         "docs/CONTEXT.md#Command",
-        "docs/CONTEXT.md#RoutingPreference"
+        "docs/CONTEXT.md#RoutingPreference",
+        "docs/CONTEXT.md#UsageMetrics"
       ],
       "adr_refs": [],
       "health": {
         "org_alignment_score": 1.0,
         "teams_touching": 1,
         "optimal_teams": 1,
-        "last_assessed": "2026-05-14T21:08:00Z"
+        "last_assessed": "2026-05-14T21:20:00Z"
       },
-      "last_updated": "2026-05-14T21:08:00Z"
+      "last_updated": "2026-05-14T21:20:00Z"
     },
     {
       "id": "subsystem-tui",

@@ -1,0 +1,42 @@
+{
+  "contract_id": "CTR-engine-metrics-00000001",
+  "module": "@Owl.Engine.Metrics src/engine/metrics/index.ts",
+  "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
+  "depth_score": "0.78 — DEEP (small Interface aggregating Session UsageMetrics)",
+  "seam_capacity": "CRITICAL",
+  "sig_id": "SIG-engine-metrics-00000001",
+  "interface": {
+    "signatures": [
+      "UsageMetrics: Context.Tag<UsageMetrics, UsageMetricsService>",
+      "UsageMetricsLive: Layer<UsageMetrics>",
+      "recordInference(metric: InferenceMetric) => Effect<void>",
+      "snapshot() => Effect<UsageMetricsSnapshot>",
+      "reset() => Effect<void>"
+    ],
+    "error_modes": [],
+    "invariants": [
+      "UsageMetrics MUST be Ref-backed and scoped to the active runtime Session",
+      "UsageMetrics MUST aggregate by Provider and Model without external telemetry",
+      "UsageMetrics MUST retain only a bounded recent Inference list"
+    ]
+  },
+  "architecture": {
+    "depth_score": 0.78,
+    "depth_status": "DEEP",
+    "leverage": "HIGH",
+    "locality": "HIGH",
+    "seam_capacity": "CRITICAL",
+    "coupling_complexity": 2.0,
+    "interface_stability": 0.85
+  },
+  "responsibilities": [
+    "Record deterministic Inference UsageMetrics after successful Orchestrator execution",
+    "Provide aggregated Session totals to management Commands"
+  ],
+  "prohibited": [
+    "MUST NOT send telemetry outside the process",
+    "MUST NOT mutate metrics through module-level globals",
+    "MUST NOT record failed Provider attempts as successful Inference calls"
+  ],
+  "created_at": "2026-05-14T21:18:00.000000Z"
+}

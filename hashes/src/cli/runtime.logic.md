@@ -14,7 +14,7 @@
 ## Algorithm
 
 1. **Initialize configuration** — Resolve OWL_CONFIG so Provider adapters and bootstrap share the same environment.
-2. **Build leaf Layers** — Compose ContextManager, SessionMemory, ProviderRouter, Provider adapters, FMCF role context, Governance, Diff, TLI, and Rollback.
+2. **Build leaf Layers** — Compose ContextManager, SessionMemory, UsageMetrics, ProviderRouter, Provider adapters, FMCF role context, Governance, Diff, TLI, and Rollback.
 3. **Bootstrap Providers** — Run ProviderBootstrapLive against the leaf environment so ProviderRouter contains all configured Providers before Inference.
 4. **Derive Orchestrator** — Provide OrchestratorLive with the leaf environment and bootstrap marker.
 5. **Derive EditingPipeline** — Provide EditingPipelineLive with the same leaf environment used by CommandRegistry.
@@ -27,6 +27,7 @@
 - MUST NOT: Register Providers from TUI, CommandRegistry, or Orchestrator.
 - MUST NOT: Expose Provider adapter services through OwlRuntime.
 - MUST NOT: Duplicate stateful runtime services when composing CommandRegistry.
+- MUST NOT: Create separate UsageMetrics state for Orchestrator and /status.
 
 ## Edge Cases
 

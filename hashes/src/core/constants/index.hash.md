@@ -1,6 +1,6 @@
-State_ID: BigInt(0x0000000000000061)
-Git_SHA: 1cd37ce367ad7a684a8a32d7049f5f665e95a599
-Source_SHA256: 2128c3b57f30b2b51766b6f17f0051443065bccb6c7b3c0d185dfb13b8ad4c5b
+State_ID: BigInt(0x0000000000000068)
+Git_SHA: 8a91a98ecac3bf6be3ffa105496ef48e08cc429b
+Source_SHA256: fe4011c68bd512e6642d8f79260b3dee829df898b65194cd8ce0a2835a970361
 Grammar_Lock: "@root/hashes/grammar/typescript/typescript.hash.md"
 Fidelity: DECLARED
 ---
@@ -13,6 +13,7 @@ Fidelity: DECLARED
 - `PROVIDER_TIMEOUTS` — DEFAULT_MS=30s, STREAM_CHUNK_TIMEOUT_MS=5s, OLLAMA_DEFAULT_MS=60s
 - `RETRY_CONFIG` — MAX_ATTEMPTS=3, BASE_DELAY_MS=1s, MAX_DELAY_MS=30s, BACKOFF_FACTOR=2
 - `PROVIDER_IDS` — supported Provider ids for RoutingPreference parsing
+- `METRICS_CONSTANTS` — bounded UsageMetrics retention limits
 - `ROUTING_LIMITS` — max normalized cost, fast model output threshold, fallback Provider count
 - `DEPTH_THRESHOLDS` — DEEP=0.7, SHALLOW=0.4
 - `SHARD_SPLIT_THRESHOLD = 0.15`
@@ -38,4 +39,4 @@ Fidelity: DECLARED
 ### [Architecture]
 - Single source of truth for all magic numbers
 - No business logic, only data declarations
-- Divided into logical groups: Budgets, Networking, Providers, FMCF, Routing, TUI, HTTP, Editor, Pipeline
+- Divided into logical groups: Budgets, Networking, Providers, Metrics, FMCF, Routing, TUI, HTTP, Editor, Pipeline

@@ -79,6 +79,11 @@ export const PROVIDER_IDS = [
   "ollama",
 ] as const
 
+/** @Owl.Core.Constants.Metrics - Runtime UsageMetrics constraints */
+export const METRICS_CONSTANTS = {
+  RECENT_INFERENCE_LIMIT: 10,
+} as const
+
 /**
  * @Owl.Core.Constants.FMCF - Governance and metric thresholds
  *

@@ -20,6 +20,7 @@ import { FileSystem } from "@effect/platform"
 import { NodeFileSystem } from "@effect/platform-node"
 import { Context, Effect, Layer, Ref } from "effect"
 import { ContextManager } from "../engine/context/index.js"
+import { UsageMetrics } from "../engine/metrics/index.js"
 import { Orchestrator } from "../engine/orchestrator/index.js"
 import { SessionMemory } from "../engine/memory/index.js"
 import { RoleContext } from "../fmcf/roles/architect.js"
@@ -188,6 +189,7 @@ export const makeCommandRegistryLive = (
   never,
   | Orchestrator
   | ContextManager
+  | UsageMetrics
   | SessionMemory
   | RoleContext
   | RollbackSystem
@@ -202,6 +204,7 @@ export const makeCommandRegistryLive = (
       const rollback = yield* RollbackSystem
       const pipeline = yield* EditingPipeline
       const sessionMemory = yield* SessionMemory
+      const usageMetrics = yield* UsageMetrics
       const contextManager = yield* ContextManager
       const fs = yield* FileSystem.FileSystem
       const roleCtx = yield* RoleContext
@@ -239,7 +242,7 @@ export const makeCommandRegistryLive = (
         makeRoleCommand(roleCtx),
         makeRegistryCommand(hashRegistry),
         makeAuditCommand(orchestrator),
-        makeStatusCommand(sessionMemory),
+        makeStatusCommand(sessionMemory, usageMetrics),
         makeClearCommand(contextManager),
         makeMemoryCommand(sessionMemory),
         makeModelCommand(routingPreferences),

@@ -186,3 +186,12 @@ Canonical business concept definitions. Every module name, seam name, and interf
 - **Not:** "model setting", "provider flag", "routing hint" — RoutingPreference is runtime state that changes Provider selection behavior.
 - **Seams:** RoutingPreference → ProviderRouter (CRITICAL), RoutingPreference → CommandRegistry (CRITICAL)
 - **Example:** `/model anthropic` setting the active RoutingPreference so the next Inference routes to Anthropic when available.
+
+---
+
+### UsageMetrics
+- **Definition:** Runtime-observed Inference usage totals for Tokens, Provider calls, Model selection, and latency within the active Session.
+- **Canonical name:** UsageMetrics
+- **Not:** "analytics", "logs", "stats" — UsageMetrics is deterministic runtime accounting, not external telemetry.
+- **Seams:** UsageMetrics → Orchestrator (CRITICAL), UsageMetrics → CommandRegistry (CRITICAL)
+- **Example:** `/status` showing 3 Provider calls, 12,400 total Tokens, Anthropic as the top Provider, and 1,250ms average latency.

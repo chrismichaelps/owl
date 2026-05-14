@@ -8,6 +8,7 @@
  *    - OWLConfigLive
  *    - ContextManagerLive
  *    - SessionMemoryLive
+ *    - UsageMetricsLive
  *    - ProviderRouterLive
  *    - RoutingPreferencesLive
  *    - Provider adapter layers
@@ -37,6 +38,7 @@ import { Effect, Layer, ManagedRuntime } from "effect"
 import { OWLConfigLive } from "../core/config/index.js"
 import { Orchestrator, OrchestratorLive } from "../engine/orchestrator/index.js"
 import { ContextManagerLive } from "../engine/context/index.js"
+import { UsageMetricsLive } from "../engine/metrics/index.js"
 import { SessionMemoryLive } from "../engine/memory/index.js"
 import { ProviderRouterLive } from "../providers/router/index.js"
 import { RoutingPreferencesLive } from "../providers/preferences/index.js"
@@ -92,6 +94,7 @@ export const makeOwlRuntime = (projectRoot: string): OwlRuntime => {
     OWLConfigLive,
     ContextManagerLive,
     SessionMemoryLive,
+    UsageMetricsLive,
     ProviderRouterLive,
     RoutingPreferencesLive,
     providerAdapterLayer,

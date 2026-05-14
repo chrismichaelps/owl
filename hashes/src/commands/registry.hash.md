@@ -1,6 +1,6 @@
-State_ID: BigInt(0x0000000000000064)
-Git_SHA: 1cd37ce367ad7a684a8a32d7049f5f665e95a599
-Source_SHA256: c3e124063de9ea9f86b0633fd686546c759328339a0393bff5edc7336948bb89
+State_ID: BigInt(0x000000000000006c)
+Git_SHA: 8a91a98ecac3bf6be3ffa105496ef48e08cc429b
+Source_SHA256: db17dac1e99cbaf7598d66871b42689189b7cb70a08a96f4df267e753726627d
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
 Fidelity: DECLARED
 ---
@@ -11,7 +11,7 @@ Fidelity: DECLARED
 - `CommandRegistryService: { register, lookup, list, dispatch }`
 - `CommandRegistry: Context.Tag<CommandRegistry, CommandRegistryService>`
 - `buildRegistryService(mapRef: Ref.Ref<Map<string, CommandHandler>>) => CommandRegistryService`
-- `makeCommandRegistryLive(projectRoot: string) => Layer<CommandRegistry, never, ... | RoutingPreferences>`
+- `makeCommandRegistryLive(projectRoot: string) => Layer<CommandRegistry, never, ... | UsageMetrics | RoutingPreferences>`
 
 ### [Governance]
 - depth_score: 0.85 — DEEP (composition root with 20+ command handlers)
@@ -31,4 +31,5 @@ Fidelity: DECLARED
 - CommandRegistryLive: bare registry with no pre-registered commands
 - makeCommandRegistryLive: full composition root registering 20+ handlers
 - Registers: Core (task, deep, quick, plan), Power (raw, god, economy), Analysis (analyze, brain, seams, depth, friction, grill), Editing (edit, inject, create, refactor, diff, apply, undo), Management (role, registry, audit, status, clear, memory, model)
+- Injects shared UsageMetrics into `/status`.
 - Injects shared RoutingPreferences into `/model`.

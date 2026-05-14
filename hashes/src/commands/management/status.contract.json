@@ -2,18 +2,28 @@
   "contract_id": "CTR-cmd-management-status-00000001",
   "module": "@Owl.Commands.Management.Status src/commands/management/status.ts",
   "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
-  "depth_score": "0.62 \u2014 MEDIUM (session stats display)",
+  "depth_score": "0.70 \u2014 DEEP (session and UsageMetrics display behind one Command)",
   "seam_capacity": "INTERNAL",
   "sig_id": "SIG-cmd-management-status-00000001",
   "interface": {
     "signatures": [
-      "makeStatusCommand(sessionMemory: SessionMemoryService) => CommandHandler",
+      "makeStatusCommand(sessionMemory: SessionMemoryService, usageMetrics: UsageMetricsService) => CommandHandler",
       "CommandHandler: { name, description, execute(args) => Effect<CommandResult, CommandParseError> }"
     ],
     "error_modes": [],
-    "invariants": []
+    "invariants": [
+      "`/status` MUST report Session turn counts from SessionMemory",
+      "`/status` MUST report runtime UsageMetrics from UsageMetrics",
+      "`/status` MUST remain read-only"
+    ]
   },
-  "responsibilities": [],
-  "prohibited": [],
+  "responsibilities": [
+    "Display Session and UsageMetrics in one management Command",
+    "Keep observability read-only and deterministic"
+  ],
+  "prohibited": [
+    "MUST NOT mutate SessionMemory or UsageMetrics",
+    "MUST NOT read Provider adapter state directly"
+  ],
   "created_at": "2026-05-14T15:55:47.212397Z"
 }

@@ -1,6 +1,6 @@
 {
   "shard_id": "@root/src",
-  "state_anchor": "BigInt:0x0000000000000066",
+  "state_anchor": "BigInt:0x000000000000006d",
   "parent_bridge": "@root/hashes/local.map.json",
   "git_anchor": "HEAD",
   "cache_integrity": "VERIFIED",
@@ -52,6 +52,17 @@
       "dependencies": [],
       "fidelity_level": "Active",
       "sig_id": "SIG-core-logging-00000001"
+    },
+    "engine/metrics": {
+      "file_path": "@root/src/engine/metrics/index.ts",
+      "hash_reference": "@root/hashes/src/engine/metrics/index.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [
+        "@root/hashes/src/core/constants/index.hash.md",
+        "@root/hashes/src/core/schema/index.hash.md"
+      ],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-engine-metrics-00000001"
     },
     "providers/anthropic": {
       "file_path": "@root/src/providers/anthropic/index.ts",

@@ -14,6 +14,10 @@ import type { RoutingContext } from "../../src/providers/types.js"
 import type { ProviderId, Task } from "../../src/core/schema/index.js"
 import { TokenBudgetLive } from "../../src/tokens/budget/index.js"
 import { RoutingPreferences } from "../../src/providers/preferences/index.js"
+import {
+  UsageMetrics,
+  type InferenceMetric,
+} from "../../src/engine/metrics/index.js"
 
 const makeTask = (overrides: Partial<Task> = {}): Task => ({
   id: "task-001",
@@ -41,6 +45,7 @@ const stubResponse = {
 const stubStreamChunks = ["Hello ", "world"]
 const completeSpy = vi.fn()
 const observedRoutingContexts: RoutingContext[] = []
+const observedInferenceMetrics: InferenceMetric[] = []
 let testPreferredProvider: ProviderId | undefined
 
 const TestProviderRouterLive = Layer.succeed(ProviderRouter, {
@@ -98,11 +103,34 @@ const TestRoutingPreferencesLive = Layer.succeed(RoutingPreferences, {
     ),
 })
 
+const TestUsageMetricsLive = Layer.succeed(UsageMetrics, {
+  recordInference: (metric: InferenceMetric) =>
+    Effect.sync(() => {
+      observedInferenceMetrics.push(metric)
+    }),
+  snapshot: () =>
+    Effect.succeed({
+      totalCalls: observedInferenceMetrics.length,
+      inputTokens: 0,
+      outputTokens: 0,
+      totalTokens: 0,
+      averageLatencyMs: 0,
+      byProvider: [],
+      byModel: [],
+      recent: observedInferenceMetrics,
+    }),
+  reset: () =>
+    Effect.sync(() => {
+      observedInferenceMetrics.length = 0
+    }),
+})
+
 const testLayer = OrchestratorLive.pipe(
   Layer.provide(ContextManagerLive),
   Layer.provide(SessionMemoryLive),
   Layer.provide(TokenBudgetLive),
   Layer.provide(TestRoutingPreferencesLive),
+  Layer.provide(TestUsageMetricsLive),
   Layer.provide(TestProviderRouterLive),
 )
 
@@ -158,6 +186,25 @@ describe("Orchestrator.run", () => {
     )
     expect(response.taskId).toBe("preferred-provider")
     expect(observedRoutingContexts.at(-1)?.preferredProvider).toBe("openai")
+  })
+
+  it("records UsageMetrics after a successful run", async () => {
+    observedInferenceMetrics.length = 0
+    const response = await run(
+      Effect.gen(function* () {
+        const orch = yield* Orchestrator
+        return yield* orch.run(makeTask({ id: "metrics-run" }))
+      }),
+    )
+    expect(response.taskId).toBe("metrics-run")
+    expect(observedInferenceMetrics.at(-1)).toMatchObject({
+      taskId: "metrics-run",
+      provider: "anthropic",
+      model: "claude-opus-4",
+      inputTokens: 50,
+      outputTokens: 30,
+      latencyMs: 120,
+    })
   })
 
   it("runs two sequential tasks without error", async () => {

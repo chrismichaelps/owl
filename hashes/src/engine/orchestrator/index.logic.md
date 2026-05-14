@@ -21,13 +21,15 @@
 5. Estimate input tokens and consume them before ProviderRouter execution.
 6. Read the active RoutingPreference and include `preferredProvider` in RoutingContext only when set.
 7. Build RoutingContext and execute ProviderRouter Inference or Streaming.
-8. Consume output tokens before assistant Message insertion and SessionMemory recording.
-9. Record assistant Message, Session Turn, and return InferenceResponse.
+8. Consume output tokens before assistant Message insertion, UsageMetrics recording, and SessionMemory recording.
+9. Record UsageMetrics from the successful Inference response.
+10. Record assistant Message, Session Turn, and return InferenceResponse.
 
 ## Negative Logic (PROHIBITED PATHS)
 
 - MUST NOT: call ProviderRouter after TokenBudget rejects estimated input.
 - MUST NOT: record assistant context or SessionMemory before output budget consumption succeeds.
+- MUST NOT: record UsageMetrics before output budget consumption succeeds.
 - MUST NOT: perform Provider adapter calls directly; all Inference crosses ProviderRouter.
 - MUST NOT: bypass ProviderRouter failover when RoutingPreference is active.
 
@@ -36,6 +38,7 @@
 - **Input exceeds budget**: fail before ProviderRouter execution.
 - **Output exceeds budget**: fail before assistant context/memory recording.
 - **Streaming output estimate exceeds budget**: fail after stream assembly, before memory/context mutation.
+- **Provider failure**: do not record UsageMetrics.
 - **No active RoutingPreference**: omit preferredProvider so automatic scoring remains unchanged.
 - **Preferred Provider unavailable**: let ProviderRouter fallback decide the next Provider.
 

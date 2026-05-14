@@ -2,7 +2,7 @@
   "contract_id": "CTR-engine-orchestrator-00000001",
   "module": "@Owl.Engine.Orchestrator src/engine/orchestrator/index.ts",
   "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
-  "depth_score": "0.82 \u2014 DEEP (orchestration logic, budget enforcement, RoutingPreference, provider seam crossing)",
+  "depth_score": "0.84 \u2014 DEEP (orchestration logic, budget enforcement, UsageMetrics, RoutingPreference, provider seam crossing)",
   "seam_capacity": "CRITICAL (seam-engine-provider crossing point)",
   "sig_id": "SIG-engine-orchestrator-00000001",
   "interface": {
@@ -24,17 +24,21 @@
       "Output tokens MUST be consumed before assistant message or Session memory recording"
       ,
       "Active RoutingPreference MUST be read before building RoutingContext"
+      ,
+      "UsageMetrics MUST be recorded only after output TokenBudget enforcement succeeds"
     ]
   },
   "responsibilities": [
     "Coordinate Task Inference through ContextManager, TokenBudget, ProviderRouter, and SessionMemory",
     "Keep budget enforcement centralized in the agent loop",
+    "Record successful Inference UsageMetrics for runtime observability",
     "Apply active RoutingPreference without bypassing ProviderRouter failover"
   ],
   "prohibited": [
     "MUST NOT call ProviderRouter after input budget failure",
     "MUST NOT record a Turn when output budget enforcement fails",
     "MUST NOT enforce TokenBudget inside TUI or Provider adapters",
+    "MUST NOT record UsageMetrics for failed or over-budget Inference",
     "MUST NOT select Provider adapters directly from RoutingPreference"
   ],
   "created_at": "2026-05-14T15:55:47.217615Z"

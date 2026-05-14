@@ -28,6 +28,7 @@
 import { Context, Effect, Layer } from "effect"
 import { ContextManager } from "../context/index.js"
 import { buildFMCFSystemPrompt } from "../context/systemPrompt.js"
+import { UsageMetrics } from "../metrics/index.js"
 import { SessionMemory } from "../memory/index.js"
 import { ProviderRouter } from "../../providers/router/index.js"
 import { RoutingPreferences } from "../../providers/preferences/index.js"
@@ -123,6 +124,7 @@ export const OrchestratorLive = Layer.effect(
     const router = yield* ProviderRouter
     const budgetService = yield* TokenBudget
     const routingPreferences = yield* RoutingPreferences
+    const usageMetrics = yield* UsageMetrics
 
     yield* mem.startSession()
     yield* ctx.setSystemPrompt(buildFMCFSystemPrompt())
@@ -170,6 +172,16 @@ export const OrchestratorLive = Layer.effect(
 
         const response = yield* router.complete(routingCtx, request)
         yield* budgetService.consume(task.id, response.usage.outputTokens)
+        yield* usageMetrics.recordInference({
+          taskId: task.id,
+          mode: task.mode,
+          provider: response.provider,
+          model: response.model,
+          inputTokens: response.usage.inputTokens,
+          outputTokens: response.usage.outputTokens,
+          latencyMs: response.latencyMs,
+          timestamp: new Date().toISOString(),
+        })
 
         const assistantMsg: Message = {
           role: "assistant",
@@ -260,6 +272,16 @@ export const OrchestratorLive = Layer.effect(
           provider: result.provider as ProviderId,
           latencyMs: result.latencyMs,
         }
+        yield* usageMetrics.recordInference({
+          taskId: task.id,
+          mode: task.mode,
+          provider: response.provider,
+          model: response.model,
+          inputTokens: response.usage.inputTokens,
+          outputTokens: response.usage.outputTokens,
+          latencyMs: response.latencyMs,
+          timestamp: new Date().toISOString(),
+        })
 
         const assistantMsg: Message = {
           role: "assistant",

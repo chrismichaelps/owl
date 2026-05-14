@@ -11,27 +11,29 @@
 
 ## Algorithm
 
-1. **Initialize** — Set up initial state and validate preconditions
-2. **Process** — Execute the core operation based on current state
-3. **Transition** — Validate guard conditions and transition to next state
-4. **Complete** — Finalize operation and clean up resources
+1. Read Session turns from SessionMemory.
+2. Read UsageMetrics snapshot from UsageMetrics.
+3. Compute Session token total from turns for backward-compatible display.
+4. Format Inference calls, input Tokens, output Tokens, total Tokens, average latency, and per-Provider totals.
+5. Return a read-only CommandResult.
 
 ## Negative Logic (PROHIBITED PATHS)
 
-- MUST NOT: Bypass state transitions — always use the defined state machine
-- MUST NOT: Skip guard validation — every transition requires guard check
-- MUST NOT: Mutate state directly — use only defined transition methods
+- MUST NOT: mutate SessionMemory.
+- MUST NOT: mutate UsageMetrics.
+- MUST NOT: access Provider adapters or ProviderRouter internals.
 
 ## Edge Cases
 
-- **Concurrent access**: Serialize state transitions via atomic operations
-- **Timeout during transition**: Roll back to previous valid state
-- **Invalid guard condition**: Log error and remain in current state
+- **No turns**: report zero Session turns.
+- **No UsageMetrics**: report zero Inference calls and zero latency.
+- **Multiple Providers**: format each Provider total deterministically in snapshot order.
 
 ## Dependencies
 
 - Grammar: "@root/hashes/grammar/effect/effect.hash.md"
 - Parent: `@root/hashes/src/commands/registry.hash.md`
+- Domain: `docs/CONTEXT.md#UsageMetrics`
 
 ---
 

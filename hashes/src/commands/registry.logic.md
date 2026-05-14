@@ -13,13 +13,15 @@
 
 1. Initialize an empty command handler map.
 2. In the full composition root, yield each service required by command factories.
-3. Inject the shared RoutingPreferences service into `/model`.
-4. Register all command handlers exactly once at startup.
-5. Dispatch parsed Commands through the registered handler Interface.
+3. Inject the shared UsageMetrics service into `/status`.
+4. Inject the shared RoutingPreferences service into `/model`.
+5. Register all command handlers exactly once at startup.
+6. Dispatch parsed Commands through the registered handler Interface.
 
 ## Negative Logic (PROHIBITED PATHS)
 
 - MUST NOT: create command-local service instances that diverge from runtime state.
+- MUST NOT: let /status read Provider adapters or duplicate UsageMetrics state.
 - MUST NOT: let /model mutate ProviderRouter internals directly.
 - MUST NOT: register duplicate handlers for the same Command name.
 
@@ -27,6 +29,7 @@
 
 - **Command not found**: fail with CommandNotFoundError.
 - **Command parse error**: return CommandParseError from the handler.
+- **UsageMetrics dependency**: use the shared service supplied by the runtime leaf Layer.
 - **RoutingPreference dependency**: use the shared service supplied by the runtime leaf Layer.
 
 ## Dependencies
