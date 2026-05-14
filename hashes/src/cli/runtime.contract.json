@@ -16,6 +16,7 @@
     "invariants": [
       "ProviderBootstrapLive MUST run before OrchestratorLive accepts Inference",
       "TokenBudgetLive MUST be available to OrchestratorLive",
+      "RoutingPreferencesLive MUST be shared between Orchestrator and CommandRegistry",
       "CommandRegistry MUST receive the same Orchestrator and EditingPipeline Layers as the TUI runtime",
       "Runtime callers MUST only access Orchestrator and CommandRegistry services"
     ]
@@ -32,12 +33,14 @@
   "responsibilities": [
     "Compose production Effect Layers into a single CLI runtime",
     "Wire Provider adapters through ProviderBootstrap before Inference",
+    "Share RoutingPreferences between /model Command and Orchestrator Inference",
     "Expose only Orchestrator and CommandRegistry to the TUI"
   ],
   "prohibited": [
     "MUST NOT leave ProviderRouterLive with an empty registry",
     "MUST NOT duplicate stateful leaf Layers across Orchestrator and CommandRegistry",
-    "MUST NOT expose Provider adapter services to TUI callers"
+    "MUST NOT expose Provider adapter services to TUI callers",
+    "MUST NOT create separate RoutingPreferences refs for commands and orchestration"
   ],
   "created_at": "2026-05-14T15:55:47.204569Z"
 }

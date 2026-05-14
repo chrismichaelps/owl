@@ -177,3 +177,12 @@ Canonical business concept definitions. Every module name, seam name, and interf
 - **Not:** "completion", "generation", "API call" — Inference is the full governed round-trip.
 - **Seams:** Inference → Orchestrator (CRITICAL), Inference → ProviderRouter (BACKBONE)
 - **Example:** An Inference taking 1,240ms against claude-sonnet-4, consuming 4,200 input tokens and yielding 812 output tokens.
+
+---
+
+### RoutingPreference
+- **Definition:** A developer-selected Provider preference that deterministically overrides automatic ProviderRouter scoring until cleared.
+- **Canonical name:** RoutingPreference
+- **Not:** "model setting", "provider flag", "routing hint" — RoutingPreference is runtime state that changes Provider selection behavior.
+- **Seams:** RoutingPreference → ProviderRouter (CRITICAL), RoutingPreference → CommandRegistry (CRITICAL)
+- **Example:** `/model anthropic` setting the active RoutingPreference so the next Inference routes to Anthropic when available.

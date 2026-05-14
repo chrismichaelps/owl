@@ -70,6 +70,15 @@ export const RETRY_CONFIG = {
   JITTER_FACTOR: 0.1,
 } as const
 
+/** @Owl.Core.Constants.Providers - Supported Provider identifiers */
+export const PROVIDER_IDS = [
+  "anthropic",
+  "openai",
+  "google",
+  "xai",
+  "ollama",
+] as const
+
 /**
  * @Owl.Core.Constants.FMCF - Governance and metric thresholds
  *

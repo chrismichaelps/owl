@@ -2,18 +2,31 @@
   "contract_id": "CTR-cmd-management-model-00000001",
   "module": "@Owl.Commands.Management.Model src/commands/management/model.ts",
   "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
-  "depth_score": "0.30 \u2014 SHALLOW (informational static output)",
-  "seam_capacity": "INTERNAL",
+  "depth_score": "0.62 \u2014 MEDIUM (Command Interface over RoutingPreference state)",
+  "seam_capacity": "CRITICAL",
   "sig_id": "SIG-cmd-management-model-00000001",
   "interface": {
     "signatures": [
-      "makeModelCommand() => CommandHandler",
+      "makeModelCommand(routingPreferences: RoutingPreferencesService) => CommandHandler",
       "CommandHandler: { name, description, execute(args) => Effect<CommandResult, CommandParseError> }"
     ],
-    "error_modes": [],
-    "invariants": []
+    "error_modes": [
+      "CommandParseError when the requested Provider id is invalid"
+    ],
+    "invariants": [
+      "`/model` with no args MUST display the active RoutingPreference",
+      "`/model auto` MUST clear the active RoutingPreference",
+      "`/model <provider>` MUST set a schema-valid ProviderId"
+    ]
   },
-  "responsibilities": [],
-  "prohibited": [],
+  "responsibilities": [
+    "Expose deterministic RoutingPreference control through Command dispatch",
+    "Keep Command parsing separate from ProviderRouter scoring"
+  ],
+  "prohibited": [
+    "MUST NOT mutate ProviderRouter internals directly",
+    "MUST NOT accept unknown Provider ids",
+    "MUST NOT persist RoutingPreference outside RoutingPreferences service"
+  ],
   "created_at": "2026-05-14T15:55:47.211927Z"
 }

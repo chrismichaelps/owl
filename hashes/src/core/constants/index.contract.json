@@ -11,6 +11,7 @@
       "MODE_TOKEN_BUDGETS",
       "PROVIDER_TIMEOUTS",
       "RETRY_CONFIG",
+      "PROVIDER_IDS",
       "ROUTING_LIMITS",
       "DEPTH_THRESHOLDS",
       "SHARD_SPLIT_THRESHOLD = 0.15",
@@ -31,6 +32,7 @@
   ],
   "prohibited": [
     "MUST NOT duplicate routing fallback limits inside ProviderRouter",
+    "MUST NOT duplicate Provider id literals inside Command handlers",
     "MUST NOT hardcode scoring thresholds outside this Module"
   ],
   "created_at": "2026-05-14T15:55:47.195373Z"

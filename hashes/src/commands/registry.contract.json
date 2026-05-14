@@ -10,12 +10,19 @@
       "CommandRegistryService: { register, lookup, list, dispatch }",
       "CommandRegistry: Context.Tag<CommandRegistry, CommandRegistryService>",
       "buildRegistryService(mapRef: Ref.Ref<Map<string, CommandHandler>>) => CommandRegistryService",
-      "makeCommandRegistryLive(projectRoot: string) => Layer<CommandRegistry, never, ...>"
+      "makeCommandRegistryLive(projectRoot: string) => Layer<CommandRegistry, never, ... | RoutingPreferences>"
     ],
     "error_modes": [],
-    "invariants": []
+    "invariants": [
+      "CommandRegistry MUST inject the shared RoutingPreferences service into /model"
+    ]
   },
-  "responsibilities": [],
-  "prohibited": [],
+  "responsibilities": [
+    "Register all Command handlers with their service dependencies",
+    "Ensure /model shares RoutingPreferences with Orchestrator"
+  ],
+  "prohibited": [
+    "MUST NOT construct a separate RoutingPreferences service for Command handlers"
+  ],
   "created_at": "2026-05-14T15:55:47.205836Z"
 }

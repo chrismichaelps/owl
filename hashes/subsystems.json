@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-05-14T20:35:00Z",
+  "last_updated": "2026-05-14T21:08:00Z",
   "subsystems": [
     {
       "id": "subsystem-core",
@@ -46,7 +46,8 @@
         "@root/src/providers/google/index.ts",
         "@root/src/providers/xai/index.ts",
         "@root/src/providers/ollama/index.ts",
-        "@root/src/providers/bootstrap.ts"
+        "@root/src/providers/bootstrap.ts",
+        "@root/src/providers/preferences/index.ts"
       ],
       "internal_seams": [
         "seam-provider-router"
@@ -63,16 +64,17 @@
       "sub_subsystems": [],
       "context_refs": [
         "docs/CONTEXT.md#Provider",
-        "docs/CONTEXT.md#ProviderRouter"
+        "docs/CONTEXT.md#ProviderRouter",
+        "docs/CONTEXT.md#RoutingPreference"
       ],
       "adr_refs": [],
       "health": {
         "org_alignment_score": 1.0,
         "teams_touching": 1,
         "optimal_teams": 1,
-        "last_assessed": "2026-05-14T20:35:00Z"
+        "last_assessed": "2026-05-14T21:08:00Z"
       },
-      "last_updated": "2026-05-14T20:35:00Z"
+      "last_updated": "2026-05-14T21:08:00Z"
     },
     {
       "id": "subsystem-tokens",
@@ -264,16 +266,17 @@
       ],
       "sub_subsystems": [],
       "context_refs": [
-        "docs/CONTEXT.md#Command"
+        "docs/CONTEXT.md#Command",
+        "docs/CONTEXT.md#RoutingPreference"
       ],
       "adr_refs": [],
       "health": {
         "org_alignment_score": 1.0,
         "teams_touching": 1,
         "optimal_teams": 1,
-        "last_assessed": "2026-05-13T18:24:00Z"
+        "last_assessed": "2026-05-14T21:08:00Z"
       },
-      "last_updated": "2026-05-13T18:24:00Z"
+      "last_updated": "2026-05-14T21:08:00Z"
     },
     {
       "id": "subsystem-tui",

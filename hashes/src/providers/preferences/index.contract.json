@@ -1,0 +1,43 @@
+{
+  "contract_id": "CTR-providers-preferences-00000001",
+  "module": "@Owl.Providers.Preferences src/providers/preferences/index.ts",
+  "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
+  "depth_score": "0.72 — DEEP (small Interface controlling runtime Provider override state)",
+  "seam_capacity": "CRITICAL (RoutingPreference crosses CommandRegistry and ProviderRouter)",
+  "sig_id": "SIG-providers-preferences-00000001",
+  "interface": {
+    "signatures": [
+      "RoutingPreferences: Context.Tag<RoutingPreferences, RoutingPreferencesService>",
+      "RoutingPreferencesLive: Layer<RoutingPreferences>",
+      "setPreferredProvider(provider: ProviderId) => Effect<void>",
+      "clearPreferredProvider() => Effect<void>",
+      "getPreferredProvider() => Effect<ProviderId | undefined>",
+      "snapshot() => Effect<RoutingPreferencesState>"
+    ],
+    "error_modes": [],
+    "invariants": [
+      "RoutingPreference MUST be stored in a Ref-backed Effect service",
+      "RoutingPreference MUST use ProviderId from schema, never raw strings after parsing",
+      "Clearing RoutingPreference MUST restore automatic ProviderRouter scoring"
+    ]
+  },
+  "architecture": {
+    "depth_score": 0.72,
+    "depth_status": "DEEP",
+    "leverage": "HIGH",
+    "locality": "HIGH",
+    "seam_capacity": "CRITICAL",
+    "coupling_complexity": 2.0,
+    "interface_stability": 0.85
+  },
+  "responsibilities": [
+    "Persist active RoutingPreference for the current Session",
+    "Expose a narrow Interface for Command and Orchestrator Modules"
+  ],
+  "prohibited": [
+    "MUST NOT persist provider preference in module-level mutable state",
+    "MUST NOT parse Command text inside ProviderRouter",
+    "MUST NOT bypass ProviderRouter failover when a preferred Provider fails"
+  ],
+  "created_at": "2026-05-14T16:55:00.000000Z"
+}

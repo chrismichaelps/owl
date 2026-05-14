@@ -11,8 +11,9 @@ import {
   type ProviderRouterService,
 } from "../../src/providers/router/index.js"
 import type { RoutingContext } from "../../src/providers/types.js"
-import type { Task } from "../../src/core/schema/index.js"
+import type { ProviderId, Task } from "../../src/core/schema/index.js"
 import { TokenBudgetLive } from "../../src/tokens/budget/index.js"
+import { RoutingPreferences } from "../../src/providers/preferences/index.js"
 
 const makeTask = (overrides: Partial<Task> = {}): Task => ({
   id: "task-001",
@@ -39,6 +40,8 @@ const stubResponse = {
 
 const stubStreamChunks = ["Hello ", "world"]
 const completeSpy = vi.fn()
+const observedRoutingContexts: RoutingContext[] = []
+let testPreferredProvider: ProviderId | undefined
 
 const TestProviderRouterLive = Layer.succeed(ProviderRouter, {
   route: (_ctx: RoutingContext) =>
@@ -51,19 +54,21 @@ const TestProviderRouterLive = Layer.succeed(ProviderRouter, {
       estimatedCostUsd: 0.001,
     }),
   complete: (
-    _ctx: RoutingContext,
+    ctx: RoutingContext,
     req: Parameters<ProviderRouterService["complete"]>[1],
   ) =>
     Effect.sync(() => {
+      observedRoutingContexts.push(ctx)
       completeSpy()
       return { ...stubResponse, taskId: req.taskId }
     }),
   completeWithCallback: (
-    _ctx: RoutingContext,
+    ctx: RoutingContext,
     req: Parameters<ProviderRouterService["completeWithCallback"]>[1],
     onChunk: Parameters<ProviderRouterService["completeWithCallback"]>[2],
   ) =>
     Effect.sync(() => {
+      observedRoutingContexts.push(ctx)
       stubStreamChunks.forEach(onChunk)
       return {
         content: stubStreamChunks.join(""),
@@ -75,10 +80,29 @@ const TestProviderRouterLive = Layer.succeed(ProviderRouter, {
   listProviders: () => Effect.succeed(["anthropic"]),
 } satisfies ProviderRouterService)
 
+const TestRoutingPreferencesLive = Layer.succeed(RoutingPreferences, {
+  setPreferredProvider: (provider: ProviderId) =>
+    Effect.sync(() => {
+      testPreferredProvider = provider
+    }),
+  clearPreferredProvider: () =>
+    Effect.sync(() => {
+      testPreferredProvider = undefined
+    }),
+  getPreferredProvider: () => Effect.succeed(testPreferredProvider),
+  snapshot: () =>
+    Effect.succeed(
+      testPreferredProvider === undefined
+        ? {}
+        : { preferredProvider: testPreferredProvider },
+    ),
+})
+
 const testLayer = OrchestratorLive.pipe(
   Layer.provide(ContextManagerLive),
   Layer.provide(SessionMemoryLive),
   Layer.provide(TokenBudgetLive),
+  Layer.provide(TestRoutingPreferencesLive),
   Layer.provide(TestProviderRouterLive),
 )
 
@@ -121,6 +145,19 @@ describe("Orchestrator.run", () => {
       }),
     )
     expect(response.taskId).toBe("task-xyz")
+  })
+
+  it("passes active RoutingPreference to ProviderRouter", async () => {
+    observedRoutingContexts.length = 0
+    testPreferredProvider = "openai"
+    const response = await run(
+      Effect.gen(function* () {
+        const orch = yield* Orchestrator
+        return yield* orch.run(makeTask({ id: "preferred-provider" }))
+      }),
+    )
+    expect(response.taskId).toBe("preferred-provider")
+    expect(observedRoutingContexts.at(-1)?.preferredProvider).toBe("openai")
   })
 
   it("runs two sequential tasks without error", async () => {

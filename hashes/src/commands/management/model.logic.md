@@ -11,27 +11,29 @@
 
 ## Algorithm
 
-1. **Initialize** — Set up initial state and validate preconditions
-2. **Process** — Execute the core operation based on current state
-3. **Transition** — Validate guard conditions and transition to next state
-4. **Complete** — Finalize operation and clean up resources
+1. Receive `/model` args from CommandRegistry.
+2. If no args are supplied, read RoutingPreferences snapshot and return the active Provider or `auto`.
+3. If the first arg is `auto`, clear the active RoutingPreference and return confirmation.
+4. If the first arg is a schema-valid ProviderId, set it as the active RoutingPreference and return confirmation.
+5. If the first arg is not valid, fail with CommandParseError listing valid Provider choices.
 
 ## Negative Logic (PROHIBITED PATHS)
 
-- MUST NOT: Bypass state transitions — always use the defined state machine
-- MUST NOT: Skip guard validation — every transition requires guard check
-- MUST NOT: Mutate state directly — use only defined transition methods
+- MUST NOT: mutate ProviderRouter internals from the Command handler.
+- MUST NOT: accept arbitrary Provider strings.
+- MUST NOT: store RoutingPreference outside the RoutingPreferences service.
 
 ## Edge Cases
 
-- **Concurrent access**: Serialize state transitions via atomic operations
-- **Timeout during transition**: Roll back to previous valid state
-- **Invalid guard condition**: Log error and remain in current state
+- **No active RoutingPreference**: report `auto`.
+- **Auto requested**: clear state and restore automatic ProviderRouter scoring.
+- **Unknown Provider**: fail with CommandParseError before mutating state.
 
 ## Dependencies
 
 - Grammar: "@root/hashes/grammar/effect/effect.hash.md"
 - Parent: `@root/hashes/src/commands/registry.hash.md`
+- Domain: `docs/CONTEXT.md#RoutingPreference`
 
 ---
 

@@ -12,7 +12,7 @@
 ## Algorithm
 
 1. Export immutable constants grouped by domain.
-2. Keep Provider routing coefficients, thresholds, and fallback limits centralized.
+2. Keep Provider routing ids, coefficients, thresholds, and fallback limits centralized.
 3. Keep FMCF governance thresholds centralized.
 4. Keep TUI, Editor, and Command constants centralized.
 
@@ -20,6 +20,7 @@
 
 - MUST NOT: Export mutable constant objects.
 - MUST NOT: Duplicate magic values inside runtime logic Modules.
+- MUST NOT: Duplicate Provider id literals inside Command handlers.
 - MUST NOT: Mix service logic into this constants Module.
 
 ## Edge Cases

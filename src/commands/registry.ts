@@ -25,6 +25,7 @@ import { SessionMemory } from "../engine/memory/index.js"
 import { RoleContext } from "../fmcf/roles/architect.js"
 import { HashRegistry } from "../fmcf/registry/index.js"
 import { HashRegistryLive } from "../fmcf/registry/index.js"
+import { RoutingPreferences } from "../providers/preferences/index.js"
 import { EditingPipeline } from "../editor/pipeline/index.js"
 import { RollbackSystem } from "../editor/rollback/index.js"
 import { makeAnalyzeCommand } from "./analysis/analyze.js"
@@ -176,6 +177,7 @@ export const CommandRegistryLive = Layer.effect(
  * - ContextManager (for clear command)
  * - SessionMemory (for memory/status commands)
  * - RoleContext (for role command)
+ * - RoutingPreferences (for model command)
  *
  * Registers all 23 commands on startup.
  */
@@ -190,6 +192,7 @@ export const makeCommandRegistryLive = (
   | RoleContext
   | RollbackSystem
   | EditingPipeline
+  | RoutingPreferences
 > =>
   Layer.effect(
     CommandRegistry,
@@ -202,6 +205,7 @@ export const makeCommandRegistryLive = (
       const contextManager = yield* ContextManager
       const fs = yield* FileSystem.FileSystem
       const roleCtx = yield* RoleContext
+      const routingPreferences = yield* RoutingPreferences
 
       const mapRef = yield* Ref.make<Map<string, CommandHandler>>(new Map())
       const svc = buildRegistryService(mapRef)
@@ -238,7 +242,7 @@ export const makeCommandRegistryLive = (
         makeStatusCommand(sessionMemory),
         makeClearCommand(contextManager),
         makeMemoryCommand(sessionMemory),
-        makeModelCommand(),
+        makeModelCommand(routingPreferences),
       ]
 
       yield* Effect.forEach(handlers, svc.register, { discard: true })

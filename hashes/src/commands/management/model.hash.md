@@ -1,6 +1,6 @@
-State_ID: BigInt(0x0000000000000064)
-Git_SHA: 45c6800bcea148e9ab367104707f7e30b7d58ca3
-Source_SHA256: 12b9e90412ebf1415df7eb2aa09fbccfe54329f4d6f6ec5103baed30dfd74884
+State_ID: BigInt(0x0000000000000063)
+Git_SHA: 1cd37ce367ad7a684a8a32d7049f5f665e95a599
+Source_SHA256: bb76e257923186f5155046d344c587033b970baf2868b95b1d12933d5f126192
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
 Fidelity: DECLARED
 ---
@@ -8,21 +8,21 @@ Fidelity: DECLARED
 ## @Owl.Commands.Management.Model (src/commands/management/model.ts)
 
 ### [Signatures]
-- `makeModelCommand() => CommandHandler`
+- `makeModelCommand(routingPreferences: RoutingPreferencesService) => CommandHandler`
 - `CommandHandler: { name, description, execute(args) => Effect<CommandResult, CommandParseError> }`
 
 ### [Governance]
-- depth_score: 0.30 — SHALLOW (informational static output)
-- seam_capacity: INTERNAL
-- leverage: NONE (informational only)
+- depth_score: 0.62 — MEDIUM (Command Interface over RoutingPreference state)
+- seam_capacity: CRITICAL
+- leverage: MEDIUM
 - SIG_ID: SIG-cmd-management-model-00000001
 
 ### [Linkage]
 - Grammar: `@root/hashes/grammar/effect/effect.hash.md`
 - Parent: `@root/hashes/src/commands/registry.hash.md`
-- Deps: `@root/hashes/src/core/errors/index.hash.md`
+- Deps: `@root/hashes/src/core/constants/index.hash.md`, `@root/hashes/src/core/errors/index.hash.md`, `@root/hashes/src/providers/preferences/index.hash.md`
 
 ### [Architecture]
-- Informational command showing active model and operational modes
-- Returns static message listing available command modes
-- No dependency on any service, purely informational
+- Shows, sets, and clears the active RoutingPreference.
+- Validates Provider ids through centralized constants.
+- Delegates all runtime state to RoutingPreferences service.

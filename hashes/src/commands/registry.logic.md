@@ -11,22 +11,23 @@
 
 ## Algorithm
 
-1. **Initialize** — Set up initial state and validate preconditions
-2. **Process** — Execute the core operation based on current state
-3. **Transition** — Validate guard conditions and transition to next state
-4. **Complete** — Finalize operation and clean up resources
+1. Initialize an empty command handler map.
+2. In the full composition root, yield each service required by command factories.
+3. Inject the shared RoutingPreferences service into `/model`.
+4. Register all command handlers exactly once at startup.
+5. Dispatch parsed Commands through the registered handler Interface.
 
 ## Negative Logic (PROHIBITED PATHS)
 
-- MUST NOT: Bypass state transitions — always use the defined state machine
-- MUST NOT: Skip guard validation — every transition requires guard check
-- MUST NOT: Mutate state directly — use only defined transition methods
+- MUST NOT: create command-local service instances that diverge from runtime state.
+- MUST NOT: let /model mutate ProviderRouter internals directly.
+- MUST NOT: register duplicate handlers for the same Command name.
 
 ## Edge Cases
 
-- **Concurrent access**: Serialize state transitions via atomic operations
-- **Timeout during transition**: Roll back to previous valid state
-- **Invalid guard condition**: Log error and remain in current state
+- **Command not found**: fail with CommandNotFoundError.
+- **Command parse error**: return CommandParseError from the handler.
+- **RoutingPreference dependency**: use the shared service supplied by the runtime leaf Layer.
 
 ## Dependencies
 

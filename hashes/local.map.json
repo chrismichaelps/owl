@@ -1,6 +1,6 @@
 {
   "shard_id": "@root/src",
-  "state_anchor": "BigInt:0x0000000000000060",
+  "state_anchor": "BigInt:0x0000000000000066",
   "parent_bridge": "@root/hashes/local.map.json",
   "git_anchor": "HEAD",
   "cache_integrity": "VERIFIED",
@@ -108,6 +108,17 @@
       ],
       "fidelity_level": "Active",
       "sig_id": "SIG-providers-bootstrap-00000001"
+    },
+    "providers/preferences": {
+      "file_path": "@root/src/providers/preferences/index.ts",
+      "hash_reference": "@root/hashes/src/providers/preferences/index.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [
+        "@root/hashes/src/core/schema/index.hash.md",
+        "@root/hashes/src/providers/router/index.hash.md"
+      ],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-providers-preferences-00000001"
     }
   }
 }

@@ -1,6 +1,6 @@
-State_ID: BigInt(0x0000000000000060)
-Git_SHA: 304674677fdf6b201510653edce843bdc8c76ea6
-Source_SHA256: 01318162618dc265b1a64c5b8589fa91e2aedc7fba363a11c7138aaa8dfb3770
+State_ID: BigInt(0x0000000000000066)
+Git_SHA: 1cd37ce367ad7a684a8a32d7049f5f665e95a599
+Source_SHA256: 52d797f4f948a20d3ca2e631c60623dd2c0d39779e8225a9cf09e7ff5a805aa2
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
 Fidelity: DECLARED
 ---
@@ -12,9 +12,10 @@ Fidelity: DECLARED
 - `makeOwlRuntime(projectRoot) => OwlRuntime`
 - `ProviderBootstrapLive` dependency forced before exposed Orchestrator
 - `TokenBudgetLive` dependency available to Orchestrator
+- `RoutingPreferencesLive` shared between Orchestrator and CommandRegistry
 
 ### [Governance]
-- depth_score: 0.93 — DEEP (composition root plus Provider bootstrap and TokenBudget enforcement)
+- depth_score: 0.94 — DEEP (composition root plus Provider bootstrap, TokenBudget, and RoutingPreference enforcement)
 - seam_capacity: BACKBONE (managed runtime lifecycle)
 - leverage: CRITICAL (wires Orchestrator, Context, Memory, Router)
 - SIG_ID: SIG-cli-runtime-00000001
@@ -22,9 +23,10 @@ Fidelity: DECLARED
 ### [Linkage]
 - Grammar: `@root/hashes/grammar/effect/effect.hash.md`
 - Parent: `@root/hashes/src/cli/index.hash.md`
-- Imports: `@root/src/engine/orchestrator/index.js`, `@root/src/engine/context/index.js`, `@root/src/engine/memory/index.js`, `@root/src/tokens/budget/index.js`, `@root/src/providers/router/index.js`, `@root/src/providers/bootstrap.js`, Provider adapter Layers
+- Imports: `@root/src/engine/orchestrator/index.js`, `@root/src/engine/context/index.js`, `@root/src/engine/memory/index.js`, `@root/src/tokens/budget/index.js`, `@root/src/providers/router/index.js`, `@root/src/providers/preferences/index.js`, `@root/src/providers/bootstrap.js`, Provider adapter Layers
 
 ### [Architecture]
 - ManagedRuntime factory for the CLI environment.
-- Composes Provider adapters, ProviderBootstrap, TokenBudget, Orchestrator, EditingPipeline, and CommandRegistry.
+- Composes Provider adapters, ProviderBootstrap, TokenBudget, RoutingPreferences, Orchestrator, EditingPipeline, and CommandRegistry.
 - ProviderBootstrap populates ProviderRouter before TUI or Command dispatch can execute Inference.
+- RoutingPreferences is shared so `/model` affects the next Orchestrator Inference.

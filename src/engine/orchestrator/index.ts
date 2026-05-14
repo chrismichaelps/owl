@@ -30,6 +30,7 @@ import { ContextManager } from "../context/index.js"
 import { buildFMCFSystemPrompt } from "../context/systemPrompt.js"
 import { SessionMemory } from "../memory/index.js"
 import { ProviderRouter } from "../../providers/router/index.js"
+import { RoutingPreferences } from "../../providers/preferences/index.js"
 import type { AnyProviderError } from "../../providers/types.js"
 import type {
   ProviderUnavailableError,
@@ -121,6 +122,7 @@ export const OrchestratorLive = Layer.effect(
     const mem = yield* SessionMemory
     const router = yield* ProviderRouter
     const budgetService = yield* TokenBudget
+    const routingPreferences = yield* RoutingPreferences
 
     yield* mem.startSession()
     yield* ctx.setSystemPrompt(buildFMCFSystemPrompt())
@@ -146,6 +148,8 @@ export const OrchestratorLive = Layer.effect(
         yield* budgetService.consume(task.id, estimatedTokens)
         const systemPrompt = yield* ctx.getSystemPrompt()
 
+        const preferredProvider =
+          yield* routingPreferences.getPreferredProvider()
         const routingCtx = {
           taskId: task.id,
           mode: task.mode,
@@ -153,6 +157,7 @@ export const OrchestratorLive = Layer.effect(
           requiresReasoning: task.mode === "deep" || task.mode === "god",
           requiresVision: false,
           latencyBudgetMs: PROVIDER_TIMEOUTS.DEFAULT_MS,
+          ...(preferredProvider !== undefined ? { preferredProvider } : {}),
         }
 
         const request = {
@@ -206,6 +211,8 @@ export const OrchestratorLive = Layer.effect(
         yield* budgetService.consume(task.id, estimatedInputTokens)
         const systemPrompt = yield* ctx.getSystemPrompt()
 
+        const preferredProvider =
+          yield* routingPreferences.getPreferredProvider()
         const routingCtx = {
           taskId: task.id,
           mode: task.mode,
@@ -213,6 +220,7 @@ export const OrchestratorLive = Layer.effect(
           requiresReasoning: task.mode === "deep" || task.mode === "god",
           requiresVision: false,
           latencyBudgetMs: PROVIDER_TIMEOUTS.DEFAULT_MS,
+          ...(preferredProvider !== undefined ? { preferredProvider } : {}),
         }
 
         const request = {

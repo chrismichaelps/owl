@@ -9,6 +9,7 @@
  *    - ContextManagerLive
  *    - SessionMemoryLive
  *    - ProviderRouterLive
+ *    - RoutingPreferencesLive
  *    - Provider adapter layers
  *    - RoleContextLive
  *    - RollbackSystemLive
@@ -38,6 +39,7 @@ import { Orchestrator, OrchestratorLive } from "../engine/orchestrator/index.js"
 import { ContextManagerLive } from "../engine/context/index.js"
 import { SessionMemoryLive } from "../engine/memory/index.js"
 import { ProviderRouterLive } from "../providers/router/index.js"
+import { RoutingPreferencesLive } from "../providers/preferences/index.js"
 import { AnthropicAdapterLive } from "../providers/anthropic/index.js"
 import { GoogleAdapterLive } from "../providers/google/index.js"
 import { OllamaAdapterLive } from "../providers/ollama/index.js"
@@ -91,6 +93,7 @@ export const makeOwlRuntime = (projectRoot: string): OwlRuntime => {
     ContextManagerLive,
     SessionMemoryLive,
     ProviderRouterLive,
+    RoutingPreferencesLive,
     providerAdapterLayer,
     RoleContextLive,
     RollbackSystemLive,
