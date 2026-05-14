@@ -12,16 +12,16 @@ beforeAll(() => {
     url: "http://localhost",
   })
   const g = global as Record<string, unknown>
-  g["window"] = dom.window
-  g["document"] = dom.window.document
-  g["navigator"] = dom.window.navigator
-  g["HTMLElement"] = dom.window.HTMLElement
-  g["Element"] = dom.window.Element
-  g["Node"] = dom.window.Node
-  g["Text"] = dom.window.Text
-  g["Comment"] = dom.window.Comment
-  g["DocumentFragment"] = dom.window.DocumentFragment
-  g["MutationObserver"] = dom.window.MutationObserver
+  g.window = dom.window
+  g.document = dom.window.document
+  g.navigator = dom.window.navigator
+  g.HTMLElement = dom.window.HTMLElement
+  g.Element = dom.window.Element
+  g.Node = dom.window.Node
+  g.Text = dom.window.Text
+  g.Comment = dom.window.Comment
+  g.DocumentFragment = dom.window.DocumentFragment
+  g.MutationObserver = dom.window.MutationObserver
 })
 
 afterAll(() => {
