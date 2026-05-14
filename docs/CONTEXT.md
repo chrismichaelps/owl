@@ -150,3 +150,30 @@ Canonical business concept definitions. Every module name, seam name, and interf
 - **Not:** "UI", "terminal", "display" — TUI is the specific three-panel Ink runtime.
 - **Seams:** TUI → Engine (CRITICAL), TUI → CommandRegistry (CRITICAL)
 - **Example:** The TUI rendering the Left Panel (reasoning), Center Panel (diffs), Right Panel (metrics).
+
+---
+
+### Turn
+- **Definition:** A single completed prompt-response cycle within a Session — one developer input paired with one Owl response, timestamped and persisted in the Conversation Thread.
+- **Canonical name:** Turn
+- **Not:** "message", "exchange", "interaction" — Turn is the archived unit of conversation history.
+- **Seams:** Turn → ConversationThread (INTERNAL), Turn → Session (CRITICAL)
+- **Example:** A Turn capturing the prompt "Refactor auth", the response text, latency 1240ms, and 3,200 tokens.
+
+---
+
+### Streaming
+- **Definition:** The real-time, incremental delivery of Provider output tokens to the TUI as they are generated — enabling live display of partially-complete responses before inference completes.
+- **Canonical name:** Streaming
+- **Not:** "live output", "realtime", "chunk delivery" — Streaming is the governed delivery mode.
+- **Seams:** Streaming → ProviderRouter (CRITICAL), Streaming → OutputPanel (CRITICAL)
+- **Example:** The OutputPanel displaying "Analyzing your auth module…" character-by-character while Orchestrator streams Claude's response.
+
+---
+
+### Inference
+- **Definition:** The LLM computation process triggered by a Task — routing through ProviderRouter, executing against the selected Provider, and returning a complete InferenceResponse (or streaming chunks).
+- **Canonical name:** Inference
+- **Not:** "completion", "generation", "API call" — Inference is the full governed round-trip.
+- **Seams:** Inference → Orchestrator (CRITICAL), Inference → ProviderRouter (BACKBONE)
+- **Example:** An Inference taking 1,240ms against claude-sonnet-4, consuming 4,200 input tokens and yielding 812 output tokens.
