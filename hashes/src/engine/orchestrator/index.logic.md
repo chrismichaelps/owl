@@ -14,22 +14,26 @@
 
 ## Algorithm
 
-1. **Initialize** — Set up initial state and validate preconditions
-2. **Process** — Execute the core operation based on current state
-3. **Transition** — Validate guard conditions and transition to next state
-4. **Complete** — Finalize operation and clean up resources
+1. Start SessionMemory and install the FMCF system prompt during Layer construction.
+2. For each Task, add the user Message to ContextManager.
+3. Resolve Mode-specific budget and window messages with ContextManager.
+4. Initialize TokenBudget for the Task Mode.
+5. Estimate input tokens and consume them before ProviderRouter execution.
+6. Build RoutingContext and execute ProviderRouter Inference or Streaming.
+7. Consume output tokens before assistant Message insertion and SessionMemory recording.
+8. Record assistant Message, Session Turn, and return InferenceResponse.
 
 ## Negative Logic (PROHIBITED PATHS)
 
-- MUST NOT: Bypass state transitions — always use the defined state machine
-- MUST NOT: Skip guard validation — every transition requires guard check
-- MUST NOT: Mutate state directly — use only defined transition methods
+- MUST NOT: call ProviderRouter after TokenBudget rejects estimated input.
+- MUST NOT: record assistant context or SessionMemory before output budget consumption succeeds.
+- MUST NOT: perform Provider adapter calls directly; all Inference crosses ProviderRouter.
 
 ## Edge Cases
 
-- **Concurrent access**: Serialize state transitions via atomic operations
-- **Timeout during transition**: Roll back to previous valid state
-- **Invalid guard condition**: Log error and remain in current state
+- **Input exceeds budget**: fail before ProviderRouter execution.
+- **Output exceeds budget**: fail before assistant context/memory recording.
+- **Streaming output estimate exceeds budget**: fail after stream assembly, before memory/context mutation.
 
 ## Dependencies
 

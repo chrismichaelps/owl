@@ -15,6 +15,7 @@
     ],
     "invariants": [
       "ProviderBootstrapLive MUST run before OrchestratorLive accepts Inference",
+      "TokenBudgetLive MUST be available to OrchestratorLive",
       "CommandRegistry MUST receive the same Orchestrator and EditingPipeline Layers as the TUI runtime",
       "Runtime callers MUST only access Orchestrator and CommandRegistry services"
     ]

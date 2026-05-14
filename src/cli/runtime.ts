@@ -15,6 +15,7 @@
  *    - GovernanceEngineLive
  *    - DiffGeneratorLive
  *    - TLIExecutorLive
+ *    - TokenBudgetLive
  *
  * 2. Derived layers:
  *    - ProviderBootstrapLive (requires: config, router, adapters)
@@ -53,6 +54,7 @@ import { DiffGeneratorLive } from "../editor/diff/index.js"
 import { TLIExecutorLive } from "../editor/tli/index.js"
 import { GovernanceEngineLive } from "../fmcf/governance/index.js"
 import { makeCommandRegistryLive } from "../commands/registry.js"
+import { TokenBudgetLive } from "../tokens/budget/index.js"
 import type { CommandRegistry } from "../commands/registry.js"
 import type { ConfigError } from "effect/ConfigError"
 
@@ -95,6 +97,7 @@ export const makeOwlRuntime = (projectRoot: string): OwlRuntime => {
     GovernanceEngineLive,
     DiffGeneratorLive,
     TLIExecutorLive,
+    TokenBudgetLive,
   )
 
   const providerBootstrapLayer = ProviderBootstrapLive.pipe(

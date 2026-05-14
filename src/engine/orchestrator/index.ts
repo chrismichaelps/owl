@@ -31,17 +31,30 @@ import { buildFMCFSystemPrompt } from "../context/systemPrompt.js"
 import { SessionMemory } from "../memory/index.js"
 import { ProviderRouter } from "../../providers/router/index.js"
 import type { AnyProviderError } from "../../providers/types.js"
-import type { ProviderUnavailableError } from "../../core/errors/index.js"
+import type {
+  ProviderUnavailableError,
+  TokenBudgetExceededError,
+} from "../../core/errors/index.js"
 import type {
   Task,
   InferenceResponse,
   Message,
 } from "../../core/schema/index.js"
-import { MODE_TOKEN_BUDGETS, TOKEN_LIMITS } from "../../core/constants/index.js"
+import {
+  MODE_TOKEN_BUDGETS,
+  PROVIDER_TIMEOUTS,
+  TOKEN_LIMITS,
+} from "../../core/constants/index.js"
 import { estimateConversationTokens } from "../../tokens/pruning/index.js"
+import { TokenBudget } from "../../tokens/budget/index.js"
 
 /** ProviderId union — mirrors the schema literal for safe casting */
 type ProviderId = InferenceResponse["provider"]
+
+const resolveModeBudget = (task: Task): number =>
+  MODE_TOKEN_BUDGETS[task.mode] ??
+  MODE_TOKEN_BUDGETS.standard ??
+  TOKEN_LIMITS.CONTEXT_WINDOW_DEFAULT
 
 /**
  * @Owl.Engine.Orchestrator.Service - Main agent loop interface
@@ -59,7 +72,7 @@ export interface OrchestratorService {
     task: Task,
   ) => Effect.Effect<
     InferenceResponse,
-    AnyProviderError | ProviderUnavailableError
+    AnyProviderError | ProviderUnavailableError | TokenBudgetExceededError
   >
   /**
    * Execute a task with real-time Streaming — delivers chunks via callback
@@ -79,7 +92,7 @@ export interface OrchestratorService {
     onChunk: (text: string) => void,
   ) => Effect.Effect<
     InferenceResponse,
-    AnyProviderError | ProviderUnavailableError
+    AnyProviderError | ProviderUnavailableError | TokenBudgetExceededError
   >
 
   /**
@@ -107,6 +120,7 @@ export const OrchestratorLive = Layer.effect(
     const ctx = yield* ContextManager
     const mem = yield* SessionMemory
     const router = yield* ProviderRouter
+    const budgetService = yield* TokenBudget
 
     yield* mem.startSession()
     yield* ctx.setSystemPrompt(buildFMCFSystemPrompt())
@@ -115,7 +129,7 @@ export const OrchestratorLive = Layer.effect(
       task: Task,
     ): Effect.Effect<
       InferenceResponse,
-      AnyProviderError | ProviderUnavailableError
+      AnyProviderError | ProviderUnavailableError | TokenBudgetExceededError
     > =>
       Effect.gen(function* () {
         const userMsg: Message = {
@@ -125,10 +139,11 @@ export const OrchestratorLive = Layer.effect(
         }
         yield* ctx.addMessage(userMsg)
 
-        const budget =
-          MODE_TOKEN_BUDGETS[task.mode] ?? MODE_TOKEN_BUDGETS.standard ?? 32_000
+        const budget = resolveModeBudget(task)
         const windowedMsgs = yield* ctx.getWindowedMessages(budget)
         const estimatedTokens = estimateConversationTokens(windowedMsgs)
+        yield* budgetService.initSession(task.mode, budget)
+        yield* budgetService.consume(task.id, estimatedTokens)
         const systemPrompt = yield* ctx.getSystemPrompt()
 
         const routingCtx = {
@@ -137,7 +152,7 @@ export const OrchestratorLive = Layer.effect(
           estimatedInputTokens: estimatedTokens,
           requiresReasoning: task.mode === "deep" || task.mode === "god",
           requiresVision: false,
-          latencyBudgetMs: 30_000,
+          latencyBudgetMs: PROVIDER_TIMEOUTS.DEFAULT_MS,
         }
 
         const request = {
@@ -149,6 +164,7 @@ export const OrchestratorLive = Layer.effect(
         }
 
         const response = yield* router.complete(routingCtx, request)
+        yield* budgetService.consume(task.id, response.usage.outputTokens)
 
         const assistantMsg: Message = {
           role: "assistant",
@@ -173,7 +189,7 @@ export const OrchestratorLive = Layer.effect(
       onChunk: (text: string) => void,
     ): Effect.Effect<
       InferenceResponse,
-      AnyProviderError | ProviderUnavailableError
+      AnyProviderError | ProviderUnavailableError | TokenBudgetExceededError
     > =>
       Effect.gen(function* () {
         const userMsg: Message = {
@@ -183,10 +199,11 @@ export const OrchestratorLive = Layer.effect(
         }
         yield* ctx.addMessage(userMsg)
 
-        const budget =
-          MODE_TOKEN_BUDGETS[task.mode] ?? MODE_TOKEN_BUDGETS.standard ?? 32_000
+        const budget = resolveModeBudget(task)
         const windowedMsgs = yield* ctx.getWindowedMessages(budget)
         const estimatedInputTokens = estimateConversationTokens(windowedMsgs)
+        yield* budgetService.initSession(task.mode, budget)
+        yield* budgetService.consume(task.id, estimatedInputTokens)
         const systemPrompt = yield* ctx.getSystemPrompt()
 
         const routingCtx = {
@@ -195,7 +212,7 @@ export const OrchestratorLive = Layer.effect(
           estimatedInputTokens,
           requiresReasoning: task.mode === "deep" || task.mode === "god",
           requiresVision: false,
-          latencyBudgetMs: 30_000,
+          latencyBudgetMs: PROVIDER_TIMEOUTS.DEFAULT_MS,
         }
 
         const request = {
@@ -219,6 +236,7 @@ export const OrchestratorLive = Layer.effect(
             timestamp: new Date().toISOString(),
           },
         ])
+        yield* budgetService.consume(task.id, outputTokens)
 
         const response: InferenceResponse = {
           taskId: task.id,

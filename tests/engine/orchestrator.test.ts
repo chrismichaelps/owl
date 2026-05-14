@@ -12,6 +12,7 @@ import {
 } from "../../src/providers/router/index.js"
 import type { RoutingContext } from "../../src/providers/types.js"
 import type { Task } from "../../src/core/schema/index.js"
+import { TokenBudgetLive } from "../../src/tokens/budget/index.js"
 
 const makeTask = (overrides: Partial<Task> = {}): Task => ({
   id: "task-001",
@@ -37,6 +38,7 @@ const stubResponse = {
 }
 
 const stubStreamChunks = ["Hello ", "world"]
+const completeSpy = vi.fn()
 
 const TestProviderRouterLive = Layer.succeed(ProviderRouter, {
   route: (_ctx: RoutingContext) =>
@@ -51,7 +53,11 @@ const TestProviderRouterLive = Layer.succeed(ProviderRouter, {
   complete: (
     _ctx: RoutingContext,
     req: Parameters<ProviderRouterService["complete"]>[1],
-  ) => Effect.succeed({ ...stubResponse, taskId: req.taskId }),
+  ) =>
+    Effect.sync(() => {
+      completeSpy()
+      return { ...stubResponse, taskId: req.taskId }
+    }),
   completeWithCallback: (
     _ctx: RoutingContext,
     req: Parameters<ProviderRouterService["completeWithCallback"]>[1],
@@ -72,6 +78,7 @@ const TestProviderRouterLive = Layer.succeed(ProviderRouter, {
 const testLayer = OrchestratorLive.pipe(
   Layer.provide(ContextManagerLive),
   Layer.provide(SessionMemoryLive),
+  Layer.provide(TokenBudgetLive),
   Layer.provide(TestProviderRouterLive),
 )
 
@@ -79,6 +86,21 @@ const run = <A, E>(eff: Effect.Effect<A, E, Orchestrator>) =>
   Effect.runPromise(eff.pipe(Effect.provide(testLayer)) as Effect.Effect<A>)
 
 describe("Orchestrator.run", () => {
+  it("fails before provider execution when estimated input exceeds mode budget", async () => {
+    completeSpy.mockClear()
+    const exit = await Effect.runPromiseExit(
+      Effect.gen(function* () {
+        const orch = yield* Orchestrator
+        return yield* orch.run(
+          makeTask({ mode: "economy", prompt: "x".repeat(12_000) }),
+        )
+      }).pipe(Effect.provide(testLayer)),
+    )
+
+    expect(exit._tag).toBe("Failure")
+    expect(completeSpy).not.toHaveBeenCalled()
+  })
+
   it("returns an InferenceResponse for a valid task", async () => {
     const response = await run(
       Effect.gen(function* () {

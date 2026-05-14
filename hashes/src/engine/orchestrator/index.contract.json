@@ -2,20 +2,36 @@
   "contract_id": "CTR-engine-orchestrator-00000001",
   "module": "@Owl.Engine.Orchestrator src/engine/orchestrator/index.ts",
   "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
-  "depth_score": "0.75 \u2014 DEEP (orchestration logic, provider seam crossing)",
+  "depth_score": "0.80 \u2014 DEEP (orchestration logic, budget enforcement, provider seam crossing)",
   "seam_capacity": "CRITICAL (seam-engine-provider crossing point)",
   "sig_id": "SIG-engine-orchestrator-00000001",
   "interface": {
     "signatures": [
       "Orchestrator: Context.Tag<Orchestrator, OrchestratorService>",
       "OrchestratorLive: Layer.effect<Orchestrator, OrchestratorService>",
-      "run(task: Task) => Effect<Either<InferenceResponse, AnyProviderError | ProviderUnavailableError>>",
+      "run(task: Task) => Effect<InferenceResponse, AnyProviderError | ProviderUnavailableError | TokenBudgetExceededError>",
+      "runStream(task: Task, onChunk) => Effect<InferenceResponse, AnyProviderError | ProviderUnavailableError | TokenBudgetExceededError>",
       "getSessionSummary() => Effect<string>"
     ],
-    "error_modes": [],
-    "invariants": []
+    "error_modes": [
+      "TokenBudgetExceededError when estimated input or output usage exceeds Mode budget",
+      "ProviderUnavailableError when ProviderRouter has no valid Provider",
+      "AnyProviderError when Provider execution fails"
+    ],
+    "invariants": [
+      "TokenBudget MUST be initialized for the Task Mode before ProviderRouter execution",
+      "Estimated input tokens MUST be consumed before ProviderRouter execution",
+      "Output tokens MUST be consumed before assistant message or Session memory recording"
+    ]
   },
-  "responsibilities": [],
-  "prohibited": [],
+  "responsibilities": [
+    "Coordinate Task Inference through ContextManager, TokenBudget, ProviderRouter, and SessionMemory",
+    "Keep budget enforcement centralized in the agent loop"
+  ],
+  "prohibited": [
+    "MUST NOT call ProviderRouter after input budget failure",
+    "MUST NOT record a Turn when output budget enforcement fails",
+    "MUST NOT enforce TokenBudget inside TUI or Provider adapters"
+  ],
   "created_at": "2026-05-14T15:55:47.217615Z"
 }
