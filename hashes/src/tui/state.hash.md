@@ -1,7 +1,7 @@
 ---
 State_ID: BigInt(0x0000000000000030)
 Git_SHA: b6b78075c6642d82327f887c2c3bdd57c3eeb2a1
-Source_SHA256: f9e413648ceff129df077a6811e665df94d24199f738dd9df705583632985b83
+Source_SHA256: cd5ef7b4e0eef4d145e349546f07cbb6b239a2d51028711454ad25ec82162f18
 Grammar_Lock: "@root/hashes/grammar/react/react.hash.md"
 Fidelity: DECLARED
 ---
