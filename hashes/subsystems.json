@@ -278,16 +278,19 @@
       "name": "TUI",
       "description": "Terminal user interface — three-panel Ink layout, status bar, streaming rendering, keyboard navigation.",
       "owner_team": "owl-tui",
-      "maturity": "EXPLORING",
+      "maturity": "BUILDING",
       "modules": [
-        "@root/src/tui/App.tsx",
-        "@root/src/tui/panels/LeftPanel.tsx",
-        "@root/src/tui/panels/CenterPanel.tsx",
-        "@root/src/tui/panels/RightPanel.tsx",
-        "@root/src/tui/status/StatusBar.tsx",
-        "@root/src/tui/components/DiffView.tsx",
-        "@root/src/tui/components/MetricsView.tsx",
-        "@root/src/tui/components/ApprovalPrompt.tsx"
+        "@root/src/tui/app.tsx",
+        "@root/src/tui/state.ts",
+        "@root/src/tui/components/ConversationThread.tsx",
+        "@root/src/tui/components/LogPanel.tsx",
+        "@root/src/tui/components/MetaPanel.tsx",
+        "@root/src/tui/components/OutputPanel.tsx",
+        "@root/src/tui/components/PromptInput.tsx",
+        "@root/src/tui/components/Spinner.tsx",
+        "@root/src/tui/components/StatusBar.tsx",
+        "@root/src/tui/components/WelcomeBanner.tsx",
+        "@root/src/tui/hooks/usePromptHistory.ts"
       ],
       "internal_seams": [],
       "external_seams": [
@@ -308,8 +311,9 @@
         "org_alignment_score": 1.0,
         "teams_touching": 1,
         "optimal_teams": 1,
-        "last_assessed": "2026-05-12T15:00:00Z"
-      }
+        "last_assessed": "2026-05-13T20:15:00Z"
+      },
+      "last_updated": "2026-05-13T20:15:00Z"
     }
   ]
 }
