@@ -1,4 +1,11 @@
-# Owl — AI Coding Agent
+<p align="center">
+<img src="/assets/owl_logo_transparent.png" alt="Owl Logo" width="100" />
+</p>
+
+<p align="center">
+ Owl — AI Coding Agent
+</p>
+
 
 > [!IMPORTANT]  
 > **Project in Development** — This is an early-stage project.
