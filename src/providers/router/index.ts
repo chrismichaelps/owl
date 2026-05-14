@@ -28,12 +28,14 @@
  * )
  */
 import { Context, Effect, Layer, Ref } from "effect"
+import * as Stream from "effect/Stream"
 import { ProviderUnavailableError } from "../../core/errors/index.js"
 import { selectBestProvider } from "./scoring.js"
 import type {
   LLMProviderService,
   RoutingContext,
   RoutingDecision,
+  StreamingCallbackResult,
 } from "../types.js"
 import type {
   InferenceRequest,
@@ -70,6 +72,26 @@ export interface ProviderRouterService {
     request: Omit<InferenceRequest, "model">,
   ) => Effect.Effect<
     InferenceResponse,
+    AnyProviderError | ProviderUnavailableError
+  >
+
+  /**
+   * Execute streaming Inference via selected provider, delivering chunks via callback
+   *
+   * Internally calls route() to select provider, then streams via provider.stream().
+   * Calls onChunk for each text chunk as it arrives; returns assembled result on completion.
+   *
+   * @param ctx - RoutingContext for provider selection
+   * @param request - InferenceRequest without model (router adds it)
+   * @param onChunk - Callback invoked for each text chunk during Streaming
+   * @returns StreamingCallbackResult with full content and metadata
+   */
+  readonly completeWithCallback: (
+    ctx: RoutingContext,
+    request: Omit<InferenceRequest, "model">,
+    onChunk: (text: string) => void,
+  ) => Effect.Effect<
+    StreamingCallbackResult,
     AnyProviderError | ProviderUnavailableError
   >
 
@@ -185,6 +207,49 @@ export const ProviderRouterLive = Layer.effect(
         })
       })
 
+    const completeWithCallback = (
+      ctx: RoutingContext,
+      request: Omit<InferenceRequest, "model">,
+      onChunk: (text: string) => void,
+    ): Effect.Effect<
+      StreamingCallbackResult,
+      AnyProviderError | ProviderUnavailableError
+    > =>
+      Effect.gen(function* () {
+        const startMs = Date.now()
+        const decision = yield* route(ctx)
+        const registry = yield* Ref.get(registryRef)
+        const provider = registry.get(decision.selectedProvider)
+
+        if (!provider) {
+          return yield* Effect.fail(
+            new ProviderUnavailableError({
+              provider: decision.selectedProvider,
+              reason: "Provider registered in routing but not in registry",
+            }),
+          )
+        }
+
+        const chunks: string[] = []
+        yield* Stream.runForEach(
+          provider.stream({ ...request, model: decision.selectedModel }),
+          (chunk) =>
+            Effect.sync(() => {
+              if (chunk.type === "text" && chunk.content != null) {
+                chunks.push(chunk.content)
+                onChunk(chunk.content)
+              }
+            }),
+        )
+
+        return {
+          content: chunks.join(""),
+          provider: decision.selectedProvider,
+          model: decision.selectedModel,
+          latencyMs: Date.now() - startMs,
+        } satisfies StreamingCallbackResult
+      })
+
     const listProviders = (): Effect.Effect<readonly string[]> =>
       Ref.get(registryRef).pipe(
         Effect.map((registry) => Array.from(registry.keys())),
@@ -195,6 +260,7 @@ export const ProviderRouterLive = Layer.effect(
     } = {
       route,
       complete,
+      completeWithCallback,
       listProviders,
       _register: (provider) => {
         Effect.runSync(

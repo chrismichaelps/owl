@@ -39,6 +39,9 @@ import type {
 import { MODE_TOKEN_BUDGETS, TOKEN_LIMITS } from "../../core/constants/index.js"
 import { estimateConversationTokens } from "../../tokens/pruning/index.js"
 
+/** ProviderId union — mirrors the schema literal for safe casting */
+type ProviderId = InferenceResponse["provider"]
+
 /**
  * @Owl.Engine.Orchestrator.Service - Main agent loop interface
  */
@@ -57,6 +60,27 @@ export interface OrchestratorService {
     InferenceResponse,
     AnyProviderError | ProviderUnavailableError
   >
+  /**
+   * Execute a task with real-time Streaming — delivers chunks via callback
+   *
+   * Builds context and routing exactly like run(), but calls
+   * router.completeWithCallback so the TUI can display tokens as they arrive.
+   * Estimates token counts from content length (streaming APIs don't expose usage).
+   *
+   * @param task - Task with id, prompt, mode, createdAt
+   * @param onChunk - Callback invoked for each text chunk during Streaming
+   * @returns InferenceResponse with full assembled content and estimated usage
+   * @throws AnyProviderError - Provider failed during streaming
+   * @throws ProviderUnavailableError - No suitable provider found
+   */
+  readonly runStream: (
+    task: Task,
+    onChunk: (text: string) => void,
+  ) => Effect.Effect<
+    InferenceResponse,
+    AnyProviderError | ProviderUnavailableError
+  >
+
   /**
    * Get session summary for debugging/display
    * @returns Human-readable summary: sessionId, turns, total tokens
@@ -142,8 +166,93 @@ export const OrchestratorLive = Layer.effect(
         return response
       })
 
+    const runStream = (
+      task: Task,
+      onChunk: (text: string) => void,
+    ): Effect.Effect<
+      InferenceResponse,
+      AnyProviderError | ProviderUnavailableError
+    > =>
+      Effect.gen(function* () {
+        const userMsg: Message = {
+          role: "user",
+          content: task.prompt,
+          timestamp: new Date().toISOString(),
+        }
+        yield* ctx.addMessage(userMsg)
+
+        const budget =
+          MODE_TOKEN_BUDGETS[task.mode] ?? MODE_TOKEN_BUDGETS.standard ?? 32_000
+        const windowedMsgs = yield* ctx.getWindowedMessages(budget)
+        const estimatedInputTokens = estimateConversationTokens(windowedMsgs)
+        const systemPrompt = yield* ctx.getSystemPrompt()
+
+        const routingCtx = {
+          taskId: task.id,
+          mode: task.mode,
+          estimatedInputTokens,
+          requiresReasoning: task.mode === "deep" || task.mode === "god",
+          requiresVision: false,
+          latencyBudgetMs: 30_000,
+        }
+
+        const request = {
+          taskId: task.id,
+          messages: windowedMsgs,
+          maxTokens: TOKEN_LIMITS.MAX_OUTPUT_TOKENS,
+          systemPrompt,
+          stream: true,
+        }
+
+        const result = yield* router.completeWithCallback(
+          routingCtx,
+          request,
+          onChunk,
+        )
+
+        const outputTokens = estimateConversationTokens([
+          {
+            role: "assistant" as const,
+            content: result.content,
+            timestamp: new Date().toISOString(),
+          },
+        ])
+
+        const response: InferenceResponse = {
+          taskId: task.id,
+          content: result.content,
+          stopReason: "end_turn",
+          usage: {
+            inputTokens: estimatedInputTokens,
+            outputTokens,
+            cacheReadTokens: 0,
+            cacheWriteTokens: 0,
+          },
+          model: result.model,
+          provider: result.provider as ProviderId,
+          latencyMs: result.latencyMs,
+        }
+
+        const assistantMsg: Message = {
+          role: "assistant",
+          content: result.content,
+          timestamp: new Date().toISOString(),
+        }
+        yield* ctx.addMessage(assistantMsg)
+
+        yield* mem.recordTurn({
+          taskId: task.id,
+          prompt: task.prompt,
+          response: result.content,
+          tokensUsed: estimatedInputTokens + outputTokens,
+          timestamp: new Date().toISOString(),
+        })
+
+        return response
+      })
+
     const getSessionSummary = (): Effect.Effect<string> => mem.summarize()
 
-    return { run, getSessionSummary } satisfies OrchestratorService
+    return { run, runStream, getSessionSummary } satisfies OrchestratorService
   }),
 )

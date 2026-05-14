@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest"
+import { describe, it, expect, vi } from "vitest"
 import { Effect, Layer } from "effect"
 import {
   Orchestrator,
@@ -36,6 +36,8 @@ const stubResponse = {
   latencyMs: 120,
 }
 
+const stubStreamChunks = ["Hello ", "world"]
+
 const TestProviderRouterLive = Layer.succeed(ProviderRouter, {
   route: (_ctx: RoutingContext) =>
     Effect.succeed({
@@ -50,6 +52,20 @@ const TestProviderRouterLive = Layer.succeed(ProviderRouter, {
     _ctx: RoutingContext,
     req: Parameters<ProviderRouterService["complete"]>[1],
   ) => Effect.succeed({ ...stubResponse, taskId: req.taskId }),
+  completeWithCallback: (
+    _ctx: RoutingContext,
+    req: Parameters<ProviderRouterService["completeWithCallback"]>[1],
+    onChunk: Parameters<ProviderRouterService["completeWithCallback"]>[2],
+  ) =>
+    Effect.sync(() => {
+      stubStreamChunks.forEach(onChunk)
+      return {
+        content: stubStreamChunks.join(""),
+        provider: "anthropic",
+        model: "claude-opus-4",
+        latencyMs: 100,
+      }
+    }),
   listProviders: () => Effect.succeed(["anthropic"]),
 } satisfies ProviderRouterService)
 
@@ -110,5 +126,37 @@ describe("Orchestrator.getSessionSummary", () => {
       }),
     )
     expect(summary).toContain("2")
+  })
+})
+
+describe("Orchestrator.runStream", () => {
+  it("delivers chunks via callback and returns InferenceResponse", async () => {
+    const received: string[] = []
+    const response = await run(
+      Effect.gen(function* () {
+        const orch = yield* Orchestrator
+        return yield* orch.runStream(makeTask(), (chunk) => {
+          received.push(chunk)
+        })
+      }),
+    )
+    expect(received).toEqual(["Hello ", "world"])
+    expect(response.content).toBe("Hello world")
+    expect(response.provider).toBe("anthropic")
+    expect(response.stopReason).toBe("end_turn")
+  })
+
+  it("records the turn in session memory after streaming", async () => {
+    const response = await run(
+      Effect.gen(function* () {
+        const orch = yield* Orchestrator
+        yield* orch.runStream(
+          makeTask({ id: "stream-1", prompt: "stream task" }),
+          vi.fn(),
+        )
+        return yield* orch.getSessionSummary()
+      }),
+    )
+    expect(response).toContain("1")
   })
 })

@@ -204,3 +204,21 @@ export const RoutingDecisionSchema = Schema.Struct({
   estimatedCostUsd: Schema.Number,
 })
 export type RoutingDecision = Schema.Schema.Type<typeof RoutingDecisionSchema>
+
+/**
+ * @Owl.Providers.Types.StreamingResult - Result of a streaming Inference
+ *
+ * Returned by ProviderRouter.completeWithCallback after the stream completes.
+ * Token counts are not included — Orchestrator estimates them via
+ * estimateConversationTokens to avoid polluting this type with function types.
+ */
+export interface StreamingCallbackResult {
+  /** Full assembled response content (all chunks joined) */
+  readonly content: string
+  /** Provider that handled the Inference */
+  readonly provider: string
+  /** Model used for the Inference */
+  readonly model: string
+  /** End-to-end latency in milliseconds (start of route() to stream end) */
+  readonly latencyMs: number
+}

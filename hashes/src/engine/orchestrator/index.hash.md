@@ -1,6 +1,6 @@
-State_ID: BigInt(0x0000000000000013)
-Git_SHA: ad091135d8d9083717a044f82e0307e4c2defb32
-Source_SHA256: d469b23b0d7e4cd071a47ec199717ff20cb20f055600dd71c0048bc964b15043
+State_ID: BigInt(0x0000000000000054)
+Git_SHA: b20ee4c34893a44169b22184057fe5d51b2047d3
+Source_SHA256: 7aeaf427201e008377a016d403f4beed9553a846dcf504e50c12add1dc9bf8d2
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
 Fidelity: DECLARED
 ---
@@ -10,7 +10,8 @@ Fidelity: DECLARED
 ### [Signatures]
 - `Orchestrator: Context.Tag<Orchestrator, OrchestratorService>`
 - `OrchestratorLive: Layer.effect<Orchestrator, OrchestratorService>`
-- `run(task: Task) => Effect<Either<InferenceResponse, AnyProviderError | ProviderUnavailableError>>`
+- `run(task: Task) => Effect<InferenceResponse, AnyProviderError | ProviderUnavailableError>`
+- `runStream(task: Task, onChunk: (text: string) => void) => Effect<InferenceResponse, AnyProviderError | ProviderUnavailableError>`
 - `getSessionSummary() => Effect<string>`
 
 ### [Governance]
