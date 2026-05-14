@@ -78,14 +78,20 @@ export const App: React.FC<AppProps> = ({
         dispatch({ type: "ADD_LOG", msg: "◆ Routing to provider…" })
         dispatch({ type: "SET_ROLE", role: "DNA Engineer" })
         dispatch({ type: "SET_STATUS", status: "inferring" })
-        dispatch({ type: "ADD_LOG", msg: "◈ Inferring…" })
+        dispatch({ type: "ADD_LOG", msg: "◈ Streaming…" })
+        dispatch({ type: "CLEAR_STREAM" })
 
-        const response = yield* orch.run({
-          id: taskId,
-          prompt,
-          mode: submittedMode,
-          createdAt: new Date().toISOString(),
-        })
+        const response = yield* orch.runStream(
+          {
+            id: taskId,
+            prompt,
+            mode: submittedMode,
+            createdAt: new Date().toISOString(),
+          },
+          (chunk) => {
+            dispatch({ type: "APPEND_STREAM", text: chunk })
+          },
+        )
 
         dispatch({ type: "SET_ROLE", role: "Forensic Guardian" })
         dispatch({ type: "ADD_LOG", msg: "✓ Registry sync complete" })

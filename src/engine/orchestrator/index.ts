@@ -27,6 +27,7 @@
  */
 import { Context, Effect, Layer } from "effect"
 import { ContextManager } from "../context/index.js"
+import { buildFMCFSystemPrompt } from "../context/systemPrompt.js"
 import { SessionMemory } from "../memory/index.js"
 import { ProviderRouter } from "../../providers/router/index.js"
 import type { AnyProviderError } from "../../providers/types.js"
@@ -108,6 +109,7 @@ export const OrchestratorLive = Layer.effect(
     const router = yield* ProviderRouter
 
     yield* mem.startSession()
+    yield* ctx.setSystemPrompt(buildFMCFSystemPrompt())
 
     const run = (
       task: Task,
