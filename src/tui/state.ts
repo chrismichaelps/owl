@@ -1,6 +1,21 @@
-/** @Owl.TUI.State - Centralized app state types and reducer for Ink TUI */
+/**
+ * @Owl.TUI.State - Centralized app state types and reducer for Ink TUI
+ *
+ * State management for the terminal UI using React's useReducer.
+ * All state is immutable — mutations return new state objects.
+ *
+ * State sections:
+ * - Status: Agent workflow state (idle, routing, inferring, complete, error)
+ * - Role: Active FMCF role (Architect, DNA Engineer, Shadow, Forensic Guardian)
+ * - Logs: Rolling log of engine events (max 100 entries)
+ * - Response: Latest inference result (null until complete)
+ * - Metrics: Token counts, provider, latency, turn count
+ * - Turns: Full conversation history
+ * - Streaming: In-progress response text
+ */
 import type { TokenUsage, ProviderId } from "../core/schema/index.js"
 
+/** @Owl.TUI.State.Status - Agent workflow states */
 export type AgentStatus =
   | "idle"
   | "routing"
@@ -8,6 +23,7 @@ export type AgentStatus =
   | "complete"
   | "error"
 
+/** @Owl.TUI.State.Role - Active FMCF specialist role */
 export type ActiveRole =
   | "Architect"
   | "DNA Engineer"
@@ -15,7 +31,11 @@ export type ActiveRole =
   | "Forensic Guardian"
   | null
 
-/** @Owl.TUI.State.Turn - One completed conversation turn */
+/**
+ * @Owl.TUI.State.Turn - One completed conversation turn
+ *
+ * Immutable record of a complete user→assistant exchange.
+ */
 export interface ConversationTurn {
   readonly id: string
   readonly prompt: string
@@ -27,7 +47,9 @@ export interface ConversationTurn {
   readonly timestamp: string
 }
 
-/** @Owl.TUI.State.Response - Plain response snapshot (safe subset of InferenceResponse) */
+/**
+ * @Owl.TUI.State.Response - Plain response snapshot (safe subset of InferenceResponse)
+ */
 export interface ResponseSnapshot {
   readonly taskId: string
   readonly content: string
@@ -37,6 +59,7 @@ export interface ResponseSnapshot {
   readonly usage: TokenUsage
 }
 
+/** @Owl.TUI.State.App - Full application state shape */
 export interface OwlAppState {
   readonly status: AgentStatus
   readonly activeRole: ActiveRole
@@ -52,6 +75,7 @@ export interface OwlAppState {
   readonly streamingContent: string
 }
 
+/** @Owl.TUI.State.Action - Discriminated union of all state transitions */
 export type OwlAction =
   | { readonly type: "SET_STATUS"; readonly status: AgentStatus }
   | { readonly type: "SET_ROLE"; readonly role: ActiveRole }
@@ -63,6 +87,7 @@ export type OwlAction =
   | { readonly type: "CLEAR_STREAM" }
   | { readonly type: "RESET" }
 
+/** @Owl.TUI.State.Initial - Default state for new sessions */
 export const INITIAL_STATE: OwlAppState = {
   status: "idle",
   activeRole: null,
@@ -80,6 +105,7 @@ export const INITIAL_STATE: OwlAppState = {
 
 /**
  * @Owl.TUI.State.Reducer - Pure state transition function for OwlAppState
+ *
  * Deterministic: same (state, action) → same next state
  * No side-effects, no async — all mutations return new state objects
  */
@@ -89,11 +115,11 @@ export function owlReducer(state: OwlAppState, action: OwlAction): OwlAppState {
     case "SET_STATUS":
       return { ...state, status: action.status }
 
-    /** @Owl.TUI.State.Reducer.SET_ROLE — Sets active FMCF role (Architect/DNA Engineer/Shadow/Forensic Guardian) */
+    /** @Owl.TUI.State.Reducer.SET_ROLE — Sets active FMCF role */
     case "SET_ROLE":
       return { ...state, activeRole: action.role }
 
-    /** @Owl.TUI.State.Reducer.ADD_LOG — Appends timestamped message to log buffer (capped at 100 entries) */
+    /** @Owl.TUI.State.Reducer.ADD_LOG — Appends timestamped message to log buffer */
     case "ADD_LOG":
       return {
         ...state,
@@ -103,7 +129,7 @@ export function owlReducer(state: OwlAppState, action: OwlAction): OwlAppState {
         ],
       }
 
-    /** @Owl.TUI.State.Reducer.SET_RESPONSE — Completes inference, accumulates tokens, sets Forensic Guardian role */
+    /** @Owl.TUI.State.Reducer.SET_RESPONSE — Completes inference, accumulates tokens */
     case "SET_RESPONSE":
       return {
         ...state,
@@ -119,26 +145,26 @@ export function owlReducer(state: OwlAppState, action: OwlAction): OwlAppState {
         turnCount: state.turnCount + 1,
       }
 
-    /** @Owl.TUI.State.Reducer.SET_ERROR — Sets error state, preserves accumulated tokens */
+    /** @Owl.TUI.State.Reducer.SET_ERROR — Sets error state */
     case "SET_ERROR":
       return { ...state, status: "error", error: action.error }
 
-    /** @Owl.TUI.State.Reducer.ADD_TURN — Appends completed turn to conversation history */
+    /** @Owl.TUI.State.Reducer.ADD_TURN — Appends completed turn to history */
     case "ADD_TURN":
       return { ...state, turns: [...state.turns, action.turn] }
 
-    /** @Owl.TUI.State.Reducer.APPEND_STREAM — Accumulates streaming response text */
+    /** @Owl.TUI.State.Reducer.APPEND_STREAM — Accumulates streaming text */
     case "APPEND_STREAM":
       return {
         ...state,
         streamingContent: state.streamingContent + action.text,
       }
 
-    /** @Owl.TUI.State.Reducer.CLEAR_STREAM — Clears streaming content buffer */
+    /** @Owl.TUI.State.Reducer.CLEAR_STREAM — Clears streaming buffer */
     case "CLEAR_STREAM":
       return { ...state, streamingContent: "" }
 
-    /** @Owl.TUI.State.Reducer.RESET — Returns to idle, preserves session metrics (tokens, turns, count) */
+    /** @Owl.TUI.State.Reducer.RESET — Returns to idle, preserves metrics */
     case "RESET":
       return {
         ...INITIAL_STATE,

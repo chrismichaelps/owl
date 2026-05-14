@@ -1,4 +1,21 @@
-/** @Owl.Commands.Registry - Ref-backed command lookup and dispatch service */
+/**
+ * @Owl.Commands.Registry - Ref-backed command lookup and dispatch service
+ *
+ * Central command management service. All slash commands are registered here
+ * at startup by makeCommandRegistryLive().
+ *
+ * Commands are organized by category:
+ * - Core: task, deep, quick, plan
+ * - Power: raw, god, economy
+ * - Analysis: analyze, brain, depth, friction, grill, seams
+ * - Editing: edit, inject, create, diff, apply, undo, refactor
+ * - Management: role, registry, audit, status, clear, memory, model
+ *
+ * @example
+ * yield* Effect.flatMap(CommandRegistry, (r) => r.register(handler))
+ * const handler = yield* Effect.flatMap(CommandRegistry, (r) => r.lookup("edit"))
+ * const result = yield* Effect.flatMap(CommandRegistry, (r) => r.dispatch(parsed))
+ */
 import { FileSystem } from "@effect/platform"
 import { NodeFileSystem } from "@effect/platform-node"
 import { Context, Effect, Layer, Ref } from "effect"
@@ -41,15 +58,41 @@ import type { CommandParseError } from "../core/errors/index.js"
 import { CommandNotFoundError } from "../core/errors/index.js"
 import type { CommandHandler, CommandResult, ParsedCommand } from "./types.js"
 
-/** @Owl.Commands.Registry.Service - Register, lookup, list, and dispatch commands */
+/**
+ * @Owl.Commands.Registry.Service - Register, lookup, list, and dispatch commands
+ */
 export interface CommandRegistryService {
+  /**
+   * Register a command handler
+   *
+   * @param handler - CommandHandler to add
+   */
   readonly register: (handler: CommandHandler) => Effect.Effect<void>
+  /**
+   * Look up a command by name
+   *
+   * @param name - Command name (without /)
+   * @returns CommandHandler
+   * @throws CommandNotFoundError - If command doesn't exist
+   */
   readonly lookup: (
     name: string,
   ) => Effect.Effect<CommandHandler, CommandNotFoundError>
+  /**
+   * List all registered commands
+   *
+   * @returns Array of { name, description }
+   */
   readonly list: () => Effect.Effect<
     readonly { readonly name: string; readonly description: string }[]
   >
+  /**
+   * Dispatch a parsed command to its handler
+   *
+   * @param parsed - ParsedCommand from parseCommand()
+   * @returns CommandResult with output
+   * @throws CommandNotFoundError - If command doesn't exist
+   */
   readonly dispatch: (
     parsed: ParsedCommand,
   ) => Effect.Effect<CommandResult, CommandNotFoundError | CommandParseError>
@@ -60,7 +103,12 @@ export class CommandRegistry extends Context.Tag("CommandRegistry")<
   CommandRegistryService
 >() {}
 
-/** @Owl.Commands.Registry.buildService - Shared factory used by bare Live and full-wired variants */
+/**
+ * @Owl.Commands.Registry.buildService - Shared factory used by bare Live and full-wired variants
+ *
+ * Builds the core registry service from a Ref<Map>.
+ * Used by both CommandRegistryLive (bare, for tests) and makeCommandRegistryLive (full).
+ */
 export const buildRegistryService = (
   mapRef: Ref.Ref<Map<string, CommandHandler>>,
 ): CommandRegistryService => {
@@ -106,7 +154,9 @@ export const buildRegistryService = (
   return { register, lookup, list, dispatch }
 }
 
-/** @Owl.Commands.Registry.Live - Bare Ref-backed registry — no commands pre-registered. Used in tests. */
+/**
+ * @Owl.Commands.Registry.Live - Bare Ref-backed registry — no commands pre-registered. Used in tests.
+ */
 export const CommandRegistryLive = Layer.effect(
   CommandRegistry,
   Effect.gen(function* () {
@@ -115,7 +165,20 @@ export const CommandRegistryLive = Layer.effect(
   }),
 )
 
-/** @Owl.Commands.Registry.makeCommandRegistryLive - Full composition root: yields all services, registers all handlers */
+/**
+ * @Owl.Commands.Registry.makeCommandRegistryLive - Full composition root: yields all services, registers all handlers
+ *
+ * Wires together all services needed by commands:
+ * - Orchestrator (for inference commands)
+ * - HashRegistry (for registry commands)
+ * - EditingPipeline (for editing commands)
+ * - RollbackSystem (for undo/diff commands)
+ * - ContextManager (for clear command)
+ * - SessionMemory (for memory/status commands)
+ * - RoleContext (for role command)
+ *
+ * Registers all 23 commands on startup.
+ */
 export const makeCommandRegistryLive = (
   projectRoot: string,
 ): Layer.Layer<

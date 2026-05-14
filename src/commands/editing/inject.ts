@@ -1,9 +1,22 @@
-/** @Owl.Commands.Editing.Inject - Insert content after a specific string: /inject <file> "<after>" "<content>" */
+/**
+ * @Owl.Commands.Editing.Inject - Insert content after a specific string: /inject <file> "<after>" "<content>"
+ *
+ * Inserts new content immediately after a specific string in a file.
+ * The new content is placed after the "after" string, followed by a newline.
+ *
+ * Arguments: <file> "<after_string>" "<new_content>"
+ *
+ * @example
+ * /inject src/foo.ts "// end of imports" "import { bar } from './bar'"
+ */
 import { Effect } from "effect"
 import { CommandParseError } from "../../core/errors/index.js"
 import type { EditingPipelineService } from "../../editor/pipeline/index.js"
 import type { CommandHandler, CommandResult } from "../types.js"
 
+/**
+ * @Owl.Commands.Editing.Inject.Factory - Create the /inject command handler
+ */
 export function makeInjectCommand(
   pipeline: EditingPipelineService,
   projectRoot: string,

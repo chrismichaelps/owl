@@ -1,7 +1,37 @@
-/** @Owl.Engine.Memory - In-memory session turn history with session lifecycle management */
+/**
+ * @Owl.Engine.Memory - In-memory session turn history with session lifecycle management
+ *
+ * Tracks conversation history per session. Each "turn" is a complete user→assistant
+ * exchange with token accounting. Memory is used for:
+ * - /memory command: Display session history
+ * - /status command: Show turn count and token totals
+ * - Session summaries: Token budgeting and cost tracking
+ *
+ * Memory is scoped to a single CLI session. On app restart, history is cleared.
+ * For persistent history, integrate with a database layer.
+ *
+ * @example
+ * yield* Effect.flatMap(SessionMemory, (m) => m.startSession())
+ * yield* Effect.flatMap(SessionMemory, (m) => m.recordTurn({ taskId, prompt, response, tokensUsed, timestamp }))
+ * const turns = yield* Effect.flatMap(SessionMemory, (m) => m.getTurns())
+ */
 import { Context, Effect, Layer, Ref } from "effect"
 
-/** @Owl.Engine.Memory.Turn - Immutable session turn record */
+/**
+ * @Owl.Engine.Memory.Turn - Immutable session turn record
+ *
+ * A turn represents one complete inference cycle: user prompt → assistant response.
+ * Token count includes both directions for accurate accounting.
+ *
+ * @example
+ * const turn: SessionTurn = {
+ *   taskId: "task-1",
+ *   prompt: "Create a function",
+ *   response: "Here is your function...",
+ *   tokensUsed: 1250,
+ *   timestamp: "2024-01-15T10:30:00Z",
+ * }
+ */
 export interface SessionTurn {
   readonly taskId: string
   readonly prompt: string
@@ -16,12 +46,35 @@ interface MemoryState {
   readonly turns: readonly SessionTurn[]
 }
 
-/** @Owl.Engine.Memory.Service - Session memory interface */
+/**
+ * @Owl.Engine.Memory.Service - Session memory interface
+ */
 export interface SessionMemoryService {
+  /**
+   * Start a new session, optionally with a specific ID
+   * @param sessionId - Optional custom session ID
+   * @returns The session ID (generated or provided)
+   */
   readonly startSession: (sessionId?: string) => Effect.Effect<string>
+  /**
+   * Get current session ID
+   * @returns Session identifier
+   */
   readonly getSessionId: () => Effect.Effect<string>
+  /**
+   * Record a completed turn
+   * @param turn - SessionTurn to append
+   */
   readonly recordTurn: (turn: SessionTurn) => Effect.Effect<void>
+  /**
+   * Get all turns in current session
+   * @returns Array of SessionTurn, newest last
+   */
   readonly getTurns: () => Effect.Effect<readonly SessionTurn[]>
+  /**
+   * Get human-readable session summary
+   * @returns String: "Session <id>: <n> turns, <t> tokens used"
+   */
   readonly summarize: () => Effect.Effect<string>
 }
 
@@ -35,7 +88,12 @@ export class SessionMemory extends Context.Tag("SessionMemory")<
 const generateSessionId = (): string =>
   `sess-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
 
-/** @Owl.Engine.Memory.Live - Ref-backed in-memory session storage */
+/**
+ * @Owl.Engine.Memory.Live - Ref-backed in-memory session storage
+ *
+ * Uses Effect Ref for referential transparency. Session persists across
+ * multiple tasks until explicitly cleared or app restarts.
+ */
 export const SessionMemoryLive = Layer.effect(
   SessionMemory,
   Effect.gen(function* () {

@@ -1,5 +1,25 @@
-/** @Owl.Providers.Anthropic - Anthropic Claude adapter (primary reasoning provider) */
-
+/**
+ * @Owl.Providers.Anthropic - Anthropic Claude adapter (primary reasoning provider)
+ *
+ * Primary provider for deep reasoning tasks. Anthropic's Claude models excel at
+ * complex analysis, code generation, and multi-step reasoning.
+ *
+ * Authentication: Requires ANTHROPIC_API_KEY environment variable.
+ *
+ * Models:
+ * - claude-opus-4-7: Highest capability, largest context (1M tokens)
+ * - claude-sonnet-4-6: Balanced capability and cost
+ * - claude-haiku-4-5: Fast, cost-effective for simpler tasks
+ *
+ * Error handling: Maps Anthropic-specific errors to structured types:
+ * - AuthenticationError → ProviderAuthError
+ * - RateLimitError → ProviderRateLimitError
+ * - APIConnectionTimeoutError → ProviderTimeoutError
+ * - Overloaded → ProviderError with status 529
+ *
+ * @example
+ * yield* registerProvider(router, AnthropicAdapterLive)
+ */
 import Anthropic from "@anthropic-ai/sdk"
 import { Context, Effect, Layer, Schedule } from "effect"
 import * as Stream from "effect/Stream"
@@ -26,7 +46,9 @@ import type {
   InferenceResponse,
 } from "../../core/schema/index.js"
 
-/** @Owl.Providers.Anthropic.Capabilities - High-fidelity model specifications */
+/**
+ * @Owl.Providers.Anthropic.Capabilities - High-fidelity model specifications
+ */
 const ANTHROPIC_CAPABILITIES: readonly ProviderCapability[] = [
   {
     providerId: "anthropic",
@@ -66,7 +88,11 @@ const ANTHROPIC_CAPABILITIES: readonly ProviderCapability[] = [
   },
 ]
 
-/** @Owl.Providers.Anthropic.ErrorMapping - Resilient error translation */
+/**
+ * @Owl.Providers.Anthropic.ErrorMapping - Resilient error translation
+ *
+ * Maps Anthropic SDK errors to Owl error types for consistent handling.
+ */
 const mapAnthropicError = (
   e: unknown,
 ):
@@ -112,7 +138,12 @@ export class AnthropicAdapter extends Context.Tag("AnthropicAdapter")<
   LLMProviderService
 >() {}
 
-/** @Owl.Providers.Anthropic.Implementation - Production layer logic */
+/**
+ * @Owl.Providers.Anthropic.Implementation - Production layer logic
+ *
+ * Uses Anthropic messages API with retry and streaming support.
+ * Health check uses haiku model to minimize cost.
+ */
 export const AnthropicAdapterLive = Layer.effect(
   AnthropicAdapter,
   Effect.gen(function* () {

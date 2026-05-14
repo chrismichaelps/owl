@@ -1,4 +1,18 @@
-/** @Owl.Editor.Utils.Patch - Diff primitives: structured patch generation and unified-diff formatting */
+/**
+ * @Owl.Editor.Utils.Patch - Diff primitives: structured patch generation and unified-diff formatting
+ *
+ * Low-level diff utilities built on the `diff` npm package. These functions are
+ * pure transformations with no side effects or dependencies on file system.
+ *
+ * Features:
+ * - Tab normalization: Leading tabs → 2 spaces before comparing (reduces diff noise)
+ * - Character escaping: & and $ escaped before diffing (special chars in diff format)
+ * - Context lines: 3 lines of context around each change hunk
+ *
+ * @example
+ * const hunks = getPatchFromContents("foo.ts", oldContent, newContent)
+ * const formatted = formatUnifiedDiff("foo.ts", hunks)
+ */
 import { structuredPatch } from "diff"
 import type { StructuredPatchHunk } from "diff"
 import { EDITOR_CONSTANTS } from "../../core/constants/index.js"
@@ -24,6 +38,12 @@ function unescapeFromDiff(s: string): string {
  * Generate a structured patch between two file contents.
  * Tabs are normalised to spaces before diffing so indentation
  * changes do not inflate the hunk size.
+ *
+ * @param filePath - File path for patch headers (appears in ---/+++ lines)
+ * @param oldContent - Original content
+ * @param newContent - Modified content
+ * @param ignoreWhitespace - Whether to ignore whitespace differences
+ * @returns Array of StructuredPatchHunk with diff lines
  */
 export function getPatchFromContents(
   filePath: string,
@@ -53,7 +73,12 @@ export function getPatchFromContents(
   }))
 }
 
-/** Count added and removed lines across all hunks */
+/**
+ * Count added and removed lines across all hunks
+ *
+ * @param hunks - StructuredPatchHunk array from getPatchFromContents
+ * @returns Object with `added` and `removed` counts
+ */
 export function countChangedLines(hunks: StructuredPatchHunk[]): {
   readonly added: number
   readonly removed: number
@@ -69,7 +94,13 @@ export function countChangedLines(hunks: StructuredPatchHunk[]): {
   return { added, removed }
 }
 
-/** Format hunks as a unified diff string (--- / +++ header + @@ hunks) */
+/**
+ * Format hunks as a unified diff string (--- / +++ header + @@ hunks)
+ *
+ * @param filePath - File path for headers
+ * @param hunks - StructuredPatchHunk array
+ * @returns Unified diff string
+ */
 export function formatUnifiedDiff(
   filePath: string,
   hunks: readonly StructuredPatchHunk[],

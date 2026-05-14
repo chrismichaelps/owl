@@ -1,4 +1,29 @@
-/** @Owl.Providers.Router.Scoring - Provider selection scoring algorithm */
+/**
+ * @Owl.Providers.Router.Scoring - Provider selection scoring algorithm
+ *
+ * Multi-dimensional scoring for provider/model selection:
+ * - Cost: Cheaper providers score higher
+ * - Reasoning: Match provider's reasoning depth to task mode
+ * - Latency: Smaller models are faster
+ * - Vision: Penalty if vision required but not supported
+ *
+ * Scoring weights (from ROUTING_WEIGHTS):
+ * - COMPLEXITY: 0.35 (reasoning match)
+ * - COST: 0.25
+ * - LATENCY: 0.25
+ * - RELIABILITY: 0.15
+ *
+ * Mode reasoning demands:
+ * - god: 1.0 (high reasoning, full context)
+ * - deep: 0.9
+ * - standard: 0.5
+ * - quick: 0.3
+ * - economy: 0.1
+ *
+ * @example
+ * const score = scoreProvider(capability, routingContext)
+ * if (score > 0.7) { /* good match *\/ }
+ */
 import { ROUTING_WEIGHTS } from "../../core/constants/index.js"
 import type { ProviderCapability, RoutingContext } from "../types.js"
 
@@ -18,7 +43,16 @@ const MODE_REASONING_DEMAND: Record<string, number> = {
   economy: 0.1,
 }
 
-/** @Owl.Providers.Router.Scoring.Algorithm - Multi-dimensional selection logic */
+/**
+ * @Owl.Providers.Router.Scoring.Algorithm - Multi-dimensional selection logic
+ *
+ * Score a provider capability against a routing context.
+ * Returns -Infinity if hard constraints fail (e.g., context window too small).
+ *
+ * @param cap - Provider capability to score
+ * @param ctx - Routing context with task requirements
+ * @returns Score (higher = better match), or -Infinity if invalid
+ */
 export function scoreProvider(
   cap: ProviderCapability,
   ctx: RoutingContext,
@@ -53,7 +87,16 @@ export function scoreProvider(
   return score
 }
 
-/** @Owl.Providers.Router.Scoring.Selection - Entry point for provider resolution */
+/**
+ * @Owl.Providers.Router.Scoring.Selection - Entry point for provider resolution
+ *
+ * Select the best provider from a list of capabilities.
+ * Honors preferredProvider if specified, otherwise picks highest scoring.
+ *
+ * @param capabilities - All available provider capabilities
+ * @param ctx - Routing context
+ * @returns Best matching capability, or null if none available
+ */
 export function selectBestProvider(
   capabilities: readonly ProviderCapability[],
   ctx: RoutingContext,

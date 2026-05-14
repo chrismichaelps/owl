@@ -12,6 +12,7 @@ interface OutputPanelProps {
   readonly streamingContent: string
 }
 
+/** @Owl.TUI.Components.OutputPanel.Component - Center panel with response area */
 export const OutputPanel: React.FC<OutputPanelProps> = memo(
   ({ status, turns, error, streamingContent }) => (
     <Box

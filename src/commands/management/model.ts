@@ -1,8 +1,20 @@
-/** @Owl.Commands.Management.Model - Display active model information: /model */
+/**
+ * @Owl.Commands.Management.Model - Display active model information: /model
+ *
+ * Informational command showing:
+ * - Model configuration (via provider settings)
+ * - Available operational modes
+ *
+ * @example
+ * /model
+ */
 import { Effect } from "effect"
 import type { CommandParseError } from "../../core/errors/index.js"
 import type { CommandHandler, CommandResult } from "../types.js"
 
+/**
+ * @Owl.Commands.Management.Model.Factory - Create the /model command handler
+ */
 export function makeModelCommand(): CommandHandler {
   return {
     name: "model",

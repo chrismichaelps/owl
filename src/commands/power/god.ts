@@ -1,9 +1,25 @@
-/** @Owl.Commands.Power.God - God mode (200k context) dispatcher: /god <prompt> */
+/**
+ * @Owl.Commands.Power.God - God mode (200k context) dispatcher: /god <prompt>
+ *
+ * Maximum context mode with 200,000 token budget.
+ * Use for very complex tasks requiring full codebase context:
+ * - Large refactors
+ * - Cross-cutting changes
+ * - Deep architectural analysis
+ *
+ * Mode: god (200k tokens)
+ *
+ * @example
+ * /god Refactor the entire auth system to use JWT
+ */
 import { Effect } from "effect"
 import { CommandParseError } from "../../core/errors/index.js"
 import type { OrchestratorService } from "../../engine/orchestrator/index.js"
 import type { CommandHandler, CommandResult } from "../types.js"
 
+/**
+ * @Owl.Commands.Power.God.Factory - Create the /god command handler
+ */
 export function makeGodCommand(
   orchestrator: OrchestratorService,
 ): CommandHandler {

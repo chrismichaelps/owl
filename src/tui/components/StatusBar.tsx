@@ -18,6 +18,7 @@ const STATUS_COLOR: Record<AgentStatus, string> = {
   error: "red",
 }
 
+/** @Owl.TUI.Components.StatusBar.Component - Bottom status bar */
 export const StatusBar: React.FC<StatusBarProps> = memo(
   ({ status, totalInputTokens, totalOutputTokens, mode }) => (
     <Box

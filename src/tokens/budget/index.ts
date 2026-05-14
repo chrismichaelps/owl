@@ -1,4 +1,14 @@
-/** @Owl.Tokens.Budget - Runtime token budget enforcement with Effect Ref */
+/**
+ * @Owl.Tokens.Budget - Runtime token budget enforcement with Effect Ref
+ *
+ * Tracks token consumption per session. When consumption exceeds the mode-specific
+ * budget, operations fail with TokenBudgetExceededError.
+ *
+ * @example
+ * yield* Effect.flatMap(TokenBudget, (b) => b.initSession("deep"))
+ * yield* Effect.flatMap(TokenBudget, (b) => b.consume("task-1", 500))
+ * const remaining = yield* Effect.flatMap(TokenBudget, (b) => b.remaining())
+ */
 import { Context, Effect, Layer, Ref } from "effect"
 import { TokenBudgetExceededError } from "../../core/errors/index.js"
 import { MODE_TOKEN_BUDGETS } from "../../core/constants/index.js"
@@ -10,15 +20,39 @@ interface BudgetState {
   readonly mode: string
 }
 
-/** @Owl.Tokens.Budget.Service - Effect service interface */
+/**
+ * @Owl.Tokens.Budget.Service - Effect service interface
+ */
 export interface TokenBudgetService {
+  /**
+   * Initialize session with mode-specific budget
+   *
+   * @param mode - Operating mode (determines budget from MODE_TOKEN_BUDGETS)
+   * @param budget - Optional override for budget
+   */
   readonly initSession: (mode: string, budget?: number) => Effect.Effect<void>
+  /**
+   * Consume tokens from budget
+   *
+   * @param taskId - For error reporting
+   * @param tokens - Number of tokens to consume
+   * @throws TokenBudgetExceededError - If consumption would exceed budget
+   */
   readonly consume: (
     taskId: string,
     tokens: number,
   ) => Effect.Effect<void, TokenBudgetExceededError>
+  /**
+   * Get remaining budget
+   */
   readonly remaining: () => Effect.Effect<number>
+  /**
+   * Get total consumed this session
+   */
   readonly totalConsumed: () => Effect.Effect<number>
+  /**
+   * Reset consumed counter (new session without changing budget)
+   */
   readonly reset: () => Effect.Effect<void>
 }
 
@@ -27,7 +61,9 @@ export class TokenBudget extends Context.Tag("TokenBudget")<
   TokenBudgetService
 >() {}
 
-/** @Owl.Tokens.Budget.Live - Ref-backed session budget with mode-aware limits */
+/**
+ * @Owl.Tokens.Budget.Live - Ref-backed session budget with mode-aware limits
+ */
 export const TokenBudgetLive = Layer.effect(
   TokenBudget,
   Effect.gen(function* () {

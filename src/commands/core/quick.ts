@@ -1,9 +1,22 @@
-/** @Owl.Commands.Core.Quick - Quick mode inference dispatcher: /quick <prompt> */
+/**
+ * @Owl.Commands.Core.Quick - Quick mode inference dispatcher: /quick <prompt>
+ *
+ * Fast task execution with minimal token budget (8k).
+ * Use for simple, quick tasks where speed matters more than depth.
+ *
+ * Mode: quick (8k tokens)
+ *
+ * @example
+ * /quick What does this error mean?
+ */
 import { Effect } from "effect"
 import { CommandParseError } from "../../core/errors/index.js"
 import type { OrchestratorService } from "../../engine/orchestrator/index.js"
 import type { CommandHandler, CommandResult } from "../types.js"
 
+/**
+ * @Owl.Commands.Core.Quick.Factory - Create the /quick command handler
+ */
 export function makeQuickCommand(
   orchestrator: OrchestratorService,
 ): CommandHandler {

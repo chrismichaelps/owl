@@ -1,7 +1,6 @@
----
 State_ID: BigInt(0x0000000000000025)
 Git_SHA: ad091135d8d9083717a044f82e0307e4c2defb32
-Source_SHA256: f170fafe14c9d5a028a05db9761e546c84b70f45fd569662b22eda67ab274c87
+Source_SHA256: 7ab2869bc09141027ae1ba62ed1df62b7226d107a19544f481cc4dc5b8303b12
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
 Fidelity: DECLARED
 ---

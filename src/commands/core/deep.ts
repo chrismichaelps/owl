@@ -1,9 +1,22 @@
-/** @Owl.Commands.Core.Deep - Deep mode inference dispatcher: /deep <prompt> */
+/**
+ * @Owl.Commands.Core.Deep - Deep mode inference dispatcher: /deep <prompt>
+ *
+ * Task execution in deep mode (100k token budget) with enhanced reasoning.
+ * Use for complex analysis, refactoring, or multi-step tasks.
+ *
+ * Mode: deep (100k tokens, reasoning-intensive)
+ *
+ * @example
+ * /deep Refactor the authentication module to use a cleaner pattern
+ */
 import { Effect } from "effect"
 import { CommandParseError } from "../../core/errors/index.js"
 import type { OrchestratorService } from "../../engine/orchestrator/index.js"
 import type { CommandHandler, CommandResult } from "../types.js"
 
+/**
+ * @Owl.Commands.Core.Deep.Factory - Create the /deep command handler
+ */
 export function makeDeepCommand(
   orchestrator: OrchestratorService,
 ): CommandHandler {

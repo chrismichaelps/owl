@@ -1,4 +1,18 @@
-/** @Owl.Providers.OpenAI - OpenAI GPT adapter */
+/**
+ * @Owl.Providers.OpenAI - OpenAI GPT adapter
+ *
+ * OpenAI provider supporting GPT-4o and o3 models.
+ * Authentication: Requires OPENAI_API_KEY environment variable.
+ *
+ * Models:
+ * - gpt-4o: Fast, capable, supports vision and function calling
+ * - o3: Latest reasoning model, larger context window
+ *
+ * @example
+ * // Register in runtime.ts
+ * const router = yield* ProviderRouter
+ * yield* registerProvider(router, OpenAIAdapterLive)
+ */
 import OpenAI from "openai"
 import { Context, Effect, Layer, Schedule } from "effect"
 import * as Stream from "effect/Stream"
@@ -15,7 +29,9 @@ import type {
   InferenceResponse,
 } from "../../core/schema/index.js"
 
-/** @Owl.Providers.OpenAI.Capabilities - Model specifications and competitive pricing */
+/**
+ * @Owl.Providers.OpenAI.Capabilities - Model specifications and competitive pricing
+ */
 const OPENAI_CAPABILITIES: readonly ProviderCapability[] = [
   {
     providerId: "openai",
@@ -49,7 +65,12 @@ export class OpenAIAdapter extends Context.Tag("OpenAIAdapter")<
   LLMProviderService
 >() {}
 
-/** @Owl.Providers.OpenAI.Implementation - Production layer logic */
+/**
+ * @Owl.Providers.OpenAI.Implementation - Production layer logic
+ *
+ * Uses Effect.retry with exponential backoff for resilience.
+ * Streaming uses Effect.Stream.async for non-blocking chunk emission.
+ */
 export const OpenAIAdapterLive = Layer.effect(
   OpenAIAdapter,
   Effect.gen(function* () {

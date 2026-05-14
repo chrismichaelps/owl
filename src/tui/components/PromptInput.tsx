@@ -12,6 +12,7 @@ const MODE_COLOR: Record<Mode, string> = {
   god: "red",
 }
 
+/** Mode detection for slash commands */
 const SLASH_MODE_MAP: Partial<Record<string, Mode>> = {
   "/task": "standard",
   "/quick": "quick",
@@ -37,6 +38,7 @@ interface PromptInputProps {
   readonly onModeChange: (mode: Mode) => void
 }
 
+/** @Owl.TUI.Components.PromptInput.Component - Command entry with history */
 export const PromptInput: React.FC<PromptInputProps> = memo(
   ({ mode, disabled, onSubmit, onCommand, onModeChange }) => {
     const [value, setValue] = useState("")
@@ -66,11 +68,9 @@ export const PromptInput: React.FC<PromptInputProps> = memo(
           reset()
 
           if (trimmed.startsWith("/")) {
-            // Detect mode-switching slash commands
             const detected = detectSlashMode(trimmed)
             if (detected !== null) {
               onModeChange(detected)
-              // If there's a prompt after the slash command, submit it
               const firstSpace = trimmed.indexOf(" ")
               if (firstSpace !== -1) {
                 const rest = trimmed.slice(firstSpace + 1).trim()

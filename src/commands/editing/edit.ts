@@ -1,9 +1,27 @@
-/** @Owl.Commands.Editing.Edit - Surgical string replacement via TLI: /edit <file> "<old>" "<new>" */
+/**
+ * @Owl.Commands.Editing.Edit - Surgical string replacement via TLI: /edit <file> "<old>" "<new>"
+ *
+ * Applies a surgical string replacement using the Mutation Pipeline.
+ * Automatically goes through:
+ * 1. Planning (find old string)
+ * 2. Diff generation (compute change impact)
+ * 3. Shard Split check (>15% triggers warning)
+ * 4. Auto-approval (writes immediately)
+ * 5. Rollback registration (on failure, restore)
+ *
+ * Arguments: <file> "<old_string>" "<new_string>"
+ *
+ * @example
+ * /edit src/utils.ts "const x = 1" "const x: number = 1"
+ */
 import { Effect } from "effect"
 import { CommandParseError } from "../../core/errors/index.js"
 import type { EditingPipelineService } from "../../editor/pipeline/index.js"
 import type { CommandHandler, CommandResult } from "../types.js"
 
+/**
+ * @Owl.Commands.Editing.Edit.Factory - Create the /edit command handler
+ */
 export function makeEditCommand(
   pipeline: EditingPipelineService,
   projectRoot: string,

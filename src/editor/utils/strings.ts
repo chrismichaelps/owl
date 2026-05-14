@@ -1,12 +1,19 @@
-/** @Owl.Editor.Utils.Strings - Text normalization for TLI: quote fixing, whitespace, exact matching */
+/**
+ * @Owl.Editor.Utils.Strings - Text normalization for TLI
+ *
+ * Handles LLM curly quote normalization and string matching.
+ */
 
-/** @Owl.Editor.Utils.Strings.QuoteConstants - Curly-to-straight quote character map */
-export const LEFT_SINGLE_CURLY = "‘"
-export const RIGHT_SINGLE_CURLY = "’"
-export const LEFT_DOUBLE_CURLY = "“"
-export const RIGHT_DOUBLE_CURLY = "”"
+export const LEFT_SINGLE_CURLY = "'"
+export const RIGHT_SINGLE_CURLY = "'"
+export const LEFT_DOUBLE_CURLY = "\u201C"
+export const RIGHT_DOUBLE_CURLY = "\u201D"
 
-/** Normalize curly quotes produced by LLMs to standard straight quotes */
+/**
+ * Normalize curly quotes produced by LLMs to standard straight quotes
+ * @param str - String with potential curly quotes
+ * @returns String with all curly quotes converted to straight
+ */
 export function normalizeQuotes(str: string): string {
   return str
     .replaceAll(LEFT_SINGLE_CURLY, "'")
@@ -15,12 +22,21 @@ export function normalizeQuotes(str: string): string {
     .replaceAll(RIGHT_DOUBLE_CURLY, '"')
 }
 
-/** Strip trailing whitespace from every line while preserving line endings */
+/**
+ * Strip trailing whitespace from every line while preserving line endings
+ * @param str - String with potential trailing whitespace
+ * @returns String with trailing spaces/tabs removed
+ */
 export function stripTrailingWhitespace(str: string): string {
   return str.replace(/[ \t]+$/gm, "")
 }
 
-/** Convert leading tabs to spaces (2 spaces per tab by default) */
+/**
+ * Convert leading tabs to spaces (2 spaces per tab by default)
+ * @param str - String with potential tab indentation
+ * @param spacesPerTab - Number of spaces per tab (default 2)
+ * @returns String with tabs replaced by spaces
+ */
 export function convertLeadingTabsToSpaces(
   str: string,
   spacesPerTab = 2,
@@ -28,14 +44,21 @@ export function convertLeadingTabsToSpaces(
   return str.replace(/^\t+/gm, (tabs) => " ".repeat(tabs.length * spacesPerTab))
 }
 
+/**
+ * @Owl.Editor.Utils.Strings.Match - Result of string search operation
+ */
 export type MatchResult =
   | { readonly found: true; readonly count: number }
   | { readonly found: false; readonly reason: string }
 
 /**
  * Validate that searchString appears in content the correct number of times.
- * Returns found:false if the string is absent, or if it appears multiple times
- * and replaceAll is false (ambiguous edit — must be more specific).
+ * Returns found:false if absent, or if it appears multiple times without replaceAll.
+ *
+ * @param content - File content to search
+ * @param searchString - String to find
+ * @param replaceAll - If true, accept multiple occurrences
+ * @returns MatchResult with count or error reason
  */
 export function findExactMatch(
   content: string,
@@ -58,15 +81,19 @@ export function findExactMatch(
   if (occurrences > 1 && !replaceAll) {
     return {
       found: false,
-      reason: `String found ${String(occurrences)} times — use replaceAll:true or narrow the search string`,
+      reason: `String found ${String(occurrences)} times - use replaceAll:true or narrow the search string`,
     }
   }
   return { found: true, count: occurrences }
 }
 
 /**
- * Apply old→new string replacement. Always normalizes quotes first so
- * LLM-generated curly quotes match source that uses straight quotes.
+ * Apply old to new string replacement with quote normalization.
+ * @param content - Original file content
+ * @param oldString - String to find (after normalization)
+ * @param newString - String to replace with (after normalization)
+ * @param replaceAll - If true, replace all occurrences
+ * @returns New content with replacement applied
  */
 export function applyReplacement(
   content: string,

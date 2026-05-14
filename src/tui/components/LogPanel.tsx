@@ -32,6 +32,7 @@ interface LogPanelProps {
   readonly activeRole: ActiveRole
 }
 
+/** @Owl.TUI.Components.LogPanel.Component - Left panel with logs and role badge */
 export const LogPanel: React.FC<LogPanelProps> = memo(
   ({ logs, status, activeRole }) => (
     <Box

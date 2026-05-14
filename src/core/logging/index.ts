@@ -1,8 +1,18 @@
-/** @Owl.Core.Logging - Structured logging service backed by Effect Logger */
-
+/**
+ * @Owl.Core.Logging - Structured logging service backed by Effect Logger
+ *
+ * Uses Effect's built-in logging with annotation support.
+ * Logs are structured with context for filtering and debugging.
+ *
+ * @example
+ * const logger = yield* OwlLogger
+ * yield* logger.info("Task completed", { taskId: "1", durationMs: 150 })
+ */
 import { Context, Effect, Layer } from "effect"
 
-/** @Owl.Core.Logging.Service - Structured log emission interface */
+/**
+ * @Owl.Core.Logging.Service - Structured log emission interface
+ */
 export interface OwlLoggerService {
   readonly debug: (
     msg: string,
@@ -51,7 +61,16 @@ const makeLogger = (): OwlLoggerService => ({
 /** @Owl.Core.Logging.Live - Production logger layer */
 export const OwlLoggerLive = Layer.succeed(OwlLogger, makeLogger())
 
-/** @Owl.Core.Logging.Context - Contextual logging middleware */
+/**
+ * @Owl.Core.Logging.Context - Contextual logging middleware
+ *
+ * Attaches fixed context to all logs within a scope.
+ *
+ * @example
+ * const scoped = withContext(logger, { sessionId: "abc" }, (l) =>
+ *   l.info("User action", { action: "click" }) // Logs with { sessionId: "abc", action: "click" }
+ * )
+ */
 export const withContext = <A, E, R>(
   logger: OwlLoggerService,
   ctx: Record<string, unknown>,

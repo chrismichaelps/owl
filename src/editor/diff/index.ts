@@ -1,4 +1,22 @@
-/** @Owl.Editor.Diff - Structured diff generation for Mutation display and Shard Split detection */
+/**
+ * @Owl.Editor.Diff - Structured diff generation for Mutation display and Shard Split detection
+ *
+ * Generates machine-readable diffs between old and new file content. Diffs are used:
+ * 1. Display: Show users what changed before approval (Stage 3 of pipeline)
+ * 2. Shard Split Detection: changePercent >= SHARD_SPLIT_THRESHOLD triggers protocol
+ * 3. Verification: Post-write diff confirms changes were applied correctly
+ *
+ * The diff engine:
+ * - Normalizes whitespace before comparing (leading tabs → 2 spaces)
+ * - Escapes special characters (&, $) that confuse the diff library
+ * - Counts lines added/removed for impact metrics
+ *
+ * @example
+ * const diff = yield* Effect.flatMap(DiffGenerator, (d) =>
+ *   d.generate("src/foo.ts", oldContent, newContent)
+ * )
+ * // diff.isShardSplit: true if changePercent >= 0.15
+ */
 import { Context, Effect, Layer } from "effect"
 import { DiffGenerationError } from "../../core/errors/index.js"
 import { SHARD_SPLIT_THRESHOLD } from "../../core/constants/index.js"
@@ -9,7 +27,22 @@ import {
   type StructuredPatchHunk,
 } from "../utils/patch.js"
 
-/** @Owl.Editor.Diff.FileDiff - Immutable diff result carrying hunk data and impact metrics */
+/**
+ * @Owl.Editor.Diff.FileDiff - Immutable diff result carrying hunk data and impact metrics
+ *
+ * Structured output suitable for both display (format()) and analysis (isShardSplit).
+ *
+ * @example
+ * const diff: FileDiff = {
+ *   file: "src/utils.ts",
+ *   hunks: [...],
+ *   linesAdded: 15,
+ *   linesRemoved: 3,
+ *   totalOldLines: 100,
+ *   changePercent: 0.18, // 18% changed
+ *   isShardSplit: true   // > 15% → Shard Split Protocol
+ * }
+ */
 export interface FileDiff {
   readonly file: string
   readonly hunks: readonly StructuredPatchHunk[]
@@ -20,13 +53,29 @@ export interface FileDiff {
   readonly isShardSplit: boolean
 }
 
-/** @Owl.Editor.Diff.Service - Pure diff computation: no I/O, no side effects */
+/**
+ * @Owl.Editor.Diff.Service - Pure diff computation: no I/O, no side effects
+ */
 export interface DiffGeneratorService {
+  /**
+   * Generate structured diff from old and new content
+   *
+   * @param file - File path for patch headers
+   * @param oldContent - Original file content
+   * @param newContent - Modified file content
+   * @returns FileDiff with hunk data and impact metrics
+   */
   readonly generate: (
     file: string,
     oldContent: string,
     newContent: string,
   ) => Effect.Effect<FileDiff, DiffGenerationError>
+  /**
+   * Format FileDiff as unified diff string
+   *
+   * @param diff - FileDiff from generate()
+   * @returns String in ---/+++@@ format suitable for display
+   */
   readonly format: (diff: FileDiff) => string
 }
 

@@ -1,4 +1,30 @@
-/** @Owl.Engine.Orchestrator - Main agent loop: seam-engine-provider crossing point */
+/**
+ * @Owl.Engine.Orchestrator - Main agent loop: seam-engine-provider crossing point
+ *
+ * The Orchestrator is the heart of the Owl system — it coordinates Context Manager,
+ * Session Memory, and Provider Router to execute Tasks end-to-end.
+ *
+ * Flow for each task:
+ * 1. User prompt arrives → wrapped as Task with id, mode, createdAt
+ * 2. Message added to context window
+ * 3. Token budget calculated from MODE_TOKEN_BUDGETS based on mode
+ * 4. Context windowed to budget (prunes if necessary via ContextManager)
+ * 5. RoutingContext built (requiresReasoning, requiresVision, latencyBudgetMs)
+ * 6. ProviderRouter selects best provider/model for the task
+ * 7. Inference executed via selected provider
+ * 8. Response added to context and memory
+ * 9. Session summary updated
+ *
+ * The orchestrator bridges three critical seams:
+ * - seam-engine-context: What context to include in the request?
+ * - seam-engine-memory: What history to record?
+ * - seam-engine-provider: Which provider handles this task?
+ *
+ * @example
+ * const response = yield* Effect.flatMap(Orchestrator, (o) =>
+ *   o.run({ id: "task-1", prompt: "Create a button", mode: "standard", createdAt: now })
+ * )
+ */
 import { Context, Effect, Layer } from "effect"
 import { ContextManager } from "../context/index.js"
 import { SessionMemory } from "../memory/index.js"
@@ -13,14 +39,28 @@ import type {
 import { MODE_TOKEN_BUDGETS, TOKEN_LIMITS } from "../../core/constants/index.js"
 import { estimateConversationTokens } from "../../tokens/pruning/index.js"
 
-/** @Owl.Engine.Orchestrator.Service - Main agent loop interface */
+/**
+ * @Owl.Engine.Orchestrator.Service - Main agent loop interface
+ */
 export interface OrchestratorService {
+  /**
+   * Execute a task: route to provider, record to memory, return response
+   *
+   * @param task - Task with id, prompt, mode, createdAt
+   * @returns InferenceResponse with content, usage, model, provider, latencyMs
+   * @throws AnyProviderError - Provider failed
+   * @throws ProviderUnavailableError - No suitable provider found
+   */
   readonly run: (
     task: Task,
   ) => Effect.Effect<
     InferenceResponse,
     AnyProviderError | ProviderUnavailableError
   >
+  /**
+   * Get session summary for debugging/display
+   * @returns Human-readable summary: sessionId, turns, total tokens
+   */
   readonly getSessionSummary: () => Effect.Effect<string>
 }
 
@@ -30,7 +70,12 @@ export class Orchestrator extends Context.Tag("Orchestrator")<
   OrchestratorService
 >() {}
 
-/** @Owl.Engine.Orchestrator.Live - Production layer composing context, memory, router */
+/**
+ * @Owl.Engine.Orchestrator.Live - Production layer composing context, memory, router
+ *
+ * Wires together the three core engine services. Session starts on layer creation.
+ * Each run() call is a self-contained task execution.
+ */
 export const OrchestratorLive = Layer.effect(
   Orchestrator,
   Effect.gen(function* () {

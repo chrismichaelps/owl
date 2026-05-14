@@ -1,6 +1,22 @@
-/** @Owl.CLI.Args - Pure CLI argument parser; no side-effects, fully testable */
+/**
+ * @Owl.CLI.Args - Pure CLI argument parser; no side-effects, fully testable
+ *
+ * Parses process.argv into typed ParsedArgs.
+ * Supports multiple argument formats for convenience.
+ *
+ * Argument forms supported:
+ * - Position: owl "prompt" (mode defaults to standard)
+ * - Mode flags: owl --deep "prompt", owl -d "prompt"
+ * - Mode option: owl --mode=deep "prompt"
+ *
+ * @example
+ * parseArgs(["--deep", "Analyze this"]) // { mode: "deep", prompt: "Analyze this" }
+ * parseArgs(["-q", "quick task"]) // { mode: "quick", prompt: "quick task" }
+ * parseArgs([]) // { mode: "standard", prompt: null }
+ */
 import type { Mode } from "../core/schema/index.js"
 
+/** @Owl.CLI.Args.ValidModes - Supported operating modes */
 export const VALID_MODES: readonly string[] = [
   "standard",
   "quick",
@@ -9,8 +25,13 @@ export const VALID_MODES: readonly string[] = [
   "god",
 ]
 
+/**
+ * @Owl.CLI.Args.Parsed - Output of parseArgs
+ */
 export interface ParsedArgs {
+  /** Operating mode for this session */
   readonly mode: Mode
+  /** Initial prompt (null if not provided) */
   readonly prompt: string | null
 }
 
@@ -18,17 +39,8 @@ export interface ParsedArgs {
  * Parse an array of CLI tokens into a typed ParsedArgs.
  * Accepts process.argv.slice(2) or any string array for testing.
  *
- * Supported forms:
- *   owl                           → { mode: "standard", prompt: null }
- *   owl "my task"                 → { mode: "standard", prompt: "my task" }
- *   owl --mode=deep "my task"     → { mode: "deep",     prompt: "my task" }
- *   owl --quick "my task"         → { mode: "quick",    prompt: "my task" }
- *   owl -q "my task"              → { mode: "quick",    prompt: "my task" }
- *   owl --deep "my task"          → { mode: "deep",     prompt: "my task" }
- *   owl -d "my task"              → { mode: "deep",     prompt: "my task" }
- *   owl --economy                 → { mode: "economy",  prompt: null }
- *   owl -e                        → { mode: "economy",  prompt: null }
- *   owl --mode=invalid "prompt"   → { mode: "standard", prompt: "prompt" }
+ * @param argv - Command-line arguments (typically process.argv.slice(2))
+ * @returns ParsedArgs with mode and prompt
  */
 export function parseArgs(argv: readonly string[]): ParsedArgs {
   let mode: Mode = "standard"

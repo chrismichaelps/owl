@@ -1,4 +1,16 @@
-/** @Owl.Providers.xAI - xAI Grok adapter (OpenAI-compatible API) */
+/**
+ * @Owl.Providers.xAI - xAI Grok adapter (OpenAI-compatible API)
+ *
+ * xAI's Grok models are OpenAI-compatible with their own capabilities.
+ *
+ * Authentication: Requires XAI_API_KEY environment variable.
+ *
+ * Models:
+ * - grok-3: High reasoning depth, OpenAI-compatible API
+ *
+ * @example
+ * yield* registerProvider(router, XAIAdapterLive)
+ */
 import OpenAI from "openai"
 import { Context, Effect, Layer } from "effect"
 import * as Stream from "effect/Stream"
@@ -10,7 +22,9 @@ import type {
   InferenceResponse,
 } from "../../core/schema/index.js"
 
-/** @Owl.Providers.xAI.Capabilities - Grok model specifications */
+/**
+ * @Owl.Providers.xAI.Capabilities - Grok model specifications
+ */
 const XAI_CAPABILITIES: readonly ProviderCapability[] = [
   {
     providerId: "xai",
@@ -32,7 +46,11 @@ export class XAIAdapter extends Context.Tag("XAIAdapter")<
   LLMProviderService
 >() {}
 
-/** @Owl.Providers.xAI.Implementation - Production layer logic */
+/**
+ * @Owl.Providers.xAI.Implementation - Production layer logic
+ *
+ * Uses OpenAI SDK with xAI base URL for OpenAI-compatible API.
+ */
 export const XAIAdapterLive = Layer.effect(
   XAIAdapter,
   Effect.gen(function* () {

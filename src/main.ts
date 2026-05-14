@@ -1,7 +1,7 @@
-/** @Owl.Entry - CLI entry point */
+/** @Owl.Entry - CLI entry point stub */
 import { Effect } from "effect"
 
-/** @Owl.Entry.Logic - Main execution loop */
+/** @Owl.Entry.Logic - Main execution loop placeholder */
 const main = Effect.sync(() => {
   console.log("Owl — AI coding agent")
 })

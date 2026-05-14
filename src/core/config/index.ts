@@ -1,8 +1,32 @@
-/** @Owl.Core.Config - Centralized Effect Config for all environment variables */
+/**
+ * @Owl.Core.Config - Centralized Effect Config for all environment variables
+ *
+ * Uses Effect's Config module for type-safe environment variable reading.
+ * All API keys are optional (providers gracefully fail if not configured).
+ *
+ * Required environment variables:
+ * - ANTHROPIC_API_KEY: Required for primary inference
+ *
+ * Optional environment variables:
+ * - OPENAI_API_KEY: OpenAI GPT models
+ * - GOOGLE_API_KEY: Google Gemini models
+ * - XAI_API_KEY: xAI Grok models
+ * - OLLAMA_BASE_URL: Local Ollama server (default: http://localhost:11434)
+ * - OWL_MODE: Default mode (default: standard)
+ * - OWL_LOG_LEVEL: Logging level (default: info)
+ * - OWL_MAX_CONCURRENT_PROVIDERS: Max parallel providers (default: 3)
+ * - OWL_TELEMETRY: Enable telemetry (default: false)
+ *
+ * @example
+ * const config = yield* OWL_CONFIG
+ * const client = new Anthropic({ apiKey: config.anthropicApiKey })
+ */
 import { Config, Context, Layer, Effect } from "effect"
 import type { Mode } from "../schema/index.js"
 
-/** @Owl.Core.Config.Contract - Environment variable interface */
+/**
+ * @Owl.Core.Config.Contract - Environment variable interface
+ */
 export interface OwlConfig {
   readonly anthropicApiKey: string
   readonly openaiApiKey: string | undefined
@@ -61,4 +85,10 @@ const owlConfigEffect = Effect.gen(function* () {
   } satisfies OwlConfig
 })
 
+/**
+ * @Owl.Core.Config.Live - Layer for OWL_CONFIG
+ *
+ * @example
+ * Layer.provide(OWLConfigLive, [...]) // OWL_CONFIG available in scope
+ */
 export const OWLConfigLive = Layer.effect(OWL_CONFIG, owlConfigEffect)

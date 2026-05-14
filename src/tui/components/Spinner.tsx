@@ -10,6 +10,7 @@ interface SpinnerProps {
   readonly color?: string
 }
 
+/** @Owl.TUI.Components.Spinner.Component - Animated loading indicator */
 export const Spinner: React.FC<SpinnerProps> = memo(
   ({ label, color = "cyan" }) => {
     const [frame, setFrame] = useState(0)

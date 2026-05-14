@@ -1,9 +1,22 @@
-/** @Owl.Commands.Power.Economy - Economy mode (2k token budget) dispatcher: /economy <prompt> */
+/**
+ * @Owl.Commands.Power.Economy - Economy mode (2k token budget) dispatcher: /economy <prompt>
+ *
+ * Maximum cost control mode. Uses only 2,000 tokens for the context window.
+ * Use for simple questions where depth is not needed.
+ *
+ * Mode: economy (2k tokens)
+ *
+ * @example
+ * /economy What does this error mean? Cannot read property 'foo' of undefined
+ */
 import { Effect } from "effect"
 import { CommandParseError } from "../../core/errors/index.js"
 import type { OrchestratorService } from "../../engine/orchestrator/index.js"
 import type { CommandHandler, CommandResult } from "../types.js"
 
+/**
+ * @Owl.Commands.Power.Economy.Factory - Create the /economy command handler
+ */
 export function makeEconomyCommand(
   orchestrator: OrchestratorService,
 ): CommandHandler {

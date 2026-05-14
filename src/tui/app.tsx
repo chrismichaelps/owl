@@ -1,4 +1,24 @@
-/** @Owl.TUI.App - Root Ink app: 3-panel layout + REPL prompt, wired to Orchestrator */
+/**
+ * @Owl.TUI.App - Root Ink app: 3-panel layout + REPL prompt, wired to Orchestrator
+ *
+ * Main React component for the Ink-based terminal UI.
+ * Composes:
+ * - LogPanel (left): Engine logs, active role badge
+ * - OutputPanel (center): Conversation thread, spinner
+ * - MetaPanel (right): Provider, token, latency metrics
+ * - PromptInput (bottom): REPL with history navigation
+ * - StatusBar (bottom-most): Mode, cost, keybinding hints
+ *
+ * Lifecycle:
+ * 1. Mount: Initialize runtime, reset state
+ * 2. Initial prompt: If provided via CLI args, auto-submit
+ * 3. User input: Handle prompts and slash commands
+ * 4. Inference: Orchestrate via Effect, update state
+ * 5. Cleanup: Dispose runtime on unmount
+ *
+ * @example
+ * <App runtime={runtime} initialMode="deep" initialPrompt="Analyze this code" />
+ */
 import React, {
   useCallback,
   useEffect,
@@ -20,12 +40,14 @@ import { Orchestrator } from "../engine/orchestrator/index.js"
 import { CommandRegistry } from "../commands/registry.js"
 import { parseCommand } from "../commands/parser.js"
 
+/** @Owl.TUI.App.Props - Component props */
 interface AppProps {
   readonly runtime: OwlRuntime
   readonly initialMode?: Mode
   readonly initialPrompt?: string | null
 }
 
+/** @Owl.TUI.App.Root - Main app component */
 export const App: React.FC<AppProps> = ({
   runtime,
   initialMode = "standard",
@@ -39,6 +61,7 @@ export const App: React.FC<AppProps> = ({
   const isProcessing =
     state.status === "routing" || state.status === "inferring"
 
+  /** Submit a prompt for inference */
   const handleSubmit = useCallback(
     (prompt: string, submittedMode: Mode) => {
       taskCounterRef.current += 1
@@ -92,11 +115,13 @@ export const App: React.FC<AppProps> = ({
     [runtime],
   )
 
+  /** Update mode (affects PromptInput border color and token budget) */
   const handleModeChange = useCallback((newMode: Mode) => {
     setMode(newMode)
     dispatch({ type: "ADD_LOG", msg: `Mode → ${newMode}` })
   }, [])
 
+  /** Dispatch a slash command */
   const handleCommand = useCallback(
     (raw: string) => {
       const effect = Effect.gen(function* () {
@@ -116,6 +141,7 @@ export const App: React.FC<AppProps> = ({
     [runtime],
   )
 
+  /** Auto-submit initial prompt on mount */
   useEffect(() => {
     if (initialPrompt != null && initialPrompt.trim().length > 0) {
       handleSubmit(initialPrompt.trim(), initialMode)

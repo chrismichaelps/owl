@@ -7,6 +7,7 @@ interface ConversationThreadProps {
   readonly turns: readonly ConversationTurn[]
 }
 
+/** @Owl.TUI.Components.ConversationThread.Row - Single turn display */
 const TurnRow = memo(function TurnRow({
   turn,
 }: {
@@ -35,6 +36,7 @@ const TurnRow = memo(function TurnRow({
   )
 })
 
+/** @Owl.TUI.Components.ConversationThread.Component - Full conversation list */
 export const ConversationThread: React.FC<ConversationThreadProps> = memo(
   ({ turns }) => (
     <Box flexDirection="column" flexGrow={1}>

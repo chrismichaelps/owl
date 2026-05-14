@@ -1,4 +1,25 @@
-/** @Owl.Providers.Ollama - Local Ollama adapter for privacy mode */
+/**
+ * @Owl.Providers.Ollama - Local Ollama adapter for privacy mode
+ *
+ * Ollama runs open-source models locally on your machine. This provider enables:
+ * - Privacy: No data leaves your machine
+ * - Cost: Free inference (GPU/CPU costs only)
+ * - Offline: Works without internet
+ *
+ * Authentication: Requires OLLAMA_BASE_URL (default: http://localhost:11434).
+ *
+ * Models (depends on what's running locally):
+ * - llama3.2: General purpose
+ * - codellama: Code-specialized
+ *
+ * @example
+ * # In terminal:
+ * ollama serve
+ * ollama pull llama3.2
+ *
+ * # In Owl:
+ * OLLAMA_BASE_URL=http://localhost:11434 owl "my task"
+ */
 import { Context, Effect, Layer } from "effect"
 import * as Stream from "effect/Stream"
 import { ProviderError } from "../../core/errors/index.js"
@@ -9,7 +30,9 @@ import type {
   InferenceResponse,
 } from "../../core/schema/index.js"
 
-/** @Owl.Providers.Ollama.Capabilities - Local model specifications */
+/**
+ * @Owl.Providers.Ollama.Capabilities - Local model specifications
+ */
 const OLLAMA_CAPABILITIES: readonly ProviderCapability[] = [
   {
     providerId: "ollama",
@@ -43,7 +66,12 @@ export class OllamaAdapter extends Context.Tag("OllamaAdapter")<
   LLMProviderService
 >() {}
 
-/** @Owl.Providers.Ollama.Implementation - Production layer logic */
+/**
+ * @Owl.Providers.Ollama.Implementation - Production layer logic
+ *
+ * Uses native fetch for local API calls (no SDK required).
+ * Health check verifies Ollama server is running.
+ */
 export const OllamaAdapterLive = Layer.effect(
   OllamaAdapter,
   Effect.gen(function* () {

@@ -1,4 +1,17 @@
-/** @Owl.Providers.Google - Google Gemini adapter */
+/**
+ * @Owl.Providers.Google - Google Gemini adapter
+ *
+ * Google's Gemini models offer excellent cost efficiency and large context windows.
+ *
+ * Authentication: Requires GOOGLE_API_KEY environment variable.
+ * If not configured, all operations fail with ProviderError.
+ *
+ * Models:
+ * - gemini-2.5-flash: Fast, affordable, multimodal
+ *
+ * @example
+ * // Not configured by default — set GOOGLE_API_KEY to enable
+ */
 import { GoogleGenerativeAI } from "@google/generative-ai"
 import { Context, Effect, Layer } from "effect"
 import * as Stream from "effect/Stream"
@@ -10,7 +23,9 @@ import type {
   InferenceResponse,
 } from "../../core/schema/index.js"
 
-/** @Owl.Providers.Google.Capabilities - Multimodal model specifications */
+/**
+ * @Owl.Providers.Google.Capabilities - Multimodal model specifications
+ */
 const GOOGLE_CAPABILITIES: readonly ProviderCapability[] = [
   {
     providerId: "google",
@@ -26,13 +41,18 @@ const GOOGLE_CAPABILITIES: readonly ProviderCapability[] = [
   },
 ]
 
-/** @Owl.Providers.Google.Adapter - service definition */
+/** @Owl.Providers.Google.Adapter - Effect-TS service definition */
 export class GoogleAdapter extends Context.Tag("GoogleAdapter")<
   GoogleAdapter,
   LLMProviderService
 >() {}
 
-/** @Owl.Providers.Google.Implementation - Production layer logic */
+/**
+ * @Owl.Providers.Google.Implementation - Production layer logic
+ *
+ * Falls back gracefully when GOOGLE_API_KEY is not set.
+ * Streaming not yet implemented (returns empty stream).
+ */
 export const GoogleAdapterLive = Layer.effect(
   GoogleAdapter,
   Effect.gen(function* () {

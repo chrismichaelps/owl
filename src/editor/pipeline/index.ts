@@ -1,4 +1,32 @@
-/** @Owl.Editor.Pipeline - 7-stage Mutation pipeline: Analysis→Planning→Diff→Impact→Approval→TLI→Verification */
+/**
+ * @Owl.Editor.Pipeline - 7-stage Mutation pipeline: Analysis→Planning→Diff→Impact→Approval→TLI→Verification
+ *
+ * The Mutation Pipeline is the core editing workflow in Owl. It ensures every code change
+ * goes through proper analysis, validation, and rollback protection.
+ *
+ * Pipeline stages:
+ * 1. **Analysis**: Governance validates subsystem invariants and import rules
+ * 2. **Planning**: TLI prepares targets — validates files exist, old strings found
+ * 3. **Diff**: DiffGenerator creates structured diffs with impact metrics
+ * 4. **Impact**: Shard Split detection — blocks if change >= SHARD_SPLIT_THRESHOLD (15%)
+ * 5. **Approval**: Interactive approval (TUI) or auto-approve for CLI
+ * 6. **TLI**: TLIExecutor writes changes, RollbackSystem captures pre-state
+ * 7. **Verification**: Post-write scope validation confirms changes
+ *
+ * Rollback: If any write fails, all previous writes in this mutation are restored.
+ * The rollback system is register-before-write, always keeping files restorable.
+ *
+ * @example
+ * const result = yield* Effect.flatMap(EditingPipeline, (p) =>
+ *   p.execute({
+ *     mutationId: "edit-1",
+ *     targets: [{ file: "src/foo.ts", oldString: "old", newString: "new" }],
+ *     projectRoot: "/project",
+ *     autoApprove: true,
+ *   })
+ * )
+ * // result.completedStage: "verification" on success
+ */
 import { Context, Effect, Layer } from "effect"
 import { GovernanceViolationError } from "../../core/errors/index.js"
 import type {
@@ -19,7 +47,19 @@ import { TLIExecutor } from "../tli/index.js"
 import type { TLITarget, TLIResult } from "../tli/index.js"
 import { RollbackSystem } from "../rollback/index.js"
 
-/** @Owl.Editor.Pipeline.Input - All inputs the pipeline needs to execute a Mutation */
+/**
+ * @Owl.Editor.Pipeline.Input - All inputs the pipeline needs to execute a Mutation
+ *
+ * @example
+ * const input: PipelineInput = {
+ *   mutationId: "edit-1",
+ *   targets: [{ file: "src/foo.ts", oldString: "old", newString: "new" }],
+ *   projectRoot: "/path/to/project",
+ *   autoApprove: false, // Requires TUI approval
+ *   subsystemId: "subsystem-engine", // For invariant validation
+ *   invariants: ["MUST NOT: import from other src/ subsystem"],
+ * }
+ */
 export interface PipelineInput {
   readonly mutationId: string
   readonly targets: readonly TLITarget[]
@@ -29,7 +69,9 @@ export interface PipelineInput {
   readonly invariants?: readonly string[]
 }
 
-/** @Owl.Editor.Pipeline.MutationResult - Per-file outcome with diff and written content */
+/**
+ * @Owl.Editor.Pipeline.MutationResult - Per-file outcome with diff and written content
+ */
 export interface PipelineMutationResult {
   readonly file: string
   readonly oldContent: string
@@ -37,7 +79,9 @@ export interface PipelineMutationResult {
   readonly diff: FileDiff
 }
 
-/** @Owl.Editor.Pipeline.Result - Full pipeline outcome */
+/**
+ * @Owl.Editor.Pipeline.Result - Full pipeline outcome
+ */
 export interface PipelineResult {
   readonly mutationId: string
   readonly completedStage: PipelineStage
@@ -54,8 +98,19 @@ export type PipelineError =
   | DiffGenerationError
   | RollbackError
 
-/** @Owl.Editor.Pipeline.Service - Single execute() that runs all 7 stages atomically */
+/**
+ * @Owl.Editor.Pipeline.Service - Single execute() that runs all 7 stages atomically
+ */
 export interface EditingPipelineService {
+  /**
+   * Execute the full 7-stage mutation pipeline
+   *
+   * @param input - PipelineInput with mutation ID, targets, project root
+   * @returns PipelineResult with stage, results, warnings
+   * @throws GovernanceViolationError - Shard Split detected or invariant violated
+   * @throws TLIError - Old string not found or ambiguous
+   * @throws MutationError - File not found or cannot write
+   */
   readonly execute: (
     input: PipelineInput,
   ) => Effect.Effect<PipelineResult, PipelineError>
@@ -66,7 +121,12 @@ export class EditingPipeline extends Context.Tag("EditingPipeline")<
   EditingPipelineService
 >() {}
 
-/** @Owl.Editor.Pipeline.Live - Composes GovernanceEngine, DiffGenerator, TLIExecutor, RollbackSystem */
+/**
+ * @Owl.Editor.Pipeline.Live - Composes GovernanceEngine, DiffGenerator, TLIExecutor, RollbackSystem
+ *
+ * Atomic execution: if any stage fails, rollback restores all files to pre-mutation state.
+ * Uses Effect.gen for readable sequential composition.
+ */
 export const EditingPipelineLive = Layer.effect(
   EditingPipeline,
   Effect.gen(function* () {
@@ -79,7 +139,7 @@ export const EditingPipelineLive = Layer.effect(
       input: PipelineInput,
     ): Effect.Effect<PipelineResult, PipelineError> =>
       Effect.gen(function* () {
-        // ── Stage 1: Architectural Analysis ──────────────────────────
+        // Stage 1: Architectural Analysis
         // Validate invariants at the seam-editor-governance boundary.
         if (input.subsystemId !== undefined && input.invariants !== undefined) {
           for (const invariant of input.invariants) {

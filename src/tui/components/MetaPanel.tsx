@@ -7,6 +7,7 @@ interface MetaPanelProps {
   readonly state: OwlAppState
 }
 
+/** @Owl.TUI.Components.MetaPanel.Row - Label-value metric row */
 function MetricRow({
   label,
   value,
@@ -24,6 +25,7 @@ function MetricRow({
   )
 }
 
+/** @Owl.TUI.Components.MetaPanel.Component - Right metrics panel */
 export const MetaPanel: React.FC<MetaPanelProps> = memo(({ state }) => (
   <Box
     flexDirection="column"

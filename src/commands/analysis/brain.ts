@@ -1,9 +1,22 @@
-/** @Owl.Commands.Analysis.Brain - Display hash registry subsystems: /brain */
+/**
+ * @Owl.Commands.Analysis.Brain - Display hash registry subsystems: /brain
+ *
+ * Reads from the HashRegistry to display all subsystems in the /hashes/ brain.
+ * Shows subsystem ID, name, module count, and invariant count.
+ *
+ * @example
+ * /brain
+ * // subsystem-engine — Orchestration Engine (3 modules, 2 invariants)
+ * // subsystem-editor — Mutation Pipeline (4 modules, 1 invariants)
+ */
 import { Effect } from "effect"
 import { CommandParseError } from "../../core/errors/index.js"
 import type { HashRegistryService } from "../../fmcf/registry/index.js"
 import type { CommandHandler, CommandResult } from "../types.js"
 
+/**
+ * @Owl.Commands.Analysis.Brain.Factory - Create the /brain command handler
+ */
 export function makeBrainCommand(
   registry: HashRegistryService,
 ): CommandHandler {

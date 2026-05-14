@@ -1,4 +1,20 @@
-/** @Owl.Commands.Parser - Quote-aware tokenizer and slash-command validator */
+/**
+ * @Owl.Commands.Parser - Quote-aware tokenizer and slash-command validator
+ *
+ * Converts raw input strings into ParsedCommand objects.
+ *
+ * Features:
+ * - Respects quoted spans (single and double quotes)
+ * - Validates slash prefix
+ * - Extracts command name and arguments
+ *
+ * @example
+ * parseCommand("/deep analyze this code")
+ * // → { name: "deep", args: ["analyze", "this", "code"], raw: "/deep analyze this code" }
+ *
+ * parseCommand('/edit "src/foo.ts" "old" "new"')
+ * // → { name: "edit", args: ["src/foo.ts", "old", "new"], raw: "..." }
+ */
 import { Effect } from "effect"
 import { CommandParseError } from "../core/errors/index.js"
 import type { ParsedCommand } from "./types.js"
@@ -31,7 +47,13 @@ function tokenize(input: string): string[] {
   return tokens
 }
 
-/** Parse a raw slash-command string into a ParsedCommand */
+/**
+ * Parse a raw slash-command string into a ParsedCommand
+ *
+ * @param raw - Raw input string (may include / prefix)
+ * @returns ParsedCommand with name and args
+ * @throws CommandParseError - If input doesn't start with / or has no command name
+ */
 export function parseCommand(
   raw: string,
 ): Effect.Effect<ParsedCommand, CommandParseError> {

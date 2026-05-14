@@ -1,4 +1,19 @@
-/** @Owl.Commands.Analysis.Analyze - FMCF deep architectural analysis dispatcher: /analyze <subject> */
+/**
+ * @Owl.Commands.Analysis.Analyze - FMCF deep architectural analysis dispatcher: /analyze <subject>
+ *
+ * Uses the Orchestrator to run a deep mode analysis task.
+ * The task preamble instructs the LLM to act as an FMCF Architect performing:
+ * - Full seam analysis
+ * - Friction discovery
+ * - DEPTH_SCORE computation and classification
+ * - Coupling risk identification
+ * - Deepening recommendations
+ *
+ * Mode: deep (uses deep reasoning, full token budget)
+ *
+ * @example
+ * /analyze src/core/registry
+ */
 import { Effect } from "effect"
 import { CommandParseError } from "../../core/errors/index.js"
 import type { OrchestratorService } from "../../engine/orchestrator/index.js"
@@ -7,6 +22,9 @@ import type { CommandHandler, CommandResult } from "../types.js"
 const PREAMBLE =
   "You are an FMCF v3.5 Architect. Perform a full seam analysis and friction discovery. Apply the DEPTH_SCORE formula: (Leverage+Locality+Testability)/3 - ComplexityTax. Report: DEEP/MEDIUM/SHALLOW classification, top coupling risks, and 3 deepening recommendations. Subject: "
 
+/**
+ * @Owl.Commands.Analysis.Analyze.Factory - Create the /analyze command handler
+ */
 export function makeAnalyzeCommand(
   orchestrator: OrchestratorService,
 ): CommandHandler {
