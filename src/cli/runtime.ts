@@ -34,25 +34,21 @@ export const makeOwlRuntime = (projectRoot: string): OwlRuntime => {
     TLIExecutorLive,
   )
 
-  // Orchestrator depends on ContextManager + SessionMemory + ProviderRouter (all in leafLayer)
+  // Derive higher-order layers by providing the shared leaf environment once each
   const orchestratorLayer = OrchestratorLive.pipe(Layer.provide(leafLayer))
-
-  // EditingPipeline depends on GovernanceEngine + DiffGenerator + TLIExecutor + RollbackSystem (all in leafLayer)
   const editingPipelineLayer = EditingPipelineLive.pipe(
     Layer.provide(leafLayer),
   )
 
-  // CommandRegistry depends on: Orchestrator, ContextManager, SessionMemory, RoleContext, RollbackSystem, EditingPipeline
+  // CommandRegistry depends on orchestratorLayer + editingPipelineLayer + remaining leaf services;
+  // provide all of them as a single merged environment so leafLayer is shared via reference
   const commandRegistryLayer = makeCommandRegistryLive(projectRoot).pipe(
     Layer.provide(
-      Layer.mergeAll(
-        orchestratorLayer,
-        editingPipelineLayer,
-        leafLayer, // provides ContextManager, SessionMemory, RoleContext, RollbackSystem
-      ),
+      Layer.mergeAll(orchestratorLayer, editingPipelineLayer, leafLayer),
     ),
   )
 
+  // Expose only the services the CLI actually uses
   return ManagedRuntime.make(
     Layer.mergeAll(orchestratorLayer, commandRegistryLayer),
   )

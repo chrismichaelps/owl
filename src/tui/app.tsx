@@ -1,5 +1,11 @@
 /** @Owl.TUI.App - Root Ink app: 3-panel layout + REPL prompt, wired to Orchestrator */
-import React, { useCallback, useEffect, useReducer, useState } from "react"
+import React, {
+  useCallback,
+  useEffect,
+  useReducer,
+  useRef,
+  useState,
+} from "react"
 import { Box, useApp } from "ink"
 import { Effect } from "effect"
 import { LogPanel } from "./components/LogPanel.js"
@@ -20,8 +26,6 @@ interface AppProps {
   readonly initialPrompt?: string | null
 }
 
-let taskCounter = 0
-
 export const App: React.FC<AppProps> = ({
   runtime,
   initialMode = "standard",
@@ -29,6 +33,7 @@ export const App: React.FC<AppProps> = ({
 }) => {
   useApp() // access to exit()
   const [state, dispatch] = useReducer(owlReducer, INITIAL_STATE)
+  const taskCounterRef = useRef(0)
   const [mode, setMode] = useState<Mode>(initialMode)
 
   const isProcessing =
@@ -36,8 +41,8 @@ export const App: React.FC<AppProps> = ({
 
   const handleSubmit = useCallback(
     (prompt: string, submittedMode: Mode) => {
-      taskCounter += 1
-      const taskId = `task-${String(taskCounter)}`
+      taskCounterRef.current += 1
+      const taskId = `task-${String(taskCounterRef.current)}`
 
       dispatch({ type: "RESET" })
       dispatch({ type: "ADD_LOG", msg: `▶ Task: ${prompt.slice(0, 40)}` })
@@ -113,10 +118,10 @@ export const App: React.FC<AppProps> = ({
 
   useEffect(() => {
     if (initialPrompt != null && initialPrompt.trim().length > 0) {
-      handleSubmit(initialPrompt.trim(), mode)
+      handleSubmit(initialPrompt.trim(), initialMode)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []) // intentionally empty — fire once on mount only
+    // intentionally empty dep array — fires once on mount only
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <Box flexDirection="column" height="100%">
