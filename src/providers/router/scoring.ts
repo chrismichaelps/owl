@@ -24,7 +24,7 @@
  * const score = scoreProvider(capability, routingContext)
  * if (score > 0.7) { /* good match *\/ }
  */
-import { ROUTING_WEIGHTS } from "../../core/constants/index.js"
+import { ROUTING_LIMITS, ROUTING_WEIGHTS } from "../../core/constants/index.js"
 import type { ProviderCapability, RoutingContext } from "../types.js"
 
 /** @Owl.Providers.Router.Scoring.Weights - Static demand and weight coefficients */
@@ -63,8 +63,10 @@ export function scoreProvider(
   const estimatedCost = (ctx.estimatedInputTokens / 1000) * cap.inputCostPer1k
 
   // Cost score: cheaper = higher score, normalized 0–1
-  const maxCost = 0.5
-  const costScore = Math.max(0, 1 - estimatedCost / maxCost)
+  const costScore = Math.max(
+    0,
+    1 - estimatedCost / ROUTING_LIMITS.MAX_NORMALIZED_COST_USD,
+  )
 
   // Reasoning score: matches mode demand
   const reasoningDepthScore = REASONING_SCORES[cap.reasoningDepth] ?? 0.5
@@ -72,7 +74,10 @@ export function scoreProvider(
   const reasoningScore = 1 - Math.abs(reasoningDepthScore - modeReasoningDemand)
 
   // Latency score: smaller models are faster
-  const latencyScore = cap.maxOutputTokens <= 4096 ? 0.8 : 0.6
+  const latencyScore =
+    cap.maxOutputTokens <= ROUTING_LIMITS.FAST_MODEL_OUTPUT_TOKEN_LIMIT
+      ? 0.8
+      : 0.6
 
   // Vision requirement penalty
   const visionPenalty = ctx.requiresVision && !cap.supportsVision ? -1.0 : 0.0
@@ -85,6 +90,63 @@ export function scoreProvider(
     visionPenalty
 
   return score
+}
+
+/** @Owl.Providers.Router.Scoring.Ranked - Scored capability for fallback ordering */
+interface RankedCapability {
+  readonly capability: ProviderCapability
+  readonly score: number
+}
+
+const compareRankedCapabilities = (
+  left: RankedCapability,
+  right: RankedCapability,
+): number => {
+  const scoreDelta = right.score - left.score
+  if (scoreDelta !== 0) return scoreDelta
+
+  const providerDelta = left.capability.providerId.localeCompare(
+    right.capability.providerId,
+  )
+  if (providerDelta !== 0) return providerDelta
+
+  return left.capability.modelId.localeCompare(right.capability.modelId)
+}
+
+/**
+ * @Owl.Providers.Router.Scoring.Rank - Deterministic fallback order
+ *
+ * Returns all valid capabilities in descending score order. If a preferred
+ * Provider has valid capabilities, those capabilities are tried first while
+ * preserving deterministic score order inside the preferred subset.
+ */
+export function rankProviders(
+  capabilities: readonly ProviderCapability[],
+  ctx: RoutingContext,
+): readonly ProviderCapability[] {
+  const ranked = capabilities
+    .map((capability) => ({
+      capability,
+      score: scoreProvider(capability, ctx),
+    }))
+    .filter((entry) => Number.isFinite(entry.score))
+    .sort(compareRankedCapabilities)
+
+  if (ctx.preferredProvider === undefined) {
+    return ranked.map((entry) => entry.capability)
+  }
+
+  const preferred = ranked.filter(
+    (entry) => entry.capability.providerId === ctx.preferredProvider,
+  )
+  if (preferred.length === 0) {
+    return ranked.map((entry) => entry.capability)
+  }
+
+  const nonPreferred = ranked.filter(
+    (entry) => entry.capability.providerId !== ctx.preferredProvider,
+  )
+  return [...preferred, ...nonPreferred].map((entry) => entry.capability)
 }
 
 /**
@@ -101,30 +163,5 @@ export function selectBestProvider(
   capabilities: readonly ProviderCapability[],
   ctx: RoutingContext,
 ): ProviderCapability | null {
-  if (capabilities.length === 0) return null
-
-  let best: ProviderCapability | null = null
-  let bestScore = -Infinity
-
-  for (const cap of capabilities) {
-    // Honor preferred provider if specified
-    if (ctx.preferredProvider && cap.providerId !== ctx.preferredProvider) {
-      continue
-    }
-    const score = scoreProvider(cap, ctx)
-    if (score > bestScore) {
-      bestScore = score
-      best = cap
-    }
-  }
-
-  // If preferred provider had no matches, fall back to all providers
-  if (best === null && ctx.preferredProvider) {
-    return selectBestProvider(capabilities, {
-      ...ctx,
-      preferredProvider: undefined,
-    })
-  }
-
-  return best
+  return rankProviders(capabilities, ctx)[0] ?? null
 }

@@ -1,6 +1,6 @@
-State_ID: BigInt(0x000000000000002A)
-Git_SHA: c3f2b5abc62ee688864cde7596e58a65bbee312a
-Source_SHA256: 803e092a1cef2c79f100d91885ccd24936df122d3b76da2cb77545abbdda978c
+State_ID: BigInt(0x000000000000005c)
+Git_SHA: f62c2f2f8df5bb172147a5ae827784dac4718a11
+Source_SHA256: 7094a1787b221dafc9f3caedb681b2821216a9bf1ec52e5ea4146e6b30215c55
 Grammar_Lock: "@root/hashes/grammar/typescript/typescript.hash.md"
 Fidelity: DECLARED
 ---
@@ -12,6 +12,7 @@ Fidelity: DECLARED
 - `MODE_TOKEN_BUDGETS` — per-mode token caps: economy=2k, quick=8k, standard=32k, deep=100k, god=200k
 - `PROVIDER_TIMEOUTS` — DEFAULT_MS=30s, STREAM_CHUNK_TIMEOUT_MS=5s, OLLAMA_DEFAULT_MS=60s
 - `RETRY_CONFIG` — MAX_ATTEMPTS=3, BASE_DELAY_MS=1s, MAX_DELAY_MS=30s, BACKOFF_FACTOR=2
+- `ROUTING_LIMITS` — max normalized cost, fast model output threshold, fallback Provider count
 - `DEPTH_THRESHOLDS` — DEEP=0.7, SHALLOW=0.4
 - `SHARD_SPLIT_THRESHOLD = 0.15`
 - `SEAM_COLLAPSE_MONTHS = 6`

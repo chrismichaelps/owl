@@ -29,10 +29,12 @@
  */
 import { Context, Effect, Layer, Ref } from "effect"
 import * as Stream from "effect/Stream"
+import { ROUTING_LIMITS } from "../../core/constants/index.js"
 import { ProviderUnavailableError } from "../../core/errors/index.js"
-import { selectBestProvider } from "./scoring.js"
+import { rankProviders, scoreProvider } from "./scoring.js"
 import type {
   LLMProviderService,
+  ProviderCapability,
   RoutingContext,
   RoutingDecision,
   StreamingCallbackResult,
@@ -146,14 +148,10 @@ export const ProviderRouterLive = Layer.effect(
       ctx: RoutingContext,
     ): Effect.Effect<RoutingDecision, ProviderUnavailableError> =>
       Effect.gen(function* () {
-        const registry = yield* Ref.get(registryRef)
-        const allCapabilities = Array.from(registry.values()).flatMap(
-          (p) => p.capabilities,
-        )
+        const ranked = yield* rankedCapabilities(ctx)
+        const best = ranked[0]
 
-        const best = selectBestProvider(allCapabilities, ctx)
-
-        if (best === null) {
+        if (best === undefined) {
           return yield* Effect.fail(
             new ProviderUnavailableError({
               provider: ctx.preferredProvider ?? "any",
@@ -162,10 +160,14 @@ export const ProviderRouterLive = Layer.effect(
           )
         }
 
-        const fallbacks = allCapabilities
-          .filter((c) => c.modelId !== best.modelId)
-          .map((c) => c.providerId)
-          .slice(0, 2)
+        const fallbacks = Array.from(
+          new Set(
+            ranked
+              .slice(1)
+              .filter((capability) => capability.providerId !== best.providerId)
+              .map((capability) => capability.providerId),
+          ),
+        ).slice(0, ROUTING_LIMITS.FALLBACK_PROVIDER_LIMIT)
 
         const estimatedCost =
           (ctx.estimatedInputTokens / 1000) * best.inputCostPer1k
@@ -173,12 +175,52 @@ export const ProviderRouterLive = Layer.effect(
         return {
           selectedProvider: best.providerId,
           selectedModel: best.modelId,
-          score: 0.8,
+          score: scoreProvider(best, ctx),
           fallbackProviders: fallbacks,
           reasoning: `Selected ${best.modelId} for ${ctx.mode} mode`,
           estimatedCostUsd: estimatedCost,
         } satisfies RoutingDecision
       })
+
+    const rankedCapabilities = (
+      ctx: RoutingContext,
+    ): Effect.Effect<readonly ProviderCapability[], ProviderUnavailableError> =>
+      Ref.get(registryRef).pipe(
+        Effect.flatMap((registry) => {
+          const capabilities = Array.from(registry.values()).flatMap(
+            (provider) => provider.capabilities,
+          )
+          const ranked = rankProviders(capabilities, ctx)
+
+          return ranked.length > 0
+            ? Effect.succeed(ranked)
+            : Effect.fail(
+                new ProviderUnavailableError({
+                  provider: ctx.preferredProvider ?? "any",
+                  reason: "No providers registered or none match context",
+                }),
+              )
+        }),
+      )
+
+    const missingProvider = (providerId: string): ProviderUnavailableError =>
+      new ProviderUnavailableError({
+        provider: providerId,
+        reason: "Provider registered in routing but not in registry",
+      })
+
+    const failLast = <E>(
+      error: E | undefined,
+      ctx: RoutingContext,
+    ): Effect.Effect<never, E | ProviderUnavailableError> =>
+      error === undefined
+        ? Effect.fail(
+            new ProviderUnavailableError({
+              provider: ctx.preferredProvider ?? "any",
+              reason: "No provider attempts were available",
+            }),
+          )
+        : Effect.fail(error)
 
     const complete = (
       ctx: RoutingContext,
@@ -188,23 +230,34 @@ export const ProviderRouterLive = Layer.effect(
       AnyProviderError | ProviderUnavailableError
     > =>
       Effect.gen(function* () {
-        const decision = yield* route(ctx)
+        const ranked = yield* rankedCapabilities(ctx)
         const registry = yield* Ref.get(registryRef)
-        const provider = registry.get(decision.selectedProvider)
+        let lastError: AnyProviderError | ProviderUnavailableError | undefined =
+          undefined
 
-        if (!provider) {
-          return yield* Effect.fail(
-            new ProviderUnavailableError({
-              provider: decision.selectedProvider,
-              reason: "Provider registered in routing but not in registry",
-            }),
-          )
+        for (const capability of ranked) {
+          const provider = registry.get(capability.providerId)
+
+          if (provider === undefined) {
+            lastError = missingProvider(capability.providerId)
+            continue
+          }
+
+          const result = yield* provider
+            .complete({
+              ...request,
+              model: capability.modelId,
+            })
+            .pipe(Effect.either)
+
+          if (result._tag === "Right") {
+            return result.right
+          }
+
+          lastError = result.left
         }
 
-        return yield* provider.complete({
-          ...request,
-          model: decision.selectedModel,
-        })
+        return yield* failLast(lastError, ctx)
       })
 
     const completeWithCallback = (
@@ -217,37 +270,49 @@ export const ProviderRouterLive = Layer.effect(
     > =>
       Effect.gen(function* () {
         const startMs = Date.now()
-        const decision = yield* route(ctx)
+        const ranked = yield* rankedCapabilities(ctx)
         const registry = yield* Ref.get(registryRef)
-        const provider = registry.get(decision.selectedProvider)
+        let lastError: AnyProviderError | ProviderUnavailableError | undefined =
+          undefined
 
-        if (!provider) {
-          return yield* Effect.fail(
-            new ProviderUnavailableError({
-              provider: decision.selectedProvider,
-              reason: "Provider registered in routing but not in registry",
-            }),
-          )
+        for (const capability of ranked) {
+          const provider = registry.get(capability.providerId)
+
+          if (provider === undefined) {
+            lastError = missingProvider(capability.providerId)
+            continue
+          }
+
+          const chunks: string[] = []
+          let emittedChunks = 0
+          const result = yield* Stream.runForEach(
+            provider.stream({ ...request, model: capability.modelId }),
+            (chunk) =>
+              Effect.sync(() => {
+                if (chunk.type === "text" && chunk.content != null) {
+                  chunks.push(chunk.content)
+                  emittedChunks += 1
+                  onChunk(chunk.content)
+                }
+              }),
+          ).pipe(Effect.either)
+
+          if (result._tag === "Right") {
+            return {
+              content: chunks.join(""),
+              provider: capability.providerId,
+              model: capability.modelId,
+              latencyMs: Date.now() - startMs,
+            } satisfies StreamingCallbackResult
+          }
+
+          lastError = result.left
+          if (emittedChunks > 0) {
+            return yield* Effect.fail(result.left)
+          }
         }
 
-        const chunks: string[] = []
-        yield* Stream.runForEach(
-          provider.stream({ ...request, model: decision.selectedModel }),
-          (chunk) =>
-            Effect.sync(() => {
-              if (chunk.type === "text" && chunk.content != null) {
-                chunks.push(chunk.content)
-                onChunk(chunk.content)
-              }
-            }),
-        )
-
-        return {
-          content: chunks.join(""),
-          provider: decision.selectedProvider,
-          model: decision.selectedModel,
-          latencyMs: Date.now() - startMs,
-        } satisfies StreamingCallbackResult
+        return yield* failLast(lastError, ctx)
       })
 
     const listProviders = (): Effect.Effect<readonly string[]> =>

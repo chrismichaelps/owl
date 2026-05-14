@@ -1,6 +1,7 @@
 /** @Owl.Tests.Providers.Scoring - Provider scoring algorithm tests */
 import { describe, it, expect } from "vitest"
 import {
+  rankProviders,
   scoreProvider,
   selectBestProvider,
 } from "../../src/providers/router/scoring.js"
@@ -77,5 +78,24 @@ describe("provider scoring", () => {
   it("selectBestProvider returns null for empty capabilities", () => {
     const best = selectBestProvider([], ECONOMY_CTX)
     expect(best).toBeNull()
+  })
+
+  it("rankProviders returns deterministic fallback order", () => {
+    const ranked = rankProviders(
+      [ANTHROPIC_OPUS, ANTHROPIC_HAIKU],
+      ECONOMY_CTX,
+    )
+    expect(ranked.map((cap) => cap.modelId)).toEqual([
+      "claude-haiku-4-5",
+      "claude-opus-4-7",
+    ])
+  })
+
+  it("rankProviders places a valid preferred provider first", () => {
+    const ranked = rankProviders(
+      [ANTHROPIC_OPUS, ANTHROPIC_HAIKU],
+      { ...ECONOMY_CTX, preferredProvider: "anthropic" },
+    )
+    expect(ranked[0]?.providerId).toBe("anthropic")
   })
 })

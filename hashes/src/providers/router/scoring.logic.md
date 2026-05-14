@@ -11,22 +11,24 @@
 
 ## Algorithm
 
-1. **Initialize** — Set up initial state and validate preconditions
-2. **Process** — Execute the core operation based on current state
-3. **Transition** — Validate guard conditions and transition to next state
-4. **Complete** — Finalize operation and clean up resources
+1. Score every Provider capability against RoutingContext.
+2. Exclude capabilities that fail hard constraints.
+3. When `preferredProvider` is present and valid, rank that Provider's capabilities first.
+4. Sort ranked capabilities by descending score.
+5. Use Provider id and model id as deterministic tie-breakers.
+6. Return the first ranked capability for selectBestProvider.
 
 ## Negative Logic (PROHIBITED PATHS)
 
-- MUST NOT: Bypass state transitions — always use the defined state machine
-- MUST NOT: Skip guard validation — every transition requires guard check
-- MUST NOT: Mutate state directly — use only defined transition methods
+- MUST NOT: Mutate capability arrays passed by callers.
+- MUST NOT: return invalid hard-gated capabilities.
+- MUST NOT: use random tie-breaking.
 
 ## Edge Cases
 
-- **Concurrent access**: Serialize state transitions via atomic operations
-- **Timeout during transition**: Roll back to previous valid state
-- **Invalid guard condition**: Log error and remain in current state
+- **No capabilities**: return an empty ranked list and null best Provider.
+- **Preferred Provider invalid**: fall back to all valid Providers.
+- **Equal score**: sort by Provider id, then model id.
 
 ## Dependencies
 

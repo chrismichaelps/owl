@@ -11,22 +11,21 @@
 
 ## Algorithm
 
-1. **Initialize** — Set up initial state and validate preconditions
-2. **Process** — Execute the core operation based on current state
-3. **Transition** — Validate guard conditions and transition to next state
-4. **Complete** — Finalize operation and clean up resources
+1. Export immutable constants grouped by domain.
+2. Keep Provider routing coefficients, thresholds, and fallback limits centralized.
+3. Keep FMCF governance thresholds centralized.
+4. Keep TUI, Editor, and Command constants centralized.
 
 ## Negative Logic (PROHIBITED PATHS)
 
-- MUST NOT: Bypass state transitions — always use the defined state machine
-- MUST NOT: Skip guard validation — every transition requires guard check
-- MUST NOT: Mutate state directly — use only defined transition methods
+- MUST NOT: Export mutable constant objects.
+- MUST NOT: Duplicate magic values inside runtime logic Modules.
+- MUST NOT: Mix service logic into this constants Module.
 
 ## Edge Cases
 
-- **Concurrent access**: Serialize state transitions via atomic operations
-- **Timeout during transition**: Roll back to previous valid state
-- **Invalid guard condition**: Log error and remain in current state
+- **New routing threshold**: Add it to ROUTING_LIMITS or ROUTING_WEIGHTS.
+- **New subsystem constant**: Group it by domain with FMCF comment law.
 
 ## Dependencies
 

@@ -7,11 +7,12 @@ import {
   ProviderRouterLive,
   registerProvider,
 } from "../../src/providers/router/index.js"
+import { ProviderError, ProviderStreamError } from "../../src/core/errors/index.js"
 import type { LLMProviderService } from "../../src/providers/types.js"
-import type { InferenceRequest } from "../../src/core/schema/index.js"
+import type { InferenceRequest, ProviderId } from "../../src/core/schema/index.js"
 
 /** @Owl.Tests.Providers.Router.Stubs - Mock provider definitions */
-const makeStubProvider = (id: string): LLMProviderService => ({
+const makeStubProvider = (id: ProviderId): LLMProviderService => ({
   id,
   capabilities: [
     {
@@ -39,12 +40,33 @@ const makeStubProvider = (id: string): LLMProviderService => ({
         cacheWriteTokens: 0,
       },
       model: `${id}-model`,
-      provider: "anthropic" as const,
+      provider: id,
       latencyMs: 100,
     }),
-  stream: (_req) => Stream.empty,
+  stream: (_req) =>
+    Stream.make(
+      { type: "text" as const, content: `stream from ${id}`, index: 0 },
+    ),
   countTokens: (_text, _modelId) => Effect.succeed(100),
   healthCheck: () => Effect.succeed(true),
+})
+
+const makeFailingProvider = (id: ProviderId): LLMProviderService => ({
+  ...makeStubProvider(id),
+  complete: () =>
+    Effect.fail(
+      new ProviderError({
+        provider: id,
+        message: `${id} failed`,
+      }),
+    ),
+  stream: () =>
+    Stream.fail(
+      new ProviderStreamError({
+        provider: id,
+        cause: `${id} stream failed`,
+      }),
+    ),
 })
 
 /** @Owl.Tests.Providers.Router.Logic - Selection and error path tests */
@@ -70,6 +92,89 @@ describe("ProviderRouter", () => {
       program.pipe(Effect.provide(ProviderRouterLive)),
     )
     expect(result).toBe("anthropic")
+  })
+
+  it("complete falls back when the selected provider fails", async () => {
+    const first = makeFailingProvider("anthropic")
+    const fallback = makeStubProvider("openai")
+
+    const program = Effect.gen(function* () {
+      const router = yield* ProviderRouter
+      yield* registerProvider(router, first)
+      yield* registerProvider(router, fallback)
+      return yield* router.complete(
+        {
+          taskId: "t-fallback",
+          mode: "standard",
+          estimatedInputTokens: 1000,
+          requiresReasoning: false,
+          requiresVision: false,
+          latencyBudgetMs: 30000,
+        },
+        {
+          taskId: "t-fallback",
+          messages: [
+            {
+              role: "user",
+              content: "hello",
+              timestamp: new Date().toISOString(),
+            },
+          ],
+          maxTokens: 1024,
+          stream: false,
+        },
+      )
+    })
+
+    const result = await Effect.runPromise(
+      program.pipe(Effect.provide(ProviderRouterLive)),
+    )
+    expect(result.provider).toBe("openai")
+    expect(result.content).toBe("response from openai")
+  })
+
+  it("completeWithCallback falls back when stream fails before chunks", async () => {
+    const first = makeFailingProvider("anthropic")
+    const fallback = makeStubProvider("openai")
+    const chunks: string[] = []
+
+    const program = Effect.gen(function* () {
+      const router = yield* ProviderRouter
+      yield* registerProvider(router, first)
+      yield* registerProvider(router, fallback)
+      return yield* router.completeWithCallback(
+        {
+          taskId: "t-stream-fallback",
+          mode: "standard",
+          estimatedInputTokens: 1000,
+          requiresReasoning: false,
+          requiresVision: false,
+          latencyBudgetMs: 30000,
+        },
+        {
+          taskId: "t-stream-fallback",
+          messages: [
+            {
+              role: "user",
+              content: "hello",
+              timestamp: new Date().toISOString(),
+            },
+          ],
+          maxTokens: 1024,
+          stream: true,
+        },
+        (chunk) => {
+          chunks.push(chunk)
+        },
+      )
+    })
+
+    const result = await Effect.runPromise(
+      program.pipe(Effect.provide(ProviderRouterLive)),
+    )
+    expect(result.provider).toBe("openai")
+    expect(result.content).toBe("stream from openai")
+    expect(chunks).toEqual(["stream from openai"])
   })
 
   it("fails with ProviderUnavailableError when no providers registered", async () => {

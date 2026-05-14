@@ -2,18 +2,29 @@
   "contract_id": "CTR-providers-scoring-00000001",
   "module": "@Owl.Providers.Router.Scoring src/providers/router/scoring.ts",
   "grammar_lock": "@root/hashes/grammar/typescript/typescript.hash.md",
-  "depth_score": "0.60 \u2014 MEDIUM (scoring logic + mode/reasoning demand maps)",
+  "depth_score": "0.68 \u2014 MEDIUM (scoring logic + deterministic fallback ranking)",
   "seam_capacity": "INTERNAL",
   "sig_id": "SIG-providers-scoring-00000001",
   "interface": {
     "signatures": [
       "scoreProvider(cap, ctx): number",
+      "rankProviders(capabilities, ctx): readonly ProviderCapability[]",
       "selectBestProvider(capabilities, ctx): ProviderCapability | null"
     ],
     "error_modes": [],
-    "invariants": []
+    "invariants": [
+      "rankProviders MUST return capabilities in deterministic score order",
+      "preferredProvider MUST be ranked first when it has a valid capability",
+      "capabilities that fail hard constraints MUST be excluded from ranked results"
+    ]
   },
-  "responsibilities": [],
-  "prohibited": [],
+  "responsibilities": [
+    "Score Provider capabilities for ProviderRouter",
+    "Produce deterministic ranked fallback order"
+  ],
+  "prohibited": [
+    "MUST NOT mutate input capability arrays",
+    "MUST NOT perform Provider calls or IO"
+  ],
   "created_at": "2026-05-14T15:55:47.203883Z"
 }

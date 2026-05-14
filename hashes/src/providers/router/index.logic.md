@@ -14,22 +14,24 @@
 
 ## Algorithm
 
-1. **Initialize** — Set up initial state and validate preconditions
-2. **Process** — Execute the core operation based on current state
-3. **Transition** — Validate guard conditions and transition to next state
-4. **Complete** — Finalize operation and clean up resources
+1. Collect capabilities from registered Providers.
+2. Rank capabilities with `rankProviders`.
+3. Route returns the first ranked capability and a bounded fallback Provider list.
+4. Non-streaming Inference attempts ranked capabilities in order until one succeeds.
+5. Streaming Inference attempts the ranked capability live; if it fails before any text chunks are emitted, try the next ranked capability.
+6. If all ranked Providers fail, return the last tagged Provider failure.
 
 ## Negative Logic (PROHIBITED PATHS)
 
-- MUST NOT: Bypass state transitions — always use the defined state machine
-- MUST NOT: Skip guard validation — every transition requires guard check
-- MUST NOT: Mutate state directly — use only defined transition methods
+- MUST NOT: expose failover complexity to Orchestrator or TUI callers.
+- MUST NOT: retry a Streaming fallback after partial text has been emitted.
+- MUST NOT: fabricate Provider responses when all Providers fail.
 
 ## Edge Cases
 
-- **Concurrent access**: Serialize state transitions via atomic operations
-- **Timeout during transition**: Roll back to previous valid state
-- **Invalid guard condition**: Log error and remain in current state
+- **No Providers**: fail with ProviderUnavailableError.
+- **Selected Provider fails**: try next ranked fallback.
+- **Streaming failure after chunks**: fail immediately to avoid corrupting displayed output.
 
 ## Dependencies
 

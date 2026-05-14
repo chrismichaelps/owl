@@ -11,6 +11,7 @@
       "MODE_TOKEN_BUDGETS",
       "PROVIDER_TIMEOUTS",
       "RETRY_CONFIG",
+      "ROUTING_LIMITS",
       "DEPTH_THRESHOLDS",
       "SHARD_SPLIT_THRESHOLD = 0.15",
       "SEAM_COLLAPSE_MONTHS = 6",
@@ -24,7 +25,13 @@
     "error_modes": [],
     "invariants": []
   },
-  "responsibilities": [],
-  "prohibited": [],
+  "responsibilities": [
+    "Centralize runtime thresholds and coefficients",
+    "Prevent routing and governance magic values from leaking into logic Modules"
+  ],
+  "prohibited": [
+    "MUST NOT duplicate routing fallback limits inside ProviderRouter",
+    "MUST NOT hardcode scoring thresholds outside this Module"
+  ],
   "created_at": "2026-05-14T15:55:47.195373Z"
 }

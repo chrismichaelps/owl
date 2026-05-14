@@ -112,6 +112,13 @@ export const ROUTING_WEIGHTS = {
   RELIABILITY: 0.15,
 } as const
 
+/** @Owl.Core.Constants.RoutingLimits - Provider scoring and fallback limits */
+export const ROUTING_LIMITS = {
+  MAX_NORMALIZED_COST_USD: 0.5,
+  FAST_MODEL_OUTPUT_TOKEN_LIMIT: 4_096,
+  FALLBACK_PROVIDER_LIMIT: 2,
+} as const
+
 /** @Owl.Core.Constants.TUI - Terminal UI refresh and layout */
 export const TUI_REFRESH_INTERVAL_MS = 100
 

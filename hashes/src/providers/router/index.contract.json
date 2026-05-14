@@ -2,7 +2,7 @@
   "contract_id": "CTR-providers-router-00000001",
   "module": "@Owl.Providers.Router src/providers/router/index.ts",
   "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
-  "depth_score": "0.85 \u2014 DEEP (BACKBONE seam coordinator)",
+  "depth_score": "0.88 \u2014 DEEP (BACKBONE seam coordinator with Provider failover)",
   "seam_capacity": "BACKBONE",
   "sig_id": "SIG-providers-router-00000001",
   "interface": {
@@ -12,10 +12,23 @@
       "ProviderRouterLive: Layer",
       "registerProvider(router, provider): Effect<void>"
     ],
-    "error_modes": [],
-    "invariants": []
+    "error_modes": [
+      "ProviderUnavailableError when no registered Provider can satisfy RoutingContext",
+      "AnyProviderError when all ranked Providers fail"
+    ],
+    "invariants": [
+      "complete MUST try ranked fallback Providers before failing",
+      "completeWithCallback MUST preserve live Streaming for successful Provider streams",
+      "completeWithCallback MUST only retry Streaming fallback when failed attempt emitted zero chunks"
+    ]
   },
-  "responsibilities": [],
-  "prohibited": [],
+  "responsibilities": [
+    "Coordinate Provider selection and fallback through the ProviderRouter Seam",
+    "Keep Provider failover hidden from Orchestrator and TUI callers"
+  ],
+  "prohibited": [
+    "MUST NOT require callers to manually retry Providers",
+    "MUST NOT leak Provider SDK errors across the Seam without tagged error wrapping"
+  ],
   "created_at": "2026-05-14T15:55:47.204054Z"
 }
