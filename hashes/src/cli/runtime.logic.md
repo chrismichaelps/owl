@@ -13,27 +13,32 @@
 
 ## Algorithm
 
-1. **Initialize** — Set up initial state and validate preconditions
-2. **Process** — Execute the core operation based on current state
-3. **Transition** — Validate guard conditions and transition to next state
-4. **Complete** — Finalize operation and clean up resources
+1. **Initialize configuration** — Resolve OWL_CONFIG so Provider adapters and bootstrap share the same environment.
+2. **Build leaf Layers** — Compose ContextManager, SessionMemory, ProviderRouter, Provider adapters, FMCF role context, Governance, Diff, TLI, and Rollback.
+3. **Bootstrap Providers** — Run ProviderBootstrapLive against the leaf environment so ProviderRouter contains all configured Providers before Inference.
+4. **Derive Orchestrator** — Provide OrchestratorLive with the leaf environment and bootstrap marker.
+5. **Derive EditingPipeline** — Provide EditingPipelineLive with the same leaf environment used by CommandRegistry.
+6. **Derive CommandRegistry** — Register slash Command handlers with Orchestrator, EditingPipeline, Registry, Role, Memory, and Rollback services.
+7. **Expose runtime** — Return a ManagedRuntime exposing only Orchestrator and CommandRegistry.
 
 ## Negative Logic (PROHIBITED PATHS)
 
-- MUST NOT: Bypass state transitions — always use the defined state machine
-- MUST NOT: Skip guard validation — every transition requires guard check
-- MUST NOT: Mutate state directly — use only defined transition methods
+- MUST NOT: Construct Orchestrator before ProviderBootstrapLive has registered configured Providers.
+- MUST NOT: Register Providers from TUI, CommandRegistry, or Orchestrator.
+- MUST NOT: Expose Provider adapter services through OwlRuntime.
+- MUST NOT: Duplicate stateful runtime services when composing CommandRegistry.
 
 ## Edge Cases
 
-- **Concurrent access**: Serialize state transitions via atomic operations
-- **Timeout during transition**: Roll back to previous valid state
-- **Invalid guard condition**: Log error and remain in current state
+- **Missing optional Provider key**: Runtime starts and omits that Provider from routing.
+- **Missing required Anthropic key**: OWL_CONFIG fails startup before any Inference can run.
+- **Local Ollama offline**: Runtime starts; Provider health and Inference paths surface connectivity failures.
 
 ## Dependencies
 
 - Grammar: "@root/hashes/grammar/effect/effect.hash.md"
 - Parent: `@root/hashes/src/cli/index.hash.md`
+- Provider Bootstrap: `@root/hashes/src/providers/bootstrap.hash.md`
 
 ---
 

@@ -11,10 +11,24 @@
       "OpenAIAdapter extends Context.Tag",
       "OpenAIAdapterLive: Layer"
     ],
-    "error_modes": [],
-    "invariants": []
+    "error_modes": [
+      "ProviderError when OPENAI_API_KEY is not configured",
+      "ProviderError when OpenAI SDK request fails"
+    ],
+    "invariants": [
+      "OpenAIAdapterLive MUST construct successfully without OPENAI_API_KEY",
+      "OpenAIAdapterLive MUST NOT instantiate the OpenAI SDK client without OPENAI_API_KEY",
+      "Unconfigured OpenAI operations MUST fail with tagged ProviderError"
+    ]
   },
-  "responsibilities": [],
-  "prohibited": [],
+  "responsibilities": [
+    "Expose OpenAI Provider capabilities to runtime bootstrap",
+    "Execute OpenAI Inference when configured",
+    "Remain inert and typed when configuration is absent"
+  ],
+  "prohibited": [
+    "MUST NOT throw during Layer construction when OPENAI_API_KEY is missing",
+    "MUST NOT allow optional Provider configuration to block runtime startup"
+  ],
   "created_at": "2026-05-14T15:55:47.203696Z"
 }

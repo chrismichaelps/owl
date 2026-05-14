@@ -1,6 +1,6 @@
-State_ID: BigInt(0x0000000000000021)
-Git_SHA: ad091135d8d9083717a044f82e0307e4c2defb32
-Source_SHA256: a9ace3026aa3ab3073ea99f0f11039ef6d15df802d93f1a64a3a57bd749f6d3b
+State_ID: BigInt(0x000000000000005a)
+Git_SHA: 06df5791bfbe5a97aa4216e8ece760e7ee760895
+Source_SHA256: 1cbb9cd4cf59ba0ac4f6215d21f53a09d05299228b50a94fd593eece3db6938e
 Grammar_Lock: "@root/hashes/grammar/typescript/typescript.hash.md"
 Fidelity: DECLARED
 ---
@@ -10,9 +10,9 @@ Fidelity: DECLARED
 ### [Signatures]
 - `OPENAI_CAPABILITIES` — gpt-4o ($2.50/$10), o3 ($2/$8)
 - `OpenAIAdapter extends Context.Tag` — OpenAI-compatible provider
-- `OpenAIAdapterLive: Layer` — production-ready adapter with retry logic
+- `OpenAIAdapterLive: Layer` — production adapter with inert unconfigured state and retry logic
 
 ### [Governance]
-- depth_score: 0.75 — DEEP (SDK integration + retry logic)
+- depth_score: 0.77 — DEEP (SDK integration + optional Provider startup safety)
 - seam_capacity: CRITICAL
 - SIG_ID: SIG-providers-openai-00000001

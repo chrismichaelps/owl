@@ -11,22 +11,24 @@
 
 ## Algorithm
 
-1. **Initialize** — Set up initial state and validate preconditions
-2. **Process** — Execute the core operation based on current state
-3. **Transition** — Validate guard conditions and transition to next state
-4. **Complete** — Finalize operation and clean up resources
+1. Resolve OWL_CONFIG.
+2. If `xaiApiKey` is missing, return an inert LLMProviderService that exposes capabilities but fails complete, stream, and healthCheck with tagged Provider errors.
+3. If `xaiApiKey` exists, construct the OpenAI-compatible SDK client with the xAI base URL.
+4. Execute non-streaming Inference through chat completions.
+5. Keep Streaming inert until xAI Streaming is implemented.
+6. Map SDK failures into tagged ProviderError.
 
 ## Negative Logic (PROHIBITED PATHS)
 
-- MUST NOT: Bypass state transitions — always use the defined state machine
-- MUST NOT: Skip guard validation — every transition requires guard check
-- MUST NOT: Mutate state directly — use only defined transition methods
+- MUST NOT: Instantiate the OpenAI-compatible SDK client when `xaiApiKey` is missing.
+- MUST NOT: Throw during Layer construction for optional Provider configuration.
+- MUST NOT: Leak raw SDK errors across the Provider Seam.
 
 ## Edge Cases
 
-- **Concurrent access**: Serialize state transitions via atomic operations
-- **Timeout during transition**: Roll back to previous valid state
-- **Invalid guard condition**: Log error and remain in current state
+- **Missing API key**: Return inert Provider service with tagged failures.
+- **SDK failure**: Convert to ProviderError.
+- **Streaming requested**: Return empty stream until the Provider supports it.
 
 ## Dependencies
 

@@ -76,6 +76,36 @@ export const OpenAIAdapterLive = Layer.effect(
   Effect.gen(function* () {
     const config = yield* OWL_CONFIG
 
+    if (config.openaiApiKey === undefined) {
+      return {
+        id: "openai",
+        capabilities: OPENAI_CAPABILITIES,
+        complete: () =>
+          Effect.fail(
+            new ProviderError({
+              provider: "openai",
+              message: "OPENAI_API_KEY not configured",
+            }),
+          ),
+        stream: () =>
+          Stream.fail(
+            new ProviderStreamError({
+              provider: "openai",
+              cause: "OPENAI_API_KEY not configured",
+            }),
+          ),
+        countTokens: (text: string, _model: string) =>
+          Effect.succeed(Math.ceil(text.length / 4)),
+        healthCheck: () =>
+          Effect.fail(
+            new ProviderError({
+              provider: "openai",
+              message: "OPENAI_API_KEY not configured",
+            }),
+          ),
+      } satisfies LLMProviderService
+    }
+
     /** @Owl.Providers.OpenAI.Client - OpenAI SDK client */
     const client = new OpenAI({ apiKey: config.openaiApiKey })
 

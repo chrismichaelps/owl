@@ -56,6 +56,36 @@ export const XAIAdapterLive = Layer.effect(
   Effect.gen(function* () {
     const config = yield* OWL_CONFIG
 
+    if (config.xaiApiKey === undefined) {
+      return {
+        id: "xai",
+        capabilities: XAI_CAPABILITIES,
+        complete: () =>
+          Effect.fail(
+            new ProviderError({
+              provider: "xai",
+              message: "XAI_API_KEY not configured",
+            }),
+          ),
+        stream: () =>
+          Stream.fail(
+            new ProviderError({
+              provider: "xai",
+              message: "XAI_API_KEY not configured",
+            }),
+          ),
+        countTokens: (text: string, _model: string) =>
+          Effect.succeed(Math.ceil(text.length / 4)),
+        healthCheck: () =>
+          Effect.fail(
+            new ProviderError({
+              provider: "xai",
+              message: "XAI_API_KEY not configured",
+            }),
+          ),
+      } satisfies LLMProviderService
+    }
+
     /** @Owl.Providers.xAI.Client - OpenAI-compatible xAI client */
     const client = new OpenAI({
       apiKey: config.xaiApiKey,

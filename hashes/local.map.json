@@ -1,6 +1,6 @@
 {
   "shard_id": "@root/src",
-  "state_anchor": "BigInt:0x000000000000003a",
+  "state_anchor": "BigInt:0x000000000000005b",
   "parent_bridge": "@root/hashes/local.map.json",
   "git_anchor": "HEAD",
   "cache_integrity": "VERIFIED",
@@ -92,6 +92,22 @@
       "dependencies": ["@root/hashes/src/core/config/index.hash.md"],
       "fidelity_level": "Active",
       "sig_id": "SIG-providers-ollama-00000001"
+    },
+    "providers/bootstrap": {
+      "file_path": "@root/src/providers/bootstrap.ts",
+      "hash_reference": "@root/hashes/src/providers/bootstrap.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [
+        "@root/hashes/src/core/config/index.hash.md",
+        "@root/hashes/src/providers/router/index.hash.md",
+        "@root/hashes/src/providers/anthropic/index.hash.md",
+        "@root/hashes/src/providers/openai/index.hash.md",
+        "@root/hashes/src/providers/google/index.hash.md",
+        "@root/hashes/src/providers/xai/index.hash.md",
+        "@root/hashes/src/providers/ollama/index.hash.md"
+      ],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-providers-bootstrap-00000001"
     }
   }
 }

@@ -1,0 +1,42 @@
+{
+  "contract_id": "CTR-providers-bootstrap-00000001",
+  "module": "@Owl.Providers.Bootstrap src/providers/bootstrap.ts",
+  "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
+  "depth_score": "0.78 — DEEP (runtime Provider registration hidden behind marker Layer)",
+  "seam_capacity": "BACKBONE",
+  "sig_id": "SIG-providers-bootstrap-00000001",
+  "interface": {
+    "signatures": [
+      "ProviderBootstrap extends Context.Tag",
+      "ProviderBootstrapService { registeredProviders: readonly string[] }",
+      "ProviderBootstrapLive: Layer<ProviderBootstrap, never, ProviderRouter | OWL_CONFIG | AnthropicAdapter | OpenAIAdapter | GoogleAdapter | XAIAdapter | OllamaAdapter>"
+    ],
+    "error_modes": [],
+    "invariants": [
+      "Anthropic Provider MUST be registered when runtime configuration resolves",
+      "Ollama Provider MUST be registered for local privacy Mode",
+      "Optional Providers MUST be registered only when their API key is configured",
+      "Provider registration MUST occur before Orchestrator accepts Inference"
+    ]
+  },
+  "architecture": {
+    "depth_score": 0.78,
+    "depth_status": "DEEP",
+    "leverage": "HIGH",
+    "locality": "HIGH",
+    "seam_capacity": "BACKBONE",
+    "coupling_complexity": 3.0,
+    "interface_stability": 0.9
+  },
+  "responsibilities": [
+    "Centralize Provider adapter registration for the ProviderRouter Seam",
+    "Keep runtime Provider availability deterministic at startup",
+    "Hide registration order from CLI, TUI, and Orchestrator callers"
+  ],
+  "prohibited": [
+    "MUST NOT register Providers from the TUI or CommandRegistry",
+    "MUST NOT make API calls during bootstrap",
+    "MUST NOT expose adapter internals across the ProviderRouter Seam"
+  ],
+  "created_at": "2026-05-14T20:00:00Z"
+}

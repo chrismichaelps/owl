@@ -5,9 +5,11 @@
  * Layer composition follows dependency order:
  *
  * 1. Leaf layers (no dependencies):
+ *    - OWLConfigLive
  *    - ContextManagerLive
  *    - SessionMemoryLive
  *    - ProviderRouterLive
+ *    - Provider adapter layers
  *    - RoleContextLive
  *    - RollbackSystemLive
  *    - GovernanceEngineLive
@@ -15,6 +17,7 @@
  *    - TLIExecutorLive
  *
  * 2. Derived layers:
+ *    - ProviderBootstrapLive (requires: config, router, adapters)
  *    - OrchestratorLive (requires: context, memory, router)
  *    - EditingPipelineLive (requires: governance, diff, tli, rollback)
  *
@@ -28,11 +31,21 @@
  * runtime.runPromise(effect) // Execute Effect in managed context
  * await runtime.dispose() // Clean up on exit
  */
-import { Layer, ManagedRuntime } from "effect"
-import { OrchestratorLive } from "../engine/orchestrator/index.js"
+import { Effect, Layer, ManagedRuntime } from "effect"
+import { OWLConfigLive } from "../core/config/index.js"
+import { Orchestrator, OrchestratorLive } from "../engine/orchestrator/index.js"
 import { ContextManagerLive } from "../engine/context/index.js"
 import { SessionMemoryLive } from "../engine/memory/index.js"
 import { ProviderRouterLive } from "../providers/router/index.js"
+import { AnthropicAdapterLive } from "../providers/anthropic/index.js"
+import { GoogleAdapterLive } from "../providers/google/index.js"
+import { OllamaAdapterLive } from "../providers/ollama/index.js"
+import { OpenAIAdapterLive } from "../providers/openai/index.js"
+import {
+  ProviderBootstrap,
+  ProviderBootstrapLive,
+} from "../providers/bootstrap.js"
+import { XAIAdapterLive } from "../providers/xai/index.js"
 import { RoleContextLive } from "../fmcf/roles/architect.js"
 import { EditingPipelineLive } from "../editor/pipeline/index.js"
 import { RollbackSystemLive } from "../editor/rollback/index.js"
@@ -40,8 +53,8 @@ import { DiffGeneratorLive } from "../editor/diff/index.js"
 import { TLIExecutorLive } from "../editor/tli/index.js"
 import { GovernanceEngineLive } from "../fmcf/governance/index.js"
 import { makeCommandRegistryLive } from "../commands/registry.js"
-import type { Orchestrator } from "../engine/orchestrator/index.js"
 import type { CommandRegistry } from "../commands/registry.js"
+import type { ConfigError } from "effect/ConfigError"
 
 /**
  * @Owl.CLI.Runtime.Type - Typed ManagedRuntime exposing Orchestrator + CommandRegistry
@@ -52,7 +65,7 @@ import type { CommandRegistry } from "../commands/registry.js"
  */
 export type OwlRuntime = ManagedRuntime.ManagedRuntime<
   Orchestrator | CommandRegistry,
-  never
+  ConfigError
 >
 
 /**
@@ -62,11 +75,21 @@ export type OwlRuntime = ManagedRuntime.ManagedRuntime<
  * @returns ManagedRuntime with all services wired
  */
 export const makeOwlRuntime = (projectRoot: string): OwlRuntime => {
-  // Self-sufficient leaf layers (provide their own infrastructure)
+  const providerAdapterLayer = Layer.mergeAll(
+    AnthropicAdapterLive,
+    OpenAIAdapterLive,
+    GoogleAdapterLive,
+    XAIAdapterLive,
+    OllamaAdapterLive,
+  ).pipe(Layer.provide(OWLConfigLive))
+
+  // Self-sufficient leaf layers plus Provider adapters.
   const leafLayer = Layer.mergeAll(
+    OWLConfigLive,
     ContextManagerLive,
     SessionMemoryLive,
     ProviderRouterLive,
+    providerAdapterLayer,
     RoleContextLive,
     RollbackSystemLive,
     GovernanceEngineLive,
@@ -74,8 +97,22 @@ export const makeOwlRuntime = (projectRoot: string): OwlRuntime => {
     TLIExecutorLive,
   )
 
-  // Derive higher-order layers by providing the shared leaf environment once each
-  const orchestratorLayer = OrchestratorLive.pipe(Layer.provide(leafLayer))
+  const providerBootstrapLayer = ProviderBootstrapLive.pipe(
+    Layer.provide(leafLayer),
+  )
+
+  const orchestratorBaseLayer = OrchestratorLive.pipe(Layer.provide(leafLayer))
+  const orchestratorLayer = Layer.effect(
+    Orchestrator,
+    Effect.gen(function* () {
+      yield* ProviderBootstrap
+      return yield* Orchestrator
+    }),
+  ).pipe(
+    Layer.provide(
+      Layer.mergeAll(orchestratorBaseLayer, providerBootstrapLayer),
+    ),
+  )
   const editingPipelineLayer = EditingPipelineLive.pipe(
     Layer.provide(leafLayer),
   )

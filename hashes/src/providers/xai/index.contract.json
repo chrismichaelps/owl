@@ -11,10 +11,24 @@
       "XAIAdapter extends Context.Tag",
       "XAIAdapterLive: Layer"
     ],
-    "error_modes": [],
-    "invariants": []
+    "error_modes": [
+      "ProviderError when XAI_API_KEY is not configured",
+      "ProviderError when xAI SDK-compatible request fails"
+    ],
+    "invariants": [
+      "XAIAdapterLive MUST construct successfully without XAI_API_KEY",
+      "XAIAdapterLive MUST NOT instantiate the OpenAI-compatible SDK client without XAI_API_KEY",
+      "Unconfigured xAI operations MUST fail with tagged ProviderError"
+    ]
   },
-  "responsibilities": [],
-  "prohibited": [],
+  "responsibilities": [
+    "Expose xAI Provider capabilities to runtime bootstrap",
+    "Execute xAI Inference when configured",
+    "Remain inert and typed when configuration is absent"
+  ],
+  "prohibited": [
+    "MUST NOT throw during Layer construction when XAI_API_KEY is missing",
+    "MUST NOT allow optional Provider configuration to block runtime startup"
+  ],
   "created_at": "2026-05-14T15:55:47.203029Z"
 }

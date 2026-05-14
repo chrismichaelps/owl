@@ -2,19 +2,41 @@
   "contract_id": "CTR-cli-runtime-00000001",
   "module": "@Owl.CLI.Runtime src/cli/runtime.ts",
   "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
-  "depth_score": "0.90 \u2014 DEEP (composition root for all core services)",
+  "depth_score": "0.92 \u2014 DEEP (composition root and Provider bootstrap coordinator)",
   "seam_capacity": "BACKBONE (managed runtime lifecycle)",
   "sig_id": "SIG-cli-runtime-00000001",
   "interface": {
     "signatures": [
-      "OwlLiveLayer: Layer<Orchestrator, never, any>",
-      "makeOwlRuntime() => ManagedRuntime<Orchestrator, never>",
-      "OwlRuntime: ManagedRuntime<Orchestrator, never>"
+      "makeOwlRuntime(projectRoot: string) => ManagedRuntime<Orchestrator | CommandRegistry, ConfigError>",
+      "OwlRuntime: ManagedRuntime<Orchestrator | CommandRegistry, ConfigError>"
     ],
-    "error_modes": [],
-    "invariants": []
+    "error_modes": [
+      "ConfigError when required Provider configuration is missing"
+    ],
+    "invariants": [
+      "ProviderBootstrapLive MUST run before OrchestratorLive accepts Inference",
+      "CommandRegistry MUST receive the same Orchestrator and EditingPipeline Layers as the TUI runtime",
+      "Runtime callers MUST only access Orchestrator and CommandRegistry services"
+    ]
   },
-  "responsibilities": [],
-  "prohibited": [],
+  "architecture": {
+    "depth_score": 0.92,
+    "depth_status": "DEEP",
+    "leverage": "HIGH",
+    "locality": "HIGH",
+    "seam_capacity": "BACKBONE",
+    "coupling_complexity": 3.5,
+    "interface_stability": 0.9
+  },
+  "responsibilities": [
+    "Compose production Effect Layers into a single CLI runtime",
+    "Wire Provider adapters through ProviderBootstrap before Inference",
+    "Expose only Orchestrator and CommandRegistry to the TUI"
+  ],
+  "prohibited": [
+    "MUST NOT leave ProviderRouterLive with an empty registry",
+    "MUST NOT duplicate stateful leaf Layers across Orchestrator and CommandRegistry",
+    "MUST NOT expose Provider adapter services to TUI callers"
+  ],
   "created_at": "2026-05-14T15:55:47.204569Z"
 }
