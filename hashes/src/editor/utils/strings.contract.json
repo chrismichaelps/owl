@@ -1,0 +1,21 @@
+{
+  "contract_id": "CTR-editor-utils-strings-00000001",
+  "module": "@Owl.Editor.Utils.Strings src/editor/utils/strings.ts",
+  "grammar_lock": "@root/hashes/grammar/typescript/typescript.hash.md",
+  "depth_score": "0.65 \u2014 SHALLOW (pure string utilities)",
+  "seam_capacity": "INTERNAL (editor string manipulation)",
+  "sig_id": "SIG-editor-utils-strings-00000001",
+  "interface": {
+    "signatures": [
+      "truncate(str: string, maxLen: number): string",
+      "indent(str: string, level: number): string",
+      "lineCount(str: string): number",
+      "isWhitespace(str: string): boolean"
+    ],
+    "error_modes": [],
+    "invariants": []
+  },
+  "responsibilities": [],
+  "prohibited": [],
+  "created_at": "2026-05-14T15:55:47.219262Z"
+}

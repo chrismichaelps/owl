@@ -1,0 +1,19 @@
+{
+  "contract_id": "CTR-cmd-analysis-friction-00000001",
+  "module": "@Owl.Commands.Analysis.Friction src/commands/analysis/friction.ts",
+  "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
+  "depth_score": "0.80 \u2014 DEEP (FMCF friction discovery with deep mode)",
+  "seam_capacity": "EXPLORATORY",
+  "sig_id": "SIG-cmd-analysis-friction-00000001",
+  "interface": {
+    "signatures": [
+      "makeFrictionCommand(orchestrator: OrchestratorService) => CommandHandler",
+      "CommandHandler: { name, description, execute(args) => Effect<CommandResult, CommandParseError> }"
+    ],
+    "error_modes": [],
+    "invariants": []
+  },
+  "responsibilities": [],
+  "prohibited": [],
+  "created_at": "2026-05-14T15:55:47.208751Z"
+}

@@ -1,0 +1,19 @@
+{
+  "contract_id": "CTR-cmd-parser-00000001",
+  "module": "@Owl.Commands.Parser src/commands/parser.ts",
+  "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
+  "depth_score": "0.68 \u2014 MEDIUM (quote-aware tokenization and validation)",
+  "seam_capacity": "INTERNAL",
+  "sig_id": "SIG-cmd-parser-00000001",
+  "interface": {
+    "signatures": [
+      "parseCommand(raw: string) => Effect<ParsedCommand, CommandParseError>",
+      "tokenize(input: string) => string[]"
+    ],
+    "error_modes": [],
+    "invariants": []
+  },
+  "responsibilities": [],
+  "prohibited": [],
+  "created_at": "2026-05-14T15:55:47.206056Z"
+}

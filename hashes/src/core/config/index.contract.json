@@ -1,0 +1,20 @@
+{
+  "contract_id": "CTR-core-config-00000001",
+  "module": "@Owl.Core.Config src/core/config/index.ts",
+  "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
+  "depth_score": "0.55 \u2014 MEDIUM (Config service with Layer wiring)",
+  "seam_capacity": "INTERNAL",
+  "sig_id": "SIG-core-config-00000001",
+  "interface": {
+    "signatures": [
+      "OwlConfig",
+      "OWL_CONFIG extends Context.Tag",
+      "OWLConfigLive: Layer"
+    ],
+    "error_modes": [],
+    "invariants": []
+  },
+  "responsibilities": [],
+  "prohibited": [],
+  "created_at": "2026-05-14T15:55:47.195031Z"
+}

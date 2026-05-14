@@ -1,0 +1,18 @@
+{
+  "contract_id": "CTR-tui-components-log-00000001",
+  "module": "@Owl.TUI.Components.LogPanel src/tui/components/LogPanel.tsx",
+  "grammar_lock": "@root/hashes/grammar/react/react.hash.md",
+  "depth_score": "0.72 \u2014 DEEP (log display)",
+  "seam_capacity": "INTERNAL (log rendering)",
+  "sig_id": "SIG-tui-components-log-00000001",
+  "interface": {
+    "signatures": [
+      "LogPanel(props: LogPanelProps) => ReactElement"
+    ],
+    "error_modes": [],
+    "invariants": []
+  },
+  "responsibilities": [],
+  "prohibited": [],
+  "created_at": "2026-05-14T15:55:47.199122Z"
+}

@@ -1,0 +1,21 @@
+{
+  "contract_id": "CTR-smoke-44a17ae7",
+  "module": "@Owl.Smoke tests/smoke.test.ts",
+  "grammar_lock": "@root/hashes/grammar/vitest/vitest.hash.md",
+  "depth_score": "N/A (test file)",
+  "seam_capacity": "INTERNAL",
+  "sig_id": "SIG-smoke-44a17ae7",
+  "interface": {
+    "signatures": [
+      "describe(\"bootstrap\")",
+      "it(\"runs an Effect successfully\")",
+      "it(\"captures tagged errors in Exit\")",
+      "it(\"runs Effect.gen correctly\")"
+    ],
+    "error_modes": [],
+    "invariants": []
+  },
+  "responsibilities": [],
+  "prohibited": [],
+  "created_at": "2026-05-14T15:55:47.192084Z"
+}

@@ -1,0 +1,19 @@
+{
+  "contract_id": "CTR-cmd-analysis-grill-00000001",
+  "module": "@Owl.Commands.Analysis.Grill src/commands/analysis/grill.ts",
+  "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
+  "depth_score": "0.80 \u2014 DEEP (FMCF grilling loop with probing questions)",
+  "seam_capacity": "EXPLORATORY",
+  "sig_id": "SIG-cmd-analysis-grill-00000001",
+  "interface": {
+    "signatures": [
+      "makeGrillCommand(orchestrator: OrchestratorService) => CommandHandler",
+      "CommandHandler: { name, description, execute(args) => Effect<CommandResult, CommandParseError> }"
+    ],
+    "error_modes": [],
+    "invariants": []
+  },
+  "responsibilities": [],
+  "prohibited": [],
+  "created_at": "2026-05-14T15:55:47.209430Z"
+}

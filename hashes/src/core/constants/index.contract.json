@@ -1,0 +1,30 @@
+{
+  "contract_id": "CTR-core-constants-00000001",
+  "module": "@Owl.Core.Constants src/core/constants/index.ts",
+  "grammar_lock": "@root/hashes/grammar/typescript/typescript.hash.md",
+  "depth_score": "0.15 \u2014 SHALLOW (pure constants, no logic)",
+  "seam_capacity": "INTERNAL",
+  "sig_id": "SIG-core-constants-00000001",
+  "interface": {
+    "signatures": [
+      "TOKEN_LIMITS",
+      "MODE_TOKEN_BUDGETS",
+      "PROVIDER_TIMEOUTS",
+      "RETRY_CONFIG",
+      "DEPTH_THRESHOLDS",
+      "SHARD_SPLIT_THRESHOLD = 0.15",
+      "SEAM_COLLAPSE_MONTHS = 6",
+      "ROUTING_WEIGHTS",
+      "TUI_MAX_LOG_LINES = 100",
+      "HTTP_STATUS",
+      "EDITOR_CONSTANTS",
+      "PIPELINE_STAGES",
+      "PipelineStage"
+    ],
+    "error_modes": [],
+    "invariants": []
+  },
+  "responsibilities": [],
+  "prohibited": [],
+  "created_at": "2026-05-14T15:55:47.195373Z"
+}

@@ -1,0 +1,21 @@
+{
+  "contract_id": "CTR-core-logging-00000001",
+  "module": "@Owl.Core.Logging src/core/logging/index.ts",
+  "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
+  "depth_score": "0.45 \u2014 MEDIUM (service interface + Layer pattern)",
+  "seam_capacity": "INTERNAL",
+  "sig_id": "SIG-core-logging-00000001",
+  "interface": {
+    "signatures": [
+      "OwlLoggerService",
+      "OwlLogger extends Context.Tag",
+      "OwlLoggerLive: Layer",
+      "withContext(logger, ctx, fn)"
+    ],
+    "error_modes": [],
+    "invariants": []
+  },
+  "responsibilities": [],
+  "prohibited": [],
+  "created_at": "2026-05-14T15:55:47.197680Z"
+}

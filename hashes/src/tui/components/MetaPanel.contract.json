@@ -1,0 +1,18 @@
+{
+  "contract_id": "CTR-tui-components-meta-00000001",
+  "module": "@Owl.TUI.Components.MetaPanel src/tui/components/MetaPanel.tsx",
+  "grammar_lock": "@root/hashes/grammar/react/react.hash.md",
+  "depth_score": "0.70 \u2014 DEEP (metadata display)",
+  "seam_capacity": "INTERNAL (metadata rendering)",
+  "sig_id": "SIG-tui-components-meta-00000001",
+  "interface": {
+    "signatures": [
+      "MetaPanel(props: MetaPanelProps) => ReactElement"
+    ],
+    "error_modes": [],
+    "invariants": []
+  },
+  "responsibilities": [],
+  "prohibited": [],
+  "created_at": "2026-05-14T15:55:47.200149Z"
+}

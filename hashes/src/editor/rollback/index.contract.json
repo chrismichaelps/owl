@@ -1,0 +1,22 @@
+{
+  "contract_id": "CTR-editor-rollback-00000001",
+  "module": "@Owl.Editor.Rollback src/editor/rollback/index.ts",
+  "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
+  "depth_score": "0.86 \u2014 DEEP (atomic state restoration)",
+  "seam_capacity": "CRITICAL (provides recovery capability)",
+  "sig_id": "SIG-editor-rollback-00000001",
+  "interface": {
+    "signatures": [
+      "RollbackSystem: Class",
+      "Snapshot: { id: string; content: string; timestamp: Date }",
+      "createSnapshot(file: string) => Result<Snapshot, RollbackError>",
+      "restore(snapshotId: string) => Result<void, RestoreError>",
+      "getEntries(file?: string) => Snapshot[]"
+    ],
+    "error_modes": [],
+    "invariants": []
+  },
+  "responsibilities": [],
+  "prohibited": [],
+  "created_at": "2026-05-14T15:55:47.219950Z"
+}

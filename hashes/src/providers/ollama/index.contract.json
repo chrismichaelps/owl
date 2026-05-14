@@ -1,0 +1,20 @@
+{
+  "contract_id": "CTR-providers-ollama-00000001",
+  "module": "@Owl.Providers.Ollama src/providers/ollama/index.ts",
+  "grammar_lock": "@root/hashes/grammar/typescript/typescript.hash.md",
+  "depth_score": "0.65 \u2014 MEDIUM (graceful local fallback)",
+  "seam_capacity": "CRITICAL",
+  "sig_id": "SIG-providers-ollama-00000001",
+  "interface": {
+    "signatures": [
+      "OLLAMA_CAPABILITIES",
+      "OllamaAdapter extends Context.Tag",
+      "OllamaAdapterLive: Layer"
+    ],
+    "error_modes": [],
+    "invariants": []
+  },
+  "responsibilities": [],
+  "prohibited": [],
+  "created_at": "2026-05-14T15:55:47.203420Z"
+}

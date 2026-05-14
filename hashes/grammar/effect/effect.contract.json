@@ -1,0 +1,37 @@
+{
+  "contract_id": "CTR-grammar-effect-00000001",
+  "module": "Grammar Shard: @effect-ts/effect v3.x",
+  "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
+  "depth_score": "1.00",
+  "seam_capacity": "GRAMMAR",
+  "sig_id": "SIG-grammar-effect-00000001",
+  "interface": {
+    "signatures": [
+      "Effect< A, E, R > — tagged error effect with environment",
+      "Layer< R, E > — dependency layer composition",
+      "Context.Tag< T, S > — service tag for DI",
+      "Schedule — retry/polling schedule composition"
+    ],
+    "error_modes": [
+      "LayerIssue — missing dependency in layer",
+      "FiberFailure — fiber execution error",
+      "Cause<E> — error cause with both failure and defects"
+    ],
+    "invariants": [
+      "Effect is lazy — must be run via Effect.runPromise or Effect.runSync",
+      "Layer provides dependencies — never mutate after construction",
+      "Context.tags are stable — same tag always resolves same service"
+    ]
+  },
+  "responsibilities": [
+    "Enforce Effect-TS syntax rules",
+    "Prevent linguistic drift from Effect-TS patterns",
+    "Pin SDK version to prevent version mismatch"
+  ],
+  "prohibited": [
+    "Modify source code directly",
+    "Use Effect-TS v1/v2 deprecated APIs",
+    "Bypass type-safe error channels"
+  ],
+  "created_at": "2026-05-14T16:00:00Z"
+}

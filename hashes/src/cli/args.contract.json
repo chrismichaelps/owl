@@ -1,0 +1,20 @@
+{
+  "contract_id": "CTR-cli-args-00000001",
+  "module": "@Owl.CLI.Args src/cli/args.ts",
+  "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
+  "depth_score": "0.85 \u2014 DEEP (pure functional argument parsing)",
+  "seam_capacity": "INTERNAL (cli utility)",
+  "sig_id": "SIG-cli-args-00000001",
+  "interface": {
+    "signatures": [
+      "VALID_MODES: readonly string[]",
+      "parseArgs(argv: readonly string[]) => ParsedArgs",
+      "ParsedArgs: { mode: Mode; prompt: string | null }"
+    ],
+    "error_modes": [],
+    "invariants": []
+  },
+  "responsibilities": [],
+  "prohibited": [],
+  "created_at": "2026-05-14T15:55:47.204305Z"
+}

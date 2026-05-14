@@ -1,0 +1,18 @@
+{
+  "contract_id": "CTR-tui-components-spinner-00000001",
+  "module": "@Owl.TUI.Components.Spinner src/tui/components/Spinner.tsx",
+  "grammar_lock": "@root/hashes/grammar/react/react.hash.md",
+  "depth_score": "0.55 \u2014 SHALLOW (simple animation)",
+  "seam_capacity": "INTERNAL (loading indicator)",
+  "sig_id": "SIG-tui-components-spinner-00000001",
+  "interface": {
+    "signatures": [
+      "Spinner(props: SpinnerProps) => ReactElement"
+    ],
+    "error_modes": [],
+    "invariants": []
+  },
+  "responsibilities": [],
+  "prohibited": [],
+  "created_at": "2026-05-14T15:55:47.199761Z"
+}

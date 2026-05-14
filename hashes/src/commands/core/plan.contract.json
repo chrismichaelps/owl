@@ -1,0 +1,19 @@
+{
+  "contract_id": "CTR-cmd-core-plan-00000001",
+  "module": "@Owl.Commands.Core.Plan src/commands/core/plan.ts",
+  "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
+  "depth_score": "0.82 \u2014 DEEP (architect preamble with step-by-step planning)",
+  "seam_capacity": "EXPLORATORY",
+  "sig_id": "SIG-cmd-core-plan-00000001",
+  "interface": {
+    "signatures": [
+      "makePlanCommand(orchestrator: OrchestratorService) => CommandHandler",
+      "CommandHandler: { name, description, execute(args) => Effect<CommandResult, CommandParseError> }"
+    ],
+    "error_modes": [],
+    "invariants": []
+  },
+  "responsibilities": [],
+  "prohibited": [],
+  "created_at": "2026-05-14T15:55:47.207234Z"
+}

@@ -1,0 +1,23 @@
+{
+  "contract_id": "CTR-fmcf-seam-00000001",
+  "module": "@Owl.FMCF.Seam src/fmcf/seam/index.ts",
+  "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
+  "depth_score": "0.80 \u2014 DEEP (depth scoring algorithm, collapse analysis)",
+  "seam_capacity": "BACKBONE (core FMCF metric computation)",
+  "sig_id": "SIG-fmcf-seam-00000001",
+  "interface": {
+    "signatures": [
+      "SeamAnalyzer: Context.Tag<SeamAnalyzer, SeamAnalyzerService>",
+      "SeamAnalyzerLive: Layer.succeed<SeamAnalyzer, SeamAnalyzerService>",
+      "computeDepthScore(metrics: SeamMetrics) => number",
+      "classifyDepthStatus(score: number) => DepthStatus",
+      "analyzeSeam(seamId, capacity, metrics, lastReclassifiedAt) => SeamAnalysis",
+      "isCollapseEligible(capacity, lastReclassifiedAt) => boolean"
+    ],
+    "error_modes": [],
+    "invariants": []
+  },
+  "responsibilities": [],
+  "prohibited": [],
+  "created_at": "2026-05-14T15:55:47.194157Z"
+}

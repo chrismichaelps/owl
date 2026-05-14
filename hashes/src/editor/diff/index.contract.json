@@ -1,0 +1,20 @@
+{
+  "contract_id": "CTR-editor-diff-00000001",
+  "module": "@Owl.Editor.Diff src/editor/diff/index.ts",
+  "grammar_lock": "@root/hashes/grammar/typescript/typescript.hash.md",
+  "depth_score": "0.88 \u2014 DEEP (core editor transformation)",
+  "seam_capacity": "CRITICAL (connects all editor stages)",
+  "sig_id": "SIG-editor-diff-00000001",
+  "interface": {
+    "signatures": [
+      "DiffGenerator: Class",
+      "DiffResult: { patch: Patch; shardSplit: boolean; sizeEstimate: number }",
+      "generateDiff(before: string, after: string) => DiffResult"
+    ],
+    "error_modes": [],
+    "invariants": []
+  },
+  "responsibilities": [],
+  "prohibited": [],
+  "created_at": "2026-05-14T15:55:47.219077Z"
+}

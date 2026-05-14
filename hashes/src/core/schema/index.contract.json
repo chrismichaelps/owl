@@ -1,0 +1,25 @@
+{
+  "contract_id": "CTR-core-schema-00000001",
+  "module": "@Owl.Core.Schema src/core/schema/index.ts",
+  "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
+  "depth_score": "0.75 \u2014 DEEP (all types derived from Schema, no runtime duplication)",
+  "seam_capacity": "INTERNAL",
+  "sig_id": "SIG-core-schema-00000001",
+  "interface": {
+    "signatures": [
+      "ModeSchema",
+      "MessageRoleSchema`, `MessageSchema`, `Message",
+      "TaskSchema`, `Task",
+      "ProviderIdSchema`, `ProviderModelSchema`, `ProviderId",
+      "TokenUsageSchema`, `TokenUsage",
+      "InferenceRequestSchema`, `InferenceResponseSchema",
+      "MutationTargetSchema`, `MutationSchema",
+      "SeamCapacitySchema`, `DepthStatusSchema"
+    ],
+    "error_modes": [],
+    "invariants": []
+  },
+  "responsibilities": [],
+  "prohibited": [],
+  "created_at": "2026-05-14T15:55:47.196408Z"
+}

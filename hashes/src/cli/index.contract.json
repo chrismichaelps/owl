@@ -1,0 +1,18 @@
+{
+  "contract_id": "CTR-cli-entry-00000001",
+  "module": "@Owl.CLI.Entry src/cli/index.ts",
+  "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
+  "depth_score": "0.60 \u2014 MEDIUM (process entry point, side-effects)",
+  "seam_capacity": "BACKBONE (app entry)",
+  "sig_id": "SIG-cli-entry-00000001",
+  "interface": {
+    "signatures": [
+      "main() => Promise<void>"
+    ],
+    "error_modes": [],
+    "invariants": []
+  },
+  "responsibilities": [],
+  "prohibited": [],
+  "created_at": "2026-05-14T15:55:47.205426Z"
+}

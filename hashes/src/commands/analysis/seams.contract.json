@@ -1,0 +1,19 @@
+{
+  "contract_id": "CTR-cmd-analysis-seams-00000001",
+  "module": "@Owl.Commands.Analysis.Seams src/commands/analysis/seams.ts",
+  "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
+  "depth_score": "0.72 \u2014 DEEP (registry read-only, high locality)",
+  "seam_capacity": "INTERNAL",
+  "sig_id": "SIG-cmd-analysis-seams-00000001",
+  "interface": {
+    "signatures": [
+      "makeSeamsCommand(registry: HashRegistryService) => CommandHandler",
+      "CommandHandler: { name, description, execute(args) => Effect<CommandResult, CommandParseError> }"
+    ],
+    "error_modes": [],
+    "invariants": []
+  },
+  "responsibilities": [],
+  "prohibited": [],
+  "created_at": "2026-05-14T15:55:47.208417Z"
+}

@@ -1,0 +1,18 @@
+{
+  "contract_id": "CTR-tui-components-status-00000001",
+  "module": "@Owl.TUI.Components.StatusBar src/tui/components/StatusBar.tsx",
+  "grammar_lock": "@root/hashes/grammar/react/react.hash.md",
+  "depth_score": "0.65 \u2014 SHALLOW (status display)",
+  "seam_capacity": "INTERNAL (status rendering)",
+  "sig_id": "SIG-tui-components-status-00000001",
+  "interface": {
+    "signatures": [
+      "StatusBar(props: StatusBarProps) => ReactElement"
+    ],
+    "error_modes": [],
+    "invariants": []
+  },
+  "responsibilities": [],
+  "prohibited": [],
+  "created_at": "2026-05-14T15:55:47.200563Z"
+}

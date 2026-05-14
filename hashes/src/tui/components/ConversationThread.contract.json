@@ -1,0 +1,19 @@
+{
+  "contract_id": "CTR-tui-conv-00000001",
+  "module": "@Owl.TUI.Components.ConversationThread src/tui/components/ConversationThread.tsx",
+  "grammar_lock": "@root/hashes/grammar/react/react.hash.md",
+  "depth_score": "0.72 \u2014 DEEP (renders full session thread)",
+  "seam_capacity": "CRITICAL",
+  "sig_id": "SIG-tui-conv-00000001",
+  "interface": {
+    "signatures": [
+      "ConversationThread(props: ConversationThreadProps) => ReactElement",
+      "TurnRow({ turn }: { turn: ConversationTurn }) => ReactElement"
+    ],
+    "error_modes": [],
+    "invariants": []
+  },
+  "responsibilities": [],
+  "prohibited": [],
+  "created_at": "2026-05-14T15:55:47.201174Z"
+}

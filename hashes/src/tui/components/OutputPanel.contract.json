@@ -1,0 +1,18 @@
+{
+  "contract_id": "CTR-tui-components-output-00000001",
+  "module": "@Owl.TUI.Components.OutputPanel src/tui/components/OutputPanel.tsx",
+  "grammar_lock": "@root/hashes/grammar/react/react.hash.md",
+  "depth_score": "0.68 \u2014 DEEP (output display)",
+  "seam_capacity": "INTERNAL (output rendering)",
+  "sig_id": "SIG-tui-components-output-00000001",
+  "interface": {
+    "signatures": [
+      "OutputPanel(props: OutputPanelProps) => ReactElement"
+    ],
+    "error_modes": [],
+    "invariants": []
+  },
+  "responsibilities": [],
+  "prohibited": [],
+  "created_at": "2026-05-14T15:55:47.201491Z"
+}

@@ -1,0 +1,21 @@
+{
+  "contract_id": "CTR-cmd-registry-00000001",
+  "module": "@Owl.Commands.Registry src/commands/registry.ts",
+  "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
+  "depth_score": "0.85 \u2014 DEEP (composition root with 20+ command handlers)",
+  "seam_capacity": "BACKBONE (central command dispatch hub)",
+  "sig_id": "SIG-cmd-registry-00000001",
+  "interface": {
+    "signatures": [
+      "CommandRegistryService: { register, lookup, list, dispatch }",
+      "CommandRegistry: Context.Tag<CommandRegistry, CommandRegistryService>",
+      "buildRegistryService(mapRef: Ref.Ref<Map<string, CommandHandler>>) => CommandRegistryService",
+      "makeCommandRegistryLive(projectRoot: string) => Layer<CommandRegistry, never, ...>"
+    ],
+    "error_modes": [],
+    "invariants": []
+  },
+  "responsibilities": [],
+  "prohibited": [],
+  "created_at": "2026-05-14T15:55:47.205836Z"
+}

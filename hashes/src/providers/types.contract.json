@@ -1,0 +1,21 @@
+{
+  "contract_id": "CTR-providers-types-00000001",
+  "module": "@Owl.Providers.Types src/providers/types.ts",
+  "grammar_lock": "@root/hashes/grammar/typescript/typescript.hash.md",
+  "depth_score": "0.70 \u2014 DEEP (BACKBONE contract shared by all adapters)",
+  "seam_capacity": "BACKBONE",
+  "sig_id": "SIG-providers-types-00000001",
+  "interface": {
+    "signatures": [
+      "ProviderCapabilitySchema`, `RoutingContextSchema`, `StreamChunkSchema",
+      "LLMProviderService",
+      "LLMProvider extends Context.Tag",
+      "RoutingDecisionSchema`, `AnyProviderError"
+    ],
+    "error_modes": [],
+    "invariants": []
+  },
+  "responsibilities": [],
+  "prohibited": [],
+  "created_at": "2026-05-14T15:55:47.202349Z"
+}

@@ -1,0 +1,18 @@
+{
+  "contract_id": "CTR-fmcf-shadow-00000001",
+  "module": "@Owl.FMCF.Roles.Shadow src/fmcf/roles/shadow.ts",
+  "grammar_lock": "@root/hashes/grammar/typescript/typescript.hash.md",
+  "depth_score": "0.50 \u2014 MEDIUM (simple constant definition)",
+  "seam_capacity": "INTERNAL",
+  "sig_id": "SIG-fmcf-shadow-00000001",
+  "interface": {
+    "signatures": [
+      "SHADOW_ROLE: RoleDefinition"
+    ],
+    "error_modes": [],
+    "invariants": []
+  },
+  "responsibilities": [],
+  "prohibited": [],
+  "created_at": "2026-05-14T15:55:47.192804Z"
+}

@@ -1,0 +1,26 @@
+{
+  "contract_id": "CTR-engine-context-00000001",
+  "module": "@Owl.Engine.Context src/engine/context/index.ts",
+  "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
+  "depth_score": "0.72 \u2014 DEEP (pruning integration, token estimation)",
+  "seam_capacity": "CRITICAL (integrates with tokens/pruning)",
+  "sig_id": "SIG-engine-context-00000001",
+  "interface": {
+    "signatures": [
+      "ContextManager: Context.Tag<ContextManager, ContextManagerService>",
+      "ContextManagerLive: Layer.effect<ContextManager, ContextManagerService>",
+      "addMessage(msg: Message) => Effect<void>",
+      "getMessages() => Effect<readonly Message[]>",
+      "getWindowedMessages(budget: number) => Effect<readonly Message[]>",
+      "setSystemPrompt(prompt: string) => Effect<void>",
+      "getSystemPrompt() => Effect<string | undefined>",
+      "estimateTokens() => Effect<number>",
+      "clear() => Effect<void>"
+    ],
+    "error_modes": [],
+    "invariants": []
+  },
+  "responsibilities": [],
+  "prohibited": [],
+  "created_at": "2026-05-14T15:55:47.216198Z"
+}

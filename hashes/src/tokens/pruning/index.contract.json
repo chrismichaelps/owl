@@ -1,0 +1,23 @@
+{
+  "contract_id": "CTR-tokens-pruning-00000001",
+  "module": "@Owl.Tokens.Pruning src/tokens/pruning/index.ts",
+  "grammar_lock": "@root/hashes/grammar/typescript/typescript.hash.md",
+  "depth_score": "0.77 \u2014 DEEP (Markov pruning algorithm, token estimation)",
+  "seam_capacity": "CRITICAL (token efficiency engine)",
+  "sig_id": "SIG-tokens-pruning-00000001",
+  "interface": {
+    "signatures": [
+      "estimateTokens(text: string) => number",
+      "estimateMessageTokens(msg: Message) => number",
+      "estimateConversationTokens(messages: readonly Message[]) => number",
+      "extractMarkovWindow(messages: readonly Message[], windowSize: number) => readonly Message[]",
+      "shouldPrune(currentTokens: number, budget: number) => boolean",
+      "pruneMessages(messages: readonly Message[], options: PruneOptions) => Effect<PruneResult>"
+    ],
+    "error_modes": [],
+    "invariants": []
+  },
+  "responsibilities": [],
+  "prohibited": [],
+  "created_at": "2026-05-14T15:55:47.218241Z"
+}

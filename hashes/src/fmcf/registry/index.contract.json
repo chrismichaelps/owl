@@ -1,0 +1,22 @@
+{
+  "contract_id": "CTR-fmcf-registry-00000001",
+  "module": "@Owl.FMCF.Registry src/fmcf/registry/index.ts",
+  "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
+  "depth_score": "0.73 \u2014 DEEP (file I/O, JSON parsing, path resolution)",
+  "seam_capacity": "BACKBONE (reads /hashes/ brain)",
+  "sig_id": "SIG-fmcf-registry-00000001",
+  "interface": {
+    "signatures": [
+      "HashRegistry: Context.Tag<HashRegistry, HashRegistryService>",
+      "HashRegistryLive(registryRoot: string) => Layer<HashRegistry, HashRegistryService>",
+      "readSubsystems() => Effect<readonly SubsystemEntry[], HashRegistryError>",
+      "readSeams() => Effect<readonly SeamEntry[], HashRegistryError>",
+      "hasMirror(srcRelativePath: string) => Effect<boolean, HashRegistryError>"
+    ],
+    "error_modes": [],
+    "invariants": []
+  },
+  "responsibilities": [],
+  "prohibited": [],
+  "created_at": "2026-05-14T15:55:47.194714Z"
+}

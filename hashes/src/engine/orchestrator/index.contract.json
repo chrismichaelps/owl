@@ -1,0 +1,21 @@
+{
+  "contract_id": "CTR-engine-orchestrator-00000001",
+  "module": "@Owl.Engine.Orchestrator src/engine/orchestrator/index.ts",
+  "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
+  "depth_score": "0.75 \u2014 DEEP (orchestration logic, provider seam crossing)",
+  "seam_capacity": "CRITICAL (seam-engine-provider crossing point)",
+  "sig_id": "SIG-engine-orchestrator-00000001",
+  "interface": {
+    "signatures": [
+      "Orchestrator: Context.Tag<Orchestrator, OrchestratorService>",
+      "OrchestratorLive: Layer.effect<Orchestrator, OrchestratorService>",
+      "run(task: Task) => Effect<Either<InferenceResponse, AnyProviderError | ProviderUnavailableError>>",
+      "getSessionSummary() => Effect<string>"
+    ],
+    "error_modes": [],
+    "invariants": []
+  },
+  "responsibilities": [],
+  "prohibited": [],
+  "created_at": "2026-05-14T15:55:47.217615Z"
+}

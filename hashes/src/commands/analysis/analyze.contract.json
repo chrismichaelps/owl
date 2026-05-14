@@ -1,0 +1,19 @@
+{
+  "contract_id": "CTR-cmd-analysis-analyze-00000001",
+  "module": "@Owl.Commands.Analysis.Analyze src/commands/analysis/analyze.ts",
+  "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
+  "depth_score": "0.75 \u2014 DEEP (FMCF analysis dispatch)",
+  "seam_capacity": "INTERNAL",
+  "sig_id": "SIG-cmd-analysis-analyze-00000001",
+  "interface": {
+    "signatures": [
+      "makeAnalyzeCommand(orchestrator: OrchestratorService) => CommandHandler",
+      "CommandHandler: { name, description, execute(args) => Effect<CommandResult, CommandParseError> }"
+    ],
+    "error_modes": [],
+    "invariants": []
+  },
+  "responsibilities": [],
+  "prohibited": [],
+  "created_at": "2026-05-14T15:55:47.209107Z"
+}

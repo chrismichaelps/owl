@@ -1,0 +1,20 @@
+{
+  "contract_id": "CTR-cmd-types-00000001",
+  "module": "@Owl.Commands.Types src/commands/types.ts",
+  "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
+  "depth_score": "0.50 \u2014 MEDIUM (type definitions, no runtime behavior)",
+  "seam_capacity": "INTERNAL",
+  "sig_id": "SIG-cmd-types-00000001",
+  "interface": {
+    "signatures": [
+      "ParsedCommand: { name: string, args: readonly string[], raw: string }",
+      "CommandResult: { output: string }",
+      "CommandHandler: { name: string, description: string, execute(args) => Effect<CommandResult, CommandParseError> }"
+    ],
+    "error_modes": [],
+    "invariants": []
+  },
+  "responsibilities": [],
+  "prohibited": [],
+  "created_at": "2026-05-14T15:55:47.206262Z"
+}

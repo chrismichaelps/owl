@@ -1,0 +1,19 @@
+{
+  "contract_id": "CTR-cmd-management-registry-00000001",
+  "module": "@Owl.Commands.Management.Registry src/commands/management/registry.ts",
+  "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
+  "depth_score": "0.75 \u2014 DEEP (full registry summary display)",
+  "seam_capacity": "INTERNAL",
+  "sig_id": "SIG-cmd-management-registry-00000001",
+  "interface": {
+    "signatures": [
+      "makeRegistryCommand(hashRegistry: HashRegistryService) => CommandHandler",
+      "CommandHandler: { name, description, execute(args) => Effect<CommandResult, CommandParseError> }"
+    ],
+    "error_modes": [],
+    "invariants": []
+  },
+  "responsibilities": [],
+  "prohibited": [],
+  "created_at": "2026-05-14T15:55:47.210515Z"
+}

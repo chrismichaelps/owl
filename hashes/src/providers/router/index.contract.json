@@ -1,0 +1,21 @@
+{
+  "contract_id": "CTR-providers-router-00000001",
+  "module": "@Owl.Providers.Router src/providers/router/index.ts",
+  "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
+  "depth_score": "0.85 \u2014 DEEP (BACKBONE seam coordinator)",
+  "seam_capacity": "BACKBONE",
+  "sig_id": "SIG-providers-router-00000001",
+  "interface": {
+    "signatures": [
+      "ProviderRouterService",
+      "ProviderRouter extends Context.Tag",
+      "ProviderRouterLive: Layer",
+      "registerProvider(router, provider): Effect<void>"
+    ],
+    "error_modes": [],
+    "invariants": []
+  },
+  "responsibilities": [],
+  "prohibited": [],
+  "created_at": "2026-05-14T15:55:47.204054Z"
+}

@@ -1,0 +1,19 @@
+{
+  "contract_id": "CTR-cmd-core-task-00000001",
+  "module": "@Owl.Commands.Core.Task src/commands/core/task.ts",
+  "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
+  "depth_score": "0.70 \u2014 MEDIUM (standard mode inference)",
+  "seam_capacity": "EXPLORATORY",
+  "sig_id": "SIG-cmd-core-task-00000001",
+  "interface": {
+    "signatures": [
+      "makeTaskCommand(orchestrator: OrchestratorService) => CommandHandler",
+      "CommandHandler: { name, description, execute(args) => Effect<CommandResult, CommandParseError> }"
+    ],
+    "error_modes": [],
+    "invariants": []
+  },
+  "responsibilities": [],
+  "prohibited": [],
+  "created_at": "2026-05-14T15:55:47.207581Z"
+}

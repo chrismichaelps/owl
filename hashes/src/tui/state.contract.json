@@ -1,0 +1,20 @@
+{
+  "contract_id": "CTR-tui-state-00000001",
+  "module": "@Owl.TUI.State src/tui/state.ts",
+  "grammar_lock": "@root/hashes/grammar/react/react.hash.md",
+  "depth_score": "0.80 \u2014 DEEP (pure state transition logic)",
+  "seam_capacity": "INTERNAL (tui state)",
+  "sig_id": "SIG-tui-state-00000001",
+  "interface": {
+    "signatures": [
+      "owlReducer(state: OwlAppState, action: OwlAction) => OwlAppState",
+      "INITIAL_STATE: OwlAppState",
+      "ResponseSnapshot: Interface"
+    ],
+    "error_modes": [],
+    "invariants": []
+  },
+  "responsibilities": [],
+  "prohibited": [],
+  "created_at": "2026-05-14T15:55:47.198187Z"
+}

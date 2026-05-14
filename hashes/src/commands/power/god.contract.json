@@ -1,0 +1,19 @@
+{
+  "contract_id": "CTR-cmd-power-god-00000001",
+  "module": "@Owl.Commands.Power.God src/commands/power/god.ts",
+  "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
+  "depth_score": "0.75 \u2014 DEEP (maximum context window mode)",
+  "seam_capacity": "EXPLORATORY",
+  "sig_id": "SIG-cmd-power-god-00000001",
+  "interface": {
+    "signatures": [
+      "makeGodCommand(orchestrator: OrchestratorService) => CommandHandler",
+      "CommandHandler: { name, description, execute(args) => Effect<CommandResult, CommandParseError> }"
+    ],
+    "error_modes": [],
+    "invariants": []
+  },
+  "responsibilities": [],
+  "prohibited": [],
+  "created_at": "2026-05-14T15:55:47.206810Z"
+}

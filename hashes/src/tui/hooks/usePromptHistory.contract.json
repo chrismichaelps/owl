@@ -1,0 +1,19 @@
+{
+  "contract_id": "CTR-tui-hist-00000001",
+  "module": "@Owl.TUI.Hooks.PromptHistory src/tui/hooks/usePromptHistory.ts",
+  "grammar_lock": "@root/hashes/grammar/react/react.hash.md",
+  "depth_score": "0.68 \u2014 DEEP (encapsulates history nav state)",
+  "seam_capacity": "INTERNAL",
+  "sig_id": "SIG-tui-hist-00000001",
+  "interface": {
+    "signatures": [
+      "usePromptHistory() => UsePromptHistoryResult",
+      "UsePromptHistoryResult: { historyIndex: number; push: (entry: string) => void; up: (currentInput: string) => string; down: () => string; reset: () => void }"
+    ],
+    "error_modes": [],
+    "invariants": []
+  },
+  "responsibilities": [],
+  "prohibited": [],
+  "created_at": "2026-05-14T15:55:47.201984Z"
+}

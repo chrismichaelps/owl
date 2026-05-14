@@ -1,0 +1,24 @@
+{
+  "contract_id": "CTR-tokens-budget-00000001",
+  "module": "@Owl.Tokens.Budget src/tokens/budget/index.ts",
+  "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
+  "depth_score": "0.70 \u2014 DEEP (budget enforcement, error throwing)",
+  "seam_capacity": "CRITICAL (runtime token enforcement)",
+  "sig_id": "SIG-tokens-budget-00000001",
+  "interface": {
+    "signatures": [
+      "TokenBudget: Context.Tag<TokenBudget, TokenBudgetService>",
+      "TokenBudgetLive: Layer.effect<TokenBudget, TokenBudgetService>",
+      "initSession(mode: string, budget?: number) => Effect<void>",
+      "consume(taskId: string, tokens: number) => Effect<void, TokenBudgetExceededError>",
+      "remaining() => Effect<number>",
+      "totalConsumed() => Effect<number>",
+      "reset() => Effect<void>"
+    ],
+    "error_modes": [],
+    "invariants": []
+  },
+  "responsibilities": [],
+  "prohibited": [],
+  "created_at": "2026-05-14T15:55:47.218498Z"
+}

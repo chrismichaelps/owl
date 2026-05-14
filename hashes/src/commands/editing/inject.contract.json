@@ -1,0 +1,19 @@
+{
+  "contract_id": "CTR-cmd-editing-inject-00000001",
+  "module": "@Owl.Commands.Editing.Inject src/commands/editing/inject.ts",
+  "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
+  "depth_score": "0.75 \u2014 DEEP (content insertion after specific string)",
+  "seam_capacity": "BACKBONE (modifies project files)",
+  "sig_id": "SIG-cmd-editing-inject-00000001",
+  "interface": {
+    "signatures": [
+      "makeInjectCommand(pipeline: EditingPipelineService, projectRoot: string) => CommandHandler",
+      "CommandHandler: { name, description, execute(args) => Effect<CommandResult, CommandParseError> }"
+    ],
+    "error_modes": [],
+    "invariants": []
+  },
+  "responsibilities": [],
+  "prohibited": [],
+  "created_at": "2026-05-14T15:55:47.213070Z"
+}

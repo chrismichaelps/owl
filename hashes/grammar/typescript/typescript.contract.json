@@ -1,0 +1,33 @@
+{
+  "contract_id": "CTR-grammar-typescript-00000001",
+  "module": "Grammar Shard: TypeScript 5.x",
+  "grammar_lock": "@root/hashes/grammar/typescript/typescript.hash.md",
+  "depth_score": "1.00",
+  "seam_capacity": "GRAMMAR",
+  "sig_id": "SIG-grammar-typescript-00000001",
+  "interface": {
+    "signatures": [
+      "Primitive types: string | number | boolean | bigint | symbol",
+      "Utility types: Partial<T>, Readonly<T>, Record<K,V>",
+      "Template literal types, conditional types",
+      "Iterator/Iterable protocols, async iterators"
+    ],
+    "error_modes": [],
+    "invariants": [
+      "Use verbatimModuleSyntax — import type for type-only",
+      "noUncheckedIndexedAccess for safety",
+      "Use unknown over any — narrow before use"
+    ]
+  },
+  "responsibilities": [
+    "Enforce TypeScript 5.x syntax rules",
+    "Pin to ES2024 target",
+    "Prevent deprecated patterns"
+  ],
+  "prohibited": [
+    "No any without narrowing",
+    "No enum — use as const objects",
+    "No @ts-ignore — use @ts-expect-error"
+  ],
+  "created_at": "2026-05-14T16:00:00Z"
+}

@@ -1,0 +1,18 @@
+{
+  "contract_id": "CTR-tui-app-00000001",
+  "module": "@Owl.TUI.App src/tui/app.tsx",
+  "grammar_lock": "@root/hashes/grammar/react/react.hash.md",
+  "depth_score": "0.82 \u2014 DEEP (main layout shell)",
+  "seam_capacity": "BACKBONE (connects all TUI components)",
+  "sig_id": "SIG-tui-app-00000001",
+  "interface": {
+    "signatures": [
+      "OwlApp(props: OwlAppProps) => ReactElement"
+    ],
+    "error_modes": [],
+    "invariants": []
+  },
+  "responsibilities": [],
+  "prohibited": [],
+  "created_at": "2026-05-14T15:55:47.198530Z"
+}

@@ -1,0 +1,22 @@
+{
+  "contract_id": "CTR-fmcf-governance-00000001",
+  "module": "@Owl.FMCF.Governance src/fmcf/governance/index.ts",
+  "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
+  "depth_score": "0.85 \u2014 DEEP (constitutional enforcement, rule validation)",
+  "seam_capacity": "BACKBONE (FMCF v3.5 constitutional enforcement)",
+  "sig_id": "SIG-fmcf-governance-00000001",
+  "interface": {
+    "signatures": [
+      "GovernanceEngine: Context.Tag<GovernanceEngine, GovernanceEngineService>",
+      "GovernanceEngineLive: Layer.succeed<GovernanceEngine, GovernanceEngineService>",
+      "validateImportInvariant(subsystemId, invariants, importedFromSubsystem) => Effect<void, GovernanceViolationError>",
+      "validateTLIScope(file, changedLines, totalLines) => Effect<\"OK\" | \"SHARD_SPLIT\">",
+      "validateRoleTransition(from, to, allowedFlow) => Effect<void, GovernanceViolationError>"
+    ],
+    "error_modes": [],
+    "invariants": []
+  },
+  "responsibilities": [],
+  "prohibited": [],
+  "created_at": "2026-05-14T15:55:47.194445Z"
+}

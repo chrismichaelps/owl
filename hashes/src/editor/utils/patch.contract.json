@@ -1,0 +1,21 @@
+{
+  "contract_id": "CTR-editor-utils-patch-00000001",
+  "module": "@Owl.Editor.Utils.Patch src/editor/utils/patch.ts",
+  "grammar_lock": "@root/hashes/grammar/typescript/typescript.hash.md",
+  "depth_score": "0.78 \u2014 DEEP (patch manipulation)",
+  "seam_capacity": "CRITICAL (diff module dependency)",
+  "sig_id": "SIG-editor-utils-patch-00000001",
+  "interface": {
+    "signatures": [
+      "Patch: { before: string; after: string; hunks: Hunk[] }",
+      "Hunk: { startLine: number; endLine: number; lines: string[] }",
+      "applyPatch(content: string, patch: Patch): string",
+      "parsePatch(raw: string): Patch"
+    ],
+    "error_modes": [],
+    "invariants": []
+  },
+  "responsibilities": [],
+  "prohibited": [],
+  "created_at": "2026-05-14T15:55:47.219421Z"
+}

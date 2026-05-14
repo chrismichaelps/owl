@@ -1,0 +1,19 @@
+{
+  "contract_id": "CTR-editor-pipeline-00000001",
+  "module": "@Owl.Editor.Pipeline src/editor/pipeline/index.ts",
+  "grammar_lock": "@root/hashes/grammar/typescript/typescript.hash.md",
+  "depth_score": "0.92 \u2014 DEEP (orchestrates all editing stages)",
+  "seam_capacity": "BACKBONE (governs all editor operations)",
+  "sig_id": "SIG-editor-pipeline-00000001",
+  "interface": {
+    "signatures": [
+      "EditingPipeline: Class",
+      "STAGES: readonly [\"analysis\", \"planning\", \"diff\", \"impact\", \"approval\", \"tlio\", \"verification\"]"
+    ],
+    "error_modes": [],
+    "invariants": []
+  },
+  "responsibilities": [],
+  "prohibited": [],
+  "created_at": "2026-05-14T15:55:47.218827Z"
+}

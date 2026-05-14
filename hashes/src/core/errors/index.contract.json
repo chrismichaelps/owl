@@ -1,0 +1,25 @@
+{
+  "contract_id": "CTR-core-errors-00000001",
+  "module": "@Owl.Core.Errors src/core/errors/index.ts",
+  "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
+  "depth_score": "0.82 \u2014 DEEP (large impl behind simple constructors)",
+  "seam_capacity": "INTERNAL",
+  "sig_id": "SIG-core-errors-00000001",
+  "interface": {
+    "signatures": [
+      "ProviderError`, `ProviderTimeoutError`, `ProviderAuthError",
+      "ProviderRateLimitError`, `ProviderUnavailableError`, `ProviderStreamError",
+      "TokenBudgetExceededError`, `TokenCountError",
+      "GovernanceViolationError`, `HashRegistryError`, `GrammarDriftError`, `SeamTestGateError",
+      "MutationError`, `RollbackError`, `TLIError`, `DiffGenerationError",
+      "CommandParseError`, `CommandNotFoundError",
+      "RegistryError`, `ConfigError",
+      "OrchestratorError`, `ContextOverflowError"
+    ],
+    "error_modes": [],
+    "invariants": []
+  },
+  "responsibilities": [],
+  "prohibited": [],
+  "created_at": "2026-05-14T15:55:47.196995Z"
+}

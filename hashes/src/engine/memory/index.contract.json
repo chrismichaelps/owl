@@ -1,0 +1,23 @@
+{
+  "contract_id": "CTR-engine-memory-00000001",
+  "module": "@Owl.Engine.Memory src/engine/memory/index.ts",
+  "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
+  "depth_score": "0.68 \u2014 MEDIUM (in-memory only, no persistence)",
+  "seam_capacity": "INTERNAL",
+  "sig_id": "SIG-engine-memory-00000001",
+  "interface": {
+    "signatures": [
+      "SessionMemory: Context.Tag<SessionMemory, SessionMemoryService>",
+      "SessionMemoryLive: Layer.effect<SessionMemory, SessionMemoryService>",
+      "startSession(sessionId?: string) => Effect<string>",
+      "recordTurn(turn: SessionTurn) => Effect<void>",
+      "getTurns() => Effect<readonly SessionTurn[]>",
+      "summarize() => Effect<string>"
+    ],
+    "error_modes": [],
+    "invariants": []
+  },
+  "responsibilities": [],
+  "prohibited": [],
+  "created_at": "2026-05-14T15:55:47.216528Z"
+}
