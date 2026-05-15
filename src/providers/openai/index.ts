@@ -18,7 +18,10 @@ import { Context, Effect, Layer, Schedule } from "effect"
 import * as Stream from "effect/Stream"
 import { ProviderError, ProviderStreamError } from "../../core/errors/index.js"
 import { OWL_CONFIG } from "../../core/config/index.js"
-import { RETRY_CONFIG } from "../../core/constants/index.js"
+import {
+  PROVIDER_CONSTANTS,
+  RETRY_CONFIG,
+} from "../../core/constants/index.js"
 import { estimateModelCostUsd } from "../cost.js"
 import type {
   LLMProviderService,
@@ -60,6 +63,19 @@ const OPENAI_CAPABILITIES: readonly ProviderCapability[] = [
   },
 ]
 
+const estimateTextTokens = (text: string): number =>
+  Math.ceil(text.length / PROVIDER_CONSTANTS.TOKEN_ESTIMATION_CHARS_PER_TOKEN)
+
+const buildMessages = (request: InferenceRequest) => [
+  ...(request.systemPrompt
+    ? [{ role: "system" as const, content: request.systemPrompt }]
+    : []),
+  ...request.messages.map((message) => ({
+    role: message.role as "user" | "assistant",
+    content: message.content,
+  })),
+]
+
 /** @Owl.Providers.OpenAI.Adapter - service definition */
 export class OpenAIAdapter extends Context.Tag("OpenAIAdapter")<
   OpenAIAdapter,
@@ -96,7 +112,7 @@ export const OpenAIAdapterLive = Layer.effect(
             }),
           ),
         countTokens: (text: string, _model: string) =>
-          Effect.succeed(Math.ceil(text.length / 4)),
+          Effect.succeed(estimateTextTokens(text)),
         healthCheck: () =>
           Effect.fail(
             new ProviderError({
@@ -124,15 +140,7 @@ export const OpenAIAdapterLive = Layer.effect(
           const response = await client.chat.completions.create({
             model: request.model,
             max_tokens: request.maxTokens,
-            messages: [
-              ...(request.systemPrompt
-                ? [{ role: "system" as const, content: request.systemPrompt }]
-                : []),
-              ...request.messages.map((m) => ({
-                role: m.role as "user" | "assistant",
-                content: m.content,
-              })),
-            ],
+            messages: buildMessages(request),
           })
 
           const content = response.choices[0]?.message.content ?? ""
@@ -173,17 +181,35 @@ export const OpenAIAdapterLive = Layer.effect(
             const s = await client.chat.completions.create({
               model: request.model,
               max_tokens: request.maxTokens,
-              messages: request.messages.map((m) => ({
-                role: m.role as "user" | "assistant",
-                content: m.content,
-              })),
+              messages: buildMessages(request),
               stream: true,
+              stream_options: { include_usage: true },
             })
             let index = 0
             for await (const chunk of s) {
               const content = chunk.choices[0]?.delta.content
               if (content) {
                 await emit.single({ type: "text", content, index: index++ })
+              }
+              if (chunk.usage != null) {
+                const inputTokens = chunk.usage.prompt_tokens
+                const outputTokens = chunk.usage.completion_tokens
+                await emit.single({
+                  type: "usage",
+                  index,
+                  usage: {
+                    inputTokens,
+                    outputTokens,
+                    cacheReadTokens: 0,
+                    cacheWriteTokens: 0,
+                    estimatedCostUsd: estimateModelCostUsd(
+                      OPENAI_CAPABILITIES,
+                      request.model,
+                      inputTokens,
+                      outputTokens,
+                    ),
+                  },
+                })
               }
             }
             await emit.end()
@@ -202,7 +228,7 @@ export const OpenAIAdapterLive = Layer.effect(
       complete,
       stream,
       countTokens: (_text, _model) =>
-        Effect.succeed(Math.ceil(_text.length / 4)),
+        Effect.succeed(estimateTextTokens(_text)),
       healthCheck: () => Effect.succeed(true),
     } satisfies LLMProviderService
   }),
