@@ -14,10 +14,15 @@
 import OpenAI from "openai"
 import { Context, Effect, Layer } from "effect"
 import * as Stream from "effect/Stream"
-import { ProviderError } from "../../core/errors/index.js"
+import { ProviderError, ProviderStreamError } from "../../core/errors/index.js"
 import { OWL_CONFIG } from "../../core/config/index.js"
+import { PROVIDER_CONSTANTS } from "../../core/constants/index.js"
 import { estimateModelCostUsd } from "../cost.js"
-import type { LLMProviderService, ProviderCapability } from "../types.js"
+import type {
+  LLMProviderService,
+  ProviderCapability,
+  StreamChunk,
+} from "../types.js"
 import type {
   InferenceRequest,
   InferenceResponse,
@@ -39,6 +44,19 @@ const XAI_CAPABILITIES: readonly ProviderCapability[] = [
     supportsFunctionCalling: true,
     supportsVision: true,
   },
+]
+
+const estimateTextTokens = (text: string): number =>
+  Math.ceil(text.length / PROVIDER_CONSTANTS.TOKEN_ESTIMATION_CHARS_PER_TOKEN)
+
+const buildMessages = (request: InferenceRequest) => [
+  ...(request.systemPrompt
+    ? [{ role: "system" as const, content: request.systemPrompt }]
+    : []),
+  ...request.messages.map((message) => ({
+    role: message.role as "user" | "assistant",
+    content: message.content,
+  })),
 ]
 
 /** @Owl.Providers.xAI.Adapter - service definition */
@@ -70,13 +88,13 @@ export const XAIAdapterLive = Layer.effect(
           ),
         stream: () =>
           Stream.fail(
-            new ProviderError({
+            new ProviderStreamError({
               provider: "xai",
-              message: "XAI_API_KEY not configured",
+              cause: "XAI_API_KEY not configured",
             }),
           ),
         countTokens: (text: string, _model: string) =>
-          Effect.succeed(Math.ceil(text.length / 4)),
+          Effect.succeed(estimateTextTokens(text)),
         healthCheck: () =>
           Effect.fail(
             new ProviderError({
@@ -102,10 +120,7 @@ export const XAIAdapterLive = Layer.effect(
           const response = await client.chat.completions.create({
             model: request.model,
             max_tokens: request.maxTokens,
-            messages: request.messages.map((m) => ({
-              role: m.role as "user" | "assistant",
-              content: m.content,
-            })),
+            messages: buildMessages(request),
           })
           return {
             taskId: request.taskId,
@@ -132,13 +147,59 @@ export const XAIAdapterLive = Layer.effect(
           new ProviderError({ provider: "xai", message: String(e) }),
       })
 
+    const stream = (request: InferenceRequest) =>
+      Stream.async<StreamChunk, ProviderStreamError>((emit) => {
+        const run = async () => {
+          try {
+            const chunks = await client.chat.completions.create({
+              model: request.model,
+              max_tokens: request.maxTokens,
+              messages: buildMessages(request),
+              stream: true,
+              stream_options: { include_usage: true },
+            })
+            let index = 0
+            for await (const chunk of chunks) {
+              const content = chunk.choices[0]?.delta.content
+              if (content) {
+                await emit.single({ type: "text", content, index: index++ })
+              }
+              if (chunk.usage != null) {
+                const inputTokens = chunk.usage.prompt_tokens
+                const outputTokens = chunk.usage.completion_tokens
+                await emit.single({
+                  type: "usage",
+                  index,
+                  usage: {
+                    inputTokens,
+                    outputTokens,
+                    cacheReadTokens: 0,
+                    cacheWriteTokens: 0,
+                    estimatedCostUsd: estimateModelCostUsd(
+                      XAI_CAPABILITIES,
+                      request.model,
+                      inputTokens,
+                      outputTokens,
+                    ),
+                  },
+                })
+              }
+            }
+            await emit.end()
+          } catch (cause) {
+            await emit.fail(new ProviderStreamError({ provider: "xai", cause }))
+          }
+        }
+        void run()
+      })
+
     return {
       id: "xai",
       capabilities: XAI_CAPABILITIES,
       complete,
-      stream: () => Stream.empty,
+      stream,
       countTokens: (_text, _model) =>
-        Effect.succeed(Math.ceil(_text.length / 4)),
+        Effect.succeed(estimateTextTokens(_text)),
       healthCheck: () => Effect.succeed(true),
     } satisfies LLMProviderService
   }),
