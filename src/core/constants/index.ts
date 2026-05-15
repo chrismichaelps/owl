@@ -15,6 +15,7 @@
  * - Registry: HTTP status codes
  * - Editor: Mutation pipeline constraints
  * - Commands: Parsing constraints
+ * - CLI: Startup metadata and early-exit output
  */
 
 /** @Owl.Core.Constants.Budgets - Token and mode-specific constraints */
@@ -237,4 +238,20 @@ export const COMMAND_CONSTANTS = {
   ID_HASH_LENGTH: 12,
   MIN_PROMPT_LENGTH: 1,
   MAX_PROMPT_LENGTH: 10_000,
+} as const
+
+/** @Owl.Core.Constants.CLI - Process entrypoint metadata */
+export const CLI_CONSTANTS = {
+  BINARY_NAME: "owl",
+  VERSION: "0.1.0",
+  DESCRIPTION: "AI coding agent CLI governed by FMCF",
+  USAGE: 'owl [--mode=<mode>] [--quick|--deep|--economy] ["prompt"]',
+  OPTIONS: [
+    ["--help, -h", "Show this help text"],
+    ["--version, -v", "Show the Owl CLI version"],
+    ["--mode=<mode>", "Set mode: standard, quick, deep, economy, god"],
+    ["--quick, -q", "Use quick mode"],
+    ["--deep, -d", "Use deep mode"],
+    ["--economy, -e", "Use economy mode"],
+  ],
 } as const

@@ -8,6 +8,7 @@
  * - Position: owl "prompt" (mode defaults to standard)
  * - Mode flags: owl --deep "prompt", owl -d "prompt"
  * - Mode option: owl --mode=deep "prompt"
+ * - Metadata: owl --help, owl --version
  *
  * @example
  * parseArgs(["--deep", "Analyze this"]) // { mode: "deep", prompt: "Analyze this" }
@@ -33,6 +34,10 @@ export interface ParsedArgs {
   readonly mode: Mode
   /** Initial prompt (null if not provided) */
   readonly prompt: string | null
+  /** Print help and exit before runtime boot */
+  readonly help: boolean
+  /** Print version and exit before runtime boot */
+  readonly version: boolean
 }
 
 /**
@@ -45,11 +50,17 @@ export interface ParsedArgs {
 export function parseArgs(argv: readonly string[]): ParsedArgs {
   let mode: Mode = "standard"
   let prompt: string | null = null
+  let help = false
+  let version = false
 
   for (const arg of argv) {
     if (arg.startsWith("--mode=")) {
       const val = arg.slice("--mode=".length)
       if (VALID_MODES.includes(val)) mode = val as Mode
+    } else if (arg === "--help" || arg === "-h") {
+      help = true
+    } else if (arg === "--version" || arg === "-v") {
+      version = true
     } else if (arg === "--quick" || arg === "-q") {
       mode = "quick"
     } else if (arg === "--deep" || arg === "-d") {
@@ -61,5 +72,5 @@ export function parseArgs(argv: readonly string[]): ParsedArgs {
     }
   }
 
-  return { mode, prompt }
+  return { mode, prompt, help, version }
 }

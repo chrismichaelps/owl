@@ -42,6 +42,34 @@ describe("parseArgs with no arguments", () => {
     const { prompt } = parseArgs([])
     expect(prompt).toBeNull()
   })
+
+  it("defaults help to false", () => {
+    const { help } = parseArgs([])
+    expect(help).toBe(false)
+  })
+
+  it("defaults version to false", () => {
+    const { version } = parseArgs([])
+    expect(version).toBe(false)
+  })
+})
+
+describe("metadata flags", () => {
+  it("--help sets help", () => {
+    expect(parseArgs(["--help"]).help).toBe(true)
+  })
+
+  it("-h sets help", () => {
+    expect(parseArgs(["-h"]).help).toBe(true)
+  })
+
+  it("--version sets version", () => {
+    expect(parseArgs(["--version"]).version).toBe(true)
+  })
+
+  it("-v sets version", () => {
+    expect(parseArgs(["-v"]).version).toBe(true)
+  })
 })
 
 describe("--mode= flag", () => {
@@ -157,7 +185,12 @@ describe("edge cases", () => {
 
   it("returns a plain object (not a class instance)", () => {
     const result = parseArgs([])
-    expect(result).toStrictEqual({ mode: "standard", prompt: null })
+    expect(result).toStrictEqual({
+      mode: "standard",
+      prompt: null,
+      help: false,
+      version: false,
+    })
   })
 
   it("is a pure function — same input always gives same output", () => {

@@ -9,6 +9,18 @@ import { render } from "ink"
 import { App } from "../tui/app.js"
 import { makeOwlRuntime } from "./runtime.js"
 import { parseArgs } from "./args.js"
+import { formatCliHelp, formatCliVersion } from "./help.js"
+
+/** @Owl.CLI.Runner.Output - Testable process output port */
+export interface CliOutput {
+  readonly stdout: (text: string) => void
+}
+
+const DEFAULT_OUTPUT: CliOutput = {
+  stdout: (text) => {
+    process.stdout.write(text)
+  },
+}
 
 /** @Owl.CLI.Runner.Error - Formats fatal boot failures */
 export const formatFatalError = (error: unknown): string => {
@@ -20,8 +32,20 @@ export const formatFatalError = (error: unknown): string => {
 export async function runCli(
   argv: readonly string[],
   projectRoot: string,
+  output: CliOutput = DEFAULT_OUTPUT,
 ): Promise<void> {
-  const { mode, prompt } = parseArgs(argv)
+  const { mode, prompt, help, version } = parseArgs(argv)
+
+  if (help) {
+    output.stdout(formatCliHelp())
+    return
+  }
+
+  if (version) {
+    output.stdout(formatCliVersion())
+    return
+  }
+
   const runtime = makeOwlRuntime(projectRoot)
 
   try {
