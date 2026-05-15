@@ -7,9 +7,15 @@ import {
   ProviderRouterLive,
   registerProvider,
 } from "../../src/providers/router/index.js"
-import { ProviderError, ProviderStreamError } from "../../src/core/errors/index.js"
+import {
+  ProviderError,
+  ProviderStreamError,
+} from "../../src/core/errors/index.js"
 import type { LLMProviderService } from "../../src/providers/types.js"
-import type { InferenceRequest, ProviderId } from "../../src/core/schema/index.js"
+import type {
+  InferenceRequest,
+  ProviderId,
+} from "../../src/core/schema/index.js"
 
 /** @Owl.Tests.Providers.Router.Stubs - Mock provider definitions */
 const makeStubProvider = (id: ProviderId): LLMProviderService => ({
@@ -44,9 +50,11 @@ const makeStubProvider = (id: ProviderId): LLMProviderService => ({
       latencyMs: 100,
     }),
   stream: (_req) =>
-    Stream.make(
-      { type: "text" as const, content: `stream from ${id}`, index: 0 },
-    ),
+    Stream.make({
+      type: "text" as const,
+      content: `stream from ${id}`,
+      index: 0,
+    }),
   countTokens: (_text, _modelId) => Effect.succeed(100),
   healthCheck: () => Effect.succeed(true),
 })

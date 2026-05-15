@@ -69,6 +69,8 @@ describe("makeStatusCommand", () => {
     expect(output).toContain("Session turns: 1")
     expect(output).toContain("Total tokens used: 150")
     expect(output).toContain("Inference calls: 1")
-    expect(output).toContain("Provider anthropic: 1 calls, 150 tokens, 120ms avg")
+    expect(output).toContain(
+      "Provider anthropic: 1 calls, 150 tokens, 120ms avg",
+    )
   })
 })

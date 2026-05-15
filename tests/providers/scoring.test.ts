@@ -81,10 +81,7 @@ describe("provider scoring", () => {
   })
 
   it("rankProviders returns deterministic fallback order", () => {
-    const ranked = rankProviders(
-      [ANTHROPIC_OPUS, ANTHROPIC_HAIKU],
-      ECONOMY_CTX,
-    )
+    const ranked = rankProviders([ANTHROPIC_OPUS, ANTHROPIC_HAIKU], ECONOMY_CTX)
     expect(ranked.map((cap) => cap.modelId)).toEqual([
       "claude-haiku-4-5",
       "claude-opus-4-7",
@@ -92,10 +89,10 @@ describe("provider scoring", () => {
   })
 
   it("rankProviders places a valid preferred provider first", () => {
-    const ranked = rankProviders(
-      [ANTHROPIC_OPUS, ANTHROPIC_HAIKU],
-      { ...ECONOMY_CTX, preferredProvider: "anthropic" },
-    )
+    const ranked = rankProviders([ANTHROPIC_OPUS, ANTHROPIC_HAIKU], {
+      ...ECONOMY_CTX,
+      preferredProvider: "anthropic",
+    })
     expect(ranked[0]?.providerId).toBe("anthropic")
   })
 })
