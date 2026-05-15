@@ -12,7 +12,7 @@
 import { Effect } from "effect"
 import type { FileSystem } from "@effect/platform"
 import { CommandParseError } from "../../core/errors/index.js"
-import path from "node:path"
+import { resolveProjectPath } from "../../core/path/index.js"
 import type { CommandHandler, CommandResult } from "../types.js"
 
 /**
@@ -36,9 +36,20 @@ export function makeCreateCommand(
         )
       }
       const content = rest.join(" ")
-      const fullPath = path.join(projectRoot, file)
-      return fs.writeFileString(fullPath, content).pipe(
-        Effect.map(() => ({ output: "Created " + file })),
+      return resolveProjectPath(projectRoot, file, "create").pipe(
+        Effect.flatMap((fullPath) =>
+          fs.writeFileString(fullPath, content).pipe(
+            Effect.map(() => ({ output: "Created " + file })),
+            Effect.catchAll((err) =>
+              Effect.fail(
+                new CommandParseError({
+                  input: "/create " + file,
+                  reason: String(err),
+                }),
+              ),
+            ),
+          ),
+        ),
         Effect.catchAll((err) =>
           Effect.fail(
             new CommandParseError({

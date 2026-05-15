@@ -37,8 +37,8 @@ import { FileSystem } from "@effect/platform"
 import { NodeFileSystem } from "@effect/platform-node"
 import { TLIError, MutationError } from "../../core/errors/index.js"
 import { EDITOR_CONSTANTS } from "../../core/constants/index.js"
+import { resolveProjectPath } from "../../core/path/index.js"
 import { findExactMatch, applyReplacement } from "../utils/strings.js"
-import path from "node:path"
 
 /**
  * @Owl.Editor.TLI.Target - Specification for a single surgical replacement
@@ -129,7 +129,11 @@ export const TLIExecutorLive = Layer.effect(
       projectRoot: string,
     ): Effect.Effect<TLIResult, TLIError | MutationError> =>
       Effect.gen(function* () {
-        const fullPath = path.join(projectRoot, target.file)
+        const fullPath = yield* resolveProjectPath(
+          projectRoot,
+          target.file,
+          "planning",
+        )
 
         const stat = yield* fs.stat(fullPath).pipe(
           Effect.mapError(
@@ -194,15 +198,18 @@ export const TLIExecutorLive = Layer.effect(
       newContent: string,
       projectRoot: string,
     ): Effect.Effect<void, MutationError> => {
-      const fullPath = path.join(projectRoot, file)
-      return fs.writeFileString(fullPath, newContent).pipe(
-        Effect.mapError(
-          () =>
-            new MutationError({
-              stage: "tli",
-              file,
-              reason: `Cannot write file: ${file}`,
-            }),
+      return resolveProjectPath(projectRoot, file, "tli").pipe(
+        Effect.flatMap((fullPath) =>
+          fs.writeFileString(fullPath, newContent).pipe(
+            Effect.mapError(
+              () =>
+                new MutationError({
+                  stage: "tli",
+                  file,
+                  reason: `Cannot write file: ${file}`,
+                }),
+            ),
+          ),
         ),
       )
     }

@@ -28,7 +28,7 @@ import { Context, Effect, Layer, Ref } from "effect"
 import { FileSystem } from "@effect/platform"
 import { NodeFileSystem } from "@effect/platform-node"
 import { RollbackError } from "../../core/errors/index.js"
-import path from "node:path"
+import { resolveProjectPath } from "../../core/path/index.js"
 
 /**
  * @Owl.Editor.Rollback.Entry - Immutable snapshot of a file before mutation
@@ -143,7 +143,19 @@ export const RollbackSystemLive = Layer.effect(
 
         const restored: string[] = []
         for (const entry of entries) {
-          const fullPath = path.join(projectRoot, entry.file)
+          const fullPath = yield* resolveProjectPath(
+            projectRoot,
+            entry.file,
+            "rollback",
+          ).pipe(
+            Effect.mapError(
+              () =>
+                new RollbackError({
+                  files: [entry.file],
+                  reason: `Refused to restore ${entry.file} outside project root`,
+                }),
+            ),
+          )
           yield* fs.writeFileString(fullPath, entry.originalContent).pipe(
             Effect.mapError(
               () =>
