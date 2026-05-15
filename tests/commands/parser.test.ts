@@ -33,6 +33,29 @@ describe("parseCommand", () => {
     expect(result.args).toEqual(["file.ts", "old text", "new text"])
   })
 
+  it("fails when a double-quoted argument is unterminated", async () => {
+    const exit = await Effect.runPromiseExit(
+      parseCommand('/edit file.ts "old text'),
+    )
+    expect(Exit.isFailure(exit)).toBe(true)
+    if (Exit.isFailure(exit)) {
+      const err = Cause.failureOption(exit.cause)
+      expect(err._tag).toBe("Some")
+      if (err._tag === "Some") {
+        expect(err.value.reason).toBe(
+          "Command contains an unterminated quoted argument",
+        )
+      }
+    }
+  })
+
+  it("fails when a single-quoted argument is unterminated", async () => {
+    const exit = await Effect.runPromiseExit(
+      parseCommand("/edit file.ts 'old text"),
+    )
+    expect(Exit.isFailure(exit)).toBe(true)
+  })
+
   it("preserves the raw input string", async () => {
     const raw = "/task hello world"
     const result = await Effect.runPromise(parseCommand(raw))

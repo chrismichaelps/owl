@@ -19,8 +19,13 @@ import { Effect } from "effect"
 import { CommandParseError } from "../core/errors/index.js"
 import type { ParsedCommand } from "./types.js"
 
+interface TokenizeResult {
+  readonly tokens: readonly string[]
+  readonly unterminatedQuote: '"' | "'" | null
+}
+
 /** Tokenize input respecting single/double-quoted spans */
-function tokenize(input: string): string[] {
+function tokenize(input: string): TokenizeResult {
   const tokens: string[] = []
   let current = ""
   let inQuote: '"' | "'" | null = null
@@ -44,7 +49,7 @@ function tokenize(input: string): string[] {
     }
   }
   if (current.length > 0) tokens.push(current)
-  return tokens
+  return { tokens, unterminatedQuote: inQuote }
 }
 
 /**
@@ -68,7 +73,18 @@ export function parseCommand(
     )
   }
 
-  const tokens = tokenize(trimmed.slice(1))
+  const tokenized = tokenize(trimmed.slice(1))
+
+  if (tokenized.unterminatedQuote !== null) {
+    return Effect.fail(
+      new CommandParseError({
+        input: raw,
+        reason: "Command contains an unterminated quoted argument",
+      }),
+    )
+  }
+
+  const tokens = tokenized.tokens
   const name = tokens[0]
 
   if (name === undefined || name.length === 0) {
