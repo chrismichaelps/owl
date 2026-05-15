@@ -12,7 +12,7 @@
       "PROVIDER_TIMEOUTS",
       "RETRY_CONFIG",
       "PROVIDER_IDS",
-      "METRICS_CONSTANTS",
+      "METRICS_CONSTANTS — RECENT_INFERENCE_LIMIT, CACHE_HIT_RATE_PERCENT_MULTIPLIER, CACHE_HIT_RATE_DECIMAL_PLACES",
       "ROUTING_LIMITS",
       "DEPTH_THRESHOLDS",
       "SHARD_SPLIT_THRESHOLD = 0.15",
@@ -28,7 +28,7 @@
     "invariants": []
   },
   "responsibilities": [
-    "Centralize runtime thresholds and coefficients",
+    "Centralize runtime thresholds, coefficients, and UsageMetrics formatting constants",
     "Prevent routing and governance magic values from leaking into logic Modules"
   ],
   "prohibited": [

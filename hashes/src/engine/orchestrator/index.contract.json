@@ -25,13 +25,14 @@
       ,
       "Active RoutingPreference MUST be read before building RoutingContext"
       ,
-      "UsageMetrics MUST be recorded only after output TokenBudget enforcement succeeds"
+      "UsageMetrics MUST be recorded only after output TokenBudget enforcement succeeds",
+      "UsageMetrics MUST receive cacheReadTokens and cacheWriteTokens from InferenceResponse usage"
     ]
   },
   "responsibilities": [
     "Coordinate Task Inference through ContextManager, TokenBudget, ProviderRouter, and SessionMemory",
     "Keep budget enforcement centralized in the agent loop",
-    "Record successful Inference UsageMetrics for runtime observability",
+    "Record successful Inference UsageMetrics and prompt cache Tokens for runtime observability",
     "Apply active RoutingPreference without bypassing ProviderRouter failover"
   ],
   "prohibited": [

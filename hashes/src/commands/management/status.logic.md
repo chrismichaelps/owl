@@ -15,18 +15,21 @@
 2. Read UsageMetrics snapshot from UsageMetrics.
 3. Compute Session token total from turns for backward-compatible display.
 4. Format Inference calls, input Tokens, output Tokens, total Tokens, average latency, and per-Provider totals.
-5. Return a read-only CommandResult.
+5. If cache read/write Tokens exist, format cache hit rate and saved Tokens.
+6. Return a read-only CommandResult.
 
 ## Negative Logic (PROHIBITED PATHS)
 
 - MUST NOT: mutate SessionMemory.
 - MUST NOT: mutate UsageMetrics.
 - MUST NOT: access Provider adapters or ProviderRouter internals.
+- MUST NOT: infer cache efficiency from estimated output Tokens.
 
 ## Edge Cases
 
 - **No turns**: report zero Session turns.
 - **No UsageMetrics**: report zero Inference calls and zero latency.
+- **No cache Tokens**: omit the cache section.
 - **Multiple Providers**: format each Provider total deterministically in snapshot order.
 
 ## Dependencies

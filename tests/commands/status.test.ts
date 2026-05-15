@@ -73,4 +73,32 @@ describe("makeStatusCommand", () => {
       "Provider anthropic: 1 calls, 150 tokens, 120ms avg",
     )
   })
+
+  it("reports prompt cache efficiency when cache tokens exist", async () => {
+    const output = await run(
+      Effect.gen(function* () {
+        const memory = yield* SessionMemory
+        const metrics = yield* UsageMetrics
+        yield* metrics.recordInference({
+          taskId: "task-cache",
+          mode: "standard",
+          provider: "anthropic",
+          model: "claude-sonnet-4",
+          inputTokens: 100,
+          outputTokens: 50,
+          cacheReadTokens: 800,
+          cacheWriteTokens: 150,
+          latencyMs: 120,
+          timestamp: "2026-05-14T21:25:00.000Z",
+        })
+        const command = makeStatusCommand(memory, metrics)
+        const result = yield* command.execute([])
+        return result.output
+      }),
+    )
+
+    expect(output).toContain(
+      "Cache: 88.9% hit rate | 800 tokens saved from cache",
+    )
+  })
 })

@@ -9,7 +9,7 @@
     "signatures": [
       "UsageMetrics: Context.Tag<UsageMetrics, UsageMetricsService>",
       "UsageMetricsLive: Layer<UsageMetrics>",
-      "recordInference(metric: InferenceMetric) => Effect<void>",
+      "recordInference(metric: RecordInferenceMetric) => Effect<void>",
       "snapshot() => Effect<UsageMetricsSnapshot>",
       "reset() => Effect<void>"
     ],
@@ -17,6 +17,8 @@
     "invariants": [
       "UsageMetrics MUST be Ref-backed and scoped to the active runtime Session",
       "UsageMetrics MUST aggregate by Provider and Model without external telemetry",
+      "UsageMetrics MUST normalize missing cache fields to zero",
+      "UsageMetrics MUST compute cacheHitRate from cacheReadTokens and inputTokens",
       "UsageMetrics MUST retain only a bounded recent Inference list"
     ]
   },
@@ -31,6 +33,7 @@
   },
   "responsibilities": [
     "Record deterministic Inference UsageMetrics after successful Orchestrator execution",
+    "Track prompt cache read/write Tokens and cache hit rate",
     "Provide aggregated Session totals to management Commands"
   ],
   "prohibited": [

@@ -1,6 +1,6 @@
-State_ID: BigInt(0x0000000000000052)
-Git_SHA: b20ee4c34893a44169b22184057fe5d51b2047d3
-Source_SHA256: 9b29ab18b2d535348d311d8c2cf72468a9cc905c3fcb6f303d2af358e09d1917
+State_ID: BigInt(0x000000000000006f)
+Git_SHA: b08b51254f38dd6138e55dbe56ad187ff73866f5
+Source_SHA256: 3804231f7ef3fbd4209be25d85522f81e5b5012221dd98158ad629600b04a308
 Grammar_Lock: "@root/hashes/grammar/typescript/typescript.hash.md"
 Fidelity: DECLARED
 ---
@@ -9,10 +9,11 @@ Fidelity: DECLARED
 
 ### [Signatures]
 - `ProviderCapabilitySchema`, `RoutingContextSchema`, `StreamChunkSchema` — Schema definitions
+- `StreamChunk` — text/thinking/tool/stop chunks plus usage cache token fields
 - `LLMProviderService` — interface: id, capabilities, complete, stream, countTokens, healthCheck
 - `LLMProvider extends Context.Tag` — service tag
 - `RoutingDecisionSchema`, `AnyProviderError`
-- `StreamingCallbackResult` — interface: content, provider, model, latencyMs (Phase 9 Streaming result)
+- `StreamingCallbackResult` — interface: content, provider, model, latencyMs, cacheReadTokens, cacheWriteTokens
 
 ### [Governance]
 - depth_score: 0.70 — DEEP (BACKBONE contract shared by all adapters)

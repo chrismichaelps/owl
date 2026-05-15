@@ -1,6 +1,6 @@
-State_ID: BigInt(0x000000000000006b)
-Git_SHA: 8a91a98ecac3bf6be3ffa105496ef48e08cc429b
-Source_SHA256: c626115bfc5d1a9854b1855dd5dc9feab4f89e6adfaef7de3371a9e0a4df631a
+State_ID: BigInt(0x0000000000000075)
+Git_SHA: b08b51254f38dd6138e55dbe56ad187ff73866f5
+Source_SHA256: ef1b23d1c3b316caec0a54a8f47140b949112991cf3562f6602db3c7adf29302
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
 Fidelity: DECLARED
 ---
@@ -10,6 +10,7 @@ Fidelity: DECLARED
 ### [Signatures]
 - `makeStatusCommand(sessionMemory: SessionMemoryService, usageMetrics: UsageMetricsService) => CommandHandler`
 - `CommandHandler: { name, description, execute(args) => Effect<CommandResult, CommandParseError> }`
+- `formatCacheHitRate(hitRate: number) => string`
 
 ### [Governance]
 - depth_score: 0.70 — DEEP (session and UsageMetrics display behind one Command)
@@ -24,5 +25,5 @@ Fidelity: DECLARED
 
 ### [Architecture]
 - Dispatches /status command to SessionMemoryService and UsageMetricsService
-- Reports session turn count, memory tokens, Inference calls, Provider totals, and latency
+- Reports session turn count, memory tokens, Inference calls, Provider totals, cache hit rate, and latency
 - Includes last turn timestamp if available

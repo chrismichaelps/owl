@@ -14,11 +14,12 @@
     "invariants": [
       "`/status` MUST report Session turn counts from SessionMemory",
       "`/status` MUST report runtime UsageMetrics from UsageMetrics",
+      "`/status` MUST show cache hit rate only when cache tokens exist",
       "`/status` MUST remain read-only"
     ]
   },
   "responsibilities": [
-    "Display Session and UsageMetrics in one management Command",
+    "Display Session, UsageMetrics, and prompt cache efficiency in one management Command",
     "Keep observability read-only and deterministic"
   ],
   "prohibited": [

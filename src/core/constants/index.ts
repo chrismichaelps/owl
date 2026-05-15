@@ -82,6 +82,8 @@ export const PROVIDER_IDS = [
 /** @Owl.Core.Constants.Metrics - Runtime UsageMetrics constraints */
 export const METRICS_CONSTANTS = {
   RECENT_INFERENCE_LIMIT: 10,
+  CACHE_HIT_RATE_PERCENT_MULTIPLIER: 100,
+  CACHE_HIT_RATE_DECIMAL_PLACES: 1,
 } as const
 
 /**

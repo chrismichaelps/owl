@@ -3,21 +3,24 @@
 ## Algorithm
 
 1. Initialize a Ref containing an empty list of InferenceMetric records.
-2. On `recordInference`, append the immutable InferenceMetric to the list.
-3. On `snapshot`, aggregate records into total calls, Token totals, average latency, per-Provider usage, and bounded recent records.
-4. On `reset`, clear the list for a new Session or explicit runtime reset.
-5. Preserve all Provider and Model names exactly as received from Orchestrator response.
+2. On `recordInference`, normalize missing cacheReadTokens/cacheWriteTokens to zero.
+3. Append the immutable normalized InferenceMetric to the list.
+4. On `snapshot`, aggregate records into total calls, Token totals, cache read/write totals, cache hit rate, average latency, per-Provider usage, and bounded recent records.
+5. On `reset`, clear the list for a new Session or explicit runtime reset.
+6. Preserve all Provider and Model names exactly as received from Orchestrator response.
 
 ## Negative Logic (PROHIBITED PATHS)
 
 - MUST NOT: use module-level mutable state.
 - MUST NOT: emit network telemetry or analytics side effects.
 - MUST NOT: record metrics before TokenBudget output enforcement succeeds.
+- MUST NOT: compute cacheHitRate with output Tokens in the denominator.
 - MUST NOT: duplicate aggregation limits outside `METRICS_CONSTANTS`.
 
 ## Edge Cases
 
 - **No Inference records**: return zero totals, zero average latency, and empty provider/model lists.
+- **No cache usage**: return zero cache totals and cacheHitRate 0.
 - **Multiple Models per Provider**: aggregate Provider totals while keeping model-level totals separate.
 - **Recent list exceeds limit**: return only the newest bounded records.
 

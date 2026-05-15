@@ -179,6 +179,8 @@ export const OrchestratorLive = Layer.effect(
           model: response.model,
           inputTokens: response.usage.inputTokens,
           outputTokens: response.usage.outputTokens,
+          cacheReadTokens: response.usage.cacheReadTokens,
+          cacheWriteTokens: response.usage.cacheWriteTokens,
           latencyMs: response.latencyMs,
           timestamp: new Date().toISOString(),
         })
@@ -279,6 +281,8 @@ export const OrchestratorLive = Layer.effect(
           model: response.model,
           inputTokens: response.usage.inputTokens,
           outputTokens: response.usage.outputTokens,
+          cacheReadTokens: response.usage.cacheReadTokens,
+          cacheWriteTokens: response.usage.cacheWriteTokens,
           latencyMs: response.latencyMs,
           timestamp: new Date().toISOString(),
         })

@@ -16,7 +16,7 @@ import { TokenBudgetLive } from "../../src/tokens/budget/index.js"
 import { RoutingPreferences } from "../../src/providers/preferences/index.js"
 import {
   UsageMetrics,
-  type InferenceMetric,
+  type RecordInferenceMetric,
 } from "../../src/engine/metrics/index.js"
 
 const makeTask = (overrides: Partial<Task> = {}): Task => ({
@@ -45,7 +45,7 @@ const stubResponse = {
 const stubStreamChunks = ["Hello ", "world"]
 const completeSpy = vi.fn()
 const observedRoutingContexts: RoutingContext[] = []
-const observedInferenceMetrics: InferenceMetric[] = []
+const observedInferenceMetrics: RecordInferenceMetric[] = []
 let testPreferredProvider: ProviderId | undefined
 
 const TestProviderRouterLive = Layer.succeed(ProviderRouter, {
@@ -106,7 +106,7 @@ const TestRoutingPreferencesLive = Layer.succeed(RoutingPreferences, {
 })
 
 const TestUsageMetricsLive = Layer.succeed(UsageMetrics, {
-  recordInference: (metric: InferenceMetric) =>
+  recordInference: (metric: RecordInferenceMetric) =>
     Effect.sync(() => {
       observedInferenceMetrics.push(metric)
     }),
@@ -115,6 +115,9 @@ const TestUsageMetricsLive = Layer.succeed(UsageMetrics, {
       totalCalls: observedInferenceMetrics.length,
       inputTokens: 0,
       outputTokens: 0,
+      totalCacheReadTokens: 0,
+      totalCacheWriteTokens: 0,
+      cacheHitRate: 0,
       totalTokens: 0,
       averageLatencyMs: 0,
       byProvider: [],
@@ -205,6 +208,8 @@ describe("Orchestrator.run", () => {
       model: "claude-opus-4",
       inputTokens: 50,
       outputTokens: 30,
+      cacheReadTokens: 0,
+      cacheWriteTokens: 0,
       latencyMs: 120,
     })
   })
@@ -279,11 +284,35 @@ describe("Orchestrator.runStream", () => {
             mode: "standard",
             createdAt: new Date().toISOString(),
           },
-          () => {},
+          vi.fn(),
         )
       }),
     )
     expect(response.usage.cacheReadTokens).toBe(300)
     expect(response.usage.cacheWriteTokens).toBe(50)
+  })
+
+  it("records real cache tokens in UsageMetrics after streaming", async () => {
+    observedInferenceMetrics.length = 0
+    await run(
+      Effect.gen(function* () {
+        const orch = yield* Orchestrator
+        return yield* orch.runStream(
+          {
+            id: "t-cache-metrics",
+            prompt: "hi",
+            mode: "standard",
+            createdAt: new Date().toISOString(),
+          },
+          vi.fn(),
+        )
+      }),
+    )
+
+    expect(observedInferenceMetrics.at(-1)).toMatchObject({
+      taskId: "t-cache-metrics",
+      cacheReadTokens: 300,
+      cacheWriteTokens: 50,
+    })
   })
 })

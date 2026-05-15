@@ -12,7 +12,7 @@
 ## Algorithm
 
 1. Export immutable constants grouped by domain.
-2. Keep Provider routing ids, metrics limits, coefficients, thresholds, and fallback limits centralized.
+2. Keep Provider routing ids, metrics limits, UsageMetrics display coefficients, thresholds, and fallback limits centralized.
 3. Keep FMCF governance thresholds centralized.
 4. Keep TUI, Editor, and Command constants centralized.
 
@@ -26,7 +26,7 @@
 ## Edge Cases
 
 - **New routing threshold**: Add it to ROUTING_LIMITS or ROUTING_WEIGHTS.
-- **New UsageMetrics limit**: Add it to METRICS_CONSTANTS.
+- **New UsageMetrics limit or display coefficient**: Add it to METRICS_CONSTANTS.
 - **New subsystem constant**: Group it by domain with FMCF comment law.
 
 ## Dependencies

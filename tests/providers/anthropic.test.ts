@@ -9,6 +9,21 @@ import { OWLConfigLive } from "../../src/core/config/index.js"
 
 const mockCreate = vi.fn()
 
+interface AnthropicSystemBlock {
+  readonly type: string
+  readonly text: string
+  readonly cache_control?: {
+    readonly type: string
+  }
+}
+
+interface AnthropicCreateParams {
+  readonly system?: readonly AnthropicSystemBlock[]
+}
+
+const getCreateCallArg = (index: number): AnthropicCreateParams =>
+  mockCreate.mock.calls[index]?.[0] as AnthropicCreateParams
+
 vi.mock("@anthropic-ai/sdk", () => ({
   default: vi.fn().mockImplementation(() => ({
     messages: { create: mockCreate },
@@ -109,7 +124,7 @@ describe("AnthropicAdapter — prompt caching", () => {
       }).pipe(Effect.provide(makeTestLayer())),
     )
 
-    const callArg = mockCreate.mock.calls[0][0]
+    const callArg = getCreateCallArg(0)
     expect(Array.isArray(callArg.system)).toBe(true)
     expect(callArg.system[0]).toMatchObject({
       type: "text",
@@ -189,7 +204,7 @@ describe("AnthropicAdapter — prompt caching", () => {
       }).pipe(Effect.provide(makeTestLayer())),
     )
 
-    const callArg = mockCreate.mock.calls[mockCreate.mock.calls.length - 1][0]
+    const callArg = getCreateCallArg(mockCreate.mock.calls.length - 1)
     expect(callArg.system).toBeUndefined()
   })
 })

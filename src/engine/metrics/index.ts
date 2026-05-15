@@ -16,6 +16,21 @@ export interface InferenceMetric {
   readonly model: string
   readonly inputTokens: number
   readonly outputTokens: number
+  readonly cacheReadTokens: number
+  readonly cacheWriteTokens: number
+  readonly latencyMs: number
+  readonly timestamp: string
+}
+
+export interface RecordInferenceMetric {
+  readonly taskId: string
+  readonly mode: Mode
+  readonly provider: ProviderId
+  readonly model: string
+  readonly inputTokens: number
+  readonly outputTokens: number
+  readonly cacheReadTokens?: number
+  readonly cacheWriteTokens?: number
   readonly latencyMs: number
   readonly timestamp: string
 }
@@ -25,6 +40,8 @@ export interface ProviderUsageMetrics {
   readonly calls: number
   readonly inputTokens: number
   readonly outputTokens: number
+  readonly cacheReadTokens: number
+  readonly cacheWriteTokens: number
   readonly totalTokens: number
   readonly averageLatencyMs: number
 }
@@ -35,6 +52,8 @@ export interface ModelUsageMetrics {
   readonly calls: number
   readonly inputTokens: number
   readonly outputTokens: number
+  readonly cacheReadTokens: number
+  readonly cacheWriteTokens: number
   readonly totalTokens: number
 }
 
@@ -42,6 +61,9 @@ export interface UsageMetricsSnapshot {
   readonly totalCalls: number
   readonly inputTokens: number
   readonly outputTokens: number
+  readonly totalCacheReadTokens: number
+  readonly totalCacheWriteTokens: number
+  readonly cacheHitRate: number
   readonly totalTokens: number
   readonly averageLatencyMs: number
   readonly byProvider: readonly ProviderUsageMetrics[]
@@ -51,7 +73,9 @@ export interface UsageMetricsSnapshot {
 
 /** @Owl.Engine.Metrics.Service - UsageMetrics recording Interface */
 export interface UsageMetricsService {
-  readonly recordInference: (metric: InferenceMetric) => Effect.Effect<void>
+  readonly recordInference: (
+    metric: RecordInferenceMetric,
+  ) => Effect.Effect<void>
   readonly snapshot: () => Effect.Effect<UsageMetricsSnapshot>
   readonly reset: () => Effect.Effect<void>
 }
@@ -69,8 +93,26 @@ const average = (values: readonly number[]): number =>
 
 const sumMetric = (
   records: readonly InferenceMetric[],
-  field: "inputTokens" | "outputTokens",
+  field:
+    | "inputTokens"
+    | "outputTokens"
+    | "cacheReadTokens"
+    | "cacheWriteTokens",
 ): number => records.reduce((sum, record) => sum + record[field], 0)
+
+const normalizeMetric = (metric: RecordInferenceMetric): InferenceMetric => ({
+  ...metric,
+  cacheReadTokens: metric.cacheReadTokens ?? 0,
+  cacheWriteTokens: metric.cacheWriteTokens ?? 0,
+})
+
+const calculateCacheHitRate = (
+  inputTokens: number,
+  cacheReadTokens: number,
+): number => {
+  const denominator = inputTokens + cacheReadTokens
+  return denominator === 0 ? 0 : cacheReadTokens / denominator
+}
 
 const aggregateProviders = (
   records: readonly InferenceMetric[],
@@ -87,11 +129,15 @@ const aggregateProviders = (
   ).map(([provider, providerRecords]) => {
     const inputTokens = sumMetric(providerRecords, "inputTokens")
     const outputTokens = sumMetric(providerRecords, "outputTokens")
+    const cacheReadTokens = sumMetric(providerRecords, "cacheReadTokens")
+    const cacheWriteTokens = sumMetric(providerRecords, "cacheWriteTokens")
     return {
       provider,
       calls: providerRecords.length,
       inputTokens,
       outputTokens,
+      cacheReadTokens,
+      cacheWriteTokens,
       totalTokens: inputTokens + outputTokens,
       averageLatencyMs: average(providerRecords.map((r) => r.latencyMs)),
     }
@@ -124,12 +170,16 @@ const aggregateModels = (
     const modelRecords = group.records
     const inputTokens = sumMetric(modelRecords, "inputTokens")
     const outputTokens = sumMetric(modelRecords, "outputTokens")
+    const cacheReadTokens = sumMetric(modelRecords, "cacheReadTokens")
+    const cacheWriteTokens = sumMetric(modelRecords, "cacheWriteTokens")
     return {
       model: group.model,
       provider: group.provider,
       calls: modelRecords.length,
       inputTokens,
       outputTokens,
+      cacheReadTokens,
+      cacheWriteTokens,
       totalTokens: inputTokens + outputTokens,
     }
   })
@@ -139,10 +189,15 @@ const toSnapshot = (
 ): UsageMetricsSnapshot => {
   const inputTokens = sumMetric(records, "inputTokens")
   const outputTokens = sumMetric(records, "outputTokens")
+  const totalCacheReadTokens = sumMetric(records, "cacheReadTokens")
+  const totalCacheWriteTokens = sumMetric(records, "cacheWriteTokens")
   return {
     totalCalls: records.length,
     inputTokens,
     outputTokens,
+    totalCacheReadTokens,
+    totalCacheWriteTokens,
+    cacheHitRate: calculateCacheHitRate(inputTokens, totalCacheReadTokens),
     totalTokens: inputTokens + outputTokens,
     averageLatencyMs: average(records.map((r) => r.latencyMs)),
     byProvider: aggregateProviders(records),
@@ -157,8 +212,10 @@ export const UsageMetricsLive = Layer.effect(
   Effect.gen(function* () {
     const recordsRef = yield* Ref.make<readonly InferenceMetric[]>([])
 
-    const recordInference = (metric: InferenceMetric): Effect.Effect<void> =>
-      Ref.update(recordsRef, (records) => [...records, metric])
+    const recordInference = (
+      metric: RecordInferenceMetric,
+    ): Effect.Effect<void> =>
+      Ref.update(recordsRef, (records) => [...records, normalizeMetric(metric)])
 
     const snapshot = (): Effect.Effect<UsageMetricsSnapshot> =>
       Ref.get(recordsRef).pipe(Effect.map(toSnapshot))

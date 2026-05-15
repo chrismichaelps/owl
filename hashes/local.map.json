@@ -1,6 +1,6 @@
 {
   "shard_id": "@root/src",
-  "state_anchor": "BigInt:0x000000000000006d",
+  "state_anchor": "BigInt:0x0000000000000075",
   "parent_bridge": "@root/hashes/local.map.json",
   "git_anchor": "HEAD",
   "cache_integrity": "VERIFIED",

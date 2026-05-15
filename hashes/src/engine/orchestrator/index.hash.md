@@ -1,6 +1,6 @@
-State_ID: BigInt(0x000000000000006a)
-Git_SHA: 8a91a98ecac3bf6be3ffa105496ef48e08cc429b
-Source_SHA256: 92f2885bee8fb2a4ef5da38b830d93f5a2693e819f16bccad94129f835a22d39
+State_ID: BigInt(0x0000000000000074)
+Git_SHA: b08b51254f38dd6138e55dbe56ad187ff73866f5
+Source_SHA256: 8f1fa6c96f9d5fa2d2e903a13e701397c7f42b2f8adee159d2d70fb3eb991662
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
 Fidelity: DECLARED
 ---
@@ -29,6 +29,7 @@ Fidelity: DECLARED
 - Main agent loop — seam-engine-provider crossing point
 - Composes ContextManager + SessionMemory + UsageMetrics + TokenBudget + RoutingPreferences + ProviderRouter
 - Mode-aware TokenBudget enforcement before Provider execution and before Turn recording
-- Records UsageMetrics only after output TokenBudget enforcement succeeds
+- Records UsageMetrics, including prompt cache read/write Tokens, only after output TokenBudget enforcement succeeds.
+- Streaming Inference maps ProviderRouter cache Tokens into InferenceResponse usage and UsageMetrics.
 - RoutingPreference is applied by RoutingContext, never by direct adapter selection
 - Session turn recording after each task

@@ -1,6 +1,6 @@
-State_ID: BigInt(0x000000000000005e)
-Git_SHA: f62c2f2f8df5bb172147a5ae827784dac4718a11
-Source_SHA256: 9631280cf70e2dca03efd4113c7194669ee1c6c9ebbd7f04af1286ac5717894d
+State_ID: BigInt(0x0000000000000070)
+Git_SHA: b08b51254f38dd6138e55dbe56ad187ff73866f5
+Source_SHA256: 08a60452e74a9716f9400afdffc4a8a05bb378f9a9f04c4da0ebc3bbb966ee38
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
 Fidelity: DECLARED
 ---
@@ -22,3 +22,4 @@ Fidelity: DECLARED
 - `route` returns the top ranked Provider plus bounded fallback Provider ids.
 - `complete` attempts ranked Providers until one succeeds.
 - `completeWithCallback` preserves live Streaming and only retries fallback before visible text is emitted.
+- `completeWithCallback` captures usage StreamChunk cache tokens into StreamingCallbackResult.
