@@ -1,6 +1,10 @@
 /** @Owl.Tests.TUI.Fuzzy - Command palette ranking tests */
 import { describe, expect, it } from "vitest"
-import { rankPaletteCommands } from "../../src/tui/commands/fuzzy.js"
+import {
+  completePaletteCommand,
+  parsePaletteInput,
+  rankPaletteCommands,
+} from "../../src/tui/commands/fuzzy.js"
 
 const COMMANDS = [
   { name: "help", description: "List available commands" },
@@ -29,5 +33,33 @@ describe("rankPaletteCommands", () => {
 
   it("falls back to description matches", () => {
     expect(rankPaletteCommands(COMMANDS, "routing")[0]?.name).toBe("model")
+  })
+})
+
+describe("parsePaletteInput", () => {
+  it("extracts the command query without the slash", () => {
+    expect(parsePaletteInput("/mem")).toEqual({
+      commandQuery: "mem",
+      args: "",
+    })
+  })
+
+  it("preserves arguments after the command query", () => {
+    expect(parsePaletteInput("/deep refactor src")).toEqual({
+      commandQuery: "deep",
+      args: "refactor src",
+    })
+  })
+})
+
+describe("completePaletteCommand", () => {
+  it("completes a command and keeps arguments", () => {
+    expect(completePaletteCommand("/de refactor src", "deep")).toBe(
+      "/deep refactor src",
+    )
+  })
+
+  it("adds a trailing space for command-only completions", () => {
+    expect(completePaletteCommand("/mem", "memory")).toBe("/memory ")
   })
 })

@@ -2,7 +2,11 @@
 import React, { memo, useState } from "react"
 import { Box, Text, useInput, useWindowSize } from "ink"
 import { COMMAND_CONSTANTS, TUI_WELCOME } from "../../core/constants/index.js"
-import { rankPaletteCommands } from "../commands/fuzzy.js"
+import {
+  completePaletteCommand,
+  parsePaletteInput,
+  rankPaletteCommands,
+} from "../commands/fuzzy.js"
 import type { Mode } from "../../core/schema/index.js"
 import { usePromptHistory } from "../hooks/usePromptHistory.js"
 import type { PaletteCommand } from "../commands/fuzzy.js"
@@ -66,7 +70,7 @@ export const PromptInput: React.FC<PromptInputProps> = memo(
     const updateValue = (next: string, nextIndex = paletteIndex): void => {
       setValue(next)
       const open = next.startsWith("/")
-      const query = open ? next.slice(1) : ""
+      const query = open ? parsePaletteInput(next).commandQuery : ""
       const matches = rankPaletteCommands(commands, query)
       const boundedIndex =
         matches.length === 0 ? 0 : Math.min(nextIndex, matches.length - 1)
@@ -85,13 +89,14 @@ export const PromptInput: React.FC<PromptInputProps> = memo(
 
         if (key.upArrow) {
           if (value.startsWith("/")) {
-            const ranked = rankPaletteCommands(commands, value.slice(1))
+            const query = parsePaletteInput(value).commandQuery
+            const ranked = rankPaletteCommands(commands, query)
             const nextIndex =
               ranked.length === 0 ? 0 : Math.max(0, paletteIndex - 1)
             setPaletteIndex(nextIndex)
             onPaletteChange({
               open: true,
-              query: value.slice(1),
+              query,
               selectedIndex: nextIndex,
             })
             return
@@ -103,7 +108,8 @@ export const PromptInput: React.FC<PromptInputProps> = memo(
 
         if (key.downArrow) {
           if (value.startsWith("/")) {
-            const ranked = rankPaletteCommands(commands, value.slice(1))
+            const query = parsePaletteInput(value).commandQuery
+            const ranked = rankPaletteCommands(commands, query)
             const nextIndex =
               ranked.length === 0
                 ? 0
@@ -111,7 +117,7 @@ export const PromptInput: React.FC<PromptInputProps> = memo(
             setPaletteIndex(nextIndex)
             onPaletteChange({
               open: true,
-              query: value.slice(1),
+              query,
               selectedIndex: nextIndex,
             })
             return
@@ -126,14 +132,26 @@ export const PromptInput: React.FC<PromptInputProps> = memo(
           return
         }
 
+        if (key.tab && value.startsWith("/")) {
+          const query = parsePaletteInput(value).commandQuery
+          const selected = rankPaletteCommands(commands, query)[paletteIndex]
+          if (selected !== undefined) {
+            updateValue(completePaletteCommand(value, selected.name), 0)
+          }
+          return
+        }
+
         if (key.return) {
+          const query = value.startsWith("/")
+            ? parsePaletteInput(value).commandQuery
+            : ""
           const ranked = value.startsWith("/")
-            ? rankPaletteCommands(commands, value.slice(1))
+            ? rankPaletteCommands(commands, query)
             : []
           const selected = ranked[paletteIndex]
           const submitted =
             value.startsWith("/") && selected !== undefined
-              ? "/" + selected.name
+              ? completePaletteCommand(value, selected.name)
               : value
           const trimmed = submitted.trim()
           if (trimmed.length === 0) return

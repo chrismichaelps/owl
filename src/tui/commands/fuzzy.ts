@@ -9,8 +9,37 @@ export interface RankedPaletteCommand extends PaletteCommand {
   readonly score: number
 }
 
+export interface PaletteInputParts {
+  readonly commandQuery: string
+  readonly args: string
+}
+
 const normalize = (value: string): string =>
   value.trim().toLowerCase().replace(/^\/+/, "")
+
+/** @Owl.TUI.Commands.Fuzzy.Parse - Split command query from arguments */
+export const parsePaletteInput = (value: string): PaletteInputParts => {
+  const body = value.trimStart().replace(/^\/+/, "")
+  const firstSpace = body.indexOf(" ")
+
+  if (firstSpace === -1) {
+    return { commandQuery: body, args: "" }
+  }
+
+  return {
+    commandQuery: body.slice(0, firstSpace),
+    args: body.slice(firstSpace + 1).trimStart(),
+  }
+}
+
+/** @Owl.TUI.Commands.Fuzzy.Complete - Complete command while preserving args */
+export const completePaletteCommand = (
+  value: string,
+  commandName: string,
+): string => {
+  const { args } = parsePaletteInput(value)
+  return "/" + commandName + (args.length > 0 ? " " + args : " ")
+}
 
 const scoreCommand = (command: PaletteCommand, rawQuery: string): number => {
   const query = normalize(rawQuery)
