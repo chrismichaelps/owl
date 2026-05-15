@@ -18,10 +18,7 @@ import { Context, Effect, Layer, Schedule } from "effect"
 import * as Stream from "effect/Stream"
 import { ProviderError, ProviderStreamError } from "../../core/errors/index.js"
 import { OWL_CONFIG } from "../../core/config/index.js"
-import {
-  PROVIDER_CONSTANTS,
-  RETRY_CONFIG,
-} from "../../core/constants/index.js"
+import { PROVIDER_CONSTANTS, RETRY_CONFIG } from "../../core/constants/index.js"
 import { estimateModelCostUsd } from "../cost.js"
 import type {
   LLMProviderService,
@@ -227,8 +224,7 @@ export const OpenAIAdapterLive = Layer.effect(
       capabilities: OPENAI_CAPABILITIES,
       complete,
       stream,
-      countTokens: (_text, _model) =>
-        Effect.succeed(estimateTextTokens(_text)),
+      countTokens: (_text, _model) => Effect.succeed(estimateTextTokens(_text)),
       healthCheck: () => Effect.succeed(true),
     } satisfies LLMProviderService
   }),
