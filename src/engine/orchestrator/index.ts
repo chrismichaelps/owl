@@ -265,8 +265,8 @@ export const OrchestratorLive = Layer.effect(
           usage: {
             inputTokens: estimatedInputTokens,
             outputTokens,
-            cacheReadTokens: 0,
-            cacheWriteTokens: 0,
+            cacheReadTokens: result.cacheReadTokens,
+            cacheWriteTokens: result.cacheWriteTokens,
           },
           model: result.model,
           provider: result.provider as ProviderId,

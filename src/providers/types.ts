@@ -108,13 +108,15 @@ export type RoutingContext = Schema.Schema.Type<typeof RoutingContextSchema>
  * - "stop": Stream completed
  */
 export const StreamChunkSchema = Schema.Struct({
-  type: Schema.Literal("text", "thinking", "tool_use", "stop"),
+  type: Schema.Literal("text", "thinking", "tool_use", "stop", "usage"),
   content: Schema.optional(Schema.String),
   index: Schema.Number,
   usage: Schema.optional(
     Schema.Struct({
       inputTokens: Schema.Number,
       outputTokens: Schema.Number,
+      cacheReadTokens: Schema.Number,
+      cacheWriteTokens: Schema.Number,
     }),
   ),
 })
@@ -221,4 +223,8 @@ export interface StreamingCallbackResult {
   readonly model: string
   /** End-to-end latency in milliseconds (start of route() to stream end) */
   readonly latencyMs: number
+  /** Cache read tokens from provider usage (0 if not reported) */
+  readonly cacheReadTokens: number
+  /** Cache write tokens from provider usage (0 if not reported) */
+  readonly cacheWriteTokens: number
 }

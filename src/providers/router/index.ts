@@ -285,6 +285,8 @@ export const ProviderRouterLive = Layer.effect(
 
           const chunks: string[] = []
           let emittedChunks = 0
+          let cacheReadTokens = 0
+          let cacheWriteTokens = 0
           const result = yield* Stream.runForEach(
             provider.stream({ ...request, model: capability.modelId }),
             (chunk) =>
@@ -293,6 +295,9 @@ export const ProviderRouterLive = Layer.effect(
                   chunks.push(chunk.content)
                   emittedChunks += 1
                   onChunk(chunk.content)
+                } else if (chunk.type === "usage" && chunk.usage != null) {
+                  cacheReadTokens = chunk.usage.cacheReadTokens
+                  cacheWriteTokens = chunk.usage.cacheWriteTokens
                 }
               }),
           ).pipe(Effect.either)
@@ -303,6 +308,8 @@ export const ProviderRouterLive = Layer.effect(
               provider: capability.providerId,
               model: capability.modelId,
               latencyMs: Date.now() - startMs,
+              cacheReadTokens,
+              cacheWriteTokens,
             } satisfies StreamingCallbackResult
           }
 

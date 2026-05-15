@@ -80,6 +80,8 @@ const TestProviderRouterLive = Layer.succeed(ProviderRouter, {
         provider: "anthropic",
         model: "claude-opus-4",
         latencyMs: 100,
+        cacheReadTokens: 300,
+        cacheWriteTokens: 50,
       }
     }),
   listProviders: () => Effect.succeed(["anthropic"]),
@@ -264,5 +266,24 @@ describe("Orchestrator.runStream", () => {
       }),
     )
     expect(response).toContain("1")
+  })
+
+  it("wires real cache tokens from provider into InferenceResponse usage", async () => {
+    const response = await run(
+      Effect.gen(function* () {
+        const orch = yield* Orchestrator
+        return yield* orch.runStream(
+          {
+            id: "t-cache",
+            prompt: "hi",
+            mode: "standard",
+            createdAt: new Date().toISOString(),
+          },
+          () => {},
+        )
+      }),
+    )
+    expect(response.usage.cacheReadTokens).toBe(300)
+    expect(response.usage.cacheWriteTokens).toBe(50)
   })
 })

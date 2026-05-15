@@ -224,6 +224,17 @@ export const AnthropicAdapterLive = Layer.effect(
                 role: m.role as "user" | "assistant",
                 content: m.content,
               })),
+              ...(request.systemPrompt
+                ? {
+                    system: [
+                      {
+                        type: "text" as const,
+                        text: request.systemPrompt,
+                        cache_control: { type: "ephemeral" as const },
+                      },
+                    ],
+                  }
+                : {}),
             })
 
             let index = 0
@@ -239,6 +250,18 @@ export const AnthropicAdapterLive = Layer.effect(
                 })
               }
             }
+            const finalMsg = await s.finalMessage()
+            await emit.single({
+              type: "usage" as const,
+              index: 0,
+              usage: {
+                inputTokens: finalMsg.usage.input_tokens,
+                outputTokens: finalMsg.usage.output_tokens,
+                cacheReadTokens: finalMsg.usage.cache_read_input_tokens ?? 0,
+                cacheWriteTokens:
+                  finalMsg.usage.cache_creation_input_tokens ?? 0,
+              },
+            })
             await emit.end()
           } catch (e) {
             await emit.fail(
