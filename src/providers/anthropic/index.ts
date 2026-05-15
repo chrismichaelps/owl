@@ -176,7 +176,17 @@ export const AnthropicAdapterLive = Layer.effect(
               role: m.role as "user" | "assistant",
               content: m.content,
             })),
-            ...(request.systemPrompt ? { system: request.systemPrompt } : {}),
+            ...(request.systemPrompt
+              ? {
+                  system: [
+                    {
+                      type: "text" as const,
+                      text: request.systemPrompt,
+                      cache_control: { type: "ephemeral" as const },
+                    },
+                  ],
+                }
+              : {}),
           })
 
           const content = response.content
@@ -192,8 +202,8 @@ export const AnthropicAdapterLive = Layer.effect(
             usage: {
               inputTokens: response.usage.input_tokens,
               outputTokens: response.usage.output_tokens,
-              cacheReadTokens: 0,
-              cacheWriteTokens: 0,
+              cacheReadTokens: response.usage.cache_read_input_tokens ?? 0,
+              cacheWriteTokens: response.usage.cache_creation_input_tokens ?? 0,
             },
             model: response.model,
             provider: "anthropic" as const,

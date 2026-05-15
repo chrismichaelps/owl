@@ -1,11 +1,19 @@
 /** @Owl.Tests.Providers.Anthropic - Anthropic adapter specific tests */
-import { describe, it, expect } from "vitest"
+import { describe, it, expect, vi, beforeEach } from "vitest"
 import { Effect, Layer, ConfigProvider } from "effect"
 import {
   AnthropicAdapter,
   AnthropicAdapterLive,
 } from "../../src/providers/anthropic/index.js"
 import { OWLConfigLive } from "../../src/core/config/index.js"
+
+const mockCreate = vi.fn()
+
+vi.mock("@anthropic-ai/sdk", () => ({
+  default: vi.fn().mockImplementation(() => ({
+    messages: { create: mockCreate },
+  })),
+}))
 
 /** @Owl.Tests.Providers.Anthropic.Behavior - Specialized adapter logic verification */
 describe("AnthropicAdapter", () => {
@@ -50,5 +58,138 @@ describe("AnthropicAdapter", () => {
       ),
     )
     expect(result).toBe("anthropic")
+  })
+})
+
+describe("AnthropicAdapter — prompt caching", () => {
+  beforeEach(() => {
+    mockCreate.mockReset()
+  })
+
+  const makeTestLayer = () => {
+    const configLayer = Layer.setConfigProvider(
+      ConfigProvider.fromMap(new Map([["ANTHROPIC_API_KEY", "sk-ant-test"]])),
+    )
+    return AnthropicAdapterLive.pipe(
+      Layer.provide(OWLConfigLive),
+      Layer.provide(configLayer),
+    )
+  }
+
+  it("complete() sends system as a content block array with cache_control when systemPrompt is set", async () => {
+    mockCreate.mockResolvedValueOnce({
+      content: [{ type: "text", text: "hi" }],
+      stop_reason: "end_turn",
+      usage: {
+        input_tokens: 100,
+        output_tokens: 10,
+        cache_creation_input_tokens: 0,
+        cache_read_input_tokens: 0,
+      },
+      model: "claude-sonnet-4-6",
+    })
+
+    await Effect.runPromise(
+      Effect.gen(function* () {
+        const adapter = yield* AnthropicAdapter
+        yield* adapter.complete({
+          taskId: "t1",
+          messages: [
+            {
+              role: "user",
+              content: "hello",
+              timestamp: new Date().toISOString(),
+            },
+          ],
+          maxTokens: 256,
+          systemPrompt: "You are a helpful assistant.",
+          stream: false,
+          model: "claude-sonnet-4-6",
+        })
+      }).pipe(Effect.provide(makeTestLayer())),
+    )
+
+    const callArg = mockCreate.mock.calls[0][0]
+    expect(Array.isArray(callArg.system)).toBe(true)
+    expect(callArg.system[0]).toMatchObject({
+      type: "text",
+      text: "You are a helpful assistant.",
+      cache_control: { type: "ephemeral" },
+    })
+  })
+
+  it("complete() maps cache_creation_input_tokens → cacheWriteTokens and cache_read_input_tokens → cacheReadTokens", async () => {
+    mockCreate.mockResolvedValueOnce({
+      content: [{ type: "text", text: "cached reply" }],
+      stop_reason: "end_turn",
+      usage: {
+        input_tokens: 50,
+        output_tokens: 8,
+        cache_creation_input_tokens: 180,
+        cache_read_input_tokens: 1200,
+      },
+      model: "claude-sonnet-4-6",
+    })
+
+    const response = await Effect.runPromise(
+      Effect.gen(function* () {
+        const adapter = yield* AnthropicAdapter
+        return yield* adapter.complete({
+          taskId: "t2",
+          messages: [
+            {
+              role: "user",
+              content: "hello",
+              timestamp: new Date().toISOString(),
+            },
+          ],
+          maxTokens: 256,
+          systemPrompt: "sys",
+          stream: false,
+          model: "claude-sonnet-4-6",
+        })
+      }).pipe(Effect.provide(makeTestLayer())),
+    )
+
+    expect(response.usage.cacheWriteTokens).toBe(180)
+    expect(response.usage.cacheReadTokens).toBe(1200)
+    expect(response.usage.inputTokens).toBe(50)
+    expect(response.usage.outputTokens).toBe(8)
+  })
+
+  it("complete() does not send system field when systemPrompt is absent", async () => {
+    mockCreate.mockResolvedValueOnce({
+      content: [{ type: "text", text: "ok" }],
+      stop_reason: "end_turn",
+      usage: {
+        input_tokens: 10,
+        output_tokens: 3,
+        cache_creation_input_tokens: 0,
+        cache_read_input_tokens: 0,
+      },
+      model: "claude-sonnet-4-6",
+    })
+
+    await Effect.runPromise(
+      Effect.gen(function* () {
+        const adapter = yield* AnthropicAdapter
+        yield* adapter.complete({
+          taskId: "t3",
+          messages: [
+            {
+              role: "user",
+              content: "hello",
+              timestamp: new Date().toISOString(),
+            },
+          ],
+          maxTokens: 256,
+          stream: false,
+          model: "claude-sonnet-4-6",
+        })
+      }).pipe(Effect.provide(makeTestLayer())),
+    )
+
+    const callArg = mockCreate.mock.calls[mockCreate.mock.calls.length - 1][0]
+    expect(callArg.system).toBeUndefined()
   })
 })
