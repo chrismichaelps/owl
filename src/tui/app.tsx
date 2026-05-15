@@ -34,6 +34,7 @@ import { MetaPanel } from "./components/MetaPanel.js"
 import { StatusBar } from "./components/StatusBar.js"
 import { PromptInput } from "./components/PromptInput.js"
 import { WelcomePanel } from "./components/WelcomePanel.js"
+import { CommandPalette } from "./components/CommandPalette.js"
 import { owlReducer, INITIAL_STATE } from "./state.js"
 import type { Mode } from "../core/schema/index.js"
 import type { OwlRuntime } from "../cli/runtime.js"
@@ -41,6 +42,7 @@ import { Orchestrator } from "../engine/orchestrator/index.js"
 import { CommandRegistry } from "../commands/registry.js"
 import { parseCommand } from "../commands/parser.js"
 import { TUI_CONSTANTS } from "../core/constants/index.js"
+import type { PaletteCommand } from "./commands/fuzzy.js"
 
 /** @Owl.TUI.App.Props - Component props */
 interface AppProps {
@@ -61,6 +63,12 @@ export const App: React.FC<AppProps> = ({
   const commandCounterRef = useRef(0)
   const didSubmitInitialPromptRef = useRef(false)
   const [mode, setMode] = useState<Mode>(initialMode)
+  const [paletteState, setPaletteState] = useState({
+    open: false,
+    query: "",
+    selectedIndex: 0,
+  })
+  const [commands, setCommands] = useState<readonly PaletteCommand[]>([])
 
   const isProcessing =
     state.status === "routing" || state.status === "inferring"
@@ -203,6 +211,19 @@ export const App: React.FC<AppProps> = ({
     }
   }, [handleSubmit, initialMode, initialPrompt])
 
+  useEffect(() => {
+    const effect = Effect.gen(function* () {
+      const registry = yield* CommandRegistry
+      return yield* registry.list()
+    })
+    void runtime
+      .runPromise(effect)
+      .then(setCommands)
+      .catch(() => {
+        setCommands([])
+      })
+  }, [runtime])
+
   return (
     <Box flexDirection="column" height="100%">
       {showWelcome ? (
@@ -235,12 +256,20 @@ export const App: React.FC<AppProps> = ({
       )}
 
       {/* Input row */}
+      <CommandPalette
+        open={paletteState.open}
+        query={paletteState.query}
+        selectedIndex={paletteState.selectedIndex}
+        commands={commands}
+      />
       <PromptInput
         mode={mode}
         disabled={isProcessing}
         onSubmit={handleSubmit}
         onCommand={handleCommand}
         onModeChange={handleModeChange}
+        onPaletteChange={setPaletteState}
+        commands={commands}
       />
 
       {/* Status bar */}

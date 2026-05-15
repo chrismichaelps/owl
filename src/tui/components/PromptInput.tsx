@@ -1,9 +1,11 @@
 /** @Owl.TUI.Components.PromptInput - REPL prompt with mode prefix, history nav, slash dispatch */
 import React, { memo, useState } from "react"
 import { Box, Text, useInput, useWindowSize } from "ink"
-import { TUI_WELCOME } from "../../core/constants/index.js"
+import { COMMAND_CONSTANTS, TUI_WELCOME } from "../../core/constants/index.js"
+import { rankPaletteCommands } from "../commands/fuzzy.js"
 import type { Mode } from "../../core/schema/index.js"
 import { usePromptHistory } from "../hooks/usePromptHistory.js"
+import type { PaletteCommand } from "../commands/fuzzy.js"
 
 const MODE_COLOR: Record<Mode, string> = {
   standard: "green",
@@ -37,33 +39,103 @@ interface PromptInputProps {
   readonly onSubmit: (prompt: string, mode: Mode) => void
   readonly onCommand: (raw: string) => void
   readonly onModeChange: (mode: Mode) => void
+  readonly onPaletteChange: (state: {
+    readonly open: boolean
+    readonly query: string
+    readonly selectedIndex: number
+  }) => void
+  readonly commands: readonly PaletteCommand[]
 }
 
 /** @Owl.TUI.Components.PromptInput.Component - Command entry with history */
 export const PromptInput: React.FC<PromptInputProps> = memo(
-  ({ mode, disabled, onSubmit, onCommand, onModeChange }) => {
+  ({
+    mode,
+    disabled,
+    onSubmit,
+    onCommand,
+    onModeChange,
+    onPaletteChange,
+    commands,
+  }) => {
     const [value, setValue] = useState("")
+    const [paletteIndex, setPaletteIndex] = useState(0)
     const { push, up, down, reset } = usePromptHistory()
     const { columns } = useWindowSize()
+
+    const updateValue = (next: string, nextIndex = paletteIndex): void => {
+      setValue(next)
+      const open = next.startsWith("/")
+      const query = open ? next.slice(1) : ""
+      const matches = rankPaletteCommands(commands, query)
+      const boundedIndex =
+        matches.length === 0 ? 0 : Math.min(nextIndex, matches.length - 1)
+      setPaletteIndex(boundedIndex)
+      onPaletteChange({ open, query, selectedIndex: boundedIndex })
+    }
+
+    const closePalette = (): void => {
+      setPaletteIndex(0)
+      onPaletteChange({ open: false, query: "", selectedIndex: 0 })
+    }
 
     useInput(
       (input, key) => {
         if (disabled) return
 
         if (key.upArrow) {
+          if (value.startsWith("/")) {
+            const ranked = rankPaletteCommands(commands, value.slice(1))
+            const nextIndex =
+              ranked.length === 0 ? 0 : Math.max(0, paletteIndex - 1)
+            setPaletteIndex(nextIndex)
+            onPaletteChange({
+              open: true,
+              query: value.slice(1),
+              selectedIndex: nextIndex,
+            })
+            return
+          }
           const entry = up(value)
-          setValue(entry)
+          updateValue(entry)
           return
         }
 
         if (key.downArrow) {
+          if (value.startsWith("/")) {
+            const ranked = rankPaletteCommands(commands, value.slice(1))
+            const nextIndex =
+              ranked.length === 0
+                ? 0
+                : Math.min(ranked.length - 1, paletteIndex + 1)
+            setPaletteIndex(nextIndex)
+            onPaletteChange({
+              open: true,
+              query: value.slice(1),
+              selectedIndex: nextIndex,
+            })
+            return
+          }
           const entry = down()
-          setValue(entry)
+          updateValue(entry)
+          return
+        }
+
+        if (key.escape) {
+          closePalette()
           return
         }
 
         if (key.return) {
-          const trimmed = value.trim()
+          const ranked = value.startsWith("/")
+            ? rankPaletteCommands(commands, value.slice(1))
+            : []
+          const selected = ranked[paletteIndex]
+          const submitted =
+            value.startsWith("/") && selected !== undefined
+              ? "/" + selected.name
+              : value
+          const trimmed = submitted.trim()
           if (trimmed.length === 0) return
 
           push(trimmed)
@@ -87,17 +159,18 @@ export const PromptInput: React.FC<PromptInputProps> = memo(
             onSubmit(trimmed, mode)
           }
 
-          setValue("")
+          updateValue("", 0)
+          closePalette()
           return
         }
 
         if (key.backspace || key.delete) {
-          setValue((v) => v.slice(0, -1))
+          updateValue(value.slice(0, -1))
           return
         }
 
         if (!key.ctrl && !key.meta && input.length > 0) {
-          setValue((v) => v + input)
+          updateValue(value + input)
         }
       },
       { isActive: !disabled },
@@ -137,7 +210,8 @@ export const PromptInput: React.FC<PromptInputProps> = memo(
         {!disabled ? (
           <Text color="gray" dimColor>
             {"  "}
-            {TUI_WELCOME.PROMPT_HINT} · {TUI_WELCOME.ROLE_HINT}
+            {TUI_WELCOME.PROMPT_HINT} · {TUI_WELCOME.ROLE_HINT} ·{" "}
+            {String(COMMAND_CONSTANTS.PALETTE_VISIBLE_COUNT)} shown
           </Text>
         ) : null}
       </Box>
