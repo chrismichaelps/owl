@@ -17,6 +17,7 @@ import { CommandParseError } from "../../core/errors/index.js"
 import type { OrchestratorService } from "../../engine/orchestrator/index.js"
 import type { CommandHandler, CommandResult } from "../types.js"
 import { makeCommandTaskId } from "../utils/ids.js"
+import { requireCommandText } from "../utils/prompt.js"
 
 const PLAN_PREAMBLE =
   "You are an FMCF Architect. Produce a step-by-step implementation plan with: tasks, exact file paths, complete code snippets, and test commands. Be specific. Task: "
@@ -31,30 +32,22 @@ export function makePlanCommand(
     name: "plan",
     description: "Generate an implementation plan in deep mode: /plan <prompt>",
     execute: (args): Effect.Effect<CommandResult, CommandParseError> => {
-      const prompt = args.join(" ").trim()
-      if (prompt.length === 0) {
-        return Effect.fail(
-          new CommandParseError({
-            input: "/plan",
-            reason: "Prompt is required",
+      return requireCommandText("plan", args, "Prompt").pipe(
+        Effect.flatMap((prompt) =>
+          orchestrator.run({
+            id: makeCommandTaskId("plan", prompt),
+            prompt: PLAN_PREAMBLE + prompt,
+            mode: "deep",
+            createdAt: new Date().toISOString(),
           }),
-        )
-      }
-      return orchestrator
-        .run({
-          id: makeCommandTaskId("plan", prompt),
-          prompt: PLAN_PREAMBLE + prompt,
-          mode: "deep",
-          createdAt: new Date().toISOString(),
-        })
-        .pipe(
-          Effect.map((r) => ({ output: r.content })),
-          Effect.catchAll((err) =>
-            Effect.fail(
-              new CommandParseError({ input: "/plan", reason: String(err) }),
-            ),
+        ),
+        Effect.map((r) => ({ output: r.content })),
+        Effect.catchAll((err) =>
+          Effect.fail(
+            new CommandParseError({ input: "/plan", reason: String(err) }),
           ),
-        )
+        ),
+      )
     },
   }
 }

@@ -14,6 +14,7 @@ import { CommandParseError } from "../../core/errors/index.js"
 import type { OrchestratorService } from "../../engine/orchestrator/index.js"
 import type { CommandHandler, CommandResult } from "../types.js"
 import { makeCommandTaskId } from "../utils/ids.js"
+import { requireCommandText } from "../utils/prompt.js"
 
 /**
  * @Owl.Commands.Core.Task.Factory - Create the /task command handler
@@ -25,30 +26,22 @@ export function makeTaskCommand(
     name: "task",
     description: "Run a task in standard mode: /task <prompt>",
     execute: (args): Effect.Effect<CommandResult, CommandParseError> => {
-      const prompt = args.join(" ").trim()
-      if (prompt.length === 0) {
-        return Effect.fail(
-          new CommandParseError({
-            input: "/task",
-            reason: "Prompt is required",
+      return requireCommandText("task", args, "Prompt").pipe(
+        Effect.flatMap((prompt) =>
+          orchestrator.run({
+            id: makeCommandTaskId("task", prompt),
+            prompt,
+            mode: "standard",
+            createdAt: new Date().toISOString(),
           }),
-        )
-      }
-      return orchestrator
-        .run({
-          id: makeCommandTaskId("task", prompt),
-          prompt,
-          mode: "standard",
-          createdAt: new Date().toISOString(),
-        })
-        .pipe(
-          Effect.map((r) => ({ output: r.content })),
-          Effect.catchAll((err) =>
-            Effect.fail(
-              new CommandParseError({ input: "/task", reason: String(err) }),
-            ),
+        ),
+        Effect.map((r) => ({ output: r.content })),
+        Effect.catchAll((err) =>
+          Effect.fail(
+            new CommandParseError({ input: "/task", reason: String(err) }),
           ),
-        )
+        ),
+      )
     },
   }
 }

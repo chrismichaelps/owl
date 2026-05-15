@@ -14,6 +14,7 @@ import { CommandParseError } from "../../core/errors/index.js"
 import type { OrchestratorService } from "../../engine/orchestrator/index.js"
 import type { CommandHandler, CommandResult } from "../types.js"
 import { makeCommandTaskId } from "../utils/ids.js"
+import { requireCommandText } from "../utils/prompt.js"
 
 /**
  * @Owl.Commands.Core.Quick.Factory - Create the /quick command handler
@@ -25,30 +26,22 @@ export function makeQuickCommand(
     name: "quick",
     description: "Run a task in quick mode: /quick <prompt>",
     execute: (args): Effect.Effect<CommandResult, CommandParseError> => {
-      const prompt = args.join(" ").trim()
-      if (prompt.length === 0) {
-        return Effect.fail(
-          new CommandParseError({
-            input: "/quick",
-            reason: "Prompt is required",
+      return requireCommandText("quick", args, "Prompt").pipe(
+        Effect.flatMap((prompt) =>
+          orchestrator.run({
+            id: makeCommandTaskId("quick", prompt),
+            prompt,
+            mode: "quick",
+            createdAt: new Date().toISOString(),
           }),
-        )
-      }
-      return orchestrator
-        .run({
-          id: makeCommandTaskId("quick", prompt),
-          prompt,
-          mode: "quick",
-          createdAt: new Date().toISOString(),
-        })
-        .pipe(
-          Effect.map((r) => ({ output: r.content })),
-          Effect.catchAll((err) =>
-            Effect.fail(
-              new CommandParseError({ input: "/quick", reason: String(err) }),
-            ),
+        ),
+        Effect.map((r) => ({ output: r.content })),
+        Effect.catchAll((err) =>
+          Effect.fail(
+            new CommandParseError({ input: "/quick", reason: String(err) }),
           ),
-        )
+        ),
+      )
     },
   }
 }

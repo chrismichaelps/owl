@@ -19,6 +19,7 @@ import { CommandParseError } from "../../core/errors/index.js"
 import type { OrchestratorService } from "../../engine/orchestrator/index.js"
 import type { CommandHandler, CommandResult } from "../types.js"
 import { makeCommandTaskId } from "../utils/ids.js"
+import { requireCommandText } from "../utils/prompt.js"
 
 const PREAMBLE =
   "You are an FMCF v3.5 Architect. Perform a full seam analysis and friction discovery. Apply the DEPTH_SCORE formula: (Leverage+Locality+Testability)/3 - ComplexityTax. Report: DEEP/MEDIUM/SHALLOW classification, top coupling risks, and 3 deepening recommendations. Subject: "
@@ -33,30 +34,22 @@ export function makeAnalyzeCommand(
     name: "analyze",
     description: "Run FMCF deep architectural analysis: /analyze <subject>",
     execute: (args): Effect.Effect<CommandResult, CommandParseError> => {
-      const subject = args.join(" ").trim()
-      if (subject.length === 0) {
-        return Effect.fail(
-          new CommandParseError({
-            input: "/analyze",
-            reason: "Subject is required",
+      return requireCommandText("analyze", args, "Subject").pipe(
+        Effect.flatMap((subject) =>
+          orchestrator.run({
+            id: makeCommandTaskId("analyze", subject),
+            prompt: PREAMBLE + subject,
+            mode: "deep",
+            createdAt: new Date().toISOString(),
           }),
-        )
-      }
-      return orchestrator
-        .run({
-          id: makeCommandTaskId("analyze", subject),
-          prompt: PREAMBLE + subject,
-          mode: "deep",
-          createdAt: new Date().toISOString(),
-        })
-        .pipe(
-          Effect.map((r) => ({ output: r.content })),
-          Effect.catchAll((err) =>
-            Effect.fail(
-              new CommandParseError({ input: "/analyze", reason: String(err) }),
-            ),
+        ),
+        Effect.map((r) => ({ output: r.content })),
+        Effect.catchAll((err) =>
+          Effect.fail(
+            new CommandParseError({ input: "/analyze", reason: String(err) }),
           ),
-        )
+        ),
+      )
     },
   }
 }

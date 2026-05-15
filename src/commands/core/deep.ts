@@ -14,6 +14,7 @@ import { CommandParseError } from "../../core/errors/index.js"
 import type { OrchestratorService } from "../../engine/orchestrator/index.js"
 import type { CommandHandler, CommandResult } from "../types.js"
 import { makeCommandTaskId } from "../utils/ids.js"
+import { requireCommandText } from "../utils/prompt.js"
 
 /**
  * @Owl.Commands.Core.Deep.Factory - Create the /deep command handler
@@ -25,30 +26,22 @@ export function makeDeepCommand(
     name: "deep",
     description: "Run a task in deep analysis mode: /deep <prompt>",
     execute: (args): Effect.Effect<CommandResult, CommandParseError> => {
-      const prompt = args.join(" ").trim()
-      if (prompt.length === 0) {
-        return Effect.fail(
-          new CommandParseError({
-            input: "/deep",
-            reason: "Prompt is required",
+      return requireCommandText("deep", args, "Prompt").pipe(
+        Effect.flatMap((prompt) =>
+          orchestrator.run({
+            id: makeCommandTaskId("deep", prompt),
+            prompt,
+            mode: "deep",
+            createdAt: new Date().toISOString(),
           }),
-        )
-      }
-      return orchestrator
-        .run({
-          id: makeCommandTaskId("deep", prompt),
-          prompt,
-          mode: "deep",
-          createdAt: new Date().toISOString(),
-        })
-        .pipe(
-          Effect.map((r) => ({ output: r.content })),
-          Effect.catchAll((err) =>
-            Effect.fail(
-              new CommandParseError({ input: "/deep", reason: String(err) }),
-            ),
+        ),
+        Effect.map((r) => ({ output: r.content })),
+        Effect.catchAll((err) =>
+          Effect.fail(
+            new CommandParseError({ input: "/deep", reason: String(err) }),
           ),
-        )
+        ),
+      )
     },
   }
 }

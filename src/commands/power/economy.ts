@@ -14,6 +14,7 @@ import { CommandParseError } from "../../core/errors/index.js"
 import type { OrchestratorService } from "../../engine/orchestrator/index.js"
 import type { CommandHandler, CommandResult } from "../types.js"
 import { makeCommandTaskId } from "../utils/ids.js"
+import { requireCommandText } from "../utils/prompt.js"
 
 /**
  * @Owl.Commands.Power.Economy.Factory - Create the /economy command handler
@@ -26,30 +27,22 @@ export function makeEconomyCommand(
     description:
       "Run a task in economy mode (2k token budget): /economy <prompt>",
     execute: (args): Effect.Effect<CommandResult, CommandParseError> => {
-      const prompt = args.join(" ").trim()
-      if (prompt.length === 0) {
-        return Effect.fail(
-          new CommandParseError({
-            input: "/economy",
-            reason: "Prompt is required",
+      return requireCommandText("economy", args, "Prompt").pipe(
+        Effect.flatMap((prompt) =>
+          orchestrator.run({
+            id: makeCommandTaskId("economy", prompt),
+            prompt,
+            mode: "economy",
+            createdAt: new Date().toISOString(),
           }),
-        )
-      }
-      return orchestrator
-        .run({
-          id: makeCommandTaskId("economy", prompt),
-          prompt,
-          mode: "economy",
-          createdAt: new Date().toISOString(),
-        })
-        .pipe(
-          Effect.map((r) => ({ output: r.content })),
-          Effect.catchAll((err) =>
-            Effect.fail(
-              new CommandParseError({ input: "/economy", reason: String(err) }),
-            ),
+        ),
+        Effect.map((r) => ({ output: r.content })),
+        Effect.catchAll((err) =>
+          Effect.fail(
+            new CommandParseError({ input: "/economy", reason: String(err) }),
           ),
-        )
+        ),
+      )
     },
   }
 }
