@@ -185,6 +185,17 @@ export const TUI_CONSTANTS = {
   ERROR_LOG_PREVIEW_CHARS: 55,
 } as const
 
+/** @Owl.Core.Constants.TUIAnimation - Terminal animation timing and frames */
+export const TUI_ANIMATION = {
+  FRAME_INTERVAL_MS: 80,
+  REDUCED_MOTION_INTERVAL_MS: 1_000,
+  SPINNER_FRAMES: ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"],
+  PIPELINE_ACTIVE_FRAMES: ["◆", "◇", "◆", "◈"],
+  PIPELINE_PENDING_GLYPH: "·",
+  PIPELINE_COMPLETE_GLYPH: "✓",
+  FMCF_ROLE_FLOW: ["Architect", "DNA Engineer", "Shadow", "Forensic Guardian"],
+} as const
+
 /** @Owl.Core.Constants.TUI - Panel width ratios (left/center/right) */
 export const TUI_PANEL_WIDTHS = {
   LEFT: 0.3,

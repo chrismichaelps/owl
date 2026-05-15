@@ -2,6 +2,7 @@
 import React, { memo } from "react"
 import { Box, Text } from "ink"
 import type { AgentStatus, ActiveRole } from "../state.js"
+import { AgentPipeline } from "./AgentPipeline.js"
 
 const ROLE_COLOR: Record<NonNullable<ActiveRole>, string> = {
   Architect: "blue",
@@ -65,6 +66,8 @@ export const LogPanel: React.FC<LogPanelProps> = memo(
           </Text>
         </Box>
       ) : null}
+
+      <AgentPipeline activeRole={activeRole} />
 
       {/* Divider */}
       <Text color="gray">{"─".repeat(26)}</Text>
