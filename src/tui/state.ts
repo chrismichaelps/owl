@@ -55,7 +55,9 @@ export interface CommandConversationTurn {
 }
 
 /** @Owl.TUI.State.Turn - One completed conversation entry */
-export type ConversationTurn = InferenceConversationTurn | CommandConversationTurn
+export type ConversationTurn =
+  | InferenceConversationTurn
+  | CommandConversationTurn
 
 /**
  * @Owl.TUI.State.Response - Plain response snapshot (safe subset of InferenceResponse)

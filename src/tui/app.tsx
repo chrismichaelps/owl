@@ -74,9 +74,7 @@ export const App: React.FC<AppProps> = ({
       dispatch({ type: "RESET" })
       dispatch({
         type: "ADD_LOG",
-        msg:
-          "▶ Task: " +
-          prompt.slice(0, TUI_CONSTANTS.TASK_LOG_PREVIEW_CHARS),
+        msg: "▶ Task: " + prompt.slice(0, TUI_CONSTANTS.TASK_LOG_PREVIEW_CHARS),
       })
       dispatch({ type: "SET_ROLE", role: "Architect" })
       dispatch({ type: "SET_STATUS", status: "routing" })
@@ -149,8 +147,7 @@ export const App: React.FC<AppProps> = ({
         dispatch({
           type: "ADD_LOG",
           msg:
-            "[cmd] " +
-            result.output.slice(0, TUI_CONSTANTS.LOG_PREVIEW_CHARS),
+            "[cmd] " + result.output.slice(0, TUI_CONSTANTS.LOG_PREVIEW_CHARS),
         })
         dispatch({
           type: "ADD_TURN",
