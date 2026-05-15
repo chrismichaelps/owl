@@ -48,18 +48,24 @@ export class SessionMemory extends Context.Tag("SessionMemory")<
   SessionMemoryService
 >() {}
 
-const generateSessionId = (): string =>
-  `sess-${Date.now().toString(36)}-${Math.random()
-    .toString(36)
-    .slice(
-      SESSION_MEMORY_CONSTANTS.SESSION_ID_RANDOM_SLICE_START,
-      SESSION_MEMORY_CONSTANTS.SESSION_ID_RANDOM_SLICE_END,
-    )}`
+const formatSessionId = (counter: number): string =>
+  `${SESSION_MEMORY_CONSTANTS.SESSION_ID_PREFIX}-${String(counter).padStart(
+    SESSION_MEMORY_CONSTANTS.SESSION_ID_COUNTER_PAD,
+    "0",
+  )}`
+
+const nextGeneratedSessionId = (
+  counterRef: Ref.Ref<number>,
+): Effect.Effect<string> =>
+  Ref.updateAndGet(counterRef, (counter) => counter + 1).pipe(
+    Effect.map(formatSessionId),
+  )
 
 const noPersist: PersistSessionSnapshot = () => Effect.void
 
 const makeService = (
   stateRef: Ref.Ref<SessionMemoryState>,
+  counterRef: Ref.Ref<number>,
   persist: PersistSessionSnapshot,
 ): SessionMemoryService => {
   const persistCurrent = (): Effect.Effect<void, SessionMemoryFailure> =>
@@ -67,13 +73,13 @@ const makeService = (
 
   const startSession = (
     sessionId?: string,
-  ): Effect.Effect<string, SessionMemoryFailure> => {
-    const id = sessionId ?? generateSessionId()
-    return Ref.set(stateRef, makeEmptyState(id)).pipe(
-      Effect.zipRight(persistCurrent()),
-      Effect.as(id),
-    )
-  }
+  ): Effect.Effect<string, SessionMemoryFailure> =>
+    Effect.gen(function* () {
+      const id = sessionId ?? (yield* nextGeneratedSessionId(counterRef))
+      yield* Ref.set(stateRef, makeEmptyState(id))
+      yield* persistCurrent()
+      return id
+    })
 
   const resumeSession = (
     sessionId?: string,
@@ -133,10 +139,11 @@ const makeService = (
 export const SessionMemoryLive = Layer.effect(
   SessionMemory,
   Effect.gen(function* () {
+    const counterRef = yield* Ref.make(0)
     const stateRef = yield* Ref.make<SessionMemoryState>(
-      makeEmptyState(generateSessionId()),
+      makeEmptyState(formatSessionId(0)),
     )
-    return makeService(stateRef, noPersist)
+    return makeService(stateRef, counterRef, noPersist)
   }),
 )
 
@@ -171,8 +178,9 @@ export const makePersistentSessionMemoryLive = (
               decodePersistedSessionState(storagePath, raw),
             ),
           )
-        : makeEmptyState(generateSessionId())
+        : makeEmptyState(formatSessionId(0))
 
+      const counterRef = yield* Ref.make(0)
       const stateRef = yield* Ref.make<SessionMemoryState>(initialState)
       const persist: PersistSessionSnapshot = (state) =>
         fs.makeDirectory(path.dirname(storagePath), { recursive: true }).pipe(
@@ -195,6 +203,6 @@ export const makePersistentSessionMemoryLive = (
           ),
         )
 
-      return makeService(stateRef, persist)
+      return makeService(stateRef, counterRef, persist)
     }),
   ).pipe(Layer.provide(NodeFileSystem.layer))

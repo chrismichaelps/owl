@@ -35,6 +35,18 @@ describe("SessionMemory.startSession", () => {
     expect(id.length).toBeGreaterThan(0)
   })
 
+  it("generates deterministic sequential session ids", async () => {
+    const ids = await run(
+      Effect.gen(function* () {
+        const mem = yield* SessionMemory
+        const first = yield* mem.startSession()
+        const second = yield* mem.startSession()
+        return [first, second] as const
+      }),
+    )
+    expect(ids).toEqual(["sess-000001", "sess-000002"])
+  })
+
   it("accepts a provided session id", async () => {
     const id = await run(
       Effect.gen(function* () {

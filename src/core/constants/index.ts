@@ -99,8 +99,8 @@ export const SESSION_MEMORY_CONSTANTS = {
   PERSISTENCE_SCHEMA_VERSION: 1,
   STORAGE_DIR: ".owl",
   STORAGE_FILE: "session-memory.json",
-  SESSION_ID_RANDOM_SLICE_START: 2,
-  SESSION_ID_RANDOM_SLICE_END: 8,
+  SESSION_ID_PREFIX: "sess",
+  SESSION_ID_COUNTER_PAD: 6,
 } as const
 
 /** @Owl.Core.Constants.Metrics - Runtime UsageMetrics constraints */
