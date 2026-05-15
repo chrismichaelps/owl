@@ -79,6 +79,12 @@ export const PROVIDER_IDS = [
   "ollama",
 ] as const
 
+/** @Owl.Core.Constants.ProviderRuntime - Provider adapter runtime limits */
+export const PROVIDER_CONSTANTS = {
+  TOKEN_ESTIMATION_CHARS_PER_TOKEN: 4,
+  OLLAMA_STREAM_DELIMITER: "\n",
+} as const
+
 /** @Owl.Core.Constants.Cache - ContextCache retention and validation bounds */
 export const CACHE_CONSTANTS = {
   MAX_ENTRIES: 100,
