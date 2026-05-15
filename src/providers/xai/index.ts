@@ -198,8 +198,7 @@ export const XAIAdapterLive = Layer.effect(
       capabilities: XAI_CAPABILITIES,
       complete,
       stream,
-      countTokens: (_text, _model) =>
-        Effect.succeed(estimateTextTokens(_text)),
+      countTokens: (_text, _model) => Effect.succeed(estimateTextTokens(_text)),
       healthCheck: () => Effect.succeed(true),
     } satisfies LLMProviderService
   }),
