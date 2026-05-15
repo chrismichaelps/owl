@@ -48,6 +48,7 @@ import { makeRefactorCommand } from "./editing/refactor.js"
 import { makeUndoCommand } from "./editing/undo.js"
 import { makeAuditCommand } from "./management/audit.js"
 import { makeClearCommand } from "./management/clear.js"
+import { makeHelpCommand } from "./management/help.js"
 import { makeMemoryCommand } from "./management/memory.js"
 import { makeModelCommand } from "./management/model.js"
 import { makeRegistryCommand } from "./management/registry.js"
@@ -180,7 +181,7 @@ export const CommandRegistryLive = Layer.effect(
  * - RoleContext (for role command)
  * - RoutingPreferences (for model command)
  *
- * Registers all 23 commands on startup.
+ * Registers all commands on startup.
  */
 export const makeCommandRegistryLive = (
   projectRoot: string,
@@ -249,6 +250,7 @@ export const makeCommandRegistryLive = (
       ]
 
       yield* Effect.forEach(handlers, svc.register, { discard: true })
+      yield* svc.register(makeHelpCommand(svc))
 
       return svc
     }),
