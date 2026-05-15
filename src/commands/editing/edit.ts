@@ -18,6 +18,7 @@ import { Effect } from "effect"
 import { CommandParseError } from "../../core/errors/index.js"
 import type { EditingPipelineService } from "../../editor/pipeline/index.js"
 import type { CommandHandler, CommandResult } from "../types.js"
+import { makeMutationId } from "../utils/ids.js"
 
 /**
  * @Owl.Commands.Editing.Edit.Factory - Create the /edit command handler
@@ -44,9 +45,10 @@ export function makeEditCommand(
           }),
         )
       }
+      const mutationId = makeMutationId("edit", file, [oldString, newString])
       return pipeline
         .execute({
-          mutationId: "edit-" + Date.now().toString(36),
+          mutationId,
           targets: [{ file, oldString, newString }],
           projectRoot,
           autoApprove: true,
@@ -61,7 +63,8 @@ export function makeEditCommand(
                   String(result.results[0]?.diff.linesAdded ?? 0) +
                   " lines added, " +
                   String(result.results[0]?.diff.linesRemoved ?? 0) +
-                  " removed"
+                  " removed | mutation " +
+                  mutationId
                 : "No changes applied",
           })),
           Effect.catchAll((err) =>

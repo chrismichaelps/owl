@@ -13,6 +13,7 @@ import { Effect } from "effect"
 import { CommandParseError } from "../../core/errors/index.js"
 import type { OrchestratorService } from "../../engine/orchestrator/index.js"
 import type { CommandHandler, CommandResult } from "../types.js"
+import { makeCommandTaskId } from "../utils/ids.js"
 
 /**
  * @Owl.Commands.Core.Quick.Factory - Create the /quick command handler
@@ -35,7 +36,7 @@ export function makeQuickCommand(
       }
       return orchestrator
         .run({
-          id: "cmd-" + Date.now().toString(36),
+          id: makeCommandTaskId("quick", prompt),
           prompt,
           mode: "quick",
           createdAt: new Date().toISOString(),

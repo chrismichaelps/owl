@@ -18,6 +18,7 @@ import { Effect } from "effect"
 import { CommandParseError } from "../../core/errors/index.js"
 import type { OrchestratorService } from "../../engine/orchestrator/index.js"
 import type { CommandHandler, CommandResult } from "../types.js"
+import { makeCommandTaskId } from "../utils/ids.js"
 
 const PREAMBLE =
   "You are an FMCF v3.5 Architect. Perform a full seam analysis and friction discovery. Apply the DEPTH_SCORE formula: (Leverage+Locality+Testability)/3 - ComplexityTax. Report: DEEP/MEDIUM/SHALLOW classification, top coupling risks, and 3 deepening recommendations. Subject: "
@@ -43,7 +44,7 @@ export function makeAnalyzeCommand(
       }
       return orchestrator
         .run({
-          id: "cmd-" + Date.now().toString(36),
+          id: makeCommandTaskId("analyze", subject),
           prompt: PREAMBLE + subject,
           mode: "deep",
           createdAt: new Date().toISOString(),

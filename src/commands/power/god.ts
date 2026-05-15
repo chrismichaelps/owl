@@ -16,6 +16,7 @@ import { Effect } from "effect"
 import { CommandParseError } from "../../core/errors/index.js"
 import type { OrchestratorService } from "../../engine/orchestrator/index.js"
 import type { CommandHandler, CommandResult } from "../types.js"
+import { makeCommandTaskId } from "../utils/ids.js"
 
 /**
  * @Owl.Commands.Power.God.Factory - Create the /god command handler
@@ -38,7 +39,7 @@ export function makeGodCommand(
       }
       return orchestrator
         .run({
-          id: "cmd-" + Date.now().toString(36),
+          id: makeCommandTaskId("god", prompt),
           prompt,
           mode: "god",
           createdAt: new Date().toISOString(),

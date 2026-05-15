@@ -13,6 +13,7 @@ import { Effect } from "effect"
 import { CommandParseError } from "../../core/errors/index.js"
 import type { OrchestratorService } from "../../engine/orchestrator/index.js"
 import type { CommandHandler, CommandResult } from "../types.js"
+import { makeCommandTaskId } from "../utils/ids.js"
 
 /**
  * @Owl.Commands.Core.Task.Factory - Create the /task command handler
@@ -35,7 +36,7 @@ export function makeTaskCommand(
       }
       return orchestrator
         .run({
-          id: "cmd-" + Date.now().toString(36),
+          id: makeCommandTaskId("task", prompt),
           prompt,
           mode: "standard",
           createdAt: new Date().toISOString(),

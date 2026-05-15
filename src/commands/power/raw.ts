@@ -15,6 +15,7 @@ import { Effect } from "effect"
 import { CommandParseError } from "../../core/errors/index.js"
 import type { OrchestratorService } from "../../engine/orchestrator/index.js"
 import type { CommandHandler, CommandResult } from "../types.js"
+import { makeCommandTaskId } from "../utils/ids.js"
 
 /**
  * @Owl.Commands.Power.Raw.Factory - Create the /raw command handler
@@ -37,7 +38,7 @@ export function makeRawCommand(
       }
       return orchestrator
         .run({
-          id: "cmd-" + Date.now().toString(36),
+          id: makeCommandTaskId("raw", prompt),
           prompt,
           mode: "standard",
           createdAt: new Date().toISOString(),

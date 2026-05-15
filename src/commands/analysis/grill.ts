@@ -19,6 +19,7 @@ import { Effect } from "effect"
 import { CommandParseError } from "../../core/errors/index.js"
 import type { OrchestratorService } from "../../engine/orchestrator/index.js"
 import type { CommandHandler, CommandResult } from "../types.js"
+import { makeCommandTaskId } from "../utils/ids.js"
 
 const PREAMBLE =
   "You are an FMCF v3.5 Architect running the Grilling Loop. Challenge every assumption about the proposed design. Ask: Does this survive the Deletion Test? Is this the simplest seam? Would removing this module break anything essential? Could this boundary be collapsed? Generate 5–7 probing questions and answer each with an honest architectural assessment. Subject: "
@@ -45,7 +46,7 @@ export function makeGrillCommand(
       }
       return orchestrator
         .run({
-          id: "cmd-" + Date.now().toString(36),
+          id: makeCommandTaskId("grill", subject),
           prompt: PREAMBLE + subject,
           mode: "deep",
           createdAt: new Date().toISOString(),

@@ -16,6 +16,7 @@ import { Effect } from "effect"
 import { CommandParseError } from "../../core/errors/index.js"
 import type { OrchestratorService } from "../../engine/orchestrator/index.js"
 import type { CommandHandler, CommandResult } from "../types.js"
+import { makeCommandTaskId } from "../utils/ids.js"
 
 const PLAN_PREAMBLE =
   "You are an FMCF Architect. Produce a step-by-step implementation plan with: tasks, exact file paths, complete code snippets, and test commands. Be specific. Task: "
@@ -41,7 +42,7 @@ export function makePlanCommand(
       }
       return orchestrator
         .run({
-          id: "cmd-" + Date.now().toString(36),
+          id: makeCommandTaskId("plan", prompt),
           prompt: PLAN_PREAMBLE + prompt,
           mode: "deep",
           createdAt: new Date().toISOString(),

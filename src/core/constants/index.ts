@@ -234,6 +234,7 @@ export type PipelineStage = (typeof PIPELINE_STAGES)[number]
 /** @Owl.Core.Constants.Commands - Command parsing and dispatch constraints */
 export const COMMAND_CONSTANTS = {
   ID_PREFIX: "cmd",
+  ID_HASH_LENGTH: 12,
   MIN_PROMPT_LENGTH: 1,
   MAX_PROMPT_LENGTH: 10_000,
 } as const

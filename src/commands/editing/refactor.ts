@@ -21,6 +21,7 @@ import { Effect } from "effect"
 import { CommandParseError } from "../../core/errors/index.js"
 import type { OrchestratorService } from "../../engine/orchestrator/index.js"
 import type { CommandHandler, CommandResult } from "../types.js"
+import { makeCommandTaskId } from "../utils/ids.js"
 
 const PREAMBLE =
   "You are a refactoring expert applying FMCF v3.5 principles. Analyze the subject and produce specific, actionable refactoring steps: exact file paths, old code snippets, and new code snippets. Focus on deepening modules and reducing coupling. Subject: "
@@ -46,7 +47,7 @@ export function makeRefactorCommand(
       }
       return orchestrator
         .run({
-          id: "cmd-" + Date.now().toString(36),
+          id: makeCommandTaskId("refactor", prompt),
           prompt: PREAMBLE + prompt,
           mode: "deep",
           createdAt: new Date().toISOString(),

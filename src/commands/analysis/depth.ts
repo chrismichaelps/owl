@@ -18,6 +18,7 @@ import { Effect } from "effect"
 import { CommandParseError } from "../../core/errors/index.js"
 import type { OrchestratorService } from "../../engine/orchestrator/index.js"
 import type { CommandHandler, CommandResult } from "../types.js"
+import { makeCommandTaskId } from "../utils/ids.js"
 
 const PREAMBLE =
   "You are an FMCF v3.5 Architect. Compute the DEPTH_SCORE using: (Leverage+Locality+Testability)/3 - ComplexityTax. Each metric is 0.0–1.0. Show your scoring breakdown and final classification (DEEP ≥0.70, SHALLOW <0.40, MEDIUM otherwise). Subject: "
@@ -43,7 +44,7 @@ export function makeDepthCommand(
       }
       return orchestrator
         .run({
-          id: "cmd-" + Date.now().toString(36),
+          id: makeCommandTaskId("depth", subject),
           prompt: PREAMBLE + subject,
           mode: "standard",
           createdAt: new Date().toISOString(),

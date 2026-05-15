@@ -13,6 +13,7 @@ import { Effect } from "effect"
 import { CommandParseError } from "../../core/errors/index.js"
 import type { OrchestratorService } from "../../engine/orchestrator/index.js"
 import type { CommandHandler, CommandResult } from "../types.js"
+import { makeCommandTaskId } from "../utils/ids.js"
 
 /**
  * @Owl.Commands.Core.Deep.Factory - Create the /deep command handler
@@ -35,7 +36,7 @@ export function makeDeepCommand(
       }
       return orchestrator
         .run({
-          id: "cmd-" + Date.now().toString(36),
+          id: makeCommandTaskId("deep", prompt),
           prompt,
           mode: "deep",
           createdAt: new Date().toISOString(),

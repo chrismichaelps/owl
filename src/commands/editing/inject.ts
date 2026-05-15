@@ -13,6 +13,7 @@ import { Effect } from "effect"
 import { CommandParseError } from "../../core/errors/index.js"
 import type { EditingPipelineService } from "../../editor/pipeline/index.js"
 import type { CommandHandler, CommandResult } from "../types.js"
+import { makeMutationId } from "../utils/ids.js"
 
 /**
  * @Owl.Commands.Editing.Inject.Factory - Create the /inject command handler
@@ -36,15 +37,18 @@ export function makeInjectCommand(
         )
       }
       const newString = after + "\n" + content
+      const mutationId = makeMutationId("inject", file, [after, content])
       return pipeline
         .execute({
-          mutationId: "inject-" + Date.now().toString(36),
+          mutationId,
           targets: [{ file, oldString: after, newString }],
           projectRoot,
           autoApprove: true,
         })
         .pipe(
-          Effect.map((_result) => ({ output: "Injected into " + file })),
+          Effect.map((_result) => ({
+            output: "Injected into " + file + " | mutation " + mutationId,
+          })),
           Effect.catchAll((err) =>
             Effect.fail(
               new CommandParseError({ input: "/inject", reason: String(err) }),

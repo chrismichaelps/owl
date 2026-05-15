@@ -13,6 +13,7 @@ import { Effect } from "effect"
 import { CommandParseError } from "../../core/errors/index.js"
 import type { OrchestratorService } from "../../engine/orchestrator/index.js"
 import type { CommandHandler, CommandResult } from "../types.js"
+import { makeCommandTaskId } from "../utils/ids.js"
 
 /**
  * @Owl.Commands.Power.Economy.Factory - Create the /economy command handler
@@ -36,7 +37,7 @@ export function makeEconomyCommand(
       }
       return orchestrator
         .run({
-          id: "cmd-" + Date.now().toString(36),
+          id: makeCommandTaskId("economy", prompt),
           prompt,
           mode: "economy",
           createdAt: new Date().toISOString(),
