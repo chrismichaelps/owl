@@ -11,6 +11,7 @@
  */
 import { Effect } from "effect"
 import type { FileSystem } from "@effect/platform"
+import path from "node:path"
 import { CommandParseError } from "../../core/errors/index.js"
 import { resolveProjectPath } from "../../core/path/index.js"
 import type { CommandHandler, CommandResult } from "../types.js"
@@ -37,26 +38,58 @@ export function makeCreateCommand(
       }
       const content = rest.join(" ")
       return resolveProjectPath(projectRoot, file, "create").pipe(
-        Effect.flatMap((fullPath) =>
-          fs.writeFileString(fullPath, content).pipe(
-            Effect.map(() => ({ output: "Created " + file })),
-            Effect.catchAll((err) =>
-              Effect.fail(
-                new CommandParseError({
-                  input: "/create " + file,
-                  reason: String(err),
-                }),
-              ),
-            ),
-          ),
-        ),
-        Effect.catchAll((err) =>
-          Effect.fail(
+        Effect.mapError(
+          (err) =>
             new CommandParseError({
               input: "/create " + file,
               reason: String(err),
             }),
-          ),
+        ),
+        Effect.flatMap((fullPath) =>
+          Effect.gen(function* () {
+            const alreadyExists = yield* fs.exists(fullPath).pipe(
+              Effect.mapError(
+                () =>
+                  new CommandParseError({
+                    input: "/create " + file,
+                    reason: "Unable to inspect target file",
+                  }),
+              ),
+            )
+
+            if (alreadyExists) {
+              return yield* Effect.fail(
+                new CommandParseError({
+                  input: "/create " + file,
+                  reason: "File already exists; use /edit for existing files",
+                }),
+              )
+            }
+
+            yield* fs
+              .makeDirectory(path.dirname(fullPath), { recursive: true })
+              .pipe(
+                Effect.mapError(
+                  () =>
+                    new CommandParseError({
+                      input: "/create " + file,
+                      reason: "Unable to create parent directory",
+                    }),
+                ),
+              )
+
+            yield* fs.writeFileString(fullPath, content).pipe(
+              Effect.mapError(
+                () =>
+                  new CommandParseError({
+                    input: "/create " + file,
+                    reason: "Unable to write file",
+                  }),
+              ),
+            )
+
+            return { output: "Created " + file } satisfies CommandResult
+          }),
         ),
       )
     },
