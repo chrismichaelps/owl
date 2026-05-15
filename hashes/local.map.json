@@ -1,6 +1,6 @@
 {
   "shard_id": "@root/src",
-  "state_anchor": "BigInt:0x0000000000000075",
+  "state_anchor": "BigInt:0x0000000000000078",
   "parent_bridge": "@root/hashes/local.map.json",
   "git_anchor": "HEAD",
   "cache_integrity": "VERIFIED",
@@ -52,6 +52,37 @@
       "dependencies": [],
       "fidelity_level": "Active",
       "sig_id": "SIG-core-logging-00000001"
+    },
+    "tokens/cache": {
+      "file_path": "@root/src/tokens/cache/index.ts",
+      "hash_reference": "@root/hashes/src/tokens/cache/index.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [
+        "@root/hashes/src/tokens/cache/schema.hash.md",
+        "@root/hashes/src/tokens/cache/persistence.hash.md"
+      ],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tokens-cache-00000001"
+    },
+    "tokens/cache/schema": {
+      "file_path": "@root/src/tokens/cache/schema.ts",
+      "hash_reference": "@root/hashes/src/tokens/cache/schema.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tokens-cache-schema-00000001"
+    },
+    "tokens/cache/persistence": {
+      "file_path": "@root/src/tokens/cache/persistence.ts",
+      "hash_reference": "@root/hashes/src/tokens/cache/persistence.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [
+        "@root/hashes/src/tokens/cache/schema.hash.md",
+        "@root/hashes/src/core/constants/index.hash.md",
+        "@root/hashes/src/core/errors/index.hash.md"
+      ],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tokens-cache-persistence-00000001"
     },
     "engine/metrics": {
       "file_path": "@root/src/engine/metrics/index.ts",

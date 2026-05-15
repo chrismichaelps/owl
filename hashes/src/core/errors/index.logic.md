@@ -11,22 +11,23 @@
 
 ## Algorithm
 
-1. **Initialize** — Set up initial state and validate preconditions
-2. **Process** — Execute the core operation based on current state
-3. **Transition** — Validate guard conditions and transition to next state
-4. **Complete** — Finalize operation and clean up resources
+1. Define tagged error constructors grouped by runtime subsystem.
+2. Keep every error payload readonly and specific to its failure domain.
+3. Use CacheValidationError for ContextCache schema and invariant failures.
+4. Use CachePersistenceError for ContextCache backing-store failures.
+5. Export errors from one module so service Interfaces share the same tagged failures.
 
 ## Negative Logic (PROHIBITED PATHS)
 
-- MUST NOT: Bypass state transitions — always use the defined state machine
-- MUST NOT: Skip guard validation — every transition requires guard check
-- MUST NOT: Mutate state directly — use only defined transition methods
+- MUST NOT: throw raw Error from runtime services.
+- MUST NOT: encode cache validation or persistence failures as strings.
+- MUST NOT: let provider, cache, mutation, or governance errors share vague tags.
 
 ## Edge Cases
 
-- **Concurrent access**: Serialize state transitions via atomic operations
-- **Timeout during transition**: Roll back to previous valid state
-- **Invalid guard condition**: Log error and remain in current state
+- **Schema boundary failure**: use CacheValidationError with key and reason.
+- **File-system cache failure**: use CachePersistenceError with path and reason.
+- **Unknown upstream cause**: wrap in the subsystem-specific tagged error.
 
 ## Dependencies
 

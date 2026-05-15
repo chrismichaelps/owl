@@ -91,6 +91,29 @@ export class TokenCountError extends Data.TaggedError("TokenCountError")<{
 }> {}
 
 /**
+ * @Owl.Core.Errors.Cache - ContextCache validation and persistence failures
+ *
+ * CacheValidationError: Cached summary failed schema or invariant validation
+ * CachePersistenceError: Persistent cache backing store failed
+ */
+
+/** Cached ContextCache entry failed validation */
+export class CacheValidationError extends Data.TaggedError(
+  "CacheValidationError",
+)<{
+  readonly key: string
+  readonly reason: string
+}> {}
+
+/** Persistent ContextCache backing store failed */
+export class CachePersistenceError extends Data.TaggedError(
+  "CachePersistenceError",
+)<{
+  readonly path: string
+  readonly reason: string
+}> {}
+
+/**
  * @Owl.Core.Errors.Governance - FMCF architectural and forensic violations
  *
  * GovernanceViolationError: Invariant, role transition, or shard split violation

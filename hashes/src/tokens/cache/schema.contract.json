@@ -1,0 +1,30 @@
+{
+  "contract_id": "CTR-tokens-cache-schema-00000001",
+  "module": "@Owl.Tokens.Cache.Schema src/tokens/cache/schema.ts",
+  "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
+  "depth_score": "0.72 — DEEP (small schema Interface guarding cache boundaries)",
+  "seam_capacity": "INTERNAL",
+  "sig_id": "SIG-tokens-cache-schema-00000001",
+  "interface": {
+    "signatures": [
+      "CacheEntrySchema",
+      "CacheEntry",
+      "PersistedCacheStateSchema",
+      "PersistedCacheState"
+    ],
+    "error_modes": [],
+    "invariants": [
+      "CacheEntrySchema MUST include summary, tokenCount, trustScore, and optional createdAt",
+      "PersistedCacheStateSchema MUST include schema version and entry records"
+    ]
+  },
+  "responsibilities": [
+    "Define schema-first ContextCache payload contracts",
+    "Keep persisted cache payload structure explicit and reusable"
+  ],
+  "prohibited": [
+    "MUST NOT perform file-system IO",
+    "MUST NOT implement cache mutation behavior"
+  ],
+  "created_at": "2026-05-14T22:14:00.000000Z"
+}

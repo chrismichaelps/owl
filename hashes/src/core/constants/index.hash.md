@@ -1,6 +1,6 @@
-State_ID: BigInt(0x0000000000000072)
-Git_SHA: b08b51254f38dd6138e55dbe56ad187ff73866f5
-Source_SHA256: 750e1e41cc90047160cf9f6cfe673633e5d0f1adefe377a76c2cf6f44eaf7720
+State_ID: BigInt(0x0000000000000076)
+Git_SHA: 9e5c31596b36f990f88d402b533fcfc1104cbe87
+Source_SHA256: ec465f33e00393e78899df024a0d8ac0275ef64c7786cdcc4f4d977cccc6582b
 Grammar_Lock: "@root/hashes/grammar/typescript/typescript.hash.md"
 Fidelity: DECLARED
 ---
@@ -13,6 +13,7 @@ Fidelity: DECLARED
 - `PROVIDER_TIMEOUTS` — DEFAULT_MS=30s, STREAM_CHUNK_TIMEOUT_MS=5s, OLLAMA_DEFAULT_MS=60s
 - `RETRY_CONFIG` — MAX_ATTEMPTS=3, BASE_DELAY_MS=1s, MAX_DELAY_MS=30s, BACKOFF_FACTOR=2
 - `PROVIDER_IDS` — supported Provider ids for RoutingPreference parsing
+- `CACHE_CONSTANTS` — ContextCache retention, trust-score bounds, and persistence schema version
 - `METRICS_CONSTANTS` — bounded UsageMetrics retention and cache hit-rate display constants
 - `ROUTING_LIMITS` — max normalized cost, fast model output threshold, fallback Provider count
 - `DEPTH_THRESHOLDS` — DEEP=0.7, SHALLOW=0.4
@@ -37,6 +38,6 @@ Fidelity: DECLARED
 - Used by: All subsystems (tokens, providers, editor, fmcf, tui)
 
 ### [Architecture]
-- Single source of truth for all magic numbers, including UsageMetrics display coefficients
+- Single source of truth for all magic numbers, including ContextCache bounds and UsageMetrics display coefficients
 - No business logic, only data declarations
 - Divided into logical groups: Budgets, Networking, Providers, Metrics, FMCF, Routing, TUI, HTTP, Editor, Pipeline

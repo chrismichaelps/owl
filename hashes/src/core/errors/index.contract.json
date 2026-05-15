@@ -10,6 +10,7 @@
       "ProviderError`, `ProviderTimeoutError`, `ProviderAuthError",
       "ProviderRateLimitError`, `ProviderUnavailableError`, `ProviderStreamError",
       "TokenBudgetExceededError`, `TokenCountError",
+      "CacheValidationError`, `CachePersistenceError",
       "GovernanceViolationError`, `HashRegistryError`, `GrammarDriftError`, `SeamTestGateError",
       "MutationError`, `RollbackError`, `TLIError`, `DiffGenerationError",
       "CommandParseError`, `CommandNotFoundError",
@@ -17,7 +18,9 @@
       "OrchestratorError`, `ContextOverflowError"
     ],
     "error_modes": [],
-    "invariants": []
+    "invariants": [
+      "ContextCache validation and persistence failures MUST use tagged errors"
+    ]
   },
   "responsibilities": [],
   "prohibited": [],

@@ -1,60 +1,42 @@
 /**
- * @Owl.Tokens.Cache - Trust-scored context cache for reusable summaries
+ * @Owl.Tokens.Cache - Trust-scored ContextCache summaries
  *
- * Caches conversation summaries to avoid recomputing context.
- * Each cache entry has a trust score indicating reliability.
- *
- * Used for:
- * - /memory: Display cached session summaries
- * - Token savings: Reuse summaries instead of full context
- *
- * @example
- * yield* Effect.flatMap(ContextCache, (c) =>
- *   c.store("session-1", { summary: "...", tokenCount: 500, trustScore: 0.9 })
- * )
- * const entry = yield* Effect.flatMap(ContextCache, (c) => c.get("session-1"))
+ * Stores reusable ContextCache summaries so Owl can avoid repeated context
+ * reconstruction. The in-memory layer is deterministic for tests and short
+ * sessions. The persistent layer writes the same bounded state to disk.
  */
+import { FileSystem } from "@effect/platform"
+import { NodeFileSystem } from "@effect/platform-node"
+import path from "node:path"
+import { CachePersistenceError } from "../../core/errors/index.js"
 import { Context, Effect, Layer, Option, Ref } from "effect"
+import {
+  boundStore,
+  decodeCacheEntry,
+  decodePersistedState,
+  toPersistedState,
+  type CacheFailure,
+  type CacheStore,
+  type PersistSnapshot,
+} from "./persistence.js"
+export {
+  CacheEntrySchema,
+  PersistedCacheStateSchema,
+  type CacheEntry,
+  type PersistedCacheState,
+} from "./schema.js"
+import type { CacheValidationError } from "../../core/errors/index.js"
+import type { CacheEntry } from "./schema.js"
 
-/**
- * @Owl.Tokens.Cache.Entry - Immutable cached summary with trust metadata
- */
-export interface CacheEntry {
-  readonly summary: string
-  readonly tokenCount: number
-  readonly trustScore: number
-  readonly createdAt?: number
-}
-
-/**
- * @Owl.Tokens.Cache.Service - Effect service interface
- */
+/** @Owl.Tokens.Cache.Service - Effect service interface */
 export interface ContextCacheService {
-  /**
-   * Store a cache entry
-   *
-   * @param key - Cache key (e.g., session ID)
-   * @param entry - Cache entry with summary and metadata
-   */
-  readonly store: (key: string, entry: CacheEntry) => Effect.Effect<void>
-  /**
-   * Retrieve a cache entry
-   *
-   * @param key - Cache key
-   * @returns Option<CacheEntry> (Some if exists, None if not)
-   */
+  readonly store: (
+    key: string,
+    entry: CacheEntry,
+  ) => Effect.Effect<void, CacheFailure>
   readonly get: (key: string) => Effect.Effect<Option.Option<CacheEntry>>
-  /**
-   * Invalidate a single entry
-   */
-  readonly invalidate: (key: string) => Effect.Effect<void>
-  /**
-   * Clear all entries
-   */
-  readonly invalidateAll: () => Effect.Effect<void>
-  /**
-   * Get total tokens saved by cache
-   */
+  readonly invalidate: (key: string) => Effect.Effect<void, CacheFailure>
+  readonly invalidateAll: () => Effect.Effect<void, CacheFailure>
   readonly totalSavedTokens: () => Effect.Effect<number>
 }
 
@@ -63,52 +45,140 @@ export class ContextCache extends Context.Tag("ContextCache")<
   ContextCacheService
 >() {}
 
-/**
- * @Owl.Tokens.Cache.Live - Ref-backed in-memory cache implementation
- */
+const makeService = (
+  storeRef: Ref.Ref<CacheStore>,
+  persist: PersistSnapshot,
+): ContextCacheService => {
+  const persistCurrent = (): Effect.Effect<void, CacheFailure> =>
+    Ref.get(storeRef).pipe(Effect.flatMap(persist))
+
+  const store = (
+    key: string,
+    entry: CacheEntry,
+  ): Effect.Effect<void, CacheFailure> =>
+    Effect.gen(function* () {
+      const decoded = yield* decodeCacheEntry(key, entry)
+      yield* Ref.update(storeRef, (current) => {
+        const next = new Map(current)
+        next.set(key, decoded)
+        return boundStore(next)
+      })
+      yield* persistCurrent()
+    })
+
+  const get = (key: string): Effect.Effect<Option.Option<CacheEntry>> =>
+    Ref.get(storeRef).pipe(
+      Effect.map((current) => {
+        const entry = current.get(key)
+        return entry === undefined ? Option.none() : Option.some(entry)
+      }),
+    )
+
+  const invalidate = (key: string): Effect.Effect<void, CacheFailure> =>
+    Ref.update(storeRef, (current) => {
+      const next = new Map(current)
+      next.delete(key)
+      return next
+    }).pipe(Effect.zipRight(persistCurrent()))
+
+  const invalidateAll = (): Effect.Effect<void, CacheFailure> =>
+    Ref.set(storeRef, new Map()).pipe(Effect.zipRight(persistCurrent()))
+
+  const totalSavedTokens = (): Effect.Effect<number> =>
+    Ref.get(storeRef).pipe(
+      Effect.map((current) =>
+        Array.from(current.values()).reduce(
+          (sum, entry) => sum + entry.tokenCount,
+          0,
+        ),
+      ),
+    )
+
+  return {
+    store,
+    get,
+    invalidate,
+    invalidateAll,
+    totalSavedTokens,
+  }
+}
+
+const noPersist: PersistSnapshot = () => Effect.void
+
+/** @Owl.Tokens.Cache.Live - Ref-backed in-memory ContextCache */
 export const ContextCacheLive = Layer.effect(
   ContextCache,
   Effect.gen(function* () {
-    const storeRef = yield* Ref.make<Map<string, CacheEntry>>(new Map())
+    const storeRef = yield* Ref.make<CacheStore>(new Map())
+    return makeService(storeRef, noPersist)
+  }),
+)
 
-    const store = (key: string, entry: CacheEntry): Effect.Effect<void> =>
-      Ref.update(storeRef, (m) => {
-        const next = new Map(m)
-        next.set(key, { ...entry, createdAt: Date.now() })
-        return next
-      })
-
-    const get = (key: string): Effect.Effect<Option.Option<CacheEntry>> =>
-      Ref.get(storeRef).pipe(
-        Effect.map((m) => {
-          const entry = m.get(key)
-          return entry !== undefined ? Option.some(entry) : Option.none()
-        }),
-      )
-
-    const invalidate = (key: string): Effect.Effect<void> =>
-      Ref.update(storeRef, (m) => {
-        const next = new Map(m)
-        next.delete(key)
-        return next
-      })
-
-    const invalidateAll = (): Effect.Effect<void> =>
-      Ref.set(storeRef, new Map())
-
-    const totalSavedTokens = (): Effect.Effect<number> =>
-      Ref.get(storeRef).pipe(
-        Effect.map((m) =>
-          Array.from(m.values()).reduce((sum, e) => sum + e.tokenCount, 0),
+/** @Owl.Tokens.Cache.Persistent - File-backed ContextCache layer */
+export const makePersistentContextCacheLive = (
+  storagePath: string,
+): Layer.Layer<ContextCache, CachePersistenceError | CacheValidationError> =>
+  Layer.effect(
+    ContextCache,
+    Effect.gen(function* () {
+      const fs = yield* FileSystem.FileSystem
+      const exists = yield* fs.exists(storagePath).pipe(
+        Effect.mapError(
+          () =>
+            new CachePersistenceError({
+              path: storagePath,
+              reason: "Unable to inspect ContextCache storage path",
+            }),
         ),
       )
 
-    return {
-      store,
-      get,
-      invalidate,
-      invalidateAll,
-      totalSavedTokens,
-    } satisfies ContextCacheService
-  }),
-)
+      const initialStore = exists
+        ? yield* fs.readFileString(storagePath).pipe(
+            Effect.mapError(
+              () =>
+                new CachePersistenceError({
+                  path: storagePath,
+                  reason: "Unable to read ContextCache storage",
+                }),
+            ),
+            Effect.flatMap((raw) => decodePersistedState(storagePath, raw)),
+            Effect.map((state) =>
+              boundStore(
+                new Map(
+                  state.entries.map((record) => [record.key, record.entry]),
+                ),
+              ),
+            ),
+          )
+        : new Map<string, CacheEntry>()
+
+      const storeRef = yield* Ref.make<CacheStore>(initialStore)
+      const persist: PersistSnapshot = (store) =>
+        fs
+          .makeDirectory(path.dirname(storagePath), { recursive: true })
+          .pipe(
+            Effect.mapError(
+              () =>
+                new CachePersistenceError({
+                  path: storagePath,
+                  reason: "Unable to create ContextCache storage directory",
+                }),
+            ),
+            Effect.zipRight(
+              fs.writeFileString(
+                storagePath,
+                JSON.stringify(toPersistedState(store), null, 2),
+              ),
+            ),
+            Effect.mapError(
+              () =>
+                new CachePersistenceError({
+                  path: storagePath,
+                  reason: "Unable to write ContextCache storage",
+                }),
+            ),
+          )
+
+      return makeService(storeRef, persist)
+    }),
+  ).pipe(Layer.provide(NodeFileSystem.layer))

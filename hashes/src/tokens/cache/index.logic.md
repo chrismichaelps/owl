@@ -4,29 +4,38 @@
 
 | State | Transition | Guard |
 |-------|------------|-------|
-| CACHE_EMPTY | storeItem | key.valid |
+| CACHE_EMPTY | storeItem | key.valid && entry.valid |
 | CACHE_HIT | retrieveItem | key.exists |
-| CACHE_MISS | fetchRemote | key.missing |
-| CACHE_EVICT | removeOldest | size > maxSize |
+| CACHE_MISS | returnNone | key.missing |
+| CACHE_EVICT | removeOldest | size > CACHE_CONSTANTS.MAX_ENTRIES |
+| CACHE_PERSIST | writeSnapshot | persistence.enabled |
 
 ## Algorithm
 
-1. **Initialize** — Set up initial state and validate preconditions
-2. **Process** — Execute the core operation based on current state
-3. **Transition** — Validate guard conditions and transition to next state
-4. **Complete** — Finalize operation and clean up resources
+1. Initialize an empty Map for in-memory use or hydrate a persisted Map from disk.
+2. Decode persisted payloads with `PersistedCacheStateSchema`; fail with CachePersistenceError if invalid.
+3. On `store`, decode the CacheEntry with `CacheEntrySchema`.
+4. Validate Token count and trustScore invariants against `CACHE_CONSTANTS`.
+5. Set `createdAt` if absent and insert into the Map.
+6. Sort entries by recency and retain only `CACHE_CONSTANTS.MAX_ENTRIES`.
+7. If persistence is enabled, write the bounded state snapshot after every successful mutation.
+8. On `get`, return Option.some(entry) when present and Option.none when absent.
+9. On `invalidate` or `invalidateAll`, update state and persist the resulting snapshot.
 
 ## Negative Logic (PROHIBITED PATHS)
 
-- MUST NOT: Bypass state transitions — always use the defined state machine
-- MUST NOT: Skip guard validation — every transition requires guard check
-- MUST NOT: Mutate state directly — use only defined transition methods
+- MUST NOT: Store entries without Effect Schema validation.
+- MUST NOT: Accept negative Token counts.
+- MUST NOT: Accept trustScore values outside configured bounds.
+- MUST NOT: Let persistence errors escape as untyped exceptions.
+- MUST NOT: Let callers know whether the backing store is Ref-only or persistent.
 
 ## Edge Cases
 
-- **Concurrent access**: Serialize state transitions via atomic operations
-- **Timeout during transition**: Roll back to previous valid state
-- **Invalid guard condition**: Log error and remain in current state
+- **Missing persistent file**: start with an empty cache.
+- **Malformed persistent file**: fail layer construction with CachePersistenceError.
+- **Entry over retention bound**: evict the oldest entries after insertion.
+- **Absent createdAt**: assign current time at write boundary.
 
 ## Dependencies
 

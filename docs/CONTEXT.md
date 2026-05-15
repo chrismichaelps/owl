@@ -1,6 +1,6 @@
 ---
 Project: Owl
-Last_Updated: 2026-05-12T15:00:00Z
+Last_Updated: 2026-05-14T22:10:00Z
 ---
 
 # Owl Domain Glossary
@@ -195,3 +195,12 @@ Canonical business concept definitions. Every module name, seam name, and interf
 - **Not:** "analytics", "logs", "stats" — UsageMetrics is deterministic runtime accounting, not external telemetry.
 - **Seams:** UsageMetrics → Orchestrator (CRITICAL), UsageMetrics → CommandRegistry (CRITICAL)
 - **Example:** `/status` showing 3 Provider calls, 12,400 total Tokens, Anthropic as the top Provider, and 1,250ms average latency.
+
+---
+
+### ContextCache
+- **Definition:** A trust-scored reusable summary store that lets Owl reuse prior context without reloading or re-summarizing the same architectural information.
+- **Canonical name:** ContextCache
+- **Not:** "history", "memory", "prompt cache" — ContextCache stores reusable summaries, not raw conversation turns or provider-side prompt cache markers.
+- **Seams:** ContextCache → TokenEfficiency (CRITICAL), ContextCache → Session (INTERNAL)
+- **Example:** Reusing a trusted 500-token summary of the ProviderRouter instead of loading the full source file again.

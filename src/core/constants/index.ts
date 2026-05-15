@@ -79,6 +79,14 @@ export const PROVIDER_IDS = [
   "ollama",
 ] as const
 
+/** @Owl.Core.Constants.Cache - ContextCache retention and validation bounds */
+export const CACHE_CONSTANTS = {
+  MAX_ENTRIES: 100,
+  MIN_TRUST_SCORE: 0,
+  MAX_TRUST_SCORE: 1,
+  PERSISTENCE_SCHEMA_VERSION: 1,
+} as const
+
 /** @Owl.Core.Constants.Metrics - Runtime UsageMetrics constraints */
 export const METRICS_CONSTANTS = {
   RECENT_INFERENCE_LIMIT: 10,

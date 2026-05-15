@@ -1,0 +1,39 @@
+{
+  "contract_id": "CTR-tokens-cache-persistence-00000001",
+  "module": "@Owl.Tokens.Cache.Persistence src/tokens/cache/persistence.ts",
+  "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
+  "depth_score": "0.80 — DEEP (validation and persistence transformations behind small helpers)",
+  "seam_capacity": "INTERNAL",
+  "sig_id": "SIG-tokens-cache-persistence-00000001",
+  "interface": {
+    "signatures": [
+      "CacheFailure",
+      "CacheStore",
+      "PersistSnapshot",
+      "decodeCacheEntry(key, entry) => Effect<CacheEntry, CacheValidationError>",
+      "boundStore(store) => CacheStore",
+      "toPersistedState(store) => PersistedCacheState",
+      "decodePersistedState(storagePath, raw) => Effect<PersistedCacheState, CachePersistenceError>"
+    ],
+    "error_modes": [
+      "CacheValidationError when runtime entries violate schema or invariants",
+      "CachePersistenceError when persisted payload decoding fails"
+    ],
+    "invariants": [
+      "decodeCacheEntry MUST reject negative Token counts",
+      "decodeCacheEntry MUST reject trustScore outside CACHE_CONSTANTS bounds",
+      "boundStore MUST retain at most CACHE_CONSTANTS.MAX_ENTRIES",
+      "decodePersistedState MUST map parse/schema failures to CachePersistenceError"
+    ]
+  },
+  "responsibilities": [
+    "Validate ContextCache entries",
+    "Bound cache retention deterministically",
+    "Convert cache Maps into persisted state payloads"
+  ],
+  "prohibited": [
+    "MUST NOT perform file-system writes",
+    "MUST NOT expose raw ParseError across the ContextCache seam"
+  ],
+  "created_at": "2026-05-14T22:14:00.000000Z"
+}

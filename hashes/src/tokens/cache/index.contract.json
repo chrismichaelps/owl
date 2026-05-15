@@ -2,23 +2,44 @@
   "contract_id": "CTR-tokens-cache-00000001",
   "module": "@Owl.Tokens.Cache src/tokens/cache/index.ts",
   "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
-  "depth_score": "0.65 \u2014 MEDIUM (simple in-memory cache)",
+  "depth_score": "0.78 \u2014 DEEP (schema-first bounded cache with optional persistence)",
   "seam_capacity": "INTERNAL",
   "sig_id": "SIG-tokens-cache-00000001",
   "interface": {
     "signatures": [
       "ContextCache: Context.Tag<ContextCache, ContextCacheService>",
       "ContextCacheLive: Layer.effect<ContextCache, ContextCacheService>",
+      "CacheEntrySchema",
+      "PersistedCacheStateSchema",
+      "makePersistentContextCacheLive(storagePath: string) => Layer<ContextCache>",
       "store(key: string, entry: CacheEntry) => Effect<void>",
       "get(key: string) => Effect<Option<CacheEntry>>",
       "invalidate(key: string) => Effect<void>",
       "invalidateAll() => Effect<void>",
       "totalSavedTokens() => Effect<number>"
     ],
-    "error_modes": [],
-    "invariants": []
+    "error_modes": [
+      "CacheValidationError when a cache entry violates schema or trust invariants",
+      "CachePersistenceError when persistent cache read/write fails"
+    ],
+    "invariants": [
+      "ContextCache MUST validate all runtime and persisted entries with Effect Schema",
+      "ContextCache MUST reject negative Token counts",
+      "ContextCache MUST reject trustScore values outside configured bounds",
+      "ContextCache MUST bound retained entries with CACHE_CONSTANTS.MAX_ENTRIES",
+      "ContextCacheLive MUST remain process-local and deterministic",
+      "makePersistentContextCacheLive MUST persist every successful mutation"
+    ]
   },
-  "responsibilities": [],
-  "prohibited": [],
+  "responsibilities": [
+    "Provide trust-scored ContextCache storage for reusable summaries",
+    "Avoid repeated context reconstruction for stable architectural summaries",
+    "Persist cache state behind the ContextCache Interface when requested"
+  ],
+  "prohibited": [
+    "MUST NOT store unvalidated cache entries",
+    "MUST NOT expose file-system persistence details to ContextCache callers",
+    "MUST NOT silently keep entries beyond the configured retention bound"
+  ],
   "created_at": "2026-05-14T15:55:47.217953Z"
 }

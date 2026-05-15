@@ -1,6 +1,6 @@
-State_ID: BigInt(0x0000000000000028)
-Git_SHA: fa98d110fe8b60149f9bf130b0ca3e06766d0e11
-Source_SHA256: 193f6990816141e2aa3088f66a94452705b01715d102913c8b10acb6e4eff961
+State_ID: BigInt(0x0000000000000077)
+Git_SHA: 9e5c31596b36f990f88d402b533fcfc1104cbe87
+Source_SHA256: a3e65ec68c5690c188562eb5847fe1339d38e8ce5fb7e1c486e1816dbbb08e07
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
 Fidelity: DECLARED
 ---
@@ -11,6 +11,7 @@ Fidelity: DECLARED
 - `ProviderError`, `ProviderTimeoutError`, `ProviderAuthError` — provider failure hierarchy
 - `ProviderRateLimitError`, `ProviderUnavailableError`, `ProviderStreamError`
 - `TokenBudgetExceededError`, `TokenCountError`
+- `CacheValidationError`, `CachePersistenceError`
 - `GovernanceViolationError`, `HashRegistryError`, `GrammarDriftError`, `SeamTestGateError`
 - `MutationError`, `RollbackError`, `TLIError`, `DiffGenerationError`
 - `CommandParseError`, `CommandNotFoundError`
