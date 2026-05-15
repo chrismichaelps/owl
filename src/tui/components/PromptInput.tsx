@@ -1,6 +1,7 @@
 /** @Owl.TUI.Components.PromptInput - REPL prompt with mode prefix, history nav, slash dispatch */
 import React, { memo, useState } from "react"
-import { Box, Text, useInput } from "ink"
+import { Box, Text, useInput, useWindowSize } from "ink"
+import { TUI_WELCOME } from "../../core/constants/index.js"
 import type { Mode } from "../../core/schema/index.js"
 import { usePromptHistory } from "../hooks/usePromptHistory.js"
 
@@ -43,6 +44,7 @@ export const PromptInput: React.FC<PromptInputProps> = memo(
   ({ mode, disabled, onSubmit, onCommand, onModeChange }) => {
     const [value, setValue] = useState("")
     const { push, up, down, reset } = usePromptHistory()
+    const { columns } = useWindowSize()
 
     useInput(
       (input, key) => {
@@ -103,25 +105,39 @@ export const PromptInput: React.FC<PromptInputProps> = memo(
 
     const detectedMode = value.length > 0 ? detectSlashMode(value) : null
     const displayMode = detectedMode ?? mode
+    const separatorWidth = Math.max(
+      columns - 1,
+      TUI_WELCOME.SEPARATOR_MIN_WIDTH,
+    )
 
     return (
-      <Box
-        borderStyle="single"
-        borderColor={MODE_COLOR[displayMode]}
-        paddingX={1}
-      >
-        <Text color={MODE_COLOR[displayMode]} bold>
-          [{displayMode}]
+      <Box flexDirection="column">
+        <Text color="gray" dimColor>
+          {"─".repeat(separatorWidth)}
         </Text>
-        <Text> ❯ </Text>
-        <Text>
-          {value}
-          {!disabled ? <Text color="white">█</Text> : null}
+        <Box paddingX={1}>
+          <Text color={MODE_COLOR[displayMode]} bold>
+            ❯
+          </Text>
+          <Text color="gray"> {displayMode} </Text>
+          <Text>
+            {value}
+            {!disabled ? <Text color="white">█</Text> : null}
+          </Text>
+          {disabled ? (
+            <Text color="gray" dimColor>
+              {" "}
+              (processing...)
+            </Text>
+          ) : null}
+        </Box>
+        <Text color="gray" dimColor>
+          {"─".repeat(separatorWidth)}
         </Text>
-        {disabled ? (
+        {!disabled ? (
           <Text color="gray" dimColor>
-            {" "}
-            (processing…)
+            {"  "}
+            {TUI_WELCOME.PROMPT_HINT} · {TUI_WELCOME.ROLE_HINT}
           </Text>
         ) : null}
       </Box>

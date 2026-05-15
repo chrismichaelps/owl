@@ -33,6 +33,7 @@ import { OutputPanel } from "./components/OutputPanel.js"
 import { MetaPanel } from "./components/MetaPanel.js"
 import { StatusBar } from "./components/StatusBar.js"
 import { PromptInput } from "./components/PromptInput.js"
+import { WelcomePanel } from "./components/WelcomePanel.js"
 import { owlReducer, INITIAL_STATE } from "./state.js"
 import type { Mode } from "../core/schema/index.js"
 import type { OwlRuntime } from "../cli/runtime.js"
@@ -63,6 +64,8 @@ export const App: React.FC<AppProps> = ({
 
   const isProcessing =
     state.status === "routing" || state.status === "inferring"
+  const showWelcome =
+    state.turns.length === 0 && !isProcessing && state.error === null
 
   /** Submit a prompt for inference */
   const handleSubmit = useCallback(
@@ -202,21 +205,34 @@ export const App: React.FC<AppProps> = ({
 
   return (
     <Box flexDirection="column" height="100%">
-      {/* Three-panel main area */}
-      <Box flexGrow={1} gap={0}>
-        <LogPanel
-          logs={state.logs}
-          status={state.status}
-          activeRole={state.activeRole}
-        />
-        <OutputPanel
-          status={state.status}
-          turns={state.turns}
-          error={state.error}
-          streamingContent={state.streamingContent}
-        />
-        <MetaPanel state={state} />
-      </Box>
+      {showWelcome ? (
+        <Box flexGrow={1} justifyContent="center">
+          <WelcomePanel
+            mode={mode}
+            status={state.status}
+            activeRole={state.activeRole}
+            projectRoot={process.cwd()}
+            totalInputTokens={state.totalInputTokens}
+            totalOutputTokens={state.totalOutputTokens}
+            totalEstimatedCostUsd={state.totalEstimatedCostUsd}
+          />
+        </Box>
+      ) : (
+        <Box flexGrow={1} gap={0}>
+          <LogPanel
+            logs={state.logs}
+            status={state.status}
+            activeRole={state.activeRole}
+          />
+          <OutputPanel
+            status={state.status}
+            turns={state.turns}
+            error={state.error}
+            streamingContent={state.streamingContent}
+          />
+          <MetaPanel state={state} />
+        </Box>
+      )}
 
       {/* Input row */}
       <PromptInput

@@ -196,6 +196,20 @@ export const TUI_ANIMATION = {
   FMCF_ROLE_FLOW: ["Architect", "DNA Engineer", "Shadow", "Forensic Guardian"],
 } as const
 
+/** @Owl.Core.Constants.TUIWelcome - Welcome workbench layout text */
+export const TUI_WELCOME = {
+  MIN_WIDTH: 80,
+  LEFT_COLUMN_WIDTH: 42,
+  SEPARATOR_MIN_WIDTH: 40,
+  BRAND_TITLE: "Owl",
+  BRAND_SUBTITLE: "FMCF-governed AI coding agent",
+  GETTING_STARTED_TITLE: "Tips for getting started",
+  WHATS_NEW_TITLE: "Runtime status",
+  PROMPT_HINT: "? for shortcuts · /help for commands",
+  ROLE_HINT: "← / → for focus · /model for routing",
+  OWL_MARK: ["   ◜◝   ◜◝   ", "  ◟  ◞ ◟  ◞  ", "    ◜▵▵◝    "],
+} as const
+
 /** @Owl.Core.Constants.TUI - Panel width ratios (left/center/right) */
 export const TUI_PANEL_WIDTHS = {
   LEFT: 0.3,
