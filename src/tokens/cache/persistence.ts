@@ -65,14 +65,14 @@ export const decodeCacheEntry = (
 
 export const boundStore = (store: CacheStore): CacheStore => {
   const entries = Array.from(store.entries())
-    .sort(([, left], [, right]) => (right.createdAt ?? 0) - (left.createdAt ?? 0))
+    .sort(
+      ([, left], [, right]) => (right.createdAt ?? 0) - (left.createdAt ?? 0),
+    )
     .slice(0, CACHE_CONSTANTS.MAX_ENTRIES)
   return new Map(entries)
 }
 
-export const toPersistedState = (
-  store: CacheStore,
-): PersistedCacheState => ({
+export const toPersistedState = (store: CacheStore): PersistedCacheState => ({
   version: CACHE_CONSTANTS.PERSISTENCE_SCHEMA_VERSION,
   entries: Array.from(store.entries()).map(([key, entry]) => ({ key, entry })),
 })

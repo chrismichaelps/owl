@@ -30,8 +30,7 @@ export const makeEmptyState = (sessionId: string): SessionMemoryState => ({
 
 export const boundTurns = (
   turns: readonly SessionTurn[],
-): readonly SessionTurn[] =>
-  turns.slice(-SESSION_MEMORY_CONSTANTS.MAX_TURNS)
+): readonly SessionTurn[] => turns.slice(-SESSION_MEMORY_CONSTANTS.MAX_TURNS)
 
 export const decodeSessionTurn = (
   turn: SessionTurn,

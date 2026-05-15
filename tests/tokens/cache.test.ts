@@ -120,7 +120,9 @@ describe("ContextCache", () => {
       }
       return {
         oldest: yield* cache.get("entry-0"),
-        newest: yield* cache.get("entry-" + String(CACHE_CONSTANTS.MAX_ENTRIES)),
+        newest: yield* cache.get(
+          "entry-" + String(CACHE_CONSTANTS.MAX_ENTRIES),
+        ),
       }
     })
 

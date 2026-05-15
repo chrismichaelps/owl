@@ -154,30 +154,28 @@ export const makePersistentContextCacheLive = (
 
       const storeRef = yield* Ref.make<CacheStore>(initialStore)
       const persist: PersistSnapshot = (store) =>
-        fs
-          .makeDirectory(path.dirname(storagePath), { recursive: true })
-          .pipe(
-            Effect.mapError(
-              () =>
-                new CachePersistenceError({
-                  path: storagePath,
-                  reason: "Unable to create ContextCache storage directory",
-                }),
+        fs.makeDirectory(path.dirname(storagePath), { recursive: true }).pipe(
+          Effect.mapError(
+            () =>
+              new CachePersistenceError({
+                path: storagePath,
+                reason: "Unable to create ContextCache storage directory",
+              }),
+          ),
+          Effect.zipRight(
+            fs.writeFileString(
+              storagePath,
+              JSON.stringify(toPersistedState(store), null, 2),
             ),
-            Effect.zipRight(
-              fs.writeFileString(
-                storagePath,
-                JSON.stringify(toPersistedState(store), null, 2),
-              ),
-            ),
-            Effect.mapError(
-              () =>
-                new CachePersistenceError({
-                  path: storagePath,
-                  reason: "Unable to write ContextCache storage",
-                }),
-            ),
-          )
+          ),
+          Effect.mapError(
+            () =>
+              new CachePersistenceError({
+                path: storagePath,
+                reason: "Unable to write ContextCache storage",
+              }),
+          ),
+        )
 
       return makeService(storeRef, persist)
     }),

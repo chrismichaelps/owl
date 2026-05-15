@@ -175,27 +175,25 @@ export const makePersistentSessionMemoryLive = (
 
       const stateRef = yield* Ref.make<SessionMemoryState>(initialState)
       const persist: PersistSessionSnapshot = (state) =>
-        fs
-          .makeDirectory(path.dirname(storagePath), { recursive: true })
-          .pipe(
-            Effect.mapError(
-              () =>
-                new SessionMemoryPersistenceError({
-                  path: storagePath,
-                  reason: "Unable to create SessionMemory storage directory",
-                }),
-            ),
-            Effect.zipRight(
-              fs.writeFileString(storagePath, JSON.stringify(state, null, 2)),
-            ),
-            Effect.mapError(
-              () =>
-                new SessionMemoryPersistenceError({
-                  path: storagePath,
-                  reason: "Unable to write SessionMemory storage",
-                }),
-            ),
-          )
+        fs.makeDirectory(path.dirname(storagePath), { recursive: true }).pipe(
+          Effect.mapError(
+            () =>
+              new SessionMemoryPersistenceError({
+                path: storagePath,
+                reason: "Unable to create SessionMemory storage directory",
+              }),
+          ),
+          Effect.zipRight(
+            fs.writeFileString(storagePath, JSON.stringify(state, null, 2)),
+          ),
+          Effect.mapError(
+            () =>
+              new SessionMemoryPersistenceError({
+                path: storagePath,
+                reason: "Unable to write SessionMemory storage",
+              }),
+          ),
+        )
 
       return makeService(stateRef, persist)
     }),

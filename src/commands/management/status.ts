@@ -21,9 +21,9 @@ import type { SessionMemoryService } from "../../engine/memory/index.js"
 import type { CommandHandler, CommandResult } from "../types.js"
 
 const formatCacheHitRate = (hitRate: number): string =>
-  (
-    hitRate * METRICS_CONSTANTS.CACHE_HIT_RATE_PERCENT_MULTIPLIER
-  ).toFixed(METRICS_CONSTANTS.CACHE_HIT_RATE_DECIMAL_PLACES)
+  (hitRate * METRICS_CONSTANTS.CACHE_HIT_RATE_PERCENT_MULTIPLIER).toFixed(
+    METRICS_CONSTANTS.CACHE_HIT_RATE_DECIMAL_PLACES,
+  )
 
 /**
  * @Owl.Commands.Management.Status.Factory - Create the /status command handler
