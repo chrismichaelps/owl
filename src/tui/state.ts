@@ -44,6 +44,7 @@ export interface ConversationTurn {
   readonly latencyMs: number
   readonly inputTokens: number
   readonly outputTokens: number
+  readonly estimatedCostUsd: number
   readonly timestamp: string
 }
 
@@ -68,6 +69,7 @@ export interface OwlAppState {
   readonly error: string | null
   readonly totalInputTokens: number
   readonly totalOutputTokens: number
+  readonly totalEstimatedCostUsd: number
   readonly provider: ProviderId | null
   readonly latencyMs: number | null
   readonly turnCount: number
@@ -96,6 +98,7 @@ export const INITIAL_STATE: OwlAppState = {
   error: null,
   totalInputTokens: 0,
   totalOutputTokens: 0,
+  totalEstimatedCostUsd: 0,
   provider: null,
   latencyMs: null,
   turnCount: 0,
@@ -140,6 +143,8 @@ export function owlReducer(state: OwlAppState, action: OwlAction): OwlAppState {
           state.totalInputTokens + action.response.usage.inputTokens,
         totalOutputTokens:
           state.totalOutputTokens + action.response.usage.outputTokens,
+        totalEstimatedCostUsd:
+          state.totalEstimatedCostUsd + action.response.usage.estimatedCostUsd,
         provider: action.response.provider,
         latencyMs: action.response.latencyMs,
         turnCount: state.turnCount + 1,
@@ -170,6 +175,7 @@ export function owlReducer(state: OwlAppState, action: OwlAction): OwlAppState {
         ...INITIAL_STATE,
         totalInputTokens: state.totalInputTokens,
         totalOutputTokens: state.totalOutputTokens,
+        totalEstimatedCostUsd: state.totalEstimatedCostUsd,
         turnCount: state.turnCount,
         turns: state.turns,
       }

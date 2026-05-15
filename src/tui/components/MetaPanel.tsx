@@ -1,6 +1,7 @@
 /** @Owl.TUI.Components.MetaPanel - Right panel: provider, token, latency metrics */
 import React, { memo } from "react"
 import { Box, Text } from "ink"
+import { formatEstimatedCostUsd } from "../../core/cost.js"
 import type { OwlAppState } from "../state.js"
 
 interface MetaPanelProps {
@@ -55,6 +56,11 @@ export const MetaPanel: React.FC<MetaPanelProps> = memo(({ state }) => (
         label="Out tokens"
         value={String(state.totalOutputTokens)}
         valueColor="yellow"
+      />
+      <MetricRow
+        label="Cost"
+        value={formatEstimatedCostUsd(state.totalEstimatedCostUsd)}
+        valueColor="green"
       />
       <MetricRow
         label="Latency"

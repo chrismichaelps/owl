@@ -19,6 +19,7 @@ import * as Stream from "effect/Stream"
 import { ProviderError, ProviderStreamError } from "../../core/errors/index.js"
 import { OWL_CONFIG } from "../../core/config/index.js"
 import { RETRY_CONFIG } from "../../core/constants/index.js"
+import { estimateModelCostUsd } from "../cost.js"
 import type {
   LLMProviderService,
   ProviderCapability,
@@ -146,6 +147,12 @@ export const OpenAIAdapterLive = Layer.effect(
               outputTokens: usage?.completion_tokens ?? 0,
               cacheReadTokens: 0,
               cacheWriteTokens: 0,
+              estimatedCostUsd: estimateModelCostUsd(
+                OPENAI_CAPABILITIES,
+                response.model,
+                usage?.prompt_tokens ?? 0,
+                usage?.completion_tokens ?? 0,
+              ),
             },
             model: response.model,
             provider: "openai" as const,

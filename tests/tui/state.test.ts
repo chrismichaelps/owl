@@ -23,6 +23,7 @@ function makeResponse(
     latencyMs: number
     inputTokens: number
     outputTokens: number
+    estimatedCostUsd: number
     content: string
   }> = {},
 ) {
@@ -35,6 +36,7 @@ function makeResponse(
       outputTokens: overrides.outputTokens ?? 55,
       cacheReadTokens: 0,
       cacheWriteTokens: 0,
+      estimatedCostUsd: overrides.estimatedCostUsd ?? 0.0012,
     },
     model: "claude-opus-4-5",
     provider: overrides.provider ?? "anthropic",
@@ -59,6 +61,7 @@ describe("INITIAL_STATE shape", () => {
   it("has zero token counts", () => {
     expect(INITIAL_STATE.totalInputTokens).toBe(0)
     expect(INITIAL_STATE.totalOutputTokens).toBe(0)
+    expect(INITIAL_STATE.totalEstimatedCostUsd).toBe(0)
   })
 
   it("has empty logs array", () => {
@@ -221,6 +224,19 @@ describe("SET_RESPONSE action", () => {
     expect(s.totalOutputTokens).toBe(125)
   })
 
+  it("accumulates estimated cost across turns", () => {
+    let s = INITIAL_STATE
+    s = reduce(s, {
+      type: "SET_RESPONSE",
+      response: makeResponse({ estimatedCostUsd: 0.001 }),
+    })
+    s = reduce(s, {
+      type: "SET_RESPONSE",
+      response: makeResponse({ estimatedCostUsd: 0.002 }),
+    })
+    expect(s.totalEstimatedCostUsd).toBeCloseTo(0.003)
+  })
+
   it("records provider name", () => {
     const next = reduce(INITIAL_STATE, {
       type: "SET_RESPONSE",
@@ -267,10 +283,12 @@ describe("SET_ERROR action", () => {
       ...INITIAL_STATE,
       totalInputTokens: 42,
       totalOutputTokens: 17,
+      totalEstimatedCostUsd: 0.004,
     }
     const next = reduce(s, { type: "SET_ERROR", error: "boom" })
     expect(next.totalInputTokens).toBe(42)
     expect(next.totalOutputTokens).toBe(17)
+    expect(next.totalEstimatedCostUsd).toBe(0.004)
   })
 })
 
@@ -310,6 +328,16 @@ describe("RESET action", () => {
     const next = reduce(s, { type: "RESET" })
     expect(next.totalInputTokens).toBe(300)
     expect(next.totalOutputTokens).toBe(100)
+  })
+
+  it("preserves accumulated estimated cost across reset", () => {
+    let s = INITIAL_STATE
+    s = reduce(s, {
+      type: "SET_RESPONSE",
+      response: makeResponse({ estimatedCostUsd: 0.003 }),
+    })
+    const next = reduce(s, { type: "RESET" })
+    expect(next.totalEstimatedCostUsd).toBeCloseTo(0.003)
   })
 
   it("preserves turnCount across reset", () => {

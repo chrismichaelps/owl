@@ -57,6 +57,7 @@ describe("makeStatusCommand", () => {
           model: "claude-sonnet-4",
           inputTokens: 100,
           outputTokens: 50,
+          estimatedCostUsd: 0.0015,
           latencyMs: 120,
           timestamp: "2026-05-14T21:24:00.000Z",
         })
@@ -69,8 +70,9 @@ describe("makeStatusCommand", () => {
     expect(output).toContain("Session turns: 1")
     expect(output).toContain("Total tokens used: 150")
     expect(output).toContain("Inference calls: 1")
+    expect(output).toContain("Estimated cost: $0.0015")
     expect(output).toContain(
-      "Provider anthropic: 1 calls, 150 tokens, 120ms avg",
+      "Provider anthropic: 1 calls, 150 tokens, $0.0015, 120ms avg",
     )
   })
 

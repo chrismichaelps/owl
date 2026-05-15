@@ -117,6 +117,7 @@ export const StreamChunkSchema = Schema.Struct({
       outputTokens: Schema.Number,
       cacheReadTokens: Schema.Number,
       cacheWriteTokens: Schema.Number,
+      estimatedCostUsd: Schema.Number,
     }),
   ),
 })
@@ -211,8 +212,8 @@ export type RoutingDecision = Schema.Schema.Type<typeof RoutingDecisionSchema>
  * @Owl.Providers.Types.StreamingResult - Result of a streaming Inference
  *
  * Returned by ProviderRouter.completeWithCallback after the stream completes.
- * Token counts are not included — Orchestrator estimates them via
- * estimateConversationTokens to avoid polluting this type with function types.
+ * Token counts are included when a provider reports final stream usage.
+ * The Orchestrator falls back to deterministic estimates if they are zero.
  */
 export interface StreamingCallbackResult {
   /** Full assembled response content (all chunks joined) */
@@ -223,8 +224,14 @@ export interface StreamingCallbackResult {
   readonly model: string
   /** End-to-end latency in milliseconds (start of route() to stream end) */
   readonly latencyMs: number
+  /** Input tokens reported by provider usage (0 if not reported) */
+  readonly inputTokens: number
+  /** Output tokens reported by provider usage (0 if not reported) */
+  readonly outputTokens: number
   /** Cache read tokens from provider usage (0 if not reported) */
   readonly cacheReadTokens: number
   /** Cache write tokens from provider usage (0 if not reported) */
   readonly cacheWriteTokens: number
+  /** Estimated USD cost for this streaming Inference */
+  readonly estimatedCostUsd: number
 }

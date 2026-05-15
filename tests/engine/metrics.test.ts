@@ -56,6 +56,7 @@ describe("UsageMetrics", () => {
     expect(snapshot.outputTokens).toBe(150)
     expect(snapshot.totalCacheReadTokens).toBe(0)
     expect(snapshot.totalCacheWriteTokens).toBe(0)
+    expect(snapshot.totalEstimatedCostUsd).toBe(0)
     expect(snapshot.cacheHitRate).toBe(0)
     expect(snapshot.totalTokens).toBe(450)
     expect(snapshot.averageLatencyMs).toBe(150)
@@ -100,6 +101,41 @@ describe("UsageMetrics", () => {
     expect(snapshot.byProvider[0]?.cacheReadTokens).toBe(1_600)
     expect(snapshot.byProvider[0]?.cacheWriteTokens).toBe(150)
     expect(snapshot.byModel[0]?.cacheReadTokens).toBe(1_600)
+  })
+
+  it("records and aggregates estimated USD cost", async () => {
+    const snapshot = await run(
+      Effect.gen(function* () {
+        const metrics = yield* UsageMetrics
+        yield* metrics.recordInference({
+          taskId: "task-cost-1",
+          mode: "standard",
+          provider: "anthropic",
+          model: "claude-sonnet-4",
+          inputTokens: 100,
+          outputTokens: 50,
+          estimatedCostUsd: 0.001,
+          latencyMs: 100,
+          timestamp: "2026-05-14T21:25:00.000Z",
+        })
+        yield* metrics.recordInference({
+          taskId: "task-cost-2",
+          mode: "standard",
+          provider: "anthropic",
+          model: "claude-sonnet-4",
+          inputTokens: 100,
+          outputTokens: 50,
+          estimatedCostUsd: 0.002,
+          latencyMs: 100,
+          timestamp: "2026-05-14T21:26:00.000Z",
+        })
+        return yield* metrics.snapshot()
+      }),
+    )
+
+    expect(snapshot.totalEstimatedCostUsd).toBeCloseTo(0.003)
+    expect(snapshot.byProvider[0]?.estimatedCostUsd).toBeCloseTo(0.003)
+    expect(snapshot.byModel[0]?.estimatedCostUsd).toBeCloseTo(0.003)
   })
 
   it("resets metrics", async () => {

@@ -1,5 +1,6 @@
 /** @Owl.Tests.Providers.Scoring - Provider scoring algorithm tests */
 import { describe, it, expect } from "vitest"
+import { estimateCapabilityCostUsd } from "../../src/providers/cost.js"
 import {
   rankProviders,
   scoreProvider,
@@ -94,5 +95,9 @@ describe("provider scoring", () => {
       preferredProvider: "anthropic",
     })
     expect(ranked[0]?.providerId).toBe("anthropic")
+  })
+
+  it("estimates cost from input and output token pricing", () => {
+    expect(estimateCapabilityCostUsd(ANTHROPIC_HAIKU, 2000, 1000)).toBe(0.007)
   })
 })

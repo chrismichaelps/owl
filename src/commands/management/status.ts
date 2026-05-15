@@ -15,6 +15,7 @@
  */
 import { Effect } from "effect"
 import { METRICS_CONSTANTS } from "../../core/constants/index.js"
+import { formatEstimatedCostUsd } from "../../core/cost.js"
 import type { CommandParseError } from "../../core/errors/index.js"
 import type { UsageMetricsService } from "../../engine/metrics/index.js"
 import type { SessionMemoryService } from "../../engine/memory/index.js"
@@ -48,6 +49,8 @@ export function makeStatusCommand(
             " calls, " +
             String(provider.totalTokens) +
             " tokens, " +
+            formatEstimatedCostUsd(provider.estimatedCostUsd) +
+            ", " +
             String(provider.averageLatencyMs) +
             "ms avg",
         )
@@ -75,6 +78,8 @@ export function makeStatusCommand(
           String(metrics.outputTokens) +
           "\nInference tokens: " +
           String(metrics.totalTokens) +
+          "\nEstimated cost: " +
+          formatEstimatedCostUsd(metrics.totalEstimatedCostUsd) +
           "\nAverage latency: " +
           String(metrics.averageLatencyMs) +
           "ms" +

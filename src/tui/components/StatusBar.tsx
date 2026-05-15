@@ -1,12 +1,14 @@
 /** @Owl.TUI.Components.StatusBar - Bottom status: mode, cost, keybinding hints */
 import React, { memo } from "react"
 import { Box, Text } from "ink"
+import { formatEstimatedCostUsd } from "../../core/cost.js"
 import type { AgentStatus } from "../state.js"
 
 interface StatusBarProps {
   readonly status: AgentStatus
   readonly totalInputTokens: number
   readonly totalOutputTokens: number
+  readonly totalEstimatedCostUsd: number
   readonly mode: string
 }
 
@@ -20,7 +22,13 @@ const STATUS_COLOR: Record<AgentStatus, string> = {
 
 /** @Owl.TUI.Components.StatusBar.Component - Bottom status bar */
 export const StatusBar: React.FC<StatusBarProps> = memo(
-  ({ status, totalInputTokens, totalOutputTokens, mode }) => (
+  ({
+    status,
+    totalInputTokens,
+    totalOutputTokens,
+    totalEstimatedCostUsd,
+    mode,
+  }) => (
     <Box
       borderStyle="single"
       borderColor="gray"
@@ -37,13 +45,23 @@ export const StatusBar: React.FC<StatusBarProps> = memo(
       </Box>
 
       {/* Center: token usage */}
-      <Box gap={1}>
-        <Text color="gray" dimColor>
-          tokens:
-        </Text>
-        <Text color="yellow">
-          {String(totalInputTokens)}↑ {String(totalOutputTokens)}↓
-        </Text>
+      <Box gap={2}>
+        <Box gap={1}>
+          <Text color="gray" dimColor>
+            tokens:
+          </Text>
+          <Text color="yellow">
+            {String(totalInputTokens)}↑ {String(totalOutputTokens)}↓
+          </Text>
+        </Box>
+        <Box gap={1}>
+          <Text color="gray" dimColor>
+            cost:
+          </Text>
+          <Text color="green">
+            {formatEstimatedCostUsd(totalEstimatedCostUsd)}
+          </Text>
+        </Box>
       </Box>
 
       {/* Right: keybindings */}

@@ -18,6 +18,7 @@ export interface InferenceMetric {
   readonly outputTokens: number
   readonly cacheReadTokens: number
   readonly cacheWriteTokens: number
+  readonly estimatedCostUsd: number
   readonly latencyMs: number
   readonly timestamp: string
 }
@@ -31,6 +32,7 @@ export interface RecordInferenceMetric {
   readonly outputTokens: number
   readonly cacheReadTokens?: number
   readonly cacheWriteTokens?: number
+  readonly estimatedCostUsd?: number
   readonly latencyMs: number
   readonly timestamp: string
 }
@@ -42,6 +44,7 @@ export interface ProviderUsageMetrics {
   readonly outputTokens: number
   readonly cacheReadTokens: number
   readonly cacheWriteTokens: number
+  readonly estimatedCostUsd: number
   readonly totalTokens: number
   readonly averageLatencyMs: number
 }
@@ -54,6 +57,7 @@ export interface ModelUsageMetrics {
   readonly outputTokens: number
   readonly cacheReadTokens: number
   readonly cacheWriteTokens: number
+  readonly estimatedCostUsd: number
   readonly totalTokens: number
 }
 
@@ -63,6 +67,7 @@ export interface UsageMetricsSnapshot {
   readonly outputTokens: number
   readonly totalCacheReadTokens: number
   readonly totalCacheWriteTokens: number
+  readonly totalEstimatedCostUsd: number
   readonly cacheHitRate: number
   readonly totalTokens: number
   readonly averageLatencyMs: number
@@ -97,13 +102,15 @@ const sumMetric = (
     | "inputTokens"
     | "outputTokens"
     | "cacheReadTokens"
-    | "cacheWriteTokens",
+    | "cacheWriteTokens"
+    | "estimatedCostUsd",
 ): number => records.reduce((sum, record) => sum + record[field], 0)
 
 const normalizeMetric = (metric: RecordInferenceMetric): InferenceMetric => ({
   ...metric,
   cacheReadTokens: metric.cacheReadTokens ?? 0,
   cacheWriteTokens: metric.cacheWriteTokens ?? 0,
+  estimatedCostUsd: metric.estimatedCostUsd ?? 0,
 })
 
 const calculateCacheHitRate = (
@@ -131,6 +138,7 @@ const aggregateProviders = (
     const outputTokens = sumMetric(providerRecords, "outputTokens")
     const cacheReadTokens = sumMetric(providerRecords, "cacheReadTokens")
     const cacheWriteTokens = sumMetric(providerRecords, "cacheWriteTokens")
+    const estimatedCostUsd = sumMetric(providerRecords, "estimatedCostUsd")
     return {
       provider,
       calls: providerRecords.length,
@@ -138,6 +146,7 @@ const aggregateProviders = (
       outputTokens,
       cacheReadTokens,
       cacheWriteTokens,
+      estimatedCostUsd,
       totalTokens: inputTokens + outputTokens,
       averageLatencyMs: average(providerRecords.map((r) => r.latencyMs)),
     }
@@ -172,6 +181,7 @@ const aggregateModels = (
     const outputTokens = sumMetric(modelRecords, "outputTokens")
     const cacheReadTokens = sumMetric(modelRecords, "cacheReadTokens")
     const cacheWriteTokens = sumMetric(modelRecords, "cacheWriteTokens")
+    const estimatedCostUsd = sumMetric(modelRecords, "estimatedCostUsd")
     return {
       model: group.model,
       provider: group.provider,
@@ -180,6 +190,7 @@ const aggregateModels = (
       outputTokens,
       cacheReadTokens,
       cacheWriteTokens,
+      estimatedCostUsd,
       totalTokens: inputTokens + outputTokens,
     }
   })
@@ -191,12 +202,14 @@ const toSnapshot = (
   const outputTokens = sumMetric(records, "outputTokens")
   const totalCacheReadTokens = sumMetric(records, "cacheReadTokens")
   const totalCacheWriteTokens = sumMetric(records, "cacheWriteTokens")
+  const totalEstimatedCostUsd = sumMetric(records, "estimatedCostUsd")
   return {
     totalCalls: records.length,
     inputTokens,
     outputTokens,
     totalCacheReadTokens,
     totalCacheWriteTokens,
+    totalEstimatedCostUsd,
     cacheHitRate: calculateCacheHitRate(inputTokens, totalCacheReadTokens),
     totalTokens: inputTokens + outputTokens,
     averageLatencyMs: average(records.map((r) => r.latencyMs)),

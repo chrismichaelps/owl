@@ -52,8 +52,10 @@ describe("core schemas", () => {
       outputTokens: 450,
       cacheReadTokens: 0,
       cacheWriteTokens: 0,
+      estimatedCostUsd: 0.004,
     })
     expect(usage.inputTokens).toBe(1200)
+    expect(usage.estimatedCostUsd).toBe(0.004)
   })
 
   it("types derive from schemas", () => {

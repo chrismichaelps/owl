@@ -86,6 +86,7 @@ export const TokenUsageSchema = Schema.Struct({
   outputTokens: Schema.Number,
   cacheReadTokens: Schema.Number,
   cacheWriteTokens: Schema.Number,
+  estimatedCostUsd: Schema.Number,
 })
 export type TokenUsage = Schema.Schema.Type<typeof TokenUsageSchema>
 

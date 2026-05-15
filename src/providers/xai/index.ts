@@ -16,6 +16,7 @@ import { Context, Effect, Layer } from "effect"
 import * as Stream from "effect/Stream"
 import { ProviderError } from "../../core/errors/index.js"
 import { OWL_CONFIG } from "../../core/config/index.js"
+import { estimateModelCostUsd } from "../cost.js"
 import type { LLMProviderService, ProviderCapability } from "../types.js"
 import type {
   InferenceRequest,
@@ -115,6 +116,12 @@ export const XAIAdapterLive = Layer.effect(
               outputTokens: response.usage?.completion_tokens ?? 0,
               cacheReadTokens: 0,
               cacheWriteTokens: 0,
+              estimatedCostUsd: estimateModelCostUsd(
+                XAI_CAPABILITIES,
+                response.model,
+                response.usage?.prompt_tokens ?? 0,
+                response.usage?.completion_tokens ?? 0,
+              ),
             },
             model: response.model,
             provider: "xai" as const,

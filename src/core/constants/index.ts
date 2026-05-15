@@ -104,6 +104,16 @@ export const METRICS_CONSTANTS = {
   CACHE_HIT_RATE_DECIMAL_PLACES: 1,
 } as const
 
+/** @Owl.Core.Constants.Cost - Cost estimation and display constraints */
+export const COST_CONSTANTS = {
+  TOKEN_UNIT: 1_000,
+  DECIMAL_BASE: 10,
+  ESTIMATE_PRECISION_DECIMALS: 6,
+  LOW_COST_THRESHOLD_USD: 0.5,
+  LOW_COST_DECIMAL_PLACES: 4,
+  STANDARD_COST_DECIMAL_PLACES: 2,
+} as const
+
 /**
  * @Owl.Core.Constants.FMCF - Governance and metric thresholds
  *

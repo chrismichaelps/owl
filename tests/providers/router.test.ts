@@ -44,17 +44,31 @@ const makeStubProvider = (id: ProviderId): LLMProviderService => ({
         outputTokens: 50,
         cacheReadTokens: 0,
         cacheWriteTokens: 0,
+        estimatedCostUsd: 0,
       },
       model: `${id}-model`,
       provider: id,
       latencyMs: 100,
     }),
   stream: (_req) =>
-    Stream.make({
-      type: "text" as const,
-      content: `stream from ${id}`,
-      index: 0,
-    }),
+    Stream.make(
+      {
+        type: "text" as const,
+        content: `stream from ${id}`,
+        index: 0,
+      },
+      {
+        type: "usage" as const,
+        index: 1,
+        usage: {
+          inputTokens: 100,
+          outputTokens: 50,
+          cacheReadTokens: 0,
+          cacheWriteTokens: 0,
+          estimatedCostUsd: 0,
+        },
+      },
+    ),
   countTokens: (_text, _modelId) => Effect.succeed(100),
   healthCheck: () => Effect.succeed(true),
 })
@@ -139,6 +153,7 @@ describe("ProviderRouter", () => {
     )
     expect(result.provider).toBe("openai")
     expect(result.content).toBe("response from openai")
+    expect(result.usage.estimatedCostUsd).toBe(0.00025)
   })
 
   it("completeWithCallback falls back when stream fails before chunks", async () => {
@@ -182,6 +197,7 @@ describe("ProviderRouter", () => {
     )
     expect(result.provider).toBe("openai")
     expect(result.content).toBe("stream from openai")
+    expect(result.estimatedCostUsd).toBe(0.00025)
     expect(chunks).toEqual(["stream from openai"])
   })
 

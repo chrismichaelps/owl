@@ -25,6 +25,7 @@
  * if (score > 0.7) { /* good match *\/ }
  */
 import { ROUTING_LIMITS, ROUTING_WEIGHTS } from "../../core/constants/index.js"
+import { estimateCapabilityCostUsd } from "../cost.js"
 import type { ProviderCapability, RoutingContext } from "../types.js"
 
 /** @Owl.Providers.Router.Scoring.Weights - Static demand and weight coefficients */
@@ -60,7 +61,11 @@ export function scoreProvider(
   // Context window fit — hard gate
   if (ctx.estimatedInputTokens > cap.contextWindow) return -Infinity
 
-  const estimatedCost = (ctx.estimatedInputTokens / 1000) * cap.inputCostPer1k
+  const estimatedCost = estimateCapabilityCostUsd(
+    cap,
+    ctx.estimatedInputTokens,
+    0,
+  )
 
   // Cost score: cheaper = higher score, normalized 0–1
   const costScore = Math.max(

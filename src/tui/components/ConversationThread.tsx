@@ -1,6 +1,7 @@
 /** @Owl.TUI.Components.ConversationThread - Scrollable list of all completed turns */
 import React, { memo } from "react"
 import { Box, Text } from "ink"
+import { formatEstimatedCostUsd } from "../../core/cost.js"
 import type { ConversationTurn } from "../state.js"
 
 interface ConversationThreadProps {
@@ -29,7 +30,8 @@ const TurnRow = memo(function TurnRow({
         <Text wrap="wrap">{turn.response}</Text>
         <Text color="gray" dimColor>
           {turn.provider} · {String(turn.latencyMs)}ms ·{" "}
-          {String(turn.inputTokens)}↑ {String(turn.outputTokens)}↓
+          {String(turn.inputTokens)}↑ {String(turn.outputTokens)}↓ ·{" "}
+          {formatEstimatedCostUsd(turn.estimatedCostUsd)}
         </Text>
       </Box>
     </Box>

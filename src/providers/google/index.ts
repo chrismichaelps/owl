@@ -17,6 +17,7 @@ import { Context, Effect, Layer } from "effect"
 import * as Stream from "effect/Stream"
 import { ProviderError, ProviderStreamError } from "../../core/errors/index.js"
 import { OWL_CONFIG } from "../../core/config/index.js"
+import { estimateModelCostUsd } from "../cost.js"
 import type { LLMProviderService, ProviderCapability } from "../types.js"
 import type {
   InferenceRequest,
@@ -111,6 +112,12 @@ export const GoogleAdapterLive = Layer.effect(
               outputTokens: 0,
               cacheReadTokens: 0,
               cacheWriteTokens: 0,
+              estimatedCostUsd: estimateModelCostUsd(
+                GOOGLE_CAPABILITIES,
+                request.model,
+                0,
+                0,
+              ),
             },
             model: request.model,
             provider: "google" as const,

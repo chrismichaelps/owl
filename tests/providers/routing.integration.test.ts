@@ -40,6 +40,7 @@ const makeStubAdapter = (): LLMProviderService => ({
         outputTokens: 5,
         cacheReadTokens: 0,
         cacheWriteTokens: 0,
+        estimatedCostUsd: 0,
       },
       model: "stub-model",
       provider: "anthropic" as const,
@@ -49,6 +50,17 @@ const makeStubAdapter = (): LLMProviderService => ({
     Stream.make<StreamChunk>(
       { type: "text", content: "stub ", index: 0 },
       { type: "text", content: "stream", index: 1 },
+      {
+        type: "usage",
+        index: 2,
+        usage: {
+          inputTokens: 10,
+          outputTokens: 5,
+          cacheReadTokens: 0,
+          cacheWriteTokens: 0,
+          estimatedCostUsd: 0,
+        },
+      },
     ),
   countTokens: (text: string, _modelId: string) =>
     Effect.succeed(Math.ceil(text.length / 4)),
@@ -110,6 +122,7 @@ describe("ProviderRouter integration", () => {
 
     expect(response.content).toBe("stub response")
     expect(response.stopReason).toBe("end_turn")
+    expect(response.usage.estimatedCostUsd).toBe(0.000025)
   })
 
   it("completeWithCallback emits every text chunk", async () => {
@@ -141,6 +154,7 @@ describe("ProviderRouter integration", () => {
     expect(chunks).toEqual(["stub ", "stream"])
     expect(result.content).toBe("stub stream")
     expect(result.provider).toBe("anthropic")
+    expect(result.estimatedCostUsd).toBe(0.000025)
   })
 
   it("listProviders returns registered provider ids", async () => {

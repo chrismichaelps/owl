@@ -36,6 +36,7 @@ const stubResponse = {
     outputTokens: 30,
     cacheReadTokens: 0,
     cacheWriteTokens: 0,
+    estimatedCostUsd: 0.001,
   },
   model: "claude-opus-4",
   provider: "anthropic" as const,
@@ -80,8 +81,11 @@ const TestProviderRouterLive = Layer.succeed(ProviderRouter, {
         provider: "anthropic",
         model: "claude-opus-4",
         latencyMs: 100,
+        inputTokens: 250,
+        outputTokens: 30,
         cacheReadTokens: 300,
         cacheWriteTokens: 50,
+        estimatedCostUsd: 0.002,
       }
     }),
   listProviders: () => Effect.succeed(["anthropic"]),
@@ -117,6 +121,7 @@ const TestUsageMetricsLive = Layer.succeed(UsageMetrics, {
       outputTokens: 0,
       totalCacheReadTokens: 0,
       totalCacheWriteTokens: 0,
+      totalEstimatedCostUsd: 0,
       cacheHitRate: 0,
       totalTokens: 0,
       averageLatencyMs: 0,
@@ -210,6 +215,7 @@ describe("Orchestrator.run", () => {
       outputTokens: 30,
       cacheReadTokens: 0,
       cacheWriteTokens: 0,
+      estimatedCostUsd: 0.001,
       latencyMs: 120,
     })
   })
@@ -290,6 +296,7 @@ describe("Orchestrator.runStream", () => {
     )
     expect(response.usage.cacheReadTokens).toBe(300)
     expect(response.usage.cacheWriteTokens).toBe(50)
+    expect(response.usage.estimatedCostUsd).toBe(0.002)
   })
 
   it("records real cache tokens in UsageMetrics after streaming", async () => {
@@ -313,6 +320,7 @@ describe("Orchestrator.runStream", () => {
       taskId: "t-cache-metrics",
       cacheReadTokens: 300,
       cacheWriteTokens: 50,
+      estimatedCostUsd: 0.002,
     })
   })
 })

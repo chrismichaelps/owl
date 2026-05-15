@@ -31,6 +31,7 @@ import { Context, Effect, Layer, Ref } from "effect"
 import * as Stream from "effect/Stream"
 import { ROUTING_LIMITS } from "../../core/constants/index.js"
 import { ProviderUnavailableError } from "../../core/errors/index.js"
+import { estimateCapabilityCostUsd } from "../cost.js"
 import { rankProviders, scoreProvider } from "./scoring.js"
 import type {
   LLMProviderService,
@@ -169,8 +170,11 @@ export const ProviderRouterLive = Layer.effect(
           ),
         ).slice(0, ROUTING_LIMITS.FALLBACK_PROVIDER_LIMIT)
 
-        const estimatedCost =
-          (ctx.estimatedInputTokens / 1000) * best.inputCostPer1k
+        const estimatedCost = estimateCapabilityCostUsd(
+          best,
+          ctx.estimatedInputTokens,
+          0,
+        )
 
         return {
           selectedProvider: best.providerId,
@@ -251,7 +255,17 @@ export const ProviderRouterLive = Layer.effect(
             .pipe(Effect.either)
 
           if (result._tag === "Right") {
-            return result.right
+            return {
+              ...result.right,
+              usage: {
+                ...result.right.usage,
+                estimatedCostUsd: estimateCapabilityCostUsd(
+                  capability,
+                  result.right.usage.inputTokens,
+                  result.right.usage.outputTokens,
+                ),
+              },
+            }
           }
 
           lastError = result.left
@@ -285,6 +299,8 @@ export const ProviderRouterLive = Layer.effect(
 
           const chunks: string[] = []
           let emittedChunks = 0
+          let inputTokens = 0
+          let outputTokens = 0
           let cacheReadTokens = 0
           let cacheWriteTokens = 0
           const result = yield* Stream.runForEach(
@@ -296,6 +312,8 @@ export const ProviderRouterLive = Layer.effect(
                   emittedChunks += 1
                   onChunk(chunk.content)
                 } else if (chunk.type === "usage" && chunk.usage != null) {
+                  inputTokens = chunk.usage.inputTokens
+                  outputTokens = chunk.usage.outputTokens
                   cacheReadTokens = chunk.usage.cacheReadTokens
                   cacheWriteTokens = chunk.usage.cacheWriteTokens
                 }
@@ -308,8 +326,15 @@ export const ProviderRouterLive = Layer.effect(
               provider: capability.providerId,
               model: capability.modelId,
               latencyMs: Date.now() - startMs,
+              inputTokens,
+              outputTokens,
               cacheReadTokens,
               cacheWriteTokens,
+              estimatedCostUsd: estimateCapabilityCostUsd(
+                capability,
+                inputTokens,
+                outputTokens,
+              ),
             } satisfies StreamingCallbackResult
           }
 

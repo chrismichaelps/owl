@@ -53,6 +53,21 @@ describe("provider types", () => {
     expect(chunk.content).toBe("Hello")
   })
 
+  it("StreamChunkSchema validates final usage with estimated cost", () => {
+    const chunk = Schema.decodeUnknownSync(StreamChunkSchema)({
+      type: "usage",
+      index: 1,
+      usage: {
+        inputTokens: 100,
+        outputTokens: 50,
+        cacheReadTokens: 0,
+        cacheWriteTokens: 0,
+        estimatedCostUsd: 0.001,
+      },
+    })
+    expect(chunk.usage?.estimatedCostUsd).toBe(0.001)
+  })
+
   // Compile-time type checks — satisfy unused-vars by asserting
   it("types are assignable", () => {
     const cap: ProviderCapability = {

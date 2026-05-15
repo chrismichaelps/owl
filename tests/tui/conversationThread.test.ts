@@ -14,6 +14,7 @@ const TURN = {
   latencyMs: 820,
   inputTokens: 100,
   outputTokens: 50,
+  estimatedCostUsd: 0.001,
   timestamp: "2026-05-13T18:00:00Z",
 }
 

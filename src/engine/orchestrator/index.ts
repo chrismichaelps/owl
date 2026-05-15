@@ -191,6 +191,7 @@ export const OrchestratorLive = Layer.effect(
           outputTokens: response.usage.outputTokens,
           cacheReadTokens: response.usage.cacheReadTokens,
           cacheWriteTokens: response.usage.cacheWriteTokens,
+          estimatedCostUsd: response.usage.estimatedCostUsd,
           latencyMs: response.latencyMs,
           timestamp: new Date().toISOString(),
         })
@@ -264,13 +265,17 @@ export const OrchestratorLive = Layer.effect(
           onChunk,
         )
 
-        const outputTokens = estimateConversationTokens([
+        const estimatedOutputTokens = estimateConversationTokens([
           {
             role: "assistant" as const,
             content: result.content,
             timestamp: new Date().toISOString(),
           },
         ])
+        const inputTokens =
+          result.inputTokens > 0 ? result.inputTokens : estimatedInputTokens
+        const outputTokens =
+          result.outputTokens > 0 ? result.outputTokens : estimatedOutputTokens
         yield* budgetService.consume(task.id, outputTokens)
 
         const response: InferenceResponse = {
@@ -278,10 +283,11 @@ export const OrchestratorLive = Layer.effect(
           content: result.content,
           stopReason: "end_turn",
           usage: {
-            inputTokens: estimatedInputTokens,
+            inputTokens,
             outputTokens,
             cacheReadTokens: result.cacheReadTokens,
             cacheWriteTokens: result.cacheWriteTokens,
+            estimatedCostUsd: result.estimatedCostUsd,
           },
           model: result.model,
           provider: result.provider as ProviderId,
@@ -296,6 +302,7 @@ export const OrchestratorLive = Layer.effect(
           outputTokens: response.usage.outputTokens,
           cacheReadTokens: response.usage.cacheReadTokens,
           cacheWriteTokens: response.usage.cacheWriteTokens,
+          estimatedCostUsd: response.usage.estimatedCostUsd,
           latencyMs: response.latencyMs,
           timestamp: new Date().toISOString(),
         })
@@ -311,7 +318,7 @@ export const OrchestratorLive = Layer.effect(
           taskId: task.id,
           prompt: task.prompt,
           response: result.content,
-          tokensUsed: estimatedInputTokens + outputTokens,
+          tokensUsed: inputTokens + outputTokens,
           timestamp: new Date().toISOString(),
         })
 

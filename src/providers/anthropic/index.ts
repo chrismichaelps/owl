@@ -36,6 +36,7 @@ import {
   PROVIDER_TIMEOUTS,
   RETRY_CONFIG,
 } from "../../core/constants/index.js"
+import { estimateModelCostUsd } from "../cost.js"
 import type {
   LLMProviderService,
   ProviderCapability,
@@ -204,6 +205,12 @@ export const AnthropicAdapterLive = Layer.effect(
               outputTokens: response.usage.output_tokens,
               cacheReadTokens: response.usage.cache_read_input_tokens ?? 0,
               cacheWriteTokens: response.usage.cache_creation_input_tokens ?? 0,
+              estimatedCostUsd: estimateModelCostUsd(
+                ANTHROPIC_CAPABILITIES,
+                response.model,
+                response.usage.input_tokens,
+                response.usage.output_tokens,
+              ),
             },
             model: response.model,
             provider: "anthropic" as const,
@@ -260,6 +267,12 @@ export const AnthropicAdapterLive = Layer.effect(
                 cacheReadTokens: finalMsg.usage.cache_read_input_tokens ?? 0,
                 cacheWriteTokens:
                   finalMsg.usage.cache_creation_input_tokens ?? 0,
+                estimatedCostUsd: estimateModelCostUsd(
+                  ANTHROPIC_CAPABILITIES,
+                  finalMsg.model,
+                  finalMsg.usage.input_tokens,
+                  finalMsg.usage.output_tokens,
+                ),
               },
             })
             await emit.end()

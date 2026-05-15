@@ -56,6 +56,7 @@ export const App: React.FC<AppProps> = ({
   useApp() // access to exit()
   const [state, dispatch] = useReducer(owlReducer, INITIAL_STATE)
   const taskCounterRef = useRef(0)
+  const didSubmitInitialPromptRef = useRef(false)
   const [mode, setMode] = useState<Mode>(initialMode)
 
   const isProcessing =
@@ -106,6 +107,7 @@ export const App: React.FC<AppProps> = ({
             latencyMs: response.latencyMs,
             inputTokens: response.usage.inputTokens,
             outputTokens: response.usage.outputTokens,
+            estimatedCostUsd: response.usage.estimatedCostUsd,
             timestamp: new Date().toISOString(),
           },
         })
@@ -149,11 +151,13 @@ export const App: React.FC<AppProps> = ({
 
   /** Auto-submit initial prompt on mount */
   useEffect(() => {
+    if (didSubmitInitialPromptRef.current) return
+    didSubmitInitialPromptRef.current = true
+
     if (initialPrompt != null && initialPrompt.trim().length > 0) {
       handleSubmit(initialPrompt.trim(), initialMode)
     }
-    // intentionally empty dep array — fires once on mount only
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [handleSubmit, initialMode, initialPrompt])
 
   return (
     <Box flexDirection="column" height="100%">
@@ -187,6 +191,7 @@ export const App: React.FC<AppProps> = ({
         status={state.status}
         totalInputTokens={state.totalInputTokens}
         totalOutputTokens={state.totalOutputTokens}
+        totalEstimatedCostUsd={state.totalEstimatedCostUsd}
         mode={mode}
       />
     </Box>
