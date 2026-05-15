@@ -31,12 +31,9 @@ export type ActiveRole =
   | "Forensic Guardian"
   | null
 
-/**
- * @Owl.TUI.State.Turn - One completed conversation turn
- *
- * Immutable record of a complete user→assistant exchange.
- */
-export interface ConversationTurn {
+/** @Owl.TUI.State.InferenceTurn - One provider-backed exchange */
+export interface InferenceConversationTurn {
+  readonly kind: "inference"
   readonly id: string
   readonly prompt: string
   readonly response: string
@@ -47,6 +44,18 @@ export interface ConversationTurn {
   readonly estimatedCostUsd: number
   readonly timestamp: string
 }
+
+/** @Owl.TUI.State.CommandTurn - One slash command result */
+export interface CommandConversationTurn {
+  readonly kind: "command"
+  readonly id: string
+  readonly command: string
+  readonly output: string
+  readonly timestamp: string
+}
+
+/** @Owl.TUI.State.Turn - One completed conversation entry */
+export type ConversationTurn = InferenceConversationTurn | CommandConversationTurn
 
 /**
  * @Owl.TUI.State.Response - Plain response snapshot (safe subset of InferenceResponse)

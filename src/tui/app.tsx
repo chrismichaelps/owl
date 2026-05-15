@@ -39,6 +39,7 @@ import type { OwlRuntime } from "../cli/runtime.js"
 import { Orchestrator } from "../engine/orchestrator/index.js"
 import { CommandRegistry } from "../commands/registry.js"
 import { parseCommand } from "../commands/parser.js"
+import { TUI_CONSTANTS } from "../core/constants/index.js"
 
 /** @Owl.TUI.App.Props - Component props */
 interface AppProps {
@@ -56,6 +57,7 @@ export const App: React.FC<AppProps> = ({
   useApp() // access to exit()
   const [state, dispatch] = useReducer(owlReducer, INITIAL_STATE)
   const taskCounterRef = useRef(0)
+  const commandCounterRef = useRef(0)
   const didSubmitInitialPromptRef = useRef(false)
   const [mode, setMode] = useState<Mode>(initialMode)
 
@@ -66,10 +68,16 @@ export const App: React.FC<AppProps> = ({
   const handleSubmit = useCallback(
     (prompt: string, submittedMode: Mode) => {
       taskCounterRef.current += 1
-      const taskId = `task-${String(taskCounterRef.current)}`
+      const taskId =
+        TUI_CONSTANTS.TASK_ID_PREFIX + "-" + String(taskCounterRef.current)
 
       dispatch({ type: "RESET" })
-      dispatch({ type: "ADD_LOG", msg: `▶ Task: ${prompt.slice(0, 40)}` })
+      dispatch({
+        type: "ADD_LOG",
+        msg:
+          "▶ Task: " +
+          prompt.slice(0, TUI_CONSTANTS.TASK_LOG_PREVIEW_CHARS),
+      })
       dispatch({ type: "SET_ROLE", role: "Architect" })
       dispatch({ type: "SET_STATUS", status: "routing" })
 
@@ -101,6 +109,7 @@ export const App: React.FC<AppProps> = ({
           type: "ADD_TURN",
           turn: {
             id: taskId,
+            kind: "inference",
             prompt,
             response: response.content,
             provider: response.provider,
@@ -136,14 +145,49 @@ export const App: React.FC<AppProps> = ({
         const registry = yield* CommandRegistry
         const parsed = yield* parseCommand(raw)
         const result = yield* registry.dispatch(parsed)
+        commandCounterRef.current += 1
         dispatch({
           type: "ADD_LOG",
-          msg: `[cmd] ${result.output.slice(0, 60)}`,
+          msg:
+            "[cmd] " +
+            result.output.slice(0, TUI_CONSTANTS.LOG_PREVIEW_CHARS),
+        })
+        dispatch({
+          type: "ADD_TURN",
+          turn: {
+            id:
+              TUI_CONSTANTS.COMMAND_TURN_ID_PREFIX +
+              "-" +
+              String(commandCounterRef.current),
+            kind: "command",
+            command: raw,
+            output: result.output,
+            timestamp: new Date().toISOString(),
+          },
         })
       })
       void runtime.runPromise(effect).catch((err: unknown) => {
         const msg = err instanceof Error ? err.message : String(err)
-        dispatch({ type: "ADD_LOG", msg: `✗ Cmd error: ${msg.slice(0, 55)}` })
+        commandCounterRef.current += 1
+        dispatch({
+          type: "ADD_LOG",
+          msg:
+            "✗ Cmd error: " +
+            msg.slice(0, TUI_CONSTANTS.ERROR_LOG_PREVIEW_CHARS),
+        })
+        dispatch({
+          type: "ADD_TURN",
+          turn: {
+            id:
+              TUI_CONSTANTS.COMMAND_TURN_ID_PREFIX +
+              "-" +
+              String(commandCounterRef.current),
+            kind: "command",
+            command: raw,
+            output: "Error: " + msg,
+            timestamp: new Date().toISOString(),
+          },
+        })
       })
     },
     [runtime],

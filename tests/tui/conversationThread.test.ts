@@ -7,6 +7,7 @@ import { describe, it, expect } from "vitest"
 import { owlReducer, INITIAL_STATE } from "../../src/tui/state"
 
 const TURN = {
+  kind: "inference" as const,
   id: "t-1",
   prompt: "analyze the schema",
   response: "The schema has 3 modules.",
@@ -16,6 +17,14 @@ const TURN = {
   outputTokens: 50,
   estimatedCostUsd: 0.001,
   timestamp: "2026-05-13T18:00:00Z",
+}
+
+const COMMAND_TURN = {
+  kind: "command" as const,
+  id: "cmd-1",
+  command: "/help",
+  output: "/help - List available slash commands",
+  timestamp: "2026-05-13T18:00:01Z",
 }
 
 describe("ADD_TURN action", () => {
@@ -43,5 +52,13 @@ describe("ADD_TURN action", () => {
     let s = owlReducer(INITIAL_STATE, { type: "ADD_TURN", turn: TURN })
     s = owlReducer(s, { type: "RESET" })
     expect(s.turns).toHaveLength(1)
+  })
+
+  it("appends command results to the conversation thread", () => {
+    const next = owlReducer(INITIAL_STATE, {
+      type: "ADD_TURN",
+      turn: COMMAND_TURN,
+    })
+    expect(next.turns).toEqual([COMMAND_TURN])
   })
 })

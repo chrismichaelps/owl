@@ -176,6 +176,15 @@ export const TUI_REFRESH_INTERVAL_MS = 100
 /** @Owl.Core.Constants.TUI - Maximum log entries to display */
 export const TUI_MAX_LOG_LINES = 100
 
+/** @Owl.Core.Constants.TUIRuntime - TUI IDs and preview limits */
+export const TUI_CONSTANTS = {
+  TASK_ID_PREFIX: "task",
+  COMMAND_TURN_ID_PREFIX: "cmd",
+  TASK_LOG_PREVIEW_CHARS: 40,
+  LOG_PREVIEW_CHARS: 60,
+  ERROR_LOG_PREVIEW_CHARS: 55,
+} as const
+
 /** @Owl.Core.Constants.TUI - Panel width ratios (left/center/right) */
 export const TUI_PANEL_WIDTHS = {
   LEFT: 0.3,

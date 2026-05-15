@@ -9,10 +9,10 @@ interface ConversationThreadProps {
 }
 
 /** @Owl.TUI.Components.ConversationThread.Row - Single turn display */
-const TurnRow = memo(function TurnRow({
+const InferenceTurnRow = memo(function InferenceTurnRow({
   turn,
 }: {
-  readonly turn: ConversationTurn
+  readonly turn: Extract<ConversationTurn, { readonly kind: "inference" }>
 }): React.ReactElement {
   return (
     <Box flexDirection="column" marginBottom={1}>
@@ -35,6 +35,45 @@ const TurnRow = memo(function TurnRow({
         </Text>
       </Box>
     </Box>
+  )
+})
+
+/** @Owl.TUI.Components.ConversationThread.Command - Slash command display */
+const CommandTurnRow = memo(function CommandTurnRow({
+  turn,
+}: {
+  readonly turn: Extract<ConversationTurn, { readonly kind: "command" }>
+}): React.ReactElement {
+  return (
+    <Box flexDirection="column" marginBottom={1}>
+      <Box gap={1}>
+        <Text color="magenta" bold>
+          /
+        </Text>
+        <Text color="magentaBright" wrap="wrap">
+          {turn.command}
+        </Text>
+      </Box>
+      <Box paddingLeft={2} flexDirection="column">
+        <Text wrap="wrap">{turn.output}</Text>
+        <Text color="gray" dimColor>
+          command
+        </Text>
+      </Box>
+    </Box>
+  )
+})
+
+/** @Owl.TUI.Components.ConversationThread.Row - Dispatches turn renderer */
+const TurnRow = memo(function TurnRow({
+  turn,
+}: {
+  readonly turn: ConversationTurn
+}): React.ReactElement {
+  return turn.kind === "command" ? (
+    <CommandTurnRow turn={turn} />
+  ) : (
+    <InferenceTurnRow turn={turn} />
   )
 })
 
