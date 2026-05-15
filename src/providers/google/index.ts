@@ -17,8 +17,13 @@ import { Context, Effect, Layer } from "effect"
 import * as Stream from "effect/Stream"
 import { ProviderError, ProviderStreamError } from "../../core/errors/index.js"
 import { OWL_CONFIG } from "../../core/config/index.js"
+import { PROVIDER_CONSTANTS } from "../../core/constants/index.js"
 import { estimateModelCostUsd } from "../cost.js"
-import type { LLMProviderService, ProviderCapability } from "../types.js"
+import type {
+  LLMProviderService,
+  ProviderCapability,
+  StreamChunk,
+} from "../types.js"
 import type {
   InferenceRequest,
   InferenceResponse,
@@ -42,6 +47,60 @@ const GOOGLE_CAPABILITIES: readonly ProviderCapability[] = [
   },
 ]
 
+interface GoogleUsageMetadata {
+  readonly promptTokenCount?: number
+  readonly candidatesTokenCount?: number
+}
+
+interface GoogleResponseLike {
+  readonly text: () => string
+  readonly usageMetadata?: GoogleUsageMetadata
+}
+
+const estimateTextTokens = (text: string): number =>
+  Math.ceil(text.length / PROVIDER_CONSTANTS.TOKEN_ESTIMATION_CHARS_PER_TOKEN)
+
+const buildPrompt = (request: InferenceRequest): string =>
+  request.messages
+    .filter((message) => message.role !== "system")
+    .map((message) => message.content)
+    .join("\n")
+
+const makeModelParams = (request: InferenceRequest) => ({
+  model: request.model,
+  generationConfig: {
+    maxOutputTokens: request.maxTokens,
+  },
+  ...(request.systemPrompt !== undefined
+    ? { systemInstruction: request.systemPrompt }
+    : {}),
+})
+
+const usageFromResponse = (
+  request: InferenceRequest,
+  prompt: string,
+  content: string,
+  response: GoogleResponseLike,
+) => {
+  const inputTokens =
+    response.usageMetadata?.promptTokenCount ?? estimateTextTokens(prompt)
+  const outputTokens =
+    response.usageMetadata?.candidatesTokenCount ?? estimateTextTokens(content)
+
+  return {
+    inputTokens,
+    outputTokens,
+    cacheReadTokens: 0,
+    cacheWriteTokens: 0,
+    estimatedCostUsd: estimateModelCostUsd(
+      GOOGLE_CAPABILITIES,
+      request.model,
+      inputTokens,
+      outputTokens,
+    ),
+  }
+}
+
 /** @Owl.Providers.Google.Adapter - Effect-TS service definition */
 export class GoogleAdapter extends Context.Tag("GoogleAdapter")<
   GoogleAdapter,
@@ -52,7 +111,7 @@ export class GoogleAdapter extends Context.Tag("GoogleAdapter")<
  * @Owl.Providers.Google.Implementation - Production layer logic
  *
  * Falls back gracefully when GOOGLE_API_KEY is not set.
- * Streaming not yet implemented (returns empty stream).
+ * Streaming emits text chunks and terminal usage metadata.
  */
 export const GoogleAdapterLive = Layer.effect(
   GoogleAdapter,
@@ -96,29 +155,21 @@ export const GoogleAdapterLive = Layer.effect(
       Effect.tryPromise({
         try: async () => {
           const startMs = Date.now()
-          const model = genAI.getGenerativeModel({ model: request.model })
-          const prompt = request.messages
-            .filter((m) => m.role !== "system")
-            .map((m) => m.content)
-            .join("\n")
+          const model = genAI.getGenerativeModel(makeModelParams(request))
+          const prompt = buildPrompt(request)
           const result = await model.generateContent(prompt)
           const text = result.response.text()
+          const usage = usageFromResponse(
+            request,
+            prompt,
+            text,
+            result.response,
+          )
           return {
             taskId: request.taskId,
             content: text,
             stopReason: "end_turn" as const,
-            usage: {
-              inputTokens: 0,
-              outputTokens: 0,
-              cacheReadTokens: 0,
-              cacheWriteTokens: 0,
-              estimatedCostUsd: estimateModelCostUsd(
-                GOOGLE_CAPABILITIES,
-                request.model,
-                0,
-                0,
-              ),
-            },
+            usage,
             model: request.model,
             provider: "google" as const,
             latencyMs: Date.now() - startMs,
@@ -128,13 +179,47 @@ export const GoogleAdapterLive = Layer.effect(
           new ProviderError({ provider: "google", message: String(e) }),
       })
 
+    const stream = (request: InferenceRequest) =>
+      Stream.async<StreamChunk, ProviderStreamError>((emit) => {
+        const run = async () => {
+          try {
+            const model = genAI.getGenerativeModel(makeModelParams(request))
+            const prompt = buildPrompt(request)
+            const result = await model.generateContentStream(prompt)
+            const chunks: string[] = []
+            let index = 0
+
+            for await (const chunk of result.stream) {
+              const content = chunk.text()
+              if (content.length > 0) {
+                chunks.push(content)
+                await emit.single({ type: "text", content, index: index++ })
+              }
+            }
+
+            const aggregated = await result.response
+            const content = chunks.join("")
+            await emit.single({
+              type: "usage",
+              index,
+              usage: usageFromResponse(request, prompt, content, aggregated),
+            })
+            await emit.end()
+          } catch (cause) {
+            await emit.fail(
+              new ProviderStreamError({ provider: "google", cause }),
+            )
+          }
+        }
+        void run()
+      })
+
     return {
       id: "google",
       capabilities: GOOGLE_CAPABILITIES,
       complete,
-      stream: (_req) => Stream.empty,
-      countTokens: (_text, _model) =>
-        Effect.succeed(Math.ceil(_text.length / 4)),
+      stream,
+      countTokens: (_text, _model) => Effect.succeed(estimateTextTokens(_text)),
       healthCheck: () => Effect.succeed(true),
     } satisfies LLMProviderService
   }),
