@@ -30,6 +30,7 @@ import { ContextManager } from "../context/index.js"
 import { buildFMCFSystemPrompt } from "../context/systemPrompt.js"
 import { UsageMetrics } from "../metrics/index.js"
 import { SessionMemory } from "../memory/index.js"
+import type { SessionMemoryFailure } from "../memory/persistence.js"
 import { ProviderRouter } from "../../providers/router/index.js"
 import { RoutingPreferences } from "../../providers/preferences/index.js"
 import type { AnyProviderError } from "../../providers/types.js"
@@ -74,7 +75,10 @@ export interface OrchestratorService {
     task: Task,
   ) => Effect.Effect<
     InferenceResponse,
-    AnyProviderError | ProviderUnavailableError | TokenBudgetExceededError
+    | AnyProviderError
+    | ProviderUnavailableError
+    | TokenBudgetExceededError
+    | SessionMemoryFailure
   >
   /**
    * Execute a task with real-time Streaming — delivers chunks via callback
@@ -94,7 +98,10 @@ export interface OrchestratorService {
     onChunk: (text: string) => void,
   ) => Effect.Effect<
     InferenceResponse,
-    AnyProviderError | ProviderUnavailableError | TokenBudgetExceededError
+    | AnyProviderError
+    | ProviderUnavailableError
+    | TokenBudgetExceededError
+    | SessionMemoryFailure
   >
 
   /**
@@ -126,14 +133,17 @@ export const OrchestratorLive = Layer.effect(
     const routingPreferences = yield* RoutingPreferences
     const usageMetrics = yield* UsageMetrics
 
-    yield* mem.startSession()
+    yield* mem.resumeSession()
     yield* ctx.setSystemPrompt(buildFMCFSystemPrompt())
 
     const run = (
       task: Task,
     ): Effect.Effect<
       InferenceResponse,
-      AnyProviderError | ProviderUnavailableError | TokenBudgetExceededError
+      | AnyProviderError
+      | ProviderUnavailableError
+      | TokenBudgetExceededError
+      | SessionMemoryFailure
     > =>
       Effect.gen(function* () {
         const userMsg: Message = {
@@ -208,7 +218,10 @@ export const OrchestratorLive = Layer.effect(
       onChunk: (text: string) => void,
     ): Effect.Effect<
       InferenceResponse,
-      AnyProviderError | ProviderUnavailableError | TokenBudgetExceededError
+      | AnyProviderError
+      | ProviderUnavailableError
+      | TokenBudgetExceededError
+      | SessionMemoryFailure
     > =>
       Effect.gen(function* () {
         const userMsg: Message = {

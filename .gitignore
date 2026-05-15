@@ -24,6 +24,9 @@ Thumbs.db
 npm-debug.log*
 pnpm-debug.log*
 
+# Owl local runtime state
+.owl/
+
 # Coverage
 coverage/
 .nyc_output/

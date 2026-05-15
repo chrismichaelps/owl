@@ -35,11 +35,13 @@
  * await runtime.dispose() // Clean up on exit
  */
 import { Effect, Layer, ManagedRuntime } from "effect"
+import path from "node:path"
 import { OWLConfigLive } from "../core/config/index.js"
+import { SESSION_MEMORY_CONSTANTS } from "../core/constants/index.js"
 import { Orchestrator, OrchestratorLive } from "../engine/orchestrator/index.js"
 import { ContextManagerLive } from "../engine/context/index.js"
 import { UsageMetricsLive } from "../engine/metrics/index.js"
-import { SessionMemoryLive } from "../engine/memory/index.js"
+import { makePersistentSessionMemoryLive } from "../engine/memory/index.js"
 import { ProviderRouterLive } from "../providers/router/index.js"
 import { RoutingPreferencesLive } from "../providers/preferences/index.js"
 import { AnthropicAdapterLive } from "../providers/anthropic/index.js"
@@ -61,6 +63,10 @@ import { makeCommandRegistryLive } from "../commands/registry.js"
 import { TokenBudgetLive } from "../tokens/budget/index.js"
 import type { CommandRegistry } from "../commands/registry.js"
 import type { ConfigError } from "effect/ConfigError"
+import type {
+  SessionMemoryPersistenceError,
+  SessionMemoryValidationError,
+} from "../core/errors/index.js"
 
 /**
  * @Owl.CLI.Runtime.Type - Typed ManagedRuntime exposing Orchestrator + CommandRegistry
@@ -71,7 +77,7 @@ import type { ConfigError } from "effect/ConfigError"
  */
 export type OwlRuntime = ManagedRuntime.ManagedRuntime<
   Orchestrator | CommandRegistry,
-  ConfigError
+  ConfigError | SessionMemoryPersistenceError | SessionMemoryValidationError
 >
 
 /**
@@ -81,6 +87,14 @@ export type OwlRuntime = ManagedRuntime.ManagedRuntime<
  * @returns ManagedRuntime with all services wired
  */
 export const makeOwlRuntime = (projectRoot: string): OwlRuntime => {
+  const sessionMemoryLayer = makePersistentSessionMemoryLive(
+    path.join(
+      projectRoot,
+      SESSION_MEMORY_CONSTANTS.STORAGE_DIR,
+      SESSION_MEMORY_CONSTANTS.STORAGE_FILE,
+    ),
+  )
+
   const providerAdapterLayer = Layer.mergeAll(
     AnthropicAdapterLive,
     OpenAIAdapterLive,
@@ -93,7 +107,7 @@ export const makeOwlRuntime = (projectRoot: string): OwlRuntime => {
   const leafLayer = Layer.mergeAll(
     OWLConfigLive,
     ContextManagerLive,
-    SessionMemoryLive,
+    sessionMemoryLayer,
     UsageMetricsLive,
     ProviderRouterLive,
     RoutingPreferencesLive,

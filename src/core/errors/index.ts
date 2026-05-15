@@ -114,6 +114,29 @@ export class CachePersistenceError extends Data.TaggedError(
 }> {}
 
 /**
+ * @Owl.Core.Errors.SessionMemory - Session validation and persistence failures
+ *
+ * SessionMemoryValidationError: Turn or Session state failed validation
+ * SessionMemoryPersistenceError: Persistent Session backing store failed
+ */
+
+/** SessionMemory Turn or state failed validation */
+export class SessionMemoryValidationError extends Data.TaggedError(
+  "SessionMemoryValidationError",
+)<{
+  readonly taskId: string
+  readonly reason: string
+}> {}
+
+/** Persistent SessionMemory backing store failed */
+export class SessionMemoryPersistenceError extends Data.TaggedError(
+  "SessionMemoryPersistenceError",
+)<{
+  readonly path: string
+  readonly reason: string
+}> {}
+
+/**
  * @Owl.Core.Errors.Governance - FMCF architectural and forensic violations
  *
  * GovernanceViolationError: Invariant, role transition, or shard split violation

@@ -87,6 +87,16 @@ export const CACHE_CONSTANTS = {
   PERSISTENCE_SCHEMA_VERSION: 1,
 } as const
 
+/** @Owl.Core.Constants.SessionMemory - Session persistence and retention bounds */
+export const SESSION_MEMORY_CONSTANTS = {
+  MAX_TURNS: 100,
+  PERSISTENCE_SCHEMA_VERSION: 1,
+  STORAGE_DIR: ".owl",
+  STORAGE_FILE: "session-memory.json",
+  SESSION_ID_RANDOM_SLICE_START: 2,
+  SESSION_ID_RANDOM_SLICE_END: 8,
+} as const
+
 /** @Owl.Core.Constants.Metrics - Runtime UsageMetrics constraints */
 export const METRICS_CONSTANTS = {
   RECENT_INFERENCE_LIMIT: 10,
