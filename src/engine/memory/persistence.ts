@@ -53,6 +53,26 @@ export const decodeSessionTurn = (
           )
         : Effect.succeed(decoded),
     ),
+    Effect.flatMap((decoded) =>
+      decoded.estimatedCostUsd !== undefined && decoded.estimatedCostUsd < 0
+        ? Effect.fail(
+            new SessionMemoryValidationError({
+              taskId: decoded.taskId,
+              reason: "estimatedCostUsd must be greater than or equal to 0",
+            }),
+          )
+        : Effect.succeed(decoded),
+    ),
+    Effect.flatMap((decoded) =>
+      decoded.latencyMs !== undefined && decoded.latencyMs < 0
+        ? Effect.fail(
+            new SessionMemoryValidationError({
+              taskId: decoded.taskId,
+              reason: "latencyMs must be greater than or equal to 0",
+            }),
+          )
+        : Effect.succeed(decoded),
+    ),
   )
 
 export const decodePersistedSessionState = (

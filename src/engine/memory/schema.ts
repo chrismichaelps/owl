@@ -8,6 +8,10 @@ export const SessionTurnSchema = Schema.Struct({
   prompt: Schema.String,
   response: Schema.String,
   tokensUsed: Schema.Number,
+  provider: Schema.optional(Schema.String),
+  model: Schema.optional(Schema.String),
+  estimatedCostUsd: Schema.optional(Schema.Number),
+  latencyMs: Schema.optional(Schema.Number),
   timestamp: Schema.String,
 })
 export type SessionTurn = Schema.Schema.Type<typeof SessionTurnSchema>

@@ -208,6 +208,10 @@ export const OrchestratorLive = Layer.effect(
           prompt: task.prompt,
           response: response.content,
           tokensUsed: response.usage.inputTokens + response.usage.outputTokens,
+          provider: response.provider,
+          model: response.model,
+          estimatedCostUsd: response.usage.estimatedCostUsd,
+          latencyMs: response.latencyMs,
           timestamp: new Date().toISOString(),
         })
 
@@ -319,6 +323,10 @@ export const OrchestratorLive = Layer.effect(
           prompt: task.prompt,
           response: result.content,
           tokensUsed: inputTokens + outputTokens,
+          provider: response.provider,
+          model: response.model,
+          estimatedCostUsd: response.usage.estimatedCostUsd,
+          latencyMs: response.latencyMs,
           timestamp: new Date().toISOString(),
         })
 

@@ -247,6 +247,7 @@ export const COMMAND_CONSTANTS = {
   ID_HASH_LENGTH: 12,
   MIN_PROMPT_LENGTH: 1,
   MAX_PROMPT_LENGTH: 10_000,
+  MEMORY_PREVIEW_LENGTH: 80,
 } as const
 
 /** @Owl.Core.Constants.CLI - Process entrypoint metadata */

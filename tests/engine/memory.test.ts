@@ -110,6 +110,28 @@ describe("SessionMemory.recordTurn / getTurns", () => {
     expect(turns[0]?.prompt).toBe("prompt 1")
   })
 
+  it("records optional runtime metadata for provider visibility", async () => {
+    const turns = await run(
+      Effect.gen(function* () {
+        const mem = yield* SessionMemory
+        yield* mem.startSession("s-meta")
+        yield* mem.recordTurn({
+          ...makeTurn(1),
+          provider: "anthropic",
+          model: "claude-opus-4",
+          estimatedCostUsd: 0.003,
+          latencyMs: 250,
+        })
+        return yield* mem.getTurns()
+      }),
+    )
+
+    expect(turns[0]?.provider).toBe("anthropic")
+    expect(turns[0]?.model).toBe("claude-opus-4")
+    expect(turns[0]?.estimatedCostUsd).toBe(0.003)
+    expect(turns[0]?.latencyMs).toBe(250)
+  })
+
   it("records multiple turns in order", async () => {
     const turns = await run(
       Effect.gen(function* () {

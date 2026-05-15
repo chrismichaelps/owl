@@ -11,15 +11,33 @@
  * //   A: Here is your function...
  */
 import { Effect } from "effect"
+import { COMMAND_CONSTANTS } from "../../core/constants/index.js"
+import { formatEstimatedCostUsd } from "../../core/cost.js"
 import type { CommandParseError } from "../../core/errors/index.js"
-import type { SessionMemoryService } from "../../engine/memory/index.js"
+import type {
+  SessionMemoryService,
+  SessionTurn,
+} from "../../engine/memory/index.js"
 import type { CommandHandler, CommandResult } from "../types.js"
-
-const PREVIEW_LENGTH = 80
 
 /** Truncate long strings for display */
 function truncate(s: string): string {
-  return s.length > PREVIEW_LENGTH ? s.slice(0, PREVIEW_LENGTH) + "…" : s
+  return s.length > COMMAND_CONSTANTS.MEMORY_PREVIEW_LENGTH
+    ? s.slice(0, COMMAND_CONSTANTS.MEMORY_PREVIEW_LENGTH) + "..."
+    : s
+}
+
+const formatRuntimeMetadata = (turn: SessionTurn): string => {
+  const parts = [
+    turn.provider,
+    turn.model,
+    turn.latencyMs === undefined ? undefined : String(turn.latencyMs) + "ms",
+    turn.estimatedCostUsd === undefined
+      ? undefined
+      : formatEstimatedCostUsd(turn.estimatedCostUsd),
+  ].filter((part): part is string => part !== undefined && part.length > 0)
+
+  return parts.length === 0 ? "" : " | " + parts.join(" | ")
 }
 
 /**
@@ -45,7 +63,9 @@ export function makeMemoryCommand(
               t.timestamp +
               " (" +
               String(t.tokensUsed) +
-              " tokens)\n" +
+              " tokens" +
+              formatRuntimeMetadata(t) +
+              ")\n" +
               "  Q: " +
               truncate(t.prompt) +
               "\n" +
