@@ -281,7 +281,7 @@ export const makeCommandRegistryLive = (
         makeStatusCommand(sessionMemory, usageMetrics),
         makeClearCommand(contextManager),
         makeCompactCommand(orchestrator, contextManager),
-        makeHistoryCommand(sessionMemory),
+        makeHistoryCommand(sessionMemory, projectRoot),
         makeInitCommand(projectRoot),
         makeExportCommand(sessionMemory, projectRoot),
         makeMcpCommand(),
