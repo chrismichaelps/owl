@@ -14,13 +14,17 @@ import {
   STREAM_CHUNK_TYPES,
 } from "../../core/constants/index.js"
 import { estimateModelCostUsd } from "../cost.js"
-import { parseImageBlocks } from "../image.js"
 import { mapAnthropicError } from "./errors.js"
 import {
   ANTHROPIC_CAPABILITIES,
   ANTHROPIC_INTERNAL_CONSTANTS,
   resolveThinking,
 } from "./model.js"
+import {
+  executeAnthropicTool,
+  loadAnthropicTools,
+  toAnthropicMessages,
+} from "./tools.js"
 import { McpManager } from "../../mcp/index.js"
 import type { McpManagerService } from "../../mcp/index.js"
 import { BuiltInTools } from "../../tools/index.js"
@@ -126,33 +130,8 @@ export const AnthropicAdapterLive = Layer.effect(
       Effect.gen(function* () {
         const startMs = Date.now()
 
-        // Load tools from both built-in registry and MCP manager
-        const builtInToolDescriptors =
-          builtInTools !== null ? builtInTools.getTools() : []
-        const mcpTools = mcpManager !== null ? yield* mcpManager.getTools() : []
-        const allToolDescriptors = Chunk.appendAll(
-          Chunk.fromIterable(builtInToolDescriptors),
-          Chunk.fromIterable(mcpTools),
-        )
-        const tools = Chunk.map(
-          allToolDescriptors,
-          (t): Anthropic.Tool => ({
-            name: t.name,
-            description: t.description,
-            input_schema: t.input_schema as Anthropic.Tool["input_schema"],
-          }),
-        )
-
-        let messages = Chunk.map(
-          Chunk.fromIterable(request.messages),
-          (m): Anthropic.MessageParam => {
-            const imageBlocks = parseImageBlocks(m.content)
-            return {
-              role: m.role as "user" | "assistant",
-              content: imageBlocks ?? m.content,
-            }
-          },
-        )
+        const tools = yield* loadAnthropicTools(builtInTools, mcpManager)
+        let messages = toAnthropicMessages(request.messages)
 
         let response = yield* callApi(
           Chunk.toArray(messages),
@@ -189,22 +168,12 @@ export const AnthropicAdapterLive = Layer.effect(
               block.type === ANTHROPIC_INTERNAL_CONSTANTS.BLOCK_TYPE_TOOL_USE
             ) {
               const input = block.input as Record<string, unknown>
-              let result: string
-              if (builtInTools?.hasTool(block.name)) {
-                result = yield* builtInTools.callTool(block.name, input).pipe(
-                  Effect.mapError(
-                    (e) =>
-                      new ProviderError({
-                        provider: "anthropic",
-                        message: `Tool ${block.name} failed: ${e.reason}`,
-                      }),
-                  ),
-                )
-              } else if (mcpManager !== null) {
-                result = yield* mcpManager.callTool(block.name, input)
-              } else {
-                result = `Tool ${block.name} not found`
-              }
+              const result = yield* executeAnthropicTool(
+                block.name,
+                input,
+                builtInTools,
+                mcpManager,
+              )
               toolResults = Chunk.append(toolResults, {
                 type: "tool_result",
                 tool_use_id: block.id,
@@ -260,35 +229,9 @@ export const AnthropicAdapterLive = Layer.effect(
       Stream.async<StreamChunk, ProviderStreamError>((emit) => {
         const run = async () => {
           try {
-            let messages = Chunk.map(
-              Chunk.fromIterable(request.messages),
-              (m): Anthropic.MessageParam => {
-                const imageBlocks = parseImageBlocks(m.content)
-                return {
-                  role: m.role as "user" | "assistant",
-                  content: imageBlocks ?? m.content,
-                }
-              },
-            )
-
-            // Load tools from both built-in registry and MCP manager
-            const builtInStreamDescriptors =
-              builtInTools !== null ? builtInTools.getTools() : []
-            const mcpTools =
-              mcpManager !== null
-                ? await Effect.runPromise(mcpManager.getTools())
-                : []
-            const allStreamToolDescriptors = Chunk.appendAll(
-              Chunk.fromIterable(builtInStreamDescriptors),
-              Chunk.fromIterable(mcpTools),
-            )
-            const tools = Chunk.map(
-              allStreamToolDescriptors,
-              (t): Anthropic.Tool => ({
-                name: t.name,
-                description: t.description,
-                input_schema: t.input_schema as Anthropic.Tool["input_schema"],
-              }),
+            let messages = toAnthropicMessages(request.messages)
+            const tools = await Effect.runPromise(
+              loadAnthropicTools(builtInTools, mcpManager),
             )
 
             const systemBlock = request.systemPrompt
@@ -396,18 +339,14 @@ export const AnthropicAdapterLive = Layer.effect(
                     index: index++,
                   })
                   const input = block.input as Record<string, unknown>
-                  let result: string
-                  if (builtInTools?.hasTool(block.name)) {
-                    result = await Effect.runPromise(
-                      builtInTools.callTool(block.name, input),
-                    )
-                  } else if (mcpManager !== null) {
-                    result = await Effect.runPromise(
-                      mcpManager.callTool(block.name, input),
-                    )
-                  } else {
-                    result = `Tool ${block.name} not found`
-                  }
+                  const result = await Effect.runPromise(
+                    executeAnthropicTool(
+                      block.name,
+                      input,
+                      builtInTools,
+                      mcpManager,
+                    ),
+                  )
                   toolResults = Chunk.append(toolResults, {
                     type: "tool_result",
                     tool_use_id: block.id,
