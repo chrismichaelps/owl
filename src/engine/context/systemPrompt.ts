@@ -14,6 +14,7 @@
  * // "You are Owl — an AI coding agent governed by FMCF v3.5..."
  */
 
+import { Chunk } from "effect"
 import type { ProjectContext } from "./projectContext.js"
 
 /**
@@ -86,17 +87,18 @@ When in doubt: measure first, propose second, implement third, record always.`
 function buildProjectSection(ctx?: ProjectContext): string {
   if (ctx == null) return ""
 
-  const parts: string[] = []
+  let parts = Chunk.empty<string>()
 
   if (ctx.claudeMd != null) {
-    parts.push(
+    parts = Chunk.append(
+      parts,
       `\n\n## Project Instructions (from CLAUDE.md)\n\n${ctx.claudeMd}`,
     )
   }
 
   if (ctx.gitStatus != null) {
-    parts.push(`\n\n## Project State\n\n${ctx.gitStatus}`)
+    parts = Chunk.append(parts, `\n\n## Project State\n\n${ctx.gitStatus}`)
   }
 
-  return parts.join("")
+  return Chunk.toReadonlyArray(parts).join("")
 }
