@@ -47,6 +47,7 @@ export const MetaPanel: React.FC<MetaPanelProps> = memo(({ state }) => (
         value={state.provider ?? "—"}
         valueColor="cyan"
       />
+      <MetricRow label="Model" value={state.model ?? "—"} valueColor="cyan" />
       <MetricRow
         label="In tokens"
         value={String(state.totalInputTokens)}

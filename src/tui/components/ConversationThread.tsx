@@ -30,7 +30,7 @@ const InferenceTurnRow = memo(function InferenceTurnRow({
       <Box paddingLeft={2} flexDirection="column">
         <MarkdownText content={turn.response} />
         <Text color="gray" dimColor>
-          {turn.provider} · {String(turn.latencyMs)}ms ·{" "}
+          {turn.provider} · {turn.model} · {String(turn.latencyMs)}ms ·{" "}
           {String(turn.inputTokens)}↑ {String(turn.outputTokens)}↓ ·{" "}
           {formatEstimatedCostUsd(turn.estimatedCostUsd)}
         </Text>

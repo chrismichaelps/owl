@@ -20,6 +20,7 @@ import {
 function makeResponse(
   overrides: Partial<{
     provider: "anthropic" | "openai" | "google" | "xai" | "ollama"
+    model: string
     latencyMs: number
     inputTokens: number
     outputTokens: number
@@ -38,7 +39,7 @@ function makeResponse(
       cacheWriteTokens: 0,
       estimatedCostUsd: overrides.estimatedCostUsd ?? 0.0012,
     },
-    model: "claude-opus-4-5",
+    model: overrides.model ?? "claude-opus-4-5",
     provider: overrides.provider ?? "anthropic",
     latencyMs: overrides.latencyMs ?? 812,
   }
@@ -68,10 +69,11 @@ describe("INITIAL_STATE shape", () => {
     expect(INITIAL_STATE.logs).toHaveLength(0)
   })
 
-  it("has null response, error, provider, latencyMs", () => {
+  it("has null response, error, provider, model, latencyMs", () => {
     expect(INITIAL_STATE.response).toBeNull()
     expect(INITIAL_STATE.error).toBeNull()
     expect(INITIAL_STATE.provider).toBeNull()
+    expect(INITIAL_STATE.model).toBeNull()
     expect(INITIAL_STATE.latencyMs).toBeNull()
   })
 
@@ -243,6 +245,14 @@ describe("SET_RESPONSE action", () => {
       response: makeResponse({ provider: "google" }),
     })
     expect(next.provider).toBe("google")
+  })
+
+  it("records model name", () => {
+    const next = reduce(INITIAL_STATE, {
+      type: "SET_RESPONSE",
+      response: makeResponse({ model: "gpt-5.1-codex" }),
+    })
+    expect(next.model).toBe("gpt-5.1-codex")
   })
 
   it("records latency", () => {

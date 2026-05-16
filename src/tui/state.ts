@@ -83,6 +83,7 @@ export interface OwlAppState {
   readonly totalOutputTokens: number
   readonly totalEstimatedCostUsd: number
   readonly provider: ProviderId | null
+  readonly model: string | null
   readonly latencyMs: number | null
   readonly turnCount: number
   readonly turns: readonly ConversationTurn[]
@@ -112,6 +113,7 @@ export const INITIAL_STATE: OwlAppState = {
   totalOutputTokens: 0,
   totalEstimatedCostUsd: 0,
   provider: null,
+  model: null,
   latencyMs: null,
   turnCount: 0,
   turns: [],
@@ -158,6 +160,7 @@ export function owlReducer(state: OwlAppState, action: OwlAction): OwlAppState {
         totalEstimatedCostUsd:
           state.totalEstimatedCostUsd + action.response.usage.estimatedCostUsd,
         provider: action.response.provider,
+        model: action.response.model,
         latencyMs: action.response.latencyMs,
         turnCount: state.turnCount + 1,
       }

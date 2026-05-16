@@ -12,6 +12,7 @@ const TURN = {
   prompt: "analyze the schema",
   response: "The schema has 3 modules.",
   provider: "anthropic" as const,
+  model: "claude-opus-4-5",
   latencyMs: 820,
   inputTokens: 100,
   outputTokens: 50,

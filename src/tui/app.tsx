@@ -146,6 +146,7 @@ export const App: React.FC<AppProps> = ({
             prompt, // show original prompt (without file blobs) in UI
             response: response.content,
             provider: response.provider,
+            model: response.model,
             latencyMs: response.latencyMs,
             inputTokens: response.usage.inputTokens,
             outputTokens: response.usage.outputTokens,
