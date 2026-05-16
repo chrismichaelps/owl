@@ -18,6 +18,8 @@
  * - CLI: Startup metadata and early-exit output
  */
 
+import { HashSet } from "effect"
+
 /** @Owl.Core.Constants.Budgets - Token and mode-specific constraints */
 export const TOKEN_LIMITS = {
   CONTEXT_WINDOW_DEFAULT: 200_000,
@@ -94,6 +96,31 @@ export const PROVIDER_IDS = [
   "xai",
   "ollama",
 ] as const
+
+/**
+ * @Owl.Core.Constants.AnthropicModels - Canonical Anthropic model IDs
+ *
+ * Single source of truth for all model identifier strings.
+ * Never compare against raw string literals — always reference these keys.
+ */
+export const ANTHROPIC_MODELS = {
+  OPUS_4_7: "claude-opus-4-7",
+  SONNET_4_6: "claude-sonnet-4-6",
+  HAIKU_4_5: "claude-haiku-4-5-20251001",
+} as const
+export type AnthropicModelId =
+  (typeof ANTHROPIC_MODELS)[keyof typeof ANTHROPIC_MODELS]
+
+/**
+ * @Owl.Core.Constants.ThinkingModes - Modes that activate extended thinking
+ *
+ * Used for O(1) membership checks without scattered string comparisons.
+ * Effect HashSet gives structural equality for future non-string keys.
+ */
+export const THINKING_MODES: HashSet.HashSet<string> = HashSet.fromIterable([
+  "deep",
+  "god",
+])
 
 /** @Owl.Core.Constants.ProviderRuntime - Provider adapter runtime limits */
 export const PROVIDER_CONSTANTS = {
@@ -320,6 +347,17 @@ export const COMMAND_CONSTANTS = {
   MAX_PROMPT_LENGTH: 10_000,
   MEMORY_PREVIEW_LENGTH: 80,
   PALETTE_VISIBLE_COUNT: 8,
+} as const
+
+/** @Owl.Core.Constants.Mentions - File mention expansion limits */
+export const MENTION_CONSTANTS = {
+  MAX_FILE_BYTES: 500_000,
+  MAX_IMAGE_BYTES: 5_000_000,
+  MAX_TOTAL_TEXT_BYTES: 2_000_000,
+  DISPLAY_UNIT_BYTES: 1_024,
+  MAX_FILE_LABEL: "500KB",
+  MAX_IMAGE_LABEL: "5MB",
+  MAX_TOTAL_TEXT_LABEL: "2MB",
 } as const
 
 /** @Owl.Core.Constants.CLI - Process entrypoint metadata */

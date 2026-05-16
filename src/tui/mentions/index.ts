@@ -18,24 +18,31 @@
  * expandMentions("What's in @screenshot.png?", "/project")
  * // → { expanded: "<owl:image path=\"screenshot.png\" mime=\"image/png\" data=\"...\"/>\n\nWhat's in @screenshot.png?", files: ["screenshot.png"], errors: [] }
  */
+import { Chunk, HashMap, HashSet, Option } from "effect"
 import { readFile } from "node:fs/promises"
 import { resolve, join, extname } from "node:path"
+import { MENTION_CONSTANTS } from "../../core/constants/index.js"
 
-const MAX_FILE_BYTES = 500_000 // 500 KB per text file
-const MAX_IMAGE_BYTES = 5_000_000 // 5 MB per image file
-const MAX_TOTAL_BYTES = 2_000_000 // 2 MB total across all text expansions
-
-/** Image extensions that trigger vision encoding */
-const IMAGE_EXTENSIONS = new Set([".png", ".jpg", ".jpeg", ".gif", ".webp"])
+/**
+ * Image extensions that trigger vision encoding.
+ * Exported so the FileMentionPalette can share the same set without duplication.
+ */
+export const IMAGE_EXTENSIONS: HashSet.HashSet<string> = HashSet.fromIterable([
+  ".png",
+  ".jpg",
+  ".jpeg",
+  ".gif",
+  ".webp",
+])
 
 /** MIME type map for supported image extensions */
-const IMAGE_MIME: Record<string, string> = {
-  ".png": "image/png",
-  ".jpg": "image/jpeg",
-  ".jpeg": "image/jpeg",
-  ".gif": "image/gif",
-  ".webp": "image/webp",
-}
+const IMAGE_MIME: HashMap.HashMap<string, string> = HashMap.fromIterable([
+  [".png", "image/png"],
+  [".jpg", "image/jpeg"],
+  [".jpeg", "image/jpeg"],
+  [".gif", "image/gif"],
+  [".webp", "image/webp"],
+])
 
 /** Matches @word/path.ext — handles /, -, _, ., alphanumeric */
 const AT_PATTERN = /@([\w./\-\\]+\.\w+)/g
@@ -61,70 +68,91 @@ export async function expandMentions(
   prompt: string,
   projectRoot: string,
 ): Promise<MentionExpansion> {
-  const matches = [...prompt.matchAll(AT_PATTERN)]
-  if (matches.length === 0) {
+  const matches = Chunk.fromIterable(prompt.matchAll(AT_PATTERN))
+  if (Chunk.isEmpty(matches)) {
     return { expanded: prompt, files: [], errors: [] }
   }
 
-  const files: string[] = []
-  const errors: string[] = []
-  const fileBlocks: string[] = []
+  let files = Chunk.empty<string>()
+  let errors = Chunk.empty<string>()
+  let fileBlocks = Chunk.empty<string>()
   let totalTextBytes = 0
-  const seen = new Set<string>()
+  let seen = HashSet.empty<string>()
 
   for (const match of matches) {
     const rawPath = match[1] ?? ""
-    if (seen.has(rawPath)) continue
-    seen.add(rawPath)
+    if (HashSet.has(seen, rawPath)) continue
+    seen = HashSet.add(seen, rawPath)
 
     const absPath = resolve(join(projectRoot, rawPath))
     const ext = extname(rawPath).toLowerCase()
-    const isImage = IMAGE_EXTENSIONS.has(ext)
+    const isImage = HashSet.has(IMAGE_EXTENSIONS, ext)
 
     try {
       if (isImage) {
         const buf = await readFile(absPath)
-        if (buf.byteLength > MAX_IMAGE_BYTES) {
-          errors.push(
-            `${rawPath}: image too large (${String(Math.round(buf.byteLength / 1024))}KB, max 5MB)`,
+        if (buf.byteLength > MENTION_CONSTANTS.MAX_IMAGE_BYTES) {
+          errors = Chunk.append(
+            errors,
+            `${rawPath}: image too large (${String(Math.round(buf.byteLength / MENTION_CONSTANTS.DISPLAY_UNIT_BYTES))}KB, max ${MENTION_CONSTANTS.MAX_IMAGE_LABEL})`,
           )
           continue
         }
-        const mime = IMAGE_MIME[ext] ?? "image/png"
+        const mime = Option.getOrElse(
+          HashMap.get(IMAGE_MIME, ext),
+          () => "image/png",
+        )
         const data = buf.toString("base64")
-        files.push(rawPath)
-        fileBlocks.push(
+        files = Chunk.append(files, rawPath)
+        fileBlocks = Chunk.append(
+          fileBlocks,
           `<owl:image path="${rawPath}" mime="${mime}" data="${data}"/>`,
         )
       } else {
         const content = await readFile(absPath, "utf-8")
         const bytes = Buffer.byteLength(content, "utf-8")
 
-        if (bytes > MAX_FILE_BYTES) {
-          errors.push(
-            `${rawPath}: too large (${String(Math.round(bytes / 1024))}KB, max 500KB)`,
+        if (bytes > MENTION_CONSTANTS.MAX_FILE_BYTES) {
+          errors = Chunk.append(
+            errors,
+            `${rawPath}: too large (${String(Math.round(bytes / MENTION_CONSTANTS.DISPLAY_UNIT_BYTES))}KB, max ${MENTION_CONSTANTS.MAX_FILE_LABEL})`,
           )
           continue
         }
 
-        if (totalTextBytes + bytes > MAX_TOTAL_BYTES) {
-          errors.push(`${rawPath}: total @mention budget exceeded (max 2MB)`)
+        if (totalTextBytes + bytes > MENTION_CONSTANTS.MAX_TOTAL_TEXT_BYTES) {
+          errors = Chunk.append(
+            errors,
+            `${rawPath}: total @mention budget exceeded (max ${MENTION_CONSTANTS.MAX_TOTAL_TEXT_LABEL})`,
+          )
           break
         }
 
         totalTextBytes += bytes
-        files.push(rawPath)
-        fileBlocks.push(`<file path="${rawPath}">\n${content}\n</file>`)
+        files = Chunk.append(files, rawPath)
+        fileBlocks = Chunk.append(
+          fileBlocks,
+          `<file path="${rawPath}">\n${content}\n</file>`,
+        )
       }
     } catch {
-      errors.push(`${rawPath}: file not found`)
+      errors = Chunk.append(errors, `${rawPath}: file not found`)
     }
   }
 
-  if (fileBlocks.length === 0) {
-    return { expanded: prompt, files, errors }
+  if (Chunk.isEmpty(fileBlocks)) {
+    return {
+      expanded: prompt,
+      files: Chunk.toReadonlyArray(files),
+      errors: Chunk.toReadonlyArray(errors),
+    }
   }
 
-  const expanded = fileBlocks.join("\n\n") + "\n\n" + prompt
-  return { expanded, files, errors }
+  const expanded =
+    Chunk.toReadonlyArray(fileBlocks).join("\n\n") + "\n\n" + prompt
+  return {
+    expanded,
+    files: Chunk.toReadonlyArray(files),
+    errors: Chunk.toReadonlyArray(errors),
+  }
 }

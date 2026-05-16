@@ -11,6 +11,7 @@
  * //    { type: "text", text: "Describe it" }]
  */
 import type Anthropic from "@anthropic-ai/sdk"
+import { Chunk } from "effect"
 
 /** Regex that matches a single owl:image tag */
 const OWL_IMAGE_TAG =
@@ -38,7 +39,7 @@ export function parseImageBlocks(
 ): AnthropicContentBlock[] | null {
   if (!hasImageTags(content)) return null
 
-  const blocks: AnthropicContentBlock[] = []
+  let blocks = Chunk.empty<AnthropicContentBlock>()
   let lastIndex = 0
   let match: RegExpExecArray | null
 
@@ -52,13 +53,13 @@ export function parseImageBlocks(
     if (start > lastIndex) {
       const text = content.slice(lastIndex, start).trim()
       if (text.length > 0) {
-        blocks.push({ type: "text", text })
+        blocks = Chunk.append(blocks, { type: "text", text })
       }
     }
 
     // Image block
     if (mime !== undefined && data !== undefined && data.length > 0) {
-      blocks.push({
+      blocks = Chunk.append(blocks, {
         type: "image",
         source: {
           type: "base64",
@@ -75,9 +76,9 @@ export function parseImageBlocks(
   if (lastIndex < content.length) {
     const text = content.slice(lastIndex).trim()
     if (text.length > 0) {
-      blocks.push({ type: "text", text })
+      blocks = Chunk.append(blocks, { type: "text", text })
     }
   }
 
-  return blocks.length > 0 ? blocks : null
+  return !Chunk.isEmpty(blocks) ? Chunk.toArray(blocks) : null
 }

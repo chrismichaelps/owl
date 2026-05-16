@@ -1,7 +1,9 @@
 /** @Owl.TUI.Components.StatusBar - Bottom status: mode, cost, keybinding hints */
 import React, { memo } from "react"
+import { HashSet } from "effect"
 import { Box, Text } from "ink"
 import { formatEstimatedCostUsd } from "../../core/cost.js"
+import { THINKING_MODES } from "../../core/constants/index.js"
 import type { AgentStatus } from "../state.js"
 import type { ProviderId } from "../../core/schema/index.js"
 
@@ -46,7 +48,7 @@ export const StatusBar: React.FC<StatusBarProps> = memo(
           Owl v0.1.0
         </Text>
         <Text color="magenta">[{mode.toUpperCase()}]</Text>
-        {mode === "deep" || mode === "god" ? (
+        {HashSet.has(THINKING_MODES, mode) ? (
           <Text color="blueBright" dimColor>
             ◌ thinking
           </Text>

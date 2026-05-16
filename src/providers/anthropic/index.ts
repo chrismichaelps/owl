@@ -18,7 +18,7 @@
  * - claude-haiku-4-5: Fast, cost-effective for simpler tasks
  */
 import Anthropic from "@anthropic-ai/sdk"
-import { Context, Effect, Layer, Option, Schedule } from "effect"
+import { Chunk, Context, Data, Effect, Layer, Option, Schedule } from "effect"
 import * as Stream from "effect/Stream"
 import {
   ProviderError,
@@ -29,6 +29,7 @@ import {
 } from "../../core/errors/index.js"
 import { OWL_CONFIG } from "../../core/config/index.js"
 import {
+  ANTHROPIC_MODELS,
   HTTP_STATUS,
   PROVIDER_TIMEOUTS,
   RETRY_CONFIG,
@@ -49,13 +50,39 @@ import type {
 
 const MAX_TOOL_ITERATIONS = 10
 
+type AnthropicThinking =
+  | { readonly type: "adaptive" }
+  | { readonly type: "enabled"; readonly budget_tokens: number }
+
+type AnthropicNonStreamingParamsWithThinking =
+  Anthropic.MessageCreateParamsNonStreaming & {
+    thinking?: AnthropicThinking
+  }
+
+type AnthropicStreamParamsWithThinking = Anthropic.MessageStreamParams & {
+  thinking?: AnthropicThinking
+}
+
+const resolveThinking = (
+  request: InferenceRequest,
+): AnthropicThinking | undefined => {
+  if (request.thinkingBudget === undefined) return undefined
+  if (request.model === ANTHROPIC_MODELS.OPUS_4_7) {
+    return Data.struct({ type: "adaptive" as const })
+  }
+  return Data.struct({
+    type: "enabled" as const,
+    budget_tokens: request.thinkingBudget,
+  })
+}
+
 /**
  * @Owl.Providers.Anthropic.Capabilities - High-fidelity model specifications
  */
 const ANTHROPIC_CAPABILITIES: readonly ProviderCapability[] = [
   {
     providerId: "anthropic",
-    modelId: "claude-opus-4-7",
+    modelId: ANTHROPIC_MODELS.OPUS_4_7,
     contextWindow: 1_000_000,
     maxOutputTokens: 128_000,
     inputCostPer1k: 0.005,
@@ -67,7 +94,7 @@ const ANTHROPIC_CAPABILITIES: readonly ProviderCapability[] = [
   },
   {
     providerId: "anthropic",
-    modelId: "claude-sonnet-4-6",
+    modelId: ANTHROPIC_MODELS.SONNET_4_6,
     contextWindow: 200_000,
     maxOutputTokens: 8_192,
     inputCostPer1k: 0.003,
@@ -79,7 +106,7 @@ const ANTHROPIC_CAPABILITIES: readonly ProviderCapability[] = [
   },
   {
     providerId: "anthropic",
-    modelId: "claude-haiku-4-5-20251001",
+    modelId: ANTHROPIC_MODELS.HAIKU_4_5,
     contextWindow: 200_000,
     maxOutputTokens: 64_000,
     inputCostPer1k: 0.001,
@@ -170,7 +197,7 @@ export const AnthropicAdapterLive = Layer.effect(
     ) =>
       Effect.tryPromise({
         try: () => {
-          const params: Anthropic.MessageCreateParamsNonStreaming = {
+          const params: AnthropicNonStreamingParamsWithThinking = {
             model: request.model,
             max_tokens: request.maxTokens,
             messages,
@@ -187,13 +214,9 @@ export const AnthropicAdapterLive = Layer.effect(
                 }
               : {}),
           }
-          if (request.thinkingBudget !== undefined) {
-            // Extended thinking — experimental API field not yet in SDK types
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            ;(params as any).thinking = {
-              type: "enabled",
-              budget_tokens: request.thinkingBudget,
-            }
+          const thinking = resolveThinking(request)
+          if (thinking !== undefined) {
+            params.thinking = thinking
           }
           return client.messages.create(params)
         },
@@ -214,24 +237,31 @@ export const AnthropicAdapterLive = Layer.effect(
 
         // Load MCP tools if manager is connected
         const mcpTools = mcpManager !== null ? yield* mcpManager.getTools() : []
-        const tools: Anthropic.Tool[] = mcpTools.map((t) => ({
-          name: t.name,
-          description: t.description,
-          input_schema: t.input_schema as Anthropic.Tool["input_schema"],
-        }))
+        const tools = Chunk.map(
+          Chunk.fromIterable(mcpTools),
+          (t): Anthropic.Tool => ({
+            name: t.name,
+            description: t.description,
+            input_schema: t.input_schema as Anthropic.Tool["input_schema"],
+          }),
+        )
 
-        const messages: Anthropic.MessageParam[] = request.messages.map((m) => {
-          const imageBlocks = parseImageBlocks(m.content)
-          return {
-            role: m.role as "user" | "assistant",
-            content:
-              imageBlocks !== null
-                ? (imageBlocks as Anthropic.MessageParam["content"])
-                : m.content,
-          }
-        })
+        let messages = Chunk.map(
+          Chunk.fromIterable(request.messages),
+          (m): Anthropic.MessageParam => {
+            const imageBlocks = parseImageBlocks(m.content)
+            return {
+              role: m.role as "user" | "assistant",
+              content: imageBlocks ?? m.content,
+            }
+          },
+        )
 
-        let response = yield* callApi(messages, request, tools)
+        let response = yield* callApi(
+          Chunk.toArray(messages),
+          request,
+          Chunk.toArray(tools),
+        )
         let textContent = ""
         let iterations = 0
 
@@ -249,17 +279,20 @@ export const AnthropicAdapterLive = Layer.effect(
           }
 
           // Append assistant's turn (with tool_use blocks) to history
-          messages.push({ role: "assistant", content: response.content })
+          messages = Chunk.append(messages, {
+            role: "assistant" as const,
+            content: response.content,
+          })
 
           // Execute each tool call and collect results
-          const toolResults: Anthropic.ToolResultBlockParam[] = []
+          let toolResults = Chunk.empty<Anthropic.ToolResultBlockParam>()
           for (const block of response.content) {
             if (block.type === "tool_use") {
               const result = yield* mcpManager.callTool(
                 block.name,
                 block.input as Record<string, unknown>,
               )
-              toolResults.push({
+              toolResults = Chunk.append(toolResults, {
                 type: "tool_result",
                 tool_use_id: block.id,
                 content: result,
@@ -268,8 +301,15 @@ export const AnthropicAdapterLive = Layer.effect(
           }
 
           // Append tool results as a user turn
-          messages.push({ role: "user", content: toolResults })
-          response = yield* callApi(messages, request, tools)
+          messages = Chunk.append(messages, {
+            role: "user" as const,
+            content: Chunk.toArray(toolResults),
+          })
+          response = yield* callApi(
+            Chunk.toArray(messages),
+            request,
+            Chunk.toArray(tools),
+          )
           iterations++
         }
 
@@ -307,15 +347,13 @@ export const AnthropicAdapterLive = Layer.effect(
       Stream.async<StreamChunk, ProviderStreamError>((emit) => {
         const run = async () => {
           try {
-            const messages: Anthropic.MessageParam[] = request.messages.map(
-              (m) => {
+            let messages = Chunk.map(
+              Chunk.fromIterable(request.messages),
+              (m): Anthropic.MessageParam => {
                 const imageBlocks = parseImageBlocks(m.content)
                 return {
                   role: m.role as "user" | "assistant",
-                  content:
-                    imageBlocks !== null
-                      ? (imageBlocks as Anthropic.MessageParam["content"])
-                      : m.content,
+                  content: imageBlocks ?? m.content,
                 }
               },
             )
@@ -325,20 +363,23 @@ export const AnthropicAdapterLive = Layer.effect(
               mcpManager !== null
                 ? await Effect.runPromise(mcpManager.getTools())
                 : []
-            const tools: Anthropic.Tool[] = mcpTools.map((t) => ({
-              name: t.name,
-              description: t.description,
-              input_schema: t.input_schema as Anthropic.Tool["input_schema"],
-            }))
+            const tools = Chunk.map(
+              Chunk.fromIterable(mcpTools),
+              (t): Anthropic.Tool => ({
+                name: t.name,
+                description: t.description,
+                input_schema: t.input_schema as Anthropic.Tool["input_schema"],
+              }),
+            )
 
             const systemBlock = request.systemPrompt
-              ? [
-                  {
+              ? Chunk.toArray(
+                  Chunk.make({
                     type: "text" as const,
                     text: request.systemPrompt,
                     cache_control: { type: "ephemeral" as const },
-                  },
-                ]
+                  }),
+                )
               : undefined
 
             let index = 0
@@ -350,25 +391,20 @@ export const AnthropicAdapterLive = Layer.effect(
             let totalCacheWriteTokens = 0
             let lastModel = request.model
 
-            const streamThinking =
-              request.thinkingBudget !== undefined
-                ? {
-                    type: "enabled" as const,
-                    budget_tokens: request.thinkingBudget,
-                  }
-                : undefined
+            const streamThinking = resolveThinking(request)
 
             while (iterations < MAX_TOOL_ITERATIONS) {
-              const streamParams: Anthropic.MessageStreamParams = {
+              const streamParams: AnthropicStreamParamsWithThinking = {
                 model: request.model,
                 max_tokens: request.maxTokens,
-                messages,
-                ...(tools.length > 0 ? { tools } : {}),
+                messages: Chunk.toArray(messages),
+                ...(!Chunk.isEmpty(tools)
+                  ? { tools: Chunk.toArray(tools) }
+                  : {}),
                 ...(systemBlock !== undefined ? { system: systemBlock } : {}),
               }
               if (streamThinking !== undefined) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                ;(streamParams as any).thinking = streamThinking
+                streamParams.thinking = streamThinking
               }
               const s = client.messages.stream(streamParams)
 
@@ -410,10 +446,13 @@ export const AnthropicAdapterLive = Layer.effect(
               }
 
               // Append assistant turn with tool_use blocks
-              messages.push({ role: "assistant", content: finalMsg.content })
+              messages = Chunk.append(messages, {
+                role: "assistant" as const,
+                content: finalMsg.content,
+              })
 
               // Emit indicator and execute each tool call
-              const toolResults: Anthropic.ToolResultBlockParam[] = []
+              let toolResults = Chunk.empty<Anthropic.ToolResultBlockParam>()
               for (const block of finalMsg.content) {
                 if (block.type === "tool_use") {
                   await emit.single({
@@ -427,7 +466,7 @@ export const AnthropicAdapterLive = Layer.effect(
                       block.input as Record<string, unknown>,
                     ),
                   )
-                  toolResults.push({
+                  toolResults = Chunk.append(toolResults, {
                     type: "tool_result",
                     tool_use_id: block.id,
                     content: result,
@@ -435,7 +474,10 @@ export const AnthropicAdapterLive = Layer.effect(
                 }
               }
 
-              messages.push({ role: "user", content: toolResults })
+              messages = Chunk.append(messages, {
+                role: "user" as const,
+                content: Chunk.toArray(toolResults),
+              })
               iterations++
             }
 
@@ -473,7 +515,7 @@ export const AnthropicAdapterLive = Layer.effect(
         try: () =>
           client.messages
             .create({
-              model: "claude-haiku-4-5-20251001",
+              model: ANTHROPIC_MODELS.HAIKU_4_5,
               max_tokens: 1,
               messages: [{ role: "user", content: "ping" }],
             })

@@ -1,7 +1,9 @@
 /** @Owl.TUI.Components.FileMentionPalette - Autocomplete popup for @file mentions */
 import React, { memo } from "react"
+import { HashSet } from "effect"
 import { extname } from "node:path"
 import { Box, Text } from "ink"
+import { IMAGE_EXTENSIONS } from "../mentions/index.js"
 import type { ProjectFile } from "../mentions/files.js"
 
 interface FileMentionPaletteProps {
@@ -10,14 +12,12 @@ interface FileMentionPaletteProps {
   readonly query: string
 }
 
-const IMAGE_EXTS = new Set([".png", ".jpg", ".jpeg", ".gif", ".webp"])
-
 function fileIcon(path: string): string {
   const ext = extname(path).toLowerCase()
-  if (IMAGE_EXTS.has(ext)) return "🖼"
-  if (ext === ".md") return "📝"
-  if (ext === ".json") return "{ }"
-  return "  "
+  if (HashSet.has(IMAGE_EXTENSIONS, ext)) return "[img]"
+  if (ext === ".md") return "[md] "
+  if (ext === ".json") return "{  } "
+  return "     "
 }
 
 /** Shown just above the prompt when the user types @ */
@@ -52,7 +52,7 @@ export const FileMentionPalette: React.FC<FileMentionPaletteProps> = memo(
           )
         })}
         <Text color="gray" dimColor>
-          {"  "}Tab · Esc · 🖼=vision
+          {"  "}Tab · Esc · [img]=vision
         </Text>
       </Box>
     )
