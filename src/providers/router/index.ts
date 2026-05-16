@@ -38,6 +38,7 @@ import {
   Option,
   Order,
   Ref,
+  Either,
 } from "effect"
 import * as Stream from "effect/Stream"
 import {
@@ -440,7 +441,7 @@ export const ProviderRouterLive = Layer.effect(
             })
             .pipe(Effect.either)
 
-          if (result._tag === "Right") {
+          if (Either.isRight(result)) {
             return {
               ...result.right,
               usage: {
@@ -508,7 +509,7 @@ export const ProviderRouterLive = Layer.effect(
               Effect.either,
             )
 
-          if (result._tag === "Right") {
+          if (Either.isRight(result)) {
             const accumulator = yield* Ref.get(accumulatorRef)
             const content = Chunk.toReadonlyArray(
               accumulator.contentChunks,

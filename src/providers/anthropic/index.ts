@@ -34,6 +34,7 @@ import {
   HTTP_STATUS,
   PROVIDER_TIMEOUTS,
   RETRY_CONFIG,
+  STREAM_CHUNK_TYPES,
 } from "../../core/constants/index.js"
 import { estimateModelCostUsd } from "../cost.js"
 import { parseImageBlocks } from "../image.js"
@@ -50,6 +51,18 @@ import type {
 } from "../../core/schema/index.js"
 
 const MAX_TOOL_ITERATIONS = 10
+
+const ANTHROPIC_INTERNAL_CONSTANTS = {
+  BLOCK_TYPE_TEXT: "text",
+  BLOCK_TYPE_TOOL_USE: "tool_use",
+  STOP_REASON_TOOL_USE: "tool_use",
+  STOP_REASON_END_TURN: "end_turn",
+  EVENT_TYPE_CONTENT_BLOCK_DELTA: "content_block_delta",
+  DELTA_TYPE_TEXT_DELTA: "text_delta",
+  DELTA_TYPE_THINKING_DELTA: "thinking_delta",
+  ROLE_USER: "user",
+  ROLE_ASSISTANT: "assistant",
+} as const
 
 type AnthropicThinking =
   | { readonly type: "adaptive" }
@@ -210,7 +223,7 @@ export const AnthropicAdapterLive = Layer.effect(
               ? {
                   system: [
                     {
-                      type: "text" as const,
+                      type: ANTHROPIC_INTERNAL_CONSTANTS.BLOCK_TYPE_TEXT,
                       text: request.systemPrompt,
                       cache_control: { type: "ephemeral" as const },
                     },
@@ -271,13 +284,14 @@ export const AnthropicAdapterLive = Layer.effect(
 
         // Tool-use loop: keep calling until end_turn or safety cap
         while (
-          response.stop_reason === "tool_use" &&
+          response.stop_reason ===
+            ANTHROPIC_INTERNAL_CONSTANTS.STOP_REASON_TOOL_USE &&
           mcpManager !== null &&
           iterations < MAX_TOOL_ITERATIONS
         ) {
           // Collect any text the model generated alongside the tool call
           for (const block of response.content) {
-            if (block.type === "text") {
+            if (block.type === ANTHROPIC_INTERNAL_CONSTANTS.BLOCK_TYPE_TEXT) {
               textContent += block.text
             }
           }
@@ -291,7 +305,9 @@ export const AnthropicAdapterLive = Layer.effect(
           // Execute each tool call and collect results
           let toolResults = Chunk.empty<Anthropic.ToolResultBlockParam>()
           for (const block of response.content) {
-            if (block.type === "tool_use") {
+            if (
+              block.type === ANTHROPIC_INTERNAL_CONSTANTS.BLOCK_TYPE_TOOL_USE
+            ) {
               const result = yield* mcpManager.callTool(
                 block.name,
                 block.input as Record<string, unknown>,
@@ -319,7 +335,7 @@ export const AnthropicAdapterLive = Layer.effect(
 
         // Collect final text content
         for (const block of response.content) {
-          if (block.type === "text") {
+          if (block.type === ANTHROPIC_INTERNAL_CONSTANTS.BLOCK_TYPE_TEXT) {
             textContent += block.text
           }
         }
@@ -328,7 +344,7 @@ export const AnthropicAdapterLive = Layer.effect(
           taskId: request.taskId,
           content: textContent,
           stopReason: (response.stop_reason ??
-            "end_turn") as InferenceResponse["stopReason"],
+            ANTHROPIC_INTERNAL_CONSTANTS.STOP_REASON_END_TURN) as InferenceResponse["stopReason"],
           usage: {
             inputTokens: response.usage.input_tokens,
             outputTokens: response.usage.output_tokens,
@@ -413,15 +429,22 @@ export const AnthropicAdapterLive = Layer.effect(
               const s = client.messages.stream(streamParams)
 
               for await (const event of s) {
-                if (event.type === "content_block_delta") {
-                  if (event.delta.type === "text_delta") {
+                if (
+                  event.type ===
+                  ANTHROPIC_INTERNAL_CONSTANTS.EVENT_TYPE_CONTENT_BLOCK_DELTA
+                ) {
+                  if (
+                    event.delta.type ===
+                    ANTHROPIC_INTERNAL_CONSTANTS.DELTA_TYPE_TEXT_DELTA
+                  ) {
                     await emit.single({
-                      type: "text",
+                      type: STREAM_CHUNK_TYPES.TEXT,
                       content: event.delta.text,
                       index: index++,
                     })
                   } else if (
-                    event.delta.type === "thinking_delta" &&
+                    event.delta.type ===
+                      ANTHROPIC_INTERNAL_CONSTANTS.DELTA_TYPE_THINKING_DELTA &&
                     "thinking" in event.delta
                   ) {
                     // Emit thinking tokens as a separate chunk type so the
@@ -445,7 +468,11 @@ export const AnthropicAdapterLive = Layer.effect(
               totalCacheWriteTokens +=
                 finalMsg.usage.cache_creation_input_tokens ?? 0
 
-              if (finalMsg.stop_reason !== "tool_use" || mcpManager === null) {
+              if (
+                finalMsg.stop_reason !==
+                  ANTHROPIC_INTERNAL_CONSTANTS.STOP_REASON_TOOL_USE ||
+                mcpManager === null
+              ) {
                 break
               }
 
@@ -458,7 +485,10 @@ export const AnthropicAdapterLive = Layer.effect(
               // Emit indicator and execute each tool call
               let toolResults = Chunk.empty<Anthropic.ToolResultBlockParam>()
               for (const block of finalMsg.content) {
-                if (block.type === "tool_use") {
+                if (
+                  block.type ===
+                  ANTHROPIC_INTERNAL_CONSTANTS.BLOCK_TYPE_TOOL_USE
+                ) {
                   await emit.single({
                     type: "tool_use",
                     content: block.name,
