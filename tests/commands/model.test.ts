@@ -6,6 +6,18 @@ import {
   RoutingPreferences,
   RoutingPreferencesLive,
 } from "../../src/providers/preferences/index.js"
+import type { ProviderRouterService } from "../../src/providers/router/index.js"
+
+const makeRouter = (
+  providers: readonly string[] = ["anthropic", "openai"],
+): ProviderRouterService => ({
+  route: () => Effect.die("route not used in model command"),
+  complete: () => Effect.die("complete not used in model command"),
+  completeWithCallback: () =>
+    Effect.die("completeWithCallback not used in model command"),
+  listProviders: () => Effect.succeed(providers),
+  listCapabilities: () => Effect.succeed([]),
+})
 
 const run = <A, E>(eff: Effect.Effect<A, E, RoutingPreferences>) =>
   Effect.runPromise(eff.pipe(Effect.provide(RoutingPreferencesLive)))
@@ -15,7 +27,7 @@ describe("makeModelCommand", () => {
     const output = await run(
       Effect.gen(function* () {
         const routingPreferences = yield* RoutingPreferences
-        const command = makeModelCommand(routingPreferences)
+        const command = makeModelCommand(routingPreferences, makeRouter())
         const result = yield* command.execute([])
         return result.output
       }),
@@ -28,7 +40,7 @@ describe("makeModelCommand", () => {
     const preferredProvider = await run(
       Effect.gen(function* () {
         const routingPreferences = yield* RoutingPreferences
-        const command = makeModelCommand(routingPreferences)
+        const command = makeModelCommand(routingPreferences, makeRouter())
         yield* command.execute(["anthropic"])
         return yield* routingPreferences.getPreferredProvider()
       }),
@@ -40,7 +52,7 @@ describe("makeModelCommand", () => {
     const preferredProvider = await run(
       Effect.gen(function* () {
         const routingPreferences = yield* RoutingPreferences
-        const command = makeModelCommand(routingPreferences)
+        const command = makeModelCommand(routingPreferences, makeRouter())
         yield* command.execute(["openai"])
         yield* command.execute(["auto"])
         return yield* routingPreferences.getPreferredProvider()
@@ -53,8 +65,22 @@ describe("makeModelCommand", () => {
     const exit = await Effect.runPromiseExit(
       Effect.gen(function* () {
         const routingPreferences = yield* RoutingPreferences
-        const command = makeModelCommand(routingPreferences)
+        const command = makeModelCommand(routingPreferences, makeRouter())
         return yield* command.execute(["unknown"])
+      }).pipe(Effect.provide(RoutingPreferencesLive)),
+    )
+    expect(exit._tag).toBe("Failure")
+  })
+
+  it("rejects valid providers that are not registered", async () => {
+    const exit = await Effect.runPromiseExit(
+      Effect.gen(function* () {
+        const routingPreferences = yield* RoutingPreferences
+        const command = makeModelCommand(
+          routingPreferences,
+          makeRouter(["ollama"]),
+        )
+        return yield* command.execute(["anthropic"])
       }).pipe(Effect.provide(RoutingPreferencesLive)),
     )
     expect(exit._tag).toBe("Failure")

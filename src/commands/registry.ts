@@ -297,7 +297,7 @@ export const makeCommandRegistryLive = (
         makeMcpCommand(mcpManager),
         makeToolsCommand(builtInTools),
         makeMemoryCommand(sessionMemory),
-        makeModelCommand(routingPreferences),
+        makeModelCommand(routingPreferences, providerRouter),
         makePrivacyCommand(routingPreferences),
         makeProvidersCommand(providerRouter, routingPreferences, "models"),
         makeProvidersCommand(providerRouter, routingPreferences),

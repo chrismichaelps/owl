@@ -18,6 +18,7 @@ import {
 import { CommandParseError } from "../../core/errors/index.js"
 import type { ProviderId } from "../../core/schema/index.js"
 import type { RoutingPreferencesService } from "../../providers/preferences/index.js"
+import type { ProviderRouterService } from "../../providers/router/index.js"
 import type { CommandHandler, CommandResult } from "../types.js"
 
 /**
@@ -25,6 +26,7 @@ import type { CommandHandler, CommandResult } from "../types.js"
  */
 export function makeModelCommand(
   routingPreferences: RoutingPreferencesService,
+  providerRouter: ProviderRouterService,
 ): CommandHandler {
   const validProviders = Chunk.toReadonlyArray(
     Chunk.fromIterable(PROVIDER_IDS),
@@ -69,6 +71,24 @@ export function makeModelCommand(
                 validProviders +
                 ", " +
                 PROVIDER_AUTO,
+            }),
+          )
+        }
+
+        const registeredProviders = Chunk.fromIterable(
+          yield* providerRouter.listProviders(),
+        )
+        if (
+          !Chunk.some(registeredProviders, (id) => id === requestedProvider)
+        ) {
+          return yield* Effect.fail(
+            new CommandParseError({
+              input: "/model " + requestedProvider,
+              reason:
+                "Provider is not registered in this runtime. Registered providers: " +
+                (Chunk.isEmpty(registeredProviders)
+                  ? "none"
+                  : Chunk.toReadonlyArray(registeredProviders).join(", ")),
             }),
           )
         }
