@@ -23,6 +23,7 @@
  *    - ProviderBootstrapLive (requires: config, router, adapters)
  *    - OrchestratorLive (requires: context, memory, router)
  *    - EditingPipelineLive (requires: governance, diff, tli, rollback)
+ *    - PendingMutationStoreLive (requires: none)
  *
  * 3. Aggregate layers:
  *    - CommandRegistryLive (requires: all services + all commands)
@@ -60,6 +61,7 @@ import {
 import { XAIAdapterLive } from "../providers/xai/index.js"
 import { RoleContextLive } from "../fmcf/roles/architect.js"
 import { EditingPipelineLive } from "../editor/pipeline/index.js"
+import { PendingMutationStoreLive } from "../editor/pending/index.js"
 import { RollbackSystemLive } from "../editor/rollback/index.js"
 import { DiffGeneratorLive } from "../editor/diff/index.js"
 import { TLIExecutorLive } from "../editor/tli/index.js"
@@ -134,6 +136,7 @@ export const makeOwlRuntime = (projectRoot: string): OwlRuntime => {
     providerAdapterLayer,
     RoleContextLive,
     RollbackSystemLive,
+    PendingMutationStoreLive,
     GovernanceEngineLive,
     DiffGeneratorLive,
     TLIExecutorLive,

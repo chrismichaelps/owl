@@ -548,6 +548,8 @@ export const COMMAND_CONSTANTS = {
   MAX_PROMPT_LENGTH: 10_000,
   MEMORY_PREVIEW_LENGTH: 80,
   PALETTE_VISIBLE_COUNT: 8,
+  EDIT_PREVIEW_FLAG: "--preview",
+  PENDING_MUTATION_LIMIT: 100,
 } as const
 
 /** @Owl.Core.Constants.Mentions - File mention expansion limits */

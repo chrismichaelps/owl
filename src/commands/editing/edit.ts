@@ -15,7 +15,9 @@
  * /edit src/utils.ts "const x = 1" "const x: number = 1"
  */
 import { Effect } from "effect"
+import { COMMAND_CONSTANTS } from "../../core/constants/index.js"
 import { CommandParseError } from "../../core/errors/index.js"
+import type { PendingMutationStoreService } from "../../editor/pending/index.js"
 import type { EditingPipelineService } from "../../editor/pipeline/index.js"
 import type { PipelineResult } from "../../editor/pipeline/index.js"
 import { formatUnifiedDiff } from "../../editor/utils/patch.js"
@@ -52,6 +54,7 @@ export function formatEditOutput(
  */
 export function makeEditCommand(
   pipeline: EditingPipelineService,
+  pending: PendingMutationStoreService,
   projectRoot: string,
 ): CommandHandler {
   return {
@@ -59,7 +62,9 @@ export function makeEditCommand(
     description:
       'Apply a surgical string replacement: /edit <file> "<old>" "<new>"',
     execute: (args): Effect.Effect<CommandResult, CommandParseError> => {
-      const [file, oldString, newString] = args
+      const preview = args[0] === COMMAND_CONSTANTS.EDIT_PREVIEW_FLAG
+      const commandArgs = preview ? args.slice(1) : args
+      const [file, oldString, newString] = commandArgs
       if (
         file === undefined ||
         oldString === undefined ||
@@ -73,6 +78,33 @@ export function makeEditCommand(
         )
       }
       const mutationId = makeMutationId("edit", file, [oldString, newString])
+      if (preview) {
+        return pipeline
+          .execute({
+            mutationId,
+            targets: [{ file, oldString, newString }],
+            projectRoot,
+            autoApprove: false,
+          })
+          .pipe(
+            Effect.flatMap((result) =>
+              pending.put(mutationId, [{ file, oldString, newString }]).pipe(
+                Effect.map(() => ({
+                  output:
+                    formatEditOutput(file, mutationId, result) +
+                    "\n\nPending approval. Run /apply " +
+                    mutationId +
+                    " to write this change.",
+                })),
+              ),
+            ),
+            Effect.catchAll((err) =>
+              Effect.fail(
+                new CommandParseError({ input: "/edit", reason: String(err) }),
+              ),
+            ),
+          )
+      }
       return pipeline
         .execute({
           mutationId,

@@ -32,6 +32,64 @@ const makeProjectRoot = (): Promise<string> =>
   mkdtemp(path.join(os.tmpdir(), "owl-editor-pipeline-"))
 
 describe("EditingPipeline rollback retention", () => {
+  it("returns preview diffs without writing when autoApprove is false", async () => {
+    const projectRoot = await makeProjectRoot()
+    const relativeFile = "src/example.ts"
+    const absoluteFile = path.join(projectRoot, relativeFile)
+
+    try {
+      await mkdir(path.dirname(absoluteFile), { recursive: true })
+      const originalContent = `const unchanged0 = 0
+const unchanged1 = 1
+const unchanged2 = 2
+const unchanged3 = 3
+const unchanged4 = 4
+const unchanged5 = 5
+const unchanged6 = 6
+const unchanged7 = 7
+const unchanged8 = 8
+const unchanged9 = 9
+const value = 1
+const unchanged11 = 11
+const unchanged12 = 12
+const unchanged13 = 13
+const unchanged14 = 14
+const unchanged15 = 15
+const unchanged16 = 16
+const unchanged17 = 17
+const unchanged18 = 18
+const unchanged19 = 19
+`
+      await writeFile(absoluteFile, originalContent, "utf8")
+
+      const result = await Effect.runPromise(
+        Effect.gen(function* () {
+          const pipeline = yield* EditingPipeline
+          return yield* pipeline.execute({
+            mutationId: "mutation-preview-1",
+            targets: [
+              {
+                file: relativeFile,
+                oldString: "const value = 1",
+                newString: "const value = 2",
+              },
+            ],
+            projectRoot,
+            autoApprove: false,
+          })
+        }).pipe(Effect.provide(testLayer)),
+      )
+
+      expect(result.completedStage).toBe("approval")
+      expect(result.approved).toBe(false)
+      expect(result.results).toHaveLength(1)
+      expect(result.results[0]?.diff.linesAdded).toBe(1)
+      expect(await readFile(absoluteFile, "utf8")).toBe(originalContent)
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true })
+    }
+  })
+
   it("keeps rollback entries after successful mutations so /undo can restore", async () => {
     const projectRoot = await makeProjectRoot()
     const relativeFile = "src/example.ts"

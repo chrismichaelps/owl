@@ -1,10 +1,16 @@
 /** @Owl.Tests.Commands.Edit - Editing command mutation ID tests */
 import { describe, expect, it } from "vitest"
-import { Effect } from "effect"
+import { Chunk, Effect, Option } from "effect"
+import { makeApplyCommand } from "../../src/commands/editing/apply.js"
 import {
   formatEditOutput,
   makeEditCommand,
 } from "../../src/commands/editing/edit.js"
+import {
+  PendingMutationStore,
+  PendingMutationStoreLive,
+} from "../../src/editor/pending/index.js"
+import type { PendingMutationStoreService } from "../../src/editor/pending/index.js"
 import type {
   EditingPipelineService,
   PipelineResult,
@@ -50,9 +56,21 @@ const makePipeline = (): EditingPipelineService => ({
     }),
 })
 
+const makePending = (): PendingMutationStoreService => ({
+  put: (mutationId, targets) =>
+    Effect.succeed({
+      mutationId,
+      targets: Chunk.fromIterable(targets),
+      createdAt: "2026-05-16T00:00:00.000Z",
+    }),
+  get: () => Effect.succeed(Option.none()),
+  remove: () => Effect.void,
+  list: () => Effect.succeed(Chunk.empty()),
+})
+
 describe("makeEditCommand", () => {
   it("returns the deterministic mutation ID for rollback commands", async () => {
-    const command = makeEditCommand(makePipeline(), "/project")
+    const command = makeEditCommand(makePipeline(), makePending(), "/project")
     const first = await Effect.runPromise(
       command.execute(["src/a.ts", "old", "new"]),
     )
@@ -65,7 +83,7 @@ describe("makeEditCommand", () => {
   })
 
   it("includes a fenced unified diff in the command output", async () => {
-    const command = makeEditCommand(makePipeline(), "/project")
+    const command = makeEditCommand(makePipeline(), makePending(), "/project")
     const result = await Effect.runPromise(
       command.execute(["src/a.ts", "const value = 1", "const value = 2"]),
     )
@@ -73,6 +91,47 @@ describe("makeEditCommand", () => {
     expect(result.output).toContain("```diff")
     expect(result.output).toContain("--- a/src/a.ts")
     expect(result.output).toContain("+const value = 2")
+  })
+
+  it("previews and stores a pending mutation when --preview is used", async () => {
+    const command = makeEditCommand(makePipeline(), makePending(), "/project")
+    const result = await Effect.runPromise(
+      command.execute([
+        "--preview",
+        "src/a.ts",
+        "const value = 1",
+        "const value = 2",
+      ]),
+    )
+
+    expect(result.output).toContain("Pending approval")
+    expect(result.output).toContain("Run /apply edit-")
+  })
+})
+
+describe("makeApplyCommand", () => {
+  it("applies and removes a pending mutation", async () => {
+    const output = await Effect.runPromise(
+      Effect.gen(function* () {
+        const pending = yield* PendingMutationStore
+        const stored = yield* pending.put("edit-example", [
+          {
+            file: "src/a.ts",
+            oldString: "const value = 1",
+            newString: "const value = 2",
+          },
+        ])
+        const command = makeApplyCommand(makePipeline(), pending, "/project")
+        const result = yield* command.execute([stored.mutationId])
+        const removed = yield* pending.get(stored.mutationId)
+
+        expect(Option.isNone(removed)).toBe(true)
+        return result.output
+      }).pipe(Effect.provide(PendingMutationStoreLive)),
+    )
+
+    expect(output).toContain("Applied edit-example")
+    expect(output).toContain("Use /undo edit-example")
   })
 })
 

@@ -39,6 +39,7 @@ import { RoutingPreferences } from "../providers/preferences/index.js"
 import { ProviderRouter } from "../providers/router/index.js"
 import { BuiltInTools } from "../tools/index.js"
 import { EditingPipeline } from "../editor/pipeline/index.js"
+import { PendingMutationStore } from "../editor/pending/index.js"
 import { RollbackSystem } from "../editor/rollback/index.js"
 import { makeAnalyzeCommand } from "./analysis/analyze.js"
 import { makeBrainCommand } from "./analysis/brain.js"
@@ -219,6 +220,7 @@ export const makeCommandRegistryLive = (
   | RoleContext
   | RollbackSystem
   | EditingPipeline
+  | PendingMutationStore
   | RoutingPreferences
   | ProviderRouter
   | BuiltInTools
@@ -230,6 +232,7 @@ export const makeCommandRegistryLive = (
       const hashRegistry = yield* HashRegistry
       const rollback = yield* RollbackSystem
       const pipeline = yield* EditingPipeline
+      const pendingMutations = yield* PendingMutationStore
       const sessionMemory = yield* SessionMemory
       const usageMetrics = yield* UsageMetrics
       const contextManager = yield* ContextManager
@@ -263,12 +266,12 @@ export const makeCommandRegistryLive = (
         makeGrillCommand(orchestrator),
         // Editing
         makeAddCommand(contextManager, projectRoot),
-        makeEditCommand(pipeline, projectRoot),
+        makeEditCommand(pipeline, pendingMutations, projectRoot),
         makeInjectCommand(pipeline, projectRoot),
         makeCreateCommand(fs, projectRoot),
         makeRefactorCommand(orchestrator),
         makeDiffCommand(rollback),
-        makeApplyCommand(),
+        makeApplyCommand(pipeline, pendingMutations, projectRoot),
         makeUndoCommand(rollback, projectRoot),
         // Management
         makeRoleCommand(roleCtx),

@@ -199,12 +199,23 @@ export const EditingPipelineLive = Layer.effect(
         // For non-interactive use, autoApprove:true bypasses the prompt.
         // Production TUI approval is wired in from seam-tui-engine.
         const approved = input.autoApprove
+        let mutationResults = Chunk.empty<PipelineMutationResult>()
+        for (let i = 0; i < Chunk.size(prepared); i++) {
+          const p = Chunk.unsafeGet(prepared, i)
+          const diff = Chunk.unsafeGet(diffs, i)
+          mutationResults = Chunk.append(mutationResults, {
+            file: p.file,
+            oldContent: p.oldContent,
+            newContent: p.newContent,
+            diff,
+          })
+        }
 
         if (!approved) {
           return {
             mutationId: input.mutationId,
             completedStage: PIPELINE_STAGES[4],
-            results: [],
+            results: Chunk.toReadonlyArray(mutationResults),
             shardSplitWarnings: Chunk.toReadonlyArray(shardSplitWarnings),
             approved: false,
             rolledBack: false,
@@ -213,10 +224,8 @@ export const EditingPipelineLive = Layer.effect(
 
         // Stage 6: TLI Execution
         // Register rollback before each write so restore is always possible.
-        let mutationResults = Chunk.empty<PipelineMutationResult>()
         for (let i = 0; i < Chunk.size(prepared); i++) {
           const p = Chunk.unsafeGet(prepared, i)
-          const diff = Chunk.unsafeGet(diffs, i)
 
           yield* rollback.register(input.mutationId, p.file, p.oldContent)
           yield* tli.write(p.file, p.newContent, input.projectRoot).pipe(
@@ -227,12 +236,6 @@ export const EditingPipelineLive = Layer.effect(
               ),
             ),
           )
-          mutationResults = Chunk.append(mutationResults, {
-            file: p.file,
-            oldContent: p.oldContent,
-            newContent: p.newContent,
-            diff,
-          })
         }
 
         // Stage 7: Verification
