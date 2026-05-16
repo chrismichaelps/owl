@@ -374,6 +374,26 @@ export const PROJECT_CONTEXT_CONSTANTS = {
   SECTION_SEPARATOR: "\n\n---\n\n",
 } as const
 
+/** @Owl.Core.Constants.Compact - Conversation compaction command policy */
+export const COMPACT_CONSTANTS = {
+  COMMAND_NAME: "compact",
+  MIN_MESSAGES: 4,
+  MODE: "standard",
+  SYSTEM_PROMPT: `You are a conversation summarizer. Your task is to produce a dense, structured summary of the conversation so far.
+
+The summary must:
+1. Preserve all key decisions, code changes, file paths, and architectural choices discussed
+2. Note the current state of any work in progress
+3. Capture any open questions or next steps
+4. Be written as a self-contained context block the developer can resume from
+
+Format: Start with "## Conversation Summary" then organize by topic. Be dense and precise.`,
+  TASK_PROMPT:
+    "Please summarize our conversation so far, preserving all important technical context.",
+  CONTEXT_PREFIX:
+    "## Compacted Context\n\nThe following is a summary of our conversation before compaction:\n\n",
+} as const
+
 /** @Owl.Core.Constants.CLI - Process entrypoint metadata */
 export const CLI_CONSTANTS = {
   BINARY_NAME: "owl",

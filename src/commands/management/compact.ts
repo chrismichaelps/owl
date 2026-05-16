@@ -1,34 +1,35 @@
 /**
- * @Owl.Commands.Management.Compact - Summarize and compress conversation context: /compact
+ * @Owl.Commands.Management.Compact - Summarize and compress conversation context
  *
- * When context grows large, /compact asks the LLM to produce a dense summary of
- * the conversation so far, then replaces the full message history with just that
- * summary. This slashes token usage on long sessions while preserving the key
- * facts the model needs.
- *
- * Inspired by ref-cli's compactSummary pattern.
- *
- * @example
- * /compact
- * // ✓ Compacted: 47 messages → 1 summary (saved ~12,400 tokens)
+ * Replaces a long Session message history with one dense summary while restoring
+ * the caller's original system prompt even when summarization fails.
  */
-import { Effect } from "effect"
-import type { CommandParseError } from "../../core/errors/index.js"
+import { Chunk, Data, Effect } from "effect"
+import { COMPACT_CONSTANTS } from "../../core/constants/index.js"
 import { CommandParseError as CommandParseErrorClass } from "../../core/errors/index.js"
-import type { OrchestratorService } from "../../engine/orchestrator/index.js"
+import type { CommandParseError } from "../../core/errors/index.js"
+import type { Message } from "../../core/schema/index.js"
 import type { ContextManagerService } from "../../engine/context/index.js"
+import type { OrchestratorService } from "../../engine/orchestrator/index.js"
 import { estimateConversationTokens } from "../../tokens/pruning/index.js"
+import { makeCommandTaskId } from "../utils/ids.js"
 import type { CommandHandler, CommandResult } from "../types.js"
 
-const COMPACT_SYSTEM_PROMPT = `You are a conversation summarizer. Your task is to produce a dense, structured summary of the conversation so far.
+const makeCompactTaskSeed = (messages: Chunk.Chunk<Message>): string =>
+  Chunk.toReadonlyArray(
+    Chunk.map(
+      messages,
+      (message) => `${message.role}:${message.timestamp}:${message.content}`,
+    ),
+  ).join("\n")
 
-The summary must:
-1. Preserve all key decisions, code changes, file paths, and architectural choices discussed
-2. Note the current state of any work in progress
-3. Capture any open questions or next steps
-4. Be written as a self-contained context block the developer can resume from
-
-Format: Start with "## Conversation Summary" then organize by topic. Be dense and precise.`
+const toCommandParseError = (error: unknown): CommandParseErrorClass =>
+  new CommandParseErrorClass({
+    input: COMPACT_CONSTANTS.COMMAND_NAME,
+    reason:
+      "Summarization failed: " +
+      (error instanceof Error ? error.message : String(error)),
+  })
 
 /**
  * @Owl.Commands.Management.Compact.Factory - Create the /compact command handler
@@ -38,71 +39,62 @@ export function makeCompactCommand(
   contextManager: ContextManagerService,
 ): CommandHandler {
   return {
-    name: "compact",
+    name: COMPACT_CONSTANTS.COMMAND_NAME,
     description:
       "Summarize conversation context to reduce token usage: /compact",
     execute: (_args): Effect.Effect<CommandResult, CommandParseError> =>
       Effect.gen(function* () {
-        const messages = yield* contextManager.getMessages()
+        const messages = Chunk.fromIterable(yield* contextManager.getMessages())
 
-        if (messages.length < 4) {
+        if (Chunk.size(messages) < COMPACT_CONSTANTS.MIN_MESSAGES) {
           return {
             output:
               "Nothing to compact — conversation is too short. Keep going!",
           }
         }
 
-        const tokensBefore = estimateConversationTokens(messages)
-
-        // Build a summary request by injecting the compaction system prompt
-        const currentSystem = yield* contextManager.getSystemPrompt()
-        yield* contextManager.setSystemPrompt(COMPACT_SYSTEM_PROMPT)
-
-        const summaryResponse = yield* orchestrator
-          .run({
-            id: "compact-" + Date.now().toString(36),
-            prompt:
-              "Please summarize our conversation so far, preserving all important technical context.",
-            mode: "standard",
-            createdAt: new Date().toISOString(),
-          })
-          .pipe(
-            Effect.mapError(
-              (e) =>
-                new CommandParseErrorClass({
-                  input: "compact",
-                  reason:
-                    "Summarization failed: " +
-                    ("message" in e && typeof e.message === "string"
-                      ? e.message
-                      : String(e)),
-                }),
+        const messagesArray = Chunk.toReadonlyArray(messages)
+        const tokensBefore = estimateConversationTokens(messagesArray)
+        const compactedAt = new Date().toISOString()
+        const summaryResponse = yield* Effect.acquireUseRelease(
+          contextManager
+            .getSystemPrompt()
+            .pipe(
+              Effect.tap(() =>
+                contextManager.setSystemPrompt(COMPACT_CONSTANTS.SYSTEM_PROMPT),
+              ),
             ),
-          )
+          () =>
+            orchestrator.run({
+              id: makeCommandTaskId(
+                COMPACT_CONSTANTS.COMMAND_NAME,
+                makeCompactTaskSeed(messages),
+              ),
+              prompt: COMPACT_CONSTANTS.TASK_PROMPT,
+              mode: COMPACT_CONSTANTS.MODE,
+              createdAt: compactedAt,
+            }),
+          (previousSystemPrompt) =>
+            contextManager.setSystemPrompt(previousSystemPrompt ?? ""),
+        ).pipe(Effect.mapError(toCommandParseError))
 
-        // Restore original system prompt and replace history with just the summary
-        yield* contextManager.setSystemPrompt(currentSystem ?? "")
-        yield* contextManager.clear()
-        yield* contextManager.addMessage({
-          role: "user",
-          content:
-            "## Compacted Context\n\nThe following is a summary of our conversation before compaction:\n\n" +
-            summaryResponse.content,
-          timestamp: new Date().toISOString(),
+        const compactedMessage = Data.struct({
+          role: "user" as const,
+          content: COMPACT_CONSTANTS.CONTEXT_PREFIX + summaryResponse.content,
+          timestamp: compactedAt,
         })
 
-        const tokensAfter = estimateConversationTokens([
-          {
-            role: "user",
-            content: summaryResponse.content,
-            timestamp: new Date().toISOString(),
-          },
-        ])
+        yield* contextManager.clear()
+        yield* contextManager.addMessage(compactedMessage)
+
+        const tokensAfter = estimateConversationTokens(
+          Chunk.toReadonlyArray(Chunk.make(compactedMessage)),
+        )
         const saved = tokensBefore - tokensAfter
 
         return {
           output:
-            `✓ Compacted: ${String(messages.length)} messages → 1 summary\n` +
+            `✓ Compacted: ${String(Chunk.size(messages))} messages → 1 summary\n` +
             `  Tokens: ~${String(tokensBefore)} → ~${String(tokensAfter)} (saved ~${String(Math.max(0, saved))})`,
         }
       }),
