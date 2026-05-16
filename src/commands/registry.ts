@@ -39,6 +39,7 @@ import { makeDeepCommand } from "./core/deep.js"
 import { makePlanCommand } from "./core/plan.js"
 import { makeQuickCommand } from "./core/quick.js"
 import { makeTaskCommand } from "./core/task.js"
+import { makeAddCommand } from "./editing/add.js"
 import { makeApplyCommand } from "./editing/apply.js"
 import { makeCreateCommand } from "./editing/create.js"
 import { makeDiffCommand } from "./editing/diff.js"
@@ -48,7 +49,12 @@ import { makeRefactorCommand } from "./editing/refactor.js"
 import { makeUndoCommand } from "./editing/undo.js"
 import { makeAuditCommand } from "./management/audit.js"
 import { makeClearCommand } from "./management/clear.js"
+import { makeExportCommand } from "./management/export.js"
+import { makeCompactCommand } from "./management/compact.js"
 import { makeHelpCommand } from "./management/help.js"
+import { makeHistoryCommand } from "./management/history.js"
+import { makeInitCommand } from "./management/init.js"
+import { makeMcpCommand } from "./management/mcp.js"
 import { makeMemoryCommand } from "./management/memory.js"
 import { makeModelCommand } from "./management/model.js"
 import { makeRegistryCommand } from "./management/registry.js"
@@ -232,6 +238,7 @@ export const makeCommandRegistryLive = (
         makeFrictionCommand(orchestrator),
         makeGrillCommand(orchestrator),
         // Editing
+        makeAddCommand(contextManager, projectRoot),
         makeEditCommand(pipeline, projectRoot),
         makeInjectCommand(pipeline, projectRoot),
         makeCreateCommand(fs, projectRoot),
@@ -245,6 +252,11 @@ export const makeCommandRegistryLive = (
         makeAuditCommand(orchestrator),
         makeStatusCommand(sessionMemory, usageMetrics),
         makeClearCommand(contextManager),
+        makeCompactCommand(orchestrator, contextManager),
+        makeHistoryCommand(sessionMemory),
+        makeInitCommand(projectRoot),
+        makeExportCommand(sessionMemory, projectRoot),
+        makeMcpCommand(),
         makeMemoryCommand(sessionMemory),
         makeModelCommand(routingPreferences),
       ]

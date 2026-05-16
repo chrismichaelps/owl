@@ -36,9 +36,13 @@
  */
 import { Effect, Layer, ManagedRuntime } from "effect"
 import path from "node:path"
+import { loadMcpConfig, makeMcpManagerLayer } from "../mcp/index.js"
 import { OWLConfigLive } from "../core/config/index.js"
 import { SESSION_MEMORY_CONSTANTS } from "../core/constants/index.js"
-import { Orchestrator, OrchestratorLive } from "../engine/orchestrator/index.js"
+import {
+  Orchestrator,
+  makeOrchestratorLive,
+} from "../engine/orchestrator/index.js"
 import { ContextManagerLive } from "../engine/context/index.js"
 import { UsageMetricsLive } from "../engine/metrics/index.js"
 import { makePersistentSessionMemoryLive } from "../engine/memory/index.js"
@@ -95,13 +99,20 @@ export const makeOwlRuntime = (projectRoot: string): OwlRuntime => {
     ),
   )
 
+  // Load MCP config and build manager layer — errors are non-fatal (empty config = no tools)
+  const mcpManagerLayer = Layer.unwrapEffect(
+    Effect.promise(() =>
+      loadMcpConfig(projectRoot).then((config) => makeMcpManagerLayer(config)),
+    ),
+  )
+
   const providerAdapterLayer = Layer.mergeAll(
     AnthropicAdapterLive,
     OpenAIAdapterLive,
     GoogleAdapterLive,
     XAIAdapterLive,
     OllamaAdapterLive,
-  ).pipe(Layer.provide(OWLConfigLive))
+  ).pipe(Layer.provide(OWLConfigLive), Layer.provide(mcpManagerLayer))
 
   // Self-sufficient leaf layers plus Provider adapters.
   const leafLayer = Layer.mergeAll(
@@ -124,7 +135,9 @@ export const makeOwlRuntime = (projectRoot: string): OwlRuntime => {
     Layer.provide(leafLayer),
   )
 
-  const orchestratorBaseLayer = OrchestratorLive.pipe(Layer.provide(leafLayer))
+  const orchestratorBaseLayer = makeOrchestratorLive(projectRoot).pipe(
+    Layer.provide(leafLayer),
+  )
   const orchestratorLayer = Layer.effect(
     Orchestrator,
     Effect.gen(function* () {
