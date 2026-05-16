@@ -148,7 +148,7 @@ export const makeOrchestratorLive = (projectRoot: string) =>
       // Load project context (CLAUDE.md + git status) — non-blocking, never throws
       const projectCtx =
         projectRoot.length > 0
-          ? yield* Effect.promise(() => loadProjectContext(projectRoot))
+          ? yield* loadProjectContext(projectRoot)
           : undefined
       yield* ctx.setSystemPrompt(buildFMCFSystemPrompt(projectCtx))
 

@@ -1,146 +1,164 @@
 /**
- * @Owl.Engine.Context.ProjectContext - Load CLAUDE.md and git metadata for system prompt
+ * @Owl.Engine.Context.ProjectContext - Effect-native startup context loader
  *
- * Discovers and reads CLAUDE.md files from the project hierarchy:
- *   1. ~/.owl/CLAUDE.md      — user-global rules
- *   2. <projectRoot>/CLAUDE.md — project rules (highest priority)
- *   3. <projectRoot>/.claude/CLAUDE.md
- *
- * Also collects a git snapshot (branch, status, recent commits) to give
- * the LLM situational awareness at session start.
- *
- * Design: async I/O only at session init — results are injected into the
- * FMCF system prompt once and Anthropic prompt-caches the stable prefix.
- *
- * @example
- * const ctx = await loadProjectContext("/Users/me/myproject")
- * // ctx.claudeMd  → contents of CLAUDE.md files (joined)
- * // ctx.gitStatus → "Branch: main\nStatus: (clean)\nRecent: ..."
+ * Discovers CLAUDE.md instructions and a compact git snapshot once at startup.
+ * The resulting stable prefix is injected into the FMCF system prompt and can
+ * be prompt-cached by providers.
  */
 import { execFile } from "node:child_process"
 import { readFile } from "node:fs/promises"
 import { homedir } from "node:os"
 import { join } from "node:path"
 import { promisify } from "node:util"
+import { Chunk, Data, Effect, Option } from "effect"
+import { PROJECT_CONTEXT_CONSTANTS } from "../../core/constants/index.js"
 
 const execFileAsync = promisify(execFile)
 
-const MAX_STATUS_CHARS = 2_000
-const MAX_CLAUDE_MD_CHARS = 40_000
-
-export interface ProjectContext {
-  /** Joined contents of all discovered CLAUDE.md files, or null if none found */
+export type ProjectContext = Readonly<{
   readonly claudeMd: string | null
-  /** Git snapshot string, or null if not a git repo */
   readonly gitStatus: string | null
-  /** Absolute path to the project root */
   readonly projectRoot: string
+}>
+
+const toNullable = <A>(option: Option.Option<A>): A | null =>
+  Option.match(option, {
+    onNone: () => null,
+    onSome: (value) => value,
+  })
+
+const trimToOption = (content: string): Option.Option<string> => {
+  const trimmed = content.trim()
+  return trimmed.length > 0 ? Option.some(trimmed) : Option.none()
 }
 
-/** Read a single file, return null on any error */
-async function readFileSafe(filePath: string): Promise<string | null> {
-  try {
-    const content = await readFile(filePath, "utf8")
-    return content.trim().length > 0 ? content.trim() : null
-  } catch {
-    return null
-  }
-}
+const truncate = (value: string, maxChars: number, marker: string): string =>
+  value.length > maxChars ? value.slice(0, maxChars) + marker : value
 
-/**
- * Discover and load CLAUDE.md files in priority order.
- * Later entries override earlier entries (project > global).
- */
-async function loadClaudeMd(projectRoot: string): Promise<string | null> {
-  const candidates = [
-    join(homedir(), ".owl", "CLAUDE.md"),
-    join(homedir(), ".claude", "CLAUDE.md"),
-    join(projectRoot, "CLAUDE.md"),
-    join(projectRoot, ".claude", "CLAUDE.md"),
-  ]
+const readFileSafe = (filePath: string): Effect.Effect<Option.Option<string>> =>
+  Effect.tryPromise({
+    try: () => readFile(filePath, "utf8"),
+    catch: () => undefined,
+  }).pipe(
+    Effect.map(trimToOption),
+    Effect.catchAll(() => Effect.succeed(Option.none())),
+  )
 
-  const parts: string[] = []
-  for (const candidate of candidates) {
-    const content = await readFileSafe(candidate)
-    if (content != null) {
-      parts.push(content)
-    }
-  }
-
-  if (parts.length === 0) return null
-
-  const joined = parts.join("\n\n---\n\n")
-  return joined.length > MAX_CLAUDE_MD_CHARS
-    ? joined.slice(0, MAX_CLAUDE_MD_CHARS) + "\n\n[...truncated]"
-    : joined
-}
-
-/** Run a git command, return stdout or null on failure */
-async function git(
-  projectRoot: string,
-  args: string[],
-): Promise<string | null> {
-  try {
-    const { stdout } = await execFileAsync(
-      "git",
-      ["--no-optional-locks", ...args],
-      {
-        cwd: projectRoot,
-        timeout: 5_000,
-      },
+const loadClaudeMd = (projectRoot: string): Effect.Effect<string | null> =>
+  Effect.gen(function* () {
+    const candidates = Chunk.make(
+      join(
+        homedir(),
+        PROJECT_CONTEXT_CONSTANTS.OWL_CONFIG_DIR,
+        PROJECT_CONTEXT_CONSTANTS.INSTRUCTIONS_FILE,
+      ),
+      join(
+        homedir(),
+        PROJECT_CONTEXT_CONSTANTS.CLAUDE_CONFIG_DIR,
+        PROJECT_CONTEXT_CONSTANTS.INSTRUCTIONS_FILE,
+      ),
+      join(projectRoot, PROJECT_CONTEXT_CONSTANTS.INSTRUCTIONS_FILE),
+      join(
+        projectRoot,
+        PROJECT_CONTEXT_CONSTANTS.CLAUDE_CONFIG_DIR,
+        PROJECT_CONTEXT_CONSTANTS.INSTRUCTIONS_FILE,
+      ),
     )
-    return stdout.trim() || null
-  } catch {
-    return null
-  }
-}
 
-/** Collect a brief git snapshot for the system prompt */
-async function loadGitStatus(projectRoot: string): Promise<string | null> {
-  // Confirm it's a git repo first
-  const isGit = await git(projectRoot, ["rev-parse", "--is-inside-work-tree"])
-  if (isGit !== "true") return null
+    let parts = Chunk.empty<string>()
+    for (const candidate of candidates) {
+      const content = yield* readFileSafe(candidate)
+      if (Option.isSome(content)) {
+        parts = Chunk.append(parts, content.value)
+      }
+    }
 
-  const [branch, defaultBranch, status, log, userName] = await Promise.all([
-    git(projectRoot, ["rev-parse", "--abbrev-ref", "HEAD"]),
-    git(projectRoot, ["rev-parse", "--abbrev-ref", "origin/HEAD"]).then(
-      (s) => s?.replace("origin/", "") ?? "main",
-    ),
-    git(projectRoot, ["status", "--short"]),
-    git(projectRoot, ["log", "--oneline", "-n", "5"]),
-    git(projectRoot, ["config", "user.name"]),
-  ])
+    if (Chunk.isEmpty(parts)) return null
 
-  const truncatedStatus =
-    status != null && status.length > MAX_STATUS_CHARS
-      ? status.slice(0, MAX_STATUS_CHARS) + "\n...(truncated)"
-      : status
+    return truncate(
+      Chunk.toReadonlyArray(parts).join(
+        PROJECT_CONTEXT_CONSTANTS.SECTION_SEPARATOR,
+      ),
+      PROJECT_CONTEXT_CONSTANTS.MAX_INSTRUCTIONS_CHARS,
+      PROJECT_CONTEXT_CONSTANTS.TRUNCATED_MARKER,
+    )
+  })
 
-  return [
-    "Git snapshot (captured at session start — not live):",
-    `Current branch: ${branch ?? "unknown"}`,
-    `Main branch: ${defaultBranch}`,
-    ...(userName != null ? [`Git user: ${userName}`] : []),
-    `Status:\n${truncatedStatus ?? "(clean)"}`,
-    `Recent commits:\n${log ?? "(none)"}`,
-  ].join("\n")
-}
-
-/**
- * @Owl.Engine.Context.ProjectContext.Load - Main entry point
- *
- * Runs CLAUDE.md discovery and git collection in parallel.
- * Never throws — all errors are swallowed and represented as null fields.
- *
- * @param projectRoot - Absolute path to the project root
- */
-export async function loadProjectContext(
+const git = (
   projectRoot: string,
-): Promise<ProjectContext> {
-  const [claudeMd, gitStatus] = await Promise.all([
-    loadClaudeMd(projectRoot).catch(() => null),
-    loadGitStatus(projectRoot).catch(() => null),
-  ])
+  args: Chunk.Chunk<string>,
+): Effect.Effect<string | null> =>
+  Effect.tryPromise({
+    try: () =>
+      execFileAsync("git", ["--no-optional-locks", ...Chunk.toArray(args)], {
+        cwd: projectRoot,
+        timeout: PROJECT_CONTEXT_CONSTANTS.GIT_TIMEOUT_MS,
+      }),
+    catch: () => undefined,
+  }).pipe(
+    Effect.map(({ stdout }) => toNullable(trimToOption(stdout))),
+    Effect.catchAll(() => Effect.succeed(null)),
+  )
 
-  return { claudeMd, gitStatus, projectRoot }
-}
+const loadGitStatus = (projectRoot: string): Effect.Effect<string | null> =>
+  Effect.gen(function* () {
+    const isGit = yield* git(
+      projectRoot,
+      Chunk.make("rev-parse", "--is-inside-work-tree"),
+    )
+    if (isGit !== "true") return null
+
+    const branch = yield* git(
+      projectRoot,
+      Chunk.make("rev-parse", "--abbrev-ref", "HEAD"),
+    )
+    const defaultBranchRaw = yield* git(
+      projectRoot,
+      Chunk.make("rev-parse", "--abbrev-ref", "origin/HEAD"),
+    )
+    const status = yield* git(projectRoot, Chunk.make("status", "--short"))
+    const log = yield* git(
+      projectRoot,
+      Chunk.make(
+        "log",
+        "--oneline",
+        "-n",
+        PROJECT_CONTEXT_CONSTANTS.GIT_RECENT_COMMIT_LIMIT,
+      ),
+    )
+    const userName = yield* git(projectRoot, Chunk.make("config", "user.name"))
+
+    const defaultBranch = defaultBranchRaw?.replace("origin/", "") ?? "main"
+    const truncatedStatus =
+      status !== null
+        ? truncate(
+            status,
+            PROJECT_CONTEXT_CONSTANTS.MAX_STATUS_CHARS,
+            PROJECT_CONTEXT_CONSTANTS.STATUS_TRUNCATED_MARKER,
+          )
+        : null
+
+    return Chunk.toReadonlyArray(
+      Chunk.filter(
+        Chunk.make(
+          "Git snapshot (captured at session start — not live):",
+          `Current branch: ${branch ?? "unknown"}`,
+          `Main branch: ${defaultBranch}`,
+          userName !== null ? `Git user: ${userName}` : null,
+          `Status:\n${truncatedStatus ?? "(clean)"}`,
+          `Recent commits:\n${log ?? "(none)"}`,
+        ),
+        (line): line is string => line !== null,
+      ),
+    ).join("\n")
+  })
+
+/** @Owl.Engine.Context.ProjectContext.Load - Compose instructions and git state */
+export const loadProjectContext = (
+  projectRoot: string,
+): Effect.Effect<ProjectContext> =>
+  Effect.gen(function* () {
+    const claudeMd = yield* loadClaudeMd(projectRoot)
+    const gitStatus = yield* loadGitStatus(projectRoot)
+    return Data.struct({ claudeMd, gitStatus, projectRoot })
+  })
