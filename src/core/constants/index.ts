@@ -210,6 +210,24 @@ export const TUI_WELCOME = {
   OWL_MARK: ["   ◜◝   ◜◝   ", "  ◟  ◞ ◟  ◞  ", "    ◜▵▵◝    "],
 } as const
 
+/** @Owl.Core.Constants.TUIShortcuts - Discoverable terminal keybindings */
+export const TUI_SHORTCUTS = [
+  ["?", "Open or close shortcuts"],
+  ["esc", "Cancel inference or close overlay"],
+  ["ctrl+c", "Quit Owl"],
+  ["↑ / ↓", "Navigate prompt history or palettes"],
+  ["tab", "Accept selected slash command or file mention"],
+  ["/", "Open slash command palette"],
+  ["@file", "Attach project files to context"],
+  ["/model", "Inspect or override provider routing"],
+] as const
+
+/** @Owl.Core.Constants.TUIShortcutsLayout - Shortcut panel dimensions */
+export const TUI_SHORTCUTS_LAYOUT = {
+  PANEL_WIDTH: 74,
+  KEY_COLUMN_WIDTH: 11,
+} as const
+
 /** @Owl.Core.Constants.TUI - Panel width ratios (left/center/right) */
 export const TUI_PANEL_WIDTHS = {
   LEFT: 0.3,

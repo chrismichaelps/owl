@@ -52,6 +52,7 @@ interface PromptInputProps {
   readonly onSubmit: (prompt: string, mode: Mode) => void
   readonly onCommand: (raw: string) => void
   readonly onModeChange: (mode: Mode) => void
+  readonly onShortcuts: () => void
   readonly onPaletteChange: (state: {
     readonly open: boolean
     readonly query: string
@@ -69,6 +70,7 @@ export const PromptInput: React.FC<PromptInputProps> = memo(
     onSubmit,
     onCommand,
     onModeChange,
+    onShortcuts,
     onPaletteChange,
     commands,
   }) => {
@@ -160,6 +162,11 @@ export const PromptInput: React.FC<PromptInputProps> = memo(
         const curIdx = paletteIndexRef.current
         const atQ = extractAtQuery(cur)
         const inMention = atQ !== null && !cur.startsWith("/")
+
+        if (input === "?" && cur.length === 0) {
+          onShortcuts()
+          return
+        }
 
         // @file mention palette navigation takes priority
         if (inMention) {

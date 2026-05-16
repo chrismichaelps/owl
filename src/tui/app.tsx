@@ -35,6 +35,7 @@ import { StatusBar } from "./components/StatusBar.js"
 import { PromptInput } from "./components/PromptInput.js"
 import { WelcomePanel } from "./components/WelcomePanel.js"
 import { CommandPalette } from "./components/CommandPalette.js"
+import { ShortcutsOverlay } from "./components/ShortcutsOverlay.js"
 import { owlReducer, INITIAL_STATE } from "./state.js"
 import type { Mode } from "../core/schema/index.js"
 import type { OwlRuntime } from "../cli/runtime.js"
@@ -72,6 +73,7 @@ export const App: React.FC<AppProps> = ({
     selectedIndex: 0,
   })
   const [commands, setCommands] = useState<readonly PaletteCommand[]>([])
+  const [shortcutsOpen, setShortcutsOpen] = useState(false)
 
   const isProcessing =
     state.status === "routing" || state.status === "inferring"
@@ -200,6 +202,14 @@ export const App: React.FC<AppProps> = ({
     { isActive: isProcessing },
   )
 
+  // Overlay Escape key: close shortcuts before input resumes
+  useInput(
+    (_input, key) => {
+      if (key.escape) setShortcutsOpen(false)
+    },
+    { isActive: shortcutsOpen },
+  )
+
   /** Update mode (affects PromptInput border color and token budget) */
   const handleModeChange = useCallback((newMode: Mode) => {
     setMode(newMode)
@@ -316,18 +326,23 @@ export const App: React.FC<AppProps> = ({
 
       {/* Input row */}
       <CommandPalette
-        open={paletteState.open}
+        open={paletteState.open && !shortcutsOpen}
         query={paletteState.query}
         selectedIndex={paletteState.selectedIndex}
         commands={commands}
       />
+      {shortcutsOpen ? <ShortcutsOverlay /> : null}
       <PromptInput
         mode={mode}
-        disabled={isProcessing}
+        disabled={isProcessing || shortcutsOpen}
         projectRoot={process.cwd()}
         onSubmit={handleSubmit}
         onCommand={handleCommand}
         onModeChange={handleModeChange}
+        onShortcuts={() => {
+          setShortcutsOpen(true)
+          setPaletteState({ open: false, query: "", selectedIndex: 0 })
+        }}
         onPaletteChange={setPaletteState}
         commands={commands}
       />
