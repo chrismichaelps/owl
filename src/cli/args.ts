@@ -52,16 +52,16 @@ export function parseArgs(argv: readonly string[]): ParsedArgs {
     if (arg.startsWith(CLI_FLAGS.MODE_PREFIX)) {
       const val = arg.slice(CLI_FLAGS.MODE_PREFIX.length)
       if (VALID_MODES.includes(val)) mode = val as Mode
-    } else if (CLI_FLAGS.HELP.includes(arg as any)) {
+    } else if ((CLI_FLAGS.HELP as readonly string[]).includes(arg)) {
       help = true
-    } else if (CLI_FLAGS.VERSION.includes(arg as any)) {
+    } else if ((CLI_FLAGS.VERSION as readonly string[]).includes(arg)) {
       version = true
-    } else if (CLI_FLAGS.QUICK.includes(arg as any)) {
-      mode = MODES.QUICK as Mode
-    } else if (CLI_FLAGS.DEEP.includes(arg as any)) {
-      mode = MODES.DEEP as Mode
-    } else if (CLI_FLAGS.ECONOMY.includes(arg as any)) {
-      mode = MODES.ECONOMY as Mode
+    } else if ((CLI_FLAGS.QUICK as readonly string[]).includes(arg)) {
+      mode = MODES.QUICK
+    } else if ((CLI_FLAGS.DEEP as readonly string[]).includes(arg)) {
+      mode = MODES.DEEP
+    } else if ((CLI_FLAGS.ECONOMY as readonly string[]).includes(arg)) {
+      mode = MODES.ECONOMY
     } else if (!arg.startsWith("-")) {
       prompt ??= arg
     }

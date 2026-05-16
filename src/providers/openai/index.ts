@@ -52,11 +52,47 @@ const OPENAI_CAPABILITIES: readonly ProviderCapability[] = [
   }),
   Data.struct({
     providerId: "openai",
+    modelId: OPENAI_MODELS.GPT_4_1,
+    contextWindow: 1_047_576,
+    maxOutputTokens: 32_768,
+    inputCostPer1k: 0.002,
+    outputCostPer1k: 0.008,
+    supportsStreaming: true,
+    reasoningDepth: "high",
+    supportsFunctionCalling: true,
+    supportsVision: true,
+  }),
+  Data.struct({
+    providerId: "openai",
     modelId: OPENAI_MODELS.O3,
     contextWindow: 200_000,
     maxOutputTokens: 100_000,
     inputCostPer1k: 0.002,
     outputCostPer1k: 0.008,
+    supportsStreaming: true,
+    reasoningDepth: "high",
+    supportsFunctionCalling: true,
+    supportsVision: true,
+  }),
+  Data.struct({
+    providerId: "openai",
+    modelId: OPENAI_MODELS.O4_MINI,
+    contextWindow: 200_000,
+    maxOutputTokens: 100_000,
+    inputCostPer1k: 0.0011,
+    outputCostPer1k: 0.0044,
+    supportsStreaming: true,
+    reasoningDepth: "high",
+    supportsFunctionCalling: true,
+    supportsVision: true,
+  }),
+  Data.struct({
+    providerId: "openai",
+    modelId: OPENAI_MODELS.GPT_5,
+    contextWindow: 1_000_000,
+    maxOutputTokens: 32_768,
+    inputCostPer1k: 0.005,
+    outputCostPer1k: 0.025,
     supportsStreaming: true,
     reasoningDepth: "high",
     supportsFunctionCalling: true,
@@ -151,7 +187,7 @@ export const OpenAIAdapterLive = Layer.effect(
           const startMs = Date.now()
           const response = await client.chat.completions.create({
             model: request.model,
-            max_tokens: request.maxTokens,
+            max_completion_tokens: request.maxTokens,
             messages: buildMessages(request),
           })
 
@@ -192,7 +228,7 @@ export const OpenAIAdapterLive = Layer.effect(
           try {
             const s = await client.chat.completions.create({
               model: request.model,
-              max_tokens: request.maxTokens,
+              max_completion_tokens: request.maxTokens,
               messages: buildMessages(request),
               stream: true,
               stream_options: { include_usage: true },

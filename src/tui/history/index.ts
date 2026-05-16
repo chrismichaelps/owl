@@ -2,7 +2,7 @@
  * @Owl.TUI.History - Persistent cross-session prompt history (JSONL)
  *
  * Saves every submitted prompt to ~/.owl/history.jsonl in append-only JSONL
- * format, mirroring the approach used by ref-cli/history.ts.
+ * format.
  *
  * Each line is: { "prompt": "...", "ts": 1234567890, "project": "/path" }
  *
@@ -30,22 +30,23 @@ interface HistoryEntry {
   project: string
 }
 
+function isHistoryEntry(value: unknown): value is HistoryEntry {
+  if (value == null || typeof value !== JS_TYPES.OBJECT) {
+    return false
+  }
+
+  const record = value as Partial<Record<keyof HistoryEntry, unknown>>
+  return (
+    typeof record.prompt === JS_TYPES.STRING &&
+    typeof record.ts === JS_TYPES.NUMBER &&
+    typeof record.project === JS_TYPES.STRING
+  )
+}
+
 function parseEntry(line: string): HistoryEntry | null {
   try {
     const parsed = JSON.parse(line) as unknown
-    if (
-      parsed != null &&
-      typeof parsed === JS_TYPES.OBJECT &&
-      "prompt" in (parsed as object) &&
-      "ts" in (parsed as object) &&
-      "project" in (parsed as object) &&
-      typeof (parsed as Record<string, unknown>).prompt === JS_TYPES.STRING &&
-      typeof (parsed as Record<string, unknown>).ts === JS_TYPES.NUMBER &&
-      typeof (parsed as Record<string, unknown>).project === JS_TYPES.STRING
-    ) {
-      return parsed as HistoryEntry
-    }
-    return null
+    return isHistoryEntry(parsed) ? parsed : null
   } catch {
     return null
   }

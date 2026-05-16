@@ -6,7 +6,7 @@
  * Truncate a string to a maximum length, appending a marker if truncated.
  * Replaces newlines with spaces for single-line display.
  */
-export function truncate(s: string, max: number, marker: string = "…"): string {
+export function truncate(s: string, max: number, marker = "…"): string {
   const single = s.replace(/\n/g, " ").trim()
   return single.length <= max
     ? single

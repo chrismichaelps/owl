@@ -120,7 +120,7 @@ describe("GoogleAdapter", () => {
     })
     expect(response.usage.inputTokens).toBe(100)
     expect(response.usage.outputTokens).toBe(25)
-    expect(response.usage.estimatedCostUsd).toBe(0.00002)
+    expect(response.usage.estimatedCostUsd).toBe(0.00003)
   })
 
   it("stream() emits text chunks and final usage", async () => {
@@ -165,7 +165,7 @@ describe("GoogleAdapter", () => {
         outputTokens: 25,
         cacheReadTokens: 0,
         cacheWriteTokens: 0,
-        estimatedCostUsd: 0.00002,
+        estimatedCostUsd: 0.00003,
       },
     })
   })

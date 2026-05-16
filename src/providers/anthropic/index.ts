@@ -40,6 +40,8 @@ import { estimateModelCostUsd } from "../cost.js"
 import { parseImageBlocks } from "../image.js"
 import { McpManager } from "../../mcp/index.js"
 import type { McpManagerService } from "../../mcp/index.js"
+import { BuiltInTools } from "../../tools/index.js"
+import type { BuiltInToolsService } from "../../tools/index.js"
 import type {
   LLMProviderService,
   ProviderCapability,
@@ -202,6 +204,14 @@ export const AnthropicAdapterLive = Layer.effect(
       ? mcpManagerOpt.value
       : null
 
+    // Optional built-in tool registry — present when makeBuiltInToolsLive is provided
+    const builtInToolsOpt = yield* Effect.serviceOption(BuiltInTools)
+    const builtInTools: BuiltInToolsService | null = Option.isSome(
+      builtInToolsOpt,
+    )
+      ? builtInToolsOpt.value
+      : null
+
     const retrySchedule = Schedule.exponential("1 seconds", 2).pipe(
       Schedule.intersect(Schedule.recurs(RETRY_CONFIG.MAX_ATTEMPTS - 1)),
     )
@@ -252,10 +262,16 @@ export const AnthropicAdapterLive = Layer.effect(
       Effect.gen(function* () {
         const startMs = Date.now()
 
-        // Load MCP tools if manager is connected
+        // Load tools from both built-in registry and MCP manager
+        const builtInToolDescriptors =
+          builtInTools !== null ? builtInTools.getTools() : []
         const mcpTools = mcpManager !== null ? yield* mcpManager.getTools() : []
-        const tools = Chunk.map(
+        const allToolDescriptors = Chunk.appendAll(
+          Chunk.fromIterable(builtInToolDescriptors),
           Chunk.fromIterable(mcpTools),
+        )
+        const tools = Chunk.map(
+          allToolDescriptors,
           (t): Anthropic.Tool => ({
             name: t.name,
             description: t.description,
@@ -286,7 +302,7 @@ export const AnthropicAdapterLive = Layer.effect(
         while (
           response.stop_reason ===
             ANTHROPIC_INTERNAL_CONSTANTS.STOP_REASON_TOOL_USE &&
-          mcpManager !== null &&
+          (mcpManager !== null || builtInTools !== null) &&
           iterations < MAX_TOOL_ITERATIONS
         ) {
           // Collect any text the model generated alongside the tool call
@@ -308,10 +324,23 @@ export const AnthropicAdapterLive = Layer.effect(
             if (
               block.type === ANTHROPIC_INTERNAL_CONSTANTS.BLOCK_TYPE_TOOL_USE
             ) {
-              const result = yield* mcpManager.callTool(
-                block.name,
-                block.input as Record<string, unknown>,
-              )
+              const input = block.input as Record<string, unknown>
+              let result: string
+              if (builtInTools?.hasTool(block.name)) {
+                result = yield* builtInTools.callTool(block.name, input).pipe(
+                  Effect.mapError(
+                    (e) =>
+                      new ProviderError({
+                        provider: "anthropic",
+                        message: `Tool ${block.name} failed: ${e.reason}`,
+                      }),
+                  ),
+                )
+              } else if (mcpManager !== null) {
+                result = yield* mcpManager.callTool(block.name, input)
+              } else {
+                result = `Tool ${block.name} not found`
+              }
               toolResults = Chunk.append(toolResults, {
                 type: "tool_result",
                 tool_use_id: block.id,
@@ -378,13 +407,19 @@ export const AnthropicAdapterLive = Layer.effect(
               },
             )
 
-            // Load MCP tools if manager is connected
+            // Load tools from both built-in registry and MCP manager
+            const builtInStreamDescriptors =
+              builtInTools !== null ? builtInTools.getTools() : []
             const mcpTools =
               mcpManager !== null
                 ? await Effect.runPromise(mcpManager.getTools())
                 : []
-            const tools = Chunk.map(
+            const allStreamToolDescriptors = Chunk.appendAll(
+              Chunk.fromIterable(builtInStreamDescriptors),
               Chunk.fromIterable(mcpTools),
+            )
+            const tools = Chunk.map(
+              allStreamToolDescriptors,
               (t): Anthropic.Tool => ({
                 name: t.name,
                 description: t.description,
@@ -471,7 +506,7 @@ export const AnthropicAdapterLive = Layer.effect(
               if (
                 finalMsg.stop_reason !==
                   ANTHROPIC_INTERNAL_CONSTANTS.STOP_REASON_TOOL_USE ||
-                mcpManager === null
+                (mcpManager === null && builtInTools === null)
               ) {
                 break
               }
@@ -494,12 +529,19 @@ export const AnthropicAdapterLive = Layer.effect(
                     content: block.name,
                     index: index++,
                   })
-                  const result = await Effect.runPromise(
-                    mcpManager.callTool(
-                      block.name,
-                      block.input as Record<string, unknown>,
-                    ),
-                  )
+                  const input = block.input as Record<string, unknown>
+                  let result: string
+                  if (builtInTools?.hasTool(block.name)) {
+                    result = await Effect.runPromise(
+                      builtInTools.callTool(block.name, input),
+                    )
+                  } else if (mcpManager !== null) {
+                    result = await Effect.runPromise(
+                      mcpManager.callTool(block.name, input),
+                    )
+                  } else {
+                    result = `Tool ${block.name} not found`
+                  }
                   toolResults = Chunk.append(toolResults, {
                     type: "tool_result",
                     tool_use_id: block.id,

@@ -262,3 +262,14 @@ export class ContextOverflowError extends Data.TaggedError(
   readonly tokens: number
   readonly limit: number
 }> {}
+
+/**
+ * @Owl.Core.Errors.Tools - Built-in agentic tool failures
+ */
+
+/** A built-in tool (Bash/Read/Write/Edit/Glob/Grep) failed during execution */
+export class ToolExecutionError extends Data.TaggedError("ToolExecutionError")<{
+  readonly tool: string
+  readonly reason: string
+  readonly cause?: unknown
+}> {}

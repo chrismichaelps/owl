@@ -37,6 +37,7 @@
 import { Effect, Layer, ManagedRuntime } from "effect"
 import path from "node:path"
 import { loadMcpConfig, makeMcpManagerLayer } from "../mcp/index.js"
+import { makeBuiltInToolsLive } from "../tools/index.js"
 import { OWLConfigLive } from "../core/config/index.js"
 import { SESSION_MEMORY_CONSTANTS } from "../core/constants/index.js"
 import {
@@ -107,13 +108,19 @@ export const makeOwlRuntime = (projectRoot: string): OwlRuntime => {
     ),
   )
 
+  const builtInToolsLayer = makeBuiltInToolsLive(projectRoot)
+
   const providerAdapterLayer = Layer.mergeAll(
     AnthropicAdapterLive,
     OpenAIAdapterLive,
     GoogleAdapterLive,
     XAIAdapterLive,
     OllamaAdapterLive,
-  ).pipe(Layer.provide(OWLConfigLive), Layer.provide(mcpManagerLayer))
+  ).pipe(
+    Layer.provide(OWLConfigLive),
+    Layer.provide(mcpManagerLayer),
+    Layer.provide(builtInToolsLayer),
+  )
 
   // Self-sufficient leaf layers plus Provider adapters.
   const leafLayer = Layer.mergeAll(

@@ -1,0 +1,114 @@
+/** @Owl.Tests.Tools.BuiltIns - Regression tests for built-in agent tools */
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
+import { join } from "node:path"
+import { tmpdir } from "node:os"
+import { afterEach, beforeEach, describe, expect, it } from "vitest"
+import { Effect } from "effect"
+import { TOOL_NAMES } from "../../src/core/constants/index.js"
+import { ToolExecutionError } from "../../src/core/errors/index.js"
+import { makeBuiltInToolsLive, BuiltInTools } from "../../src/tools/index.js"
+
+let projectRoot = ""
+
+const runTool = (
+  name: string,
+  input: Record<string, unknown>,
+): Promise<string> =>
+  Effect.runPromise(
+    Effect.gen(function* () {
+      const tools = yield* BuiltInTools
+      return yield* tools.callTool(name, input)
+    }).pipe(Effect.provide(makeBuiltInToolsLive(projectRoot))),
+  )
+
+const runToolEither = (name: string, input: Record<string, unknown>) =>
+  Effect.runPromise(
+    Effect.gen(function* () {
+      const tools = yield* BuiltInTools
+      return yield* tools.callTool(name, input).pipe(Effect.either)
+    }).pipe(Effect.provide(makeBuiltInToolsLive(projectRoot))),
+  )
+
+beforeEach(async () => {
+  projectRoot = await mkdtemp(join(tmpdir(), "owl-tools-"))
+})
+
+afterEach(async () => {
+  await rm(projectRoot, { recursive: true, force: true })
+})
+
+describe("BuiltInTools", () => {
+  it("lists registered tool descriptors", async () => {
+    const names = await Effect.runPromise(
+      Effect.gen(function* () {
+        const tools = yield* BuiltInTools
+        return tools.getTools().map((tool) => tool.name)
+      }).pipe(Effect.provide(makeBuiltInToolsLive(projectRoot))),
+    )
+
+    expect(names).toContain(TOOL_NAMES.READ)
+    expect(names).toContain(TOOL_NAMES.WRITE)
+    expect(names).toContain(TOOL_NAMES.EDIT)
+    expect(names).toContain(TOOL_NAMES.GLOB)
+    expect(names).toContain(TOOL_NAMES.GREP)
+    expect(names).toContain(TOOL_NAMES.BASH)
+  })
+
+  it("writes, reads, and edits files inside the project root", async () => {
+    await runTool(TOOL_NAMES.WRITE, {
+      file_path: "src/example.txt",
+      content: "one\ntwo\n",
+    })
+
+    const readOutput = await runTool(TOOL_NAMES.READ, {
+      file_path: "src/example.txt",
+    })
+    expect(readOutput).toContain("1\tone")
+    expect(readOutput).toContain("2\ttwo")
+
+    await runTool(TOOL_NAMES.EDIT, {
+      file_path: "src/example.txt",
+      old_string: "two",
+      new_string: "three",
+    })
+
+    await expect(
+      readFile(join(projectRoot, "src/example.txt"), "utf8"),
+    ).resolves.toBe("one\nthree\n")
+  })
+
+  it("rejects paths that escape the project root", async () => {
+    const result = await runToolEither(TOOL_NAMES.READ, {
+      file_path: "../outside.txt",
+    })
+
+    expect(result._tag).toBe("Left")
+    if (result._tag === "Left") {
+      expect(result.left).toBeInstanceOf(ToolExecutionError)
+    }
+  })
+
+  it("finds files and content through Glob and Grep", async () => {
+    await writeFile(join(projectRoot, "alpha.ts"), "export const alpha = 1\n")
+    await writeFile(join(projectRoot, "beta.ts"), "export const beta = 2\n")
+
+    const globOutput = await runTool(TOOL_NAMES.GLOB, { pattern: "*.ts" })
+    expect(globOutput).toContain("alpha.ts")
+    expect(globOutput).toContain("beta.ts")
+
+    const grepOutput = await runTool(TOOL_NAMES.GREP, {
+      pattern: "alpha",
+      include: "*.ts",
+    })
+    expect(grepOutput).toContain("alpha.ts")
+  })
+
+  it("returns a tagged error for unknown built-in tools", async () => {
+    const result = await runToolEither("MissingTool", {})
+
+    expect(result._tag).toBe("Left")
+    if (result._tag === "Left") {
+      expect(result.left).toBeInstanceOf(ToolExecutionError)
+    }
+  })
+})

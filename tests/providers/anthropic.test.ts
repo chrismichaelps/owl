@@ -6,6 +6,8 @@ import {
   AnthropicAdapterLive,
 } from "../../src/providers/anthropic/index.js"
 import { OWLConfigLive } from "../../src/core/config/index.js"
+import { TOOL_NAMES } from "../../src/core/constants/index.js"
+import { makeBuiltInToolsLive } from "../../src/tools/index.js"
 
 const mockCreate = vi.fn()
 
@@ -19,6 +21,9 @@ interface AnthropicSystemBlock {
 
 interface AnthropicCreateParams {
   readonly system?: readonly AnthropicSystemBlock[]
+  readonly tools?: readonly {
+    readonly name: string
+  }[]
 }
 
 const getCreateCallArg = (index: number): AnthropicCreateParams =>
@@ -90,6 +95,9 @@ describe("AnthropicAdapter — prompt caching", () => {
       Layer.provide(configLayer),
     )
   }
+
+  const makeToolLayer = () =>
+    makeTestLayer().pipe(Layer.provide(makeBuiltInToolsLive(process.cwd())))
 
   it("complete() sends system as a content block array with cache_control when systemPrompt is set", async () => {
     mockCreate.mockResolvedValueOnce({
@@ -206,5 +214,43 @@ describe("AnthropicAdapter — prompt caching", () => {
 
     const callArg = getCreateCallArg(mockCreate.mock.calls.length - 1)
     expect(callArg.system).toBeUndefined()
+  })
+
+  it("complete() sends built-in tool descriptors when the tool registry is present", async () => {
+    mockCreate.mockResolvedValueOnce({
+      content: [{ type: "text", text: "ok" }],
+      stop_reason: "end_turn",
+      usage: {
+        input_tokens: 10,
+        output_tokens: 3,
+        cache_creation_input_tokens: 0,
+        cache_read_input_tokens: 0,
+      },
+      model: "claude-sonnet-4-6",
+    })
+
+    await Effect.runPromise(
+      Effect.gen(function* () {
+        const adapter = yield* AnthropicAdapter
+        yield* adapter.complete({
+          taskId: "t4",
+          messages: [
+            {
+              role: "user",
+              content: "hello",
+              timestamp: new Date().toISOString(),
+            },
+          ],
+          maxTokens: 256,
+          stream: false,
+          model: "claude-sonnet-4-6",
+        })
+      }).pipe(Effect.provide(makeToolLayer())),
+    )
+
+    const callArg = getCreateCallArg(mockCreate.mock.calls.length - 1)
+    expect(callArg.tools?.map((tool) => tool.name)).toContain(TOOL_NAMES.READ)
+    expect(callArg.tools?.map((tool) => tool.name)).toContain(TOOL_NAMES.EDIT)
+    expect(callArg.tools?.map((tool) => tool.name)).toContain(TOOL_NAMES.BASH)
   })
 })
