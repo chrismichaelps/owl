@@ -19,11 +19,33 @@
 import { readFile } from "node:fs/promises"
 import { join } from "node:path"
 import { homedir } from "node:os"
-import { Schema, Either } from "effect"
+import { Chunk, Data, Either, HashMap, Order, Schema } from "effect"
 import { MCP_CONSTANTS } from "../core/constants/index.js"
 import { McpConfigSchema } from "./schema.js"
 export type { McpConfig, McpServerConfig } from "./schema.js"
-import type { McpConfig } from "./schema.js"
+import type { McpConfig, McpServerConfig } from "./schema.js"
+
+type McpServerEntry = readonly [string, McpServerConfig]
+
+const entriesFromConfig = (
+  config: McpConfig | null,
+): Chunk.Chunk<McpServerEntry> =>
+  config === null
+    ? Chunk.empty<McpServerEntry>()
+    : Chunk.fromIterable(Object.entries(config.mcpServers))
+
+const toSortedRecord = (
+  servers: HashMap.HashMap<string, McpServerConfig>,
+): Record<string, McpServerConfig> =>
+  Object.fromEntries(
+    Chunk.toReadonlyArray(
+      Chunk.sortWith(
+        Chunk.fromIterable(HashMap.toEntries(servers)),
+        ([name]) => name,
+        Order.string,
+      ),
+    ),
+  )
 
 /** @Owl.MCP.Config.Parse - Schema-first config boundary parser */
 export function parseMcpConfig(input: unknown): McpConfig | null {
@@ -36,12 +58,18 @@ export function mergeMcpConfigs(
   globalConfig: McpConfig | null,
   projectConfig: McpConfig | null,
 ): McpConfig {
-  return {
-    mcpServers: {
-      ...(globalConfig?.mcpServers ?? {}),
-      ...(projectConfig?.mcpServers ?? {}),
-    },
-  }
+  const merged = Chunk.reduce(
+    Chunk.appendAll(
+      entriesFromConfig(globalConfig),
+      entriesFromConfig(projectConfig),
+    ),
+    HashMap.empty<string, McpServerConfig>(),
+    (acc, [name, config]) => HashMap.set(acc, name, config),
+  )
+
+  return Data.struct({
+    mcpServers: toSortedRecord(merged),
+  })
 }
 
 async function tryReadJson(path: string): Promise<McpConfig | null> {

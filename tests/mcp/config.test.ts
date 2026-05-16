@@ -55,4 +55,22 @@ describe("mergeMcpConfigs", () => {
     expect(merged.mcpServers.filesystem?.command).toBe("project-fs")
     expect(merged.mcpServers.github?.command).toBe("global-gh")
   })
+
+  it("returns server names in deterministic sorted order", () => {
+    const merged = mergeMcpConfigs(
+      {
+        mcpServers: {
+          zeta: { command: "z" },
+          alpha: { command: "a" },
+        },
+      },
+      {
+        mcpServers: {
+          beta: { command: "b" },
+        },
+      },
+    )
+
+    expect(Object.keys(merged.mcpServers)).toEqual(["alpha", "beta", "zeta"])
+  })
 })
