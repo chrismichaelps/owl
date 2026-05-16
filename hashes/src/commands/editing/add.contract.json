@@ -1,0 +1,30 @@
+{
+  "contract_id": "CTR-cmd-editing-add-00000001",
+  "module": "@Owl.Commands.Editing.Add src/commands/editing/add.ts",
+  "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
+  "depth_score": "0.60",
+  "seam_capacity": "CRITICAL",
+  "sig_id": "SIG-cmd-editing-add-00000001",
+  "interface": {
+    "signatures": [
+      "makeAddCommand(orchestrator, contextManager, ...) => CommandHandler"
+    ],
+    "error_modes": [
+      "CommandParseError \u2014 missing prompt text",
+      "MutationError \u2014 pipeline failure"
+    ],
+    "invariants": [
+      "args must include at least a file path"
+    ]
+  },
+  "responsibilities": [
+    "Validate add prompt",
+    "Invoke orchestrator",
+    "Return diff summary"
+  ],
+  "prohibited": [
+    "Write files directly \u2014 use pipeline",
+    "Skip prompt validation"
+  ],
+  "created_at": "2026-05-16T15:27:00.000000Z"
+}

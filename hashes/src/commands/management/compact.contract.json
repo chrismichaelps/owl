@@ -1,0 +1,30 @@
+{
+  "contract_id": "CTR-cmd-management-compact-00000001",
+  "module": "@Owl.Commands.Management.Compact src/commands/management/compact.ts",
+  "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
+  "depth_score": "0.65",
+  "seam_capacity": "CRITICAL",
+  "sig_id": "SIG-cmd-management-compact-00000001",
+  "interface": {
+    "signatures": [
+      "makeCompactCommand(orchestrator, contextManager) => CommandHandler"
+    ],
+    "error_modes": [
+      "CommandParseError \u2014 summarization failure"
+    ],
+    "invariants": [
+      "Original system prompt restored on any error path",
+      "Minimum MIN_MESSAGES required before compaction"
+    ]
+  },
+  "responsibilities": [
+    "Estimate tokens before/after",
+    "Summarize via orchestrator",
+    "Replace context"
+  ],
+  "prohibited": [
+    "Mutate system prompt without restoring on failure",
+    "Skip minimum message guard"
+  ],
+  "created_at": "2026-05-16T15:27:00.000000Z"
+}

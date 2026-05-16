@@ -1,0 +1,31 @@
+{
+  "contract_id": "CTR-cli-run-00000001",
+  "module": "@Owl.CLI.Runner src/cli/run.ts",
+  "grammar_lock": "@root/hashes/grammar/typescript/typescript.hash.md",
+  "depth_score": "0.58",
+  "seam_capacity": "CRITICAL",
+  "sig_id": "SIG-cli-run-00000001",
+  "interface": {
+    "signatures": [
+      "runCli(argv, projectRoot) => Promise<void>",
+      "bootCli(argv?, projectRoot?) => void"
+    ],
+    "error_modes": [
+      "ProcessFatalError \u2014 unhandled promise rejection at boot"
+    ],
+    "invariants": [
+      "argv must be string[]",
+      "projectRoot must be absolute"
+    ]
+  },
+  "responsibilities": [
+    "Bootstrap runtime from args",
+    "Mount TUI",
+    "Handle process exit"
+  ],
+  "prohibited": [
+    "Access process globals before bootCli",
+    "Throw synchronously"
+  ],
+  "created_at": "2026-05-16T15:27:00.000000Z"
+}

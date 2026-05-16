@@ -1,0 +1,27 @@
+{
+  "contract_id": "CTR-cmd-management-help-00000001",
+  "module": "@Owl.Commands.Management.Help src/commands/management/help.ts",
+  "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
+  "depth_score": "0.45",
+  "seam_capacity": "INTERNAL",
+  "sig_id": "SIG-cmd-management-help-00000001",
+  "interface": {
+    "signatures": [
+      "makeHelpCommand(registry: CommandRegistryService) => CommandHandler"
+    ],
+    "error_modes": [],
+    "invariants": [
+      "Registry must be initialized before invocation"
+    ]
+  },
+  "responsibilities": [
+    "List commands",
+    "Sort alphabetically",
+    "Format output string"
+  ],
+  "prohibited": [
+    "Cache command list",
+    "Filter commands by role"
+  ],
+  "created_at": "2026-05-16T15:27:00.000000Z"
+}

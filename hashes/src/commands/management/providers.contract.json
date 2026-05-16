@@ -1,0 +1,28 @@
+{
+  "contract_id": "CTR-cmd-management-providers-00000001",
+  "module": "@Owl.Commands.Management.Providers src/commands/management/providers.ts",
+  "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
+  "depth_score": "0.58",
+  "seam_capacity": "INTERNAL",
+  "sig_id": "SIG-cmd-management-providers-00000001",
+  "interface": {
+    "signatures": [
+      "makeProvidersCommand(router, routingPreferences, name?) => CommandHandler",
+      "formatProviderCapability(capability: ProviderCapability) => string"
+    ],
+    "error_modes": [],
+    "invariants": [
+      "Router must have at least one capability registered"
+    ]
+  },
+  "responsibilities": [
+    "Read preferences snapshot",
+    "List capabilities",
+    "Format output"
+  ],
+  "prohibited": [
+    "Modify routing preferences",
+    "Filter capabilities by role"
+  ],
+  "created_at": "2026-05-16T15:27:00.000000Z"
+}

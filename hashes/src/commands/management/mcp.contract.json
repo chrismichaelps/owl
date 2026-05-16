@@ -1,0 +1,27 @@
+{
+  "contract_id": "CTR-cmd-management-mcp-00000001",
+  "module": "@Owl.Commands.Management.MCP src/commands/management/mcp.ts",
+  "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
+  "depth_score": "0.55",
+  "seam_capacity": "INTERNAL",
+  "sig_id": "SIG-cmd-management-mcp-00000001",
+  "interface": {
+    "signatures": [
+      "makeMcpCommand(mcpManager: McpManager) => CommandHandler"
+    ],
+    "error_modes": [],
+    "invariants": [
+      "McpManager must be initialized before invocation"
+    ]
+  },
+  "responsibilities": [
+    "Get server statuses",
+    "Get tools",
+    "Format output lines"
+  ],
+  "prohibited": [
+    "Initiate MCP connections",
+    "Modify server config"
+  ],
+  "created_at": "2026-05-16T15:27:00.000000Z"
+}
