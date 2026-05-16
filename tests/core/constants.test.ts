@@ -32,6 +32,7 @@ describe("system constants", () => {
   })
 
   it("TOOL_CONSTANTS centralize command buffer bounds", () => {
+    expect(TOOL_CONSTANTS.BASH_COMMAND_FLAG).toBe("-c")
     expect(TOOL_CONSTANTS.BASH_MAX_BUFFER_MULTIPLIER).toBe(4)
     expect(TOOL_CONSTANTS.GREP_MAX_BUFFER_MULTIPLIER).toBe(4)
   })

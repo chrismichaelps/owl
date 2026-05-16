@@ -792,6 +792,7 @@ export type BuiltInToolName = (typeof TOOL_NAMES)[keyof typeof TOOL_NAMES]
  */
 export const TOOL_CONSTANTS = {
   BASH_SHELL: "/bin/sh",
+  BASH_COMMAND_FLAG: "-c",
   BASH_MIN_TIMEOUT_MS: 1_000,
   BASH_DEFAULT_TIMEOUT_MS: 120_000,
   BASH_MAX_TIMEOUT_MS: 600_000,

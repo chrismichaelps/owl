@@ -87,14 +87,13 @@ export const BashTool: BuiltInTool = {
     return Effect.async<string, ToolExecutionError>((resume) => {
       const child = execFile(
         TOOL_CONSTANTS.BASH_SHELL,
-        ["-c", command],
+        [TOOL_CONSTANTS.BASH_COMMAND_FLAG, command],
         {
           cwd,
           timeout: timeoutMs,
           maxBuffer:
             TOOL_CONSTANTS.BASH_MAX_OUTPUT_CHARS *
             TOOL_CONSTANTS.BASH_MAX_BUFFER_MULTIPLIER,
-          env: { ...process.env },
         },
         (err, stdout, stderr) => {
           const combined = [stdout, stderr].filter(Boolean).join("")
