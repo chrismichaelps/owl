@@ -1,179 +1,44 @@
 /**
  * @Owl.Providers.Anthropic - Anthropic Claude adapter with MCP tool calling
- *
- * Primary provider for deep reasoning tasks. Anthropic's Claude models excel at
- * complex analysis, code generation, and multi-step reasoning.
- *
- * Authentication: Requires ANTHROPIC_API_KEY environment variable.
- *
- * MCP Tool Use:
- * When McpManager is present in the Effect context, its tools are forwarded to
- * the Anthropic API. If the model returns stop_reason "tool_use", the adapter
- * executes each tool via McpManager, appends results, and re-calls the API
- * until stop_reason is "end_turn" or the configured safety cap is hit.
- *
- * Models:
- * - claude-opus-4-7: Highest capability, largest context (1M tokens)
- * - claude-sonnet-4-6: Balanced capability and cost
- * - claude-haiku-4-5: Fast, cost-effective for simpler tasks
  */
 import Anthropic from "@anthropic-ai/sdk"
-import { Chunk, Context, Data, Effect, Layer, Option, Schedule } from "effect"
+import { Chunk, Context, Effect, Layer, Option, Schedule } from "effect"
 import * as Stream from "effect/Stream"
-import {
-  ProviderError,
-  ProviderAuthError,
-  ProviderRateLimitError,
-  ProviderTimeoutError,
-  ProviderStreamError,
-} from "../../core/errors/index.js"
+import { ProviderError, ProviderStreamError } from "../../core/errors/index.js"
 import { OWL_CONFIG } from "../../core/config/index.js"
 import {
   ANTHROPIC_MODELS,
   CONFIG_CONSTANTS,
-  HTTP_STATUS,
   PROVIDER_CONSTANTS,
-  PROVIDER_TIMEOUTS,
   RETRY_CONFIG,
   STREAM_CHUNK_TYPES,
 } from "../../core/constants/index.js"
 import { estimateModelCostUsd } from "../cost.js"
 import { parseImageBlocks } from "../image.js"
+import { mapAnthropicError } from "./errors.js"
+import {
+  ANTHROPIC_CAPABILITIES,
+  ANTHROPIC_INTERNAL_CONSTANTS,
+  resolveThinking,
+} from "./model.js"
 import { McpManager } from "../../mcp/index.js"
 import type { McpManagerService } from "../../mcp/index.js"
 import { BuiltInTools } from "../../tools/index.js"
 import type { BuiltInToolsService } from "../../tools/index.js"
-import type {
-  LLMProviderService,
-  ProviderCapability,
-  StreamChunk,
-} from "../types.js"
+import type { LLMProviderService, StreamChunk } from "../types.js"
 import type {
   InferenceRequest,
   InferenceResponse,
 } from "../../core/schema/index.js"
-
-const ANTHROPIC_INTERNAL_CONSTANTS = {
-  BLOCK_TYPE_TEXT: "text",
-  BLOCK_TYPE_TOOL_USE: "tool_use",
-  STOP_REASON_TOOL_USE: "tool_use",
-  STOP_REASON_END_TURN: "end_turn",
-  EVENT_TYPE_CONTENT_BLOCK_DELTA: "content_block_delta",
-  DELTA_TYPE_TEXT_DELTA: "text_delta",
-  DELTA_TYPE_THINKING_DELTA: "thinking_delta",
-  ROLE_USER: "user",
-  ROLE_ASSISTANT: "assistant",
-} as const
-
-type AnthropicThinking =
-  | { readonly type: "adaptive" }
-  | { readonly type: "enabled"; readonly budget_tokens: number }
-
-type AnthropicNonStreamingParamsWithThinking =
-  Anthropic.MessageCreateParamsNonStreaming & {
-    thinking?: AnthropicThinking
-  }
-
-type AnthropicStreamParamsWithThinking = Anthropic.MessageStreamParams & {
-  thinking?: AnthropicThinking
-}
-
-const resolveThinking = (
-  request: InferenceRequest,
-): AnthropicThinking | undefined => {
-  if (request.thinkingBudget === undefined) return undefined
-  if (request.model === ANTHROPIC_MODELS.OPUS_4_7) {
-    return Data.struct({ type: "adaptive" as const })
-  }
-  return Data.struct({
-    type: "enabled" as const,
-    budget_tokens: request.thinkingBudget,
-  })
-}
-
-/**
- * @Owl.Providers.Anthropic.Capabilities - High-fidelity model specifications
- */
-const ANTHROPIC_CAPABILITIES: readonly ProviderCapability[] = [
-  {
-    providerId: "anthropic",
-    modelId: ANTHROPIC_MODELS.OPUS_4_7,
-    contextWindow: 1_000_000,
-    maxOutputTokens: 128_000,
-    inputCostPer1k: 0.005,
-    outputCostPer1k: 0.025,
-    supportsStreaming: true,
-    reasoningDepth: "high",
-    supportsFunctionCalling: true,
-    supportsVision: true,
-  },
-  {
-    providerId: "anthropic",
-    modelId: ANTHROPIC_MODELS.SONNET_4_6,
-    contextWindow: 200_000,
-    maxOutputTokens: 8_192,
-    inputCostPer1k: 0.003,
-    outputCostPer1k: 0.015,
-    supportsStreaming: true,
-    reasoningDepth: "high",
-    supportsFunctionCalling: true,
-    supportsVision: true,
-  },
-  {
-    providerId: "anthropic",
-    modelId: ANTHROPIC_MODELS.HAIKU_4_5,
-    contextWindow: 200_000,
-    maxOutputTokens: 64_000,
-    inputCostPer1k: 0.001,
-    outputCostPer1k: 0.005,
-    supportsStreaming: true,
-    reasoningDepth: "low",
-    supportsFunctionCalling: true,
-    supportsVision: true,
-  },
-]
-
-/**
- * @Owl.Providers.Anthropic.ErrorMapping - Resilient error translation
- */
-const mapAnthropicError = (
-  e: unknown,
-):
-  | ProviderError
-  | ProviderAuthError
-  | ProviderRateLimitError
-  | ProviderTimeoutError => {
-  if (e instanceof Anthropic.AuthenticationError) {
-    return new ProviderAuthError({ provider: "anthropic", reason: e.message })
-  }
-  if (e instanceof Anthropic.RateLimitError) {
-    return new ProviderRateLimitError({ provider: "anthropic" })
-  }
-  if (e instanceof Anthropic.APIConnectionTimeoutError) {
-    return new ProviderTimeoutError({
-      provider: "anthropic",
-      timeoutMs: PROVIDER_TIMEOUTS.DEFAULT_MS,
-    })
-  }
-  if (
-    e instanceof Anthropic.APIError &&
-    (e.status === HTTP_STATUS.ANTHROPIC_OVERLOADED ||
-      e.message.includes('"type":"overloaded_error"'))
-  ) {
-    return new ProviderError({
-      provider: "anthropic",
-      message: "Service overloaded — retry after backoff",
-      statusCode: HTTP_STATUS.ANTHROPIC_OVERLOADED,
-    })
-  }
-  const statusCode =
-    e instanceof Anthropic.APIError ? (e.status as number) : undefined
-  return new ProviderError({
-    provider: "anthropic",
-    message: e instanceof Error ? e.message : String(e),
-    ...(statusCode !== undefined ? { statusCode } : {}),
-  })
-}
+import type {
+  ProviderAuthError,
+  ProviderRateLimitError,
+  ProviderTimeoutError,
+} from "../../core/errors/index.js"
+import type {
+  AnthropicNonStreamingParamsWithThinking,
+  AnthropicStreamParamsWithThinking,
+} from "./model.js"
 
 /** @Owl.Providers.Anthropic.Adapter - service definition */
 export class AnthropicAdapter extends Context.Tag("AnthropicAdapter")<
