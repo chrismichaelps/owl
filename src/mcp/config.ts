@@ -21,26 +21,9 @@ import { join } from "node:path"
 import { homedir } from "node:os"
 import { Schema } from "effect"
 import { MCP_CONSTANTS } from "../core/constants/index.js"
-
-/** @Owl.MCP.Config.ServerSchema - Validated server process definition */
-export const McpServerConfigSchema = Schema.Struct({
-  command: Schema.String,
-  args: Schema.optional(Schema.Array(Schema.String)),
-  env: Schema.optional(
-    Schema.Record({ key: Schema.String, value: Schema.String }),
-  ),
-  cwd: Schema.optional(Schema.String),
-})
-export type McpServerConfig = Schema.Schema.Type<typeof McpServerConfigSchema>
-
-/** @Owl.MCP.Config.Schema - Validated MCP config document */
-export const McpConfigSchema = Schema.Struct({
-  mcpServers: Schema.Record({
-    key: Schema.String,
-    value: McpServerConfigSchema,
-  }),
-})
-export type McpConfig = Schema.Schema.Type<typeof McpConfigSchema>
+import { McpConfigSchema } from "./schema.js"
+export type { McpConfig, McpServerConfig } from "./schema.js"
+import type { McpConfig } from "./schema.js"
 
 /** @Owl.MCP.Config.Parse - Schema-first config boundary parser */
 export function parseMcpConfig(input: unknown): McpConfig | null {
