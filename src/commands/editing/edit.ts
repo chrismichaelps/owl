@@ -17,8 +17,35 @@
 import { Effect } from "effect"
 import { CommandParseError } from "../../core/errors/index.js"
 import type { EditingPipelineService } from "../../editor/pipeline/index.js"
+import type { PipelineResult } from "../../editor/pipeline/index.js"
+import { formatUnifiedDiff } from "../../editor/utils/patch.js"
 import type { CommandHandler, CommandResult } from "../types.js"
 import { makeMutationId } from "../utils/ids.js"
+
+/** @Owl.Commands.Editing.Edit.Format - Summarize applied mutation with diff */
+export function formatEditOutput(
+  file: string,
+  mutationId: string,
+  result: PipelineResult,
+): string {
+  const first = result.results[0]
+  if (first === undefined) {
+    return "No changes applied"
+  }
+
+  const header =
+    "Edited " +
+    file +
+    " — " +
+    String(first.diff.linesAdded) +
+    " lines added, " +
+    String(first.diff.linesRemoved) +
+    " removed | mutation " +
+    mutationId
+  const patch = formatUnifiedDiff(first.file, first.diff.hunks)
+
+  return patch.length > 0 ? header + "\n\n```diff\n" + patch + "\n```" : header
+}
 
 /**
  * @Owl.Commands.Editing.Edit.Factory - Create the /edit command handler
@@ -55,17 +82,7 @@ export function makeEditCommand(
         })
         .pipe(
           Effect.map((result) => ({
-            output:
-              result.results.length > 0
-                ? "Edited " +
-                  file +
-                  " — " +
-                  String(result.results[0]?.diff.linesAdded ?? 0) +
-                  " lines added, " +
-                  String(result.results[0]?.diff.linesRemoved ?? 0) +
-                  " removed | mutation " +
-                  mutationId
-                : "No changes applied",
+            output: formatEditOutput(file, mutationId, result),
           })),
           Effect.catchAll((err) =>
             Effect.fail(

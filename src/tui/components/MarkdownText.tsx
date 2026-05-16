@@ -33,6 +33,30 @@ interface Block {
   index?: number
 }
 
+/** @Owl.TUI.Components.MarkdownText.CodeColor - Stable code block line coloring */
+export function resolveCodeLineColor(
+  lang: string | undefined,
+  line: string,
+): "green" | "red" | "cyan" | "gray" | "white" {
+  if (lang !== "diff") {
+    return "green"
+  }
+
+  if (line.startsWith("@@")) {
+    return "cyan"
+  }
+  if (line.startsWith("+++") || line.startsWith("---")) {
+    return "gray"
+  }
+  if (line.startsWith("+")) {
+    return "green"
+  }
+  if (line.startsWith("-")) {
+    return "red"
+  }
+  return "white"
+}
+
 /** Split raw markdown into block-level segments */
 function parseBlocks(raw: string): Block[] {
   const lines = raw.split("\n")
@@ -195,9 +219,16 @@ function BlockRenderer({
               {block.lang}
             </Text>
           )}
-          <Text color="green" dimColor={dimColor ?? false} wrap="wrap">
-            {block.content}
-          </Text>
+          {block.content.split("\n").map((line, index) => (
+            <Text
+              key={index}
+              color={resolveCodeLineColor(block.lang, line)}
+              dimColor={dimColor ?? false}
+              wrap="wrap"
+            >
+              {line}
+            </Text>
+          ))}
         </Box>
       )
 
