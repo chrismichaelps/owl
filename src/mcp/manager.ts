@@ -27,7 +27,7 @@ import {
   Option,
   Order,
 } from "effect"
-import { JS_TYPES, MCP_CONSTANTS } from "../core/constants/index.js"
+import { MCP_CONSTANTS } from "../core/constants/index.js"
 import { Client } from "@modelcontextprotocol/sdk/client/index.js"
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
 import type { McpConfig } from "./config.js"
@@ -81,6 +81,25 @@ interface McpServerEntry {
 export interface QualifiedToolName {
   readonly serverName: string
   readonly toolName: string
+}
+
+const hasTextProperty = (value: unknown): value is { readonly text: unknown } =>
+  typeof value === "object" && value !== null && "text" in value
+
+/** @Owl.MCP.Manager.FormatContent - Normalize MCP tool content */
+export function formatMcpToolContent(
+  content: unknown,
+  fallback: unknown = content,
+): string {
+  if (!Array.isArray(content)) {
+    return JSON.stringify(fallback)
+  }
+
+  return Chunk.toReadonlyArray(
+    Chunk.map(Chunk.fromIterable(content), (item) =>
+      hasTextProperty(item) ? String(item.text) : JSON.stringify(item),
+    ),
+  ).join("\n")
 }
 
 /** Build an Anthropic-compatible tool definition from an MCP tool */
@@ -234,21 +253,7 @@ export const makeMcpManagerLayer = (
               arguments: input,
             })
             const content = result.content
-            if (Array.isArray(content)) {
-              return content
-                .map((c) => {
-                  if (
-                    typeof c === JS_TYPES.OBJECT &&
-                    c !== null &&
-                    "text" in c
-                  ) {
-                    return String((c as { text: unknown }).text)
-                  }
-                  return JSON.stringify(c)
-                })
-                .join("\n")
-            }
-            return JSON.stringify(result)
+            return formatMcpToolContent(content, result)
           } catch (e) {
             return `[tool error: ${e instanceof Error ? e.message : String(e)}]`
           }

@@ -1,6 +1,10 @@
 /** @Owl.Tests.MCP.Manager - MCP tool shaping tests */
 import { describe, expect, it } from "vitest"
-import { splitQualifiedToolName, toMcpTool } from "../../src/mcp/manager.js"
+import {
+  formatMcpToolContent,
+  splitQualifiedToolName,
+  toMcpTool,
+} from "../../src/mcp/manager.js"
 
 describe("toMcpTool", () => {
   it("namespaces MCP tools for provider tool use", () => {
@@ -37,6 +41,35 @@ describe("toMcpTool", () => {
 
     expect(tool.description).toBe("status")
     expect(tool.input_schema.required).toBeUndefined()
+  })
+})
+
+describe("formatMcpToolContent", () => {
+  it("joins text blocks in provider order", () => {
+    const result = formatMcpToolContent([
+      { type: "text", text: "first" },
+      { type: "text", text: "second" },
+    ])
+
+    expect(result).toBe("first\nsecond")
+  })
+
+  it("serializes non-text blocks without dropping them", () => {
+    const result = formatMcpToolContent([
+      { type: "image", data: "abc" },
+      { type: "text", text: "done" },
+    ])
+
+    expect(result).toBe('{"type":"image","data":"abc"}\ndone')
+  })
+
+  it("preserves whole-result fallback for non-array content", () => {
+    const result = formatMcpToolContent(undefined, {
+      content: undefined,
+      ok: true,
+    })
+
+    expect(result).toBe('{"ok":true}')
   })
 })
 
