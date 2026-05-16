@@ -84,6 +84,7 @@ export interface OwlAppState {
   readonly totalEstimatedCostUsd: number
   readonly provider: ProviderId | null
   readonly model: string | null
+  readonly providerOverride: ProviderId | null
   readonly latencyMs: number | null
   readonly turnCount: number
   readonly turns: readonly ConversationTurn[]
@@ -98,6 +99,10 @@ export type OwlAction =
   | { readonly type: "SET_RESPONSE"; readonly response: ResponseSnapshot }
   | { readonly type: "SET_ERROR"; readonly error: string }
   | { readonly type: "ADD_TURN"; readonly turn: ConversationTurn }
+  | {
+      readonly type: "SET_PROVIDER_OVERRIDE"
+      readonly provider: ProviderId | null
+    }
   | { readonly type: "APPEND_STREAM"; readonly text: string }
   | { readonly type: "CLEAR_STREAM" }
   | { readonly type: "RESET" }
@@ -114,6 +119,7 @@ export const INITIAL_STATE: OwlAppState = {
   totalEstimatedCostUsd: 0,
   provider: null,
   model: null,
+  providerOverride: null,
   latencyMs: null,
   turnCount: 0,
   turns: [],
@@ -173,6 +179,10 @@ export function owlReducer(state: OwlAppState, action: OwlAction): OwlAppState {
     case "ADD_TURN":
       return { ...state, turns: [...state.turns, action.turn] }
 
+    /** @Owl.TUI.State.Reducer.SET_PROVIDER_OVERRIDE — Tracks routing override */
+    case "SET_PROVIDER_OVERRIDE":
+      return { ...state, providerOverride: action.provider }
+
     /** @Owl.TUI.State.Reducer.APPEND_STREAM — Accumulates streaming text */
     case "APPEND_STREAM":
       return {
@@ -191,6 +201,7 @@ export function owlReducer(state: OwlAppState, action: OwlAction): OwlAppState {
         totalInputTokens: state.totalInputTokens,
         totalOutputTokens: state.totalOutputTokens,
         totalEstimatedCostUsd: state.totalEstimatedCostUsd,
+        providerOverride: state.providerOverride,
         turnCount: state.turnCount,
         turns: state.turns,
       }

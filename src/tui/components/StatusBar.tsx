@@ -3,6 +3,7 @@ import React, { memo } from "react"
 import { Box, Text } from "ink"
 import { formatEstimatedCostUsd } from "../../core/cost.js"
 import type { AgentStatus } from "../state.js"
+import type { ProviderId } from "../../core/schema/index.js"
 
 interface StatusBarProps {
   readonly status: AgentStatus
@@ -10,6 +11,7 @@ interface StatusBarProps {
   readonly totalOutputTokens: number
   readonly totalEstimatedCostUsd: number
   readonly mode: string
+  readonly providerOverride: ProviderId | null
 }
 
 const STATUS_COLOR: Record<AgentStatus, string> = {
@@ -28,6 +30,7 @@ export const StatusBar: React.FC<StatusBarProps> = memo(
     totalOutputTokens,
     totalEstimatedCostUsd,
     mode,
+    providerOverride,
   }) => (
     <Box
       borderStyle="single"
@@ -42,6 +45,7 @@ export const StatusBar: React.FC<StatusBarProps> = memo(
         </Text>
         <Text color="magenta">[{mode.toUpperCase()}]</Text>
         <Text color={STATUS_COLOR[status]}>{status.toUpperCase()}</Text>
+        <Text color="cyan">route:{providerOverride ?? "auto"}</Text>
       </Box>
 
       {/* Center: token usage */}

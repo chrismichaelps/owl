@@ -42,6 +42,7 @@ import type { OwlRuntime } from "../cli/runtime.js"
 import { Orchestrator } from "../engine/orchestrator/index.js"
 import { CommandRegistry } from "../commands/registry.js"
 import { parseCommand } from "../commands/parser.js"
+import { RoutingPreferences } from "../providers/preferences/index.js"
 import { TUI_CONSTANTS } from "../core/constants/index.js"
 import type { PaletteCommand } from "./commands/fuzzy.js"
 import { expandMentions } from "./mentions/index.js"
@@ -221,9 +222,15 @@ export const App: React.FC<AppProps> = ({
     (raw: string) => {
       const effect = Effect.gen(function* () {
         const registry = yield* CommandRegistry
+        const routingPreferences = yield* RoutingPreferences
         const parsed = yield* parseCommand(raw)
         const result = yield* registry.dispatch(parsed)
+        const preferenceSnapshot = yield* routingPreferences.snapshot()
         commandCounterRef.current += 1
+        dispatch({
+          type: "SET_PROVIDER_OVERRIDE",
+          provider: preferenceSnapshot.preferredProvider ?? null,
+        })
         dispatch({
           type: "ADD_LOG",
           msg:
@@ -293,6 +300,22 @@ export const App: React.FC<AppProps> = ({
       })
   }, [runtime])
 
+  useEffect(() => {
+    const effect = Effect.gen(function* () {
+      const routingPreferences = yield* RoutingPreferences
+      return yield* routingPreferences.snapshot()
+    })
+    void runtime
+      .runPromise(effect)
+      .then((snapshot) => {
+        dispatch({
+          type: "SET_PROVIDER_OVERRIDE",
+          provider: snapshot.preferredProvider ?? null,
+        })
+      })
+      .catch(() => undefined)
+  }, [runtime])
+
   return (
     <Box flexDirection="column" height="100%">
       {showWelcome ? (
@@ -354,6 +377,7 @@ export const App: React.FC<AppProps> = ({
         totalOutputTokens={state.totalOutputTokens}
         totalEstimatedCostUsd={state.totalEstimatedCostUsd}
         mode={mode}
+        providerOverride={state.providerOverride}
       />
     </Box>
   )

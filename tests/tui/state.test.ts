@@ -69,11 +69,12 @@ describe("INITIAL_STATE shape", () => {
     expect(INITIAL_STATE.logs).toHaveLength(0)
   })
 
-  it("has null response, error, provider, model, latencyMs", () => {
+  it("has null response, error, provider, model, override, latencyMs", () => {
     expect(INITIAL_STATE.response).toBeNull()
     expect(INITIAL_STATE.error).toBeNull()
     expect(INITIAL_STATE.provider).toBeNull()
     expect(INITIAL_STATE.model).toBeNull()
+    expect(INITIAL_STATE.providerOverride).toBeNull()
     expect(INITIAL_STATE.latencyMs).toBeNull()
   })
 
@@ -302,6 +303,22 @@ describe("SET_ERROR action", () => {
   })
 })
 
+describe("SET_PROVIDER_OVERRIDE action", () => {
+  it("records a provider override", () => {
+    const next = reduce(INITIAL_STATE, {
+      type: "SET_PROVIDER_OVERRIDE",
+      provider: "openai",
+    })
+    expect(next.providerOverride).toBe("openai")
+  })
+
+  it("clears provider override back to auto routing", () => {
+    const s = { ...INITIAL_STATE, providerOverride: "anthropic" as const }
+    const next = reduce(s, { type: "SET_PROVIDER_OVERRIDE", provider: null })
+    expect(next.providerOverride).toBeNull()
+  })
+})
+
 describe("RESET action", () => {
   it("returns to idle status", () => {
     const s = { ...INITIAL_STATE, status: "inferring" as const }
@@ -356,6 +373,15 @@ describe("RESET action", () => {
     s = reduce(s, { type: "SET_RESPONSE", response: makeResponse() })
     const next = reduce(s, { type: "RESET" })
     expect(next.turnCount).toBe(2)
+  })
+
+  it("preserves provider override across reset", () => {
+    const s = {
+      ...INITIAL_STATE,
+      providerOverride: "google" as const,
+    }
+    const next = reduce(s, { type: "RESET" })
+    expect(next.providerOverride).toBe("google")
   })
 })
 

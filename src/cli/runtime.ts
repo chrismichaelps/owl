@@ -66,6 +66,7 @@ import { GovernanceEngineLive } from "../fmcf/governance/index.js"
 import { makeCommandRegistryLive } from "../commands/registry.js"
 import { TokenBudgetLive } from "../tokens/budget/index.js"
 import type { CommandRegistry } from "../commands/registry.js"
+import type { RoutingPreferences } from "../providers/preferences/index.js"
 import type { ConfigError } from "effect/ConfigError"
 import type {
   SessionMemoryPersistenceError,
@@ -80,7 +81,7 @@ import type {
  * - CommandRegistry: For slash command handling
  */
 export type OwlRuntime = ManagedRuntime.ManagedRuntime<
-  Orchestrator | CommandRegistry,
+  Orchestrator | CommandRegistry | RoutingPreferences,
   ConfigError | SessionMemoryPersistenceError | SessionMemoryValidationError
 >
 
@@ -163,6 +164,6 @@ export const makeOwlRuntime = (projectRoot: string): OwlRuntime => {
 
   // Expose only the services the CLI actually uses
   return ManagedRuntime.make(
-    Layer.mergeAll(orchestratorLayer, commandRegistryLayer),
+    Layer.mergeAll(orchestratorLayer, commandRegistryLayer, leafLayer),
   )
 }
