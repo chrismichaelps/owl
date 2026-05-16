@@ -14,6 +14,8 @@
  * const { push, up, down, reset } = usePromptHistory(process.cwd())
  */
 import { useState, useCallback, useRef, useEffect } from "react"
+import { Chunk, Option } from "effect"
+import { TUI_HISTORY_CONSTANTS } from "../../core/constants/index.js"
 import { loadHistory, appendHistory } from "../history/index.js"
 
 /** @Owl.TUI.Hooks.PromptHistory.Result - Hook return value */
@@ -35,7 +37,7 @@ export function usePromptHistory(
 ): UsePromptHistoryResult {
   const [historyIndex, setHistoryIndex] = useState(-1)
   // In-memory ring buffer; index 0 = most recent
-  const historyRef = useRef<string[]>([])
+  const historyRef = useRef<Chunk.Chunk<string>>(Chunk.empty())
   const indexRef = useRef(-1)
 
   // Load persisted history on mount (newest-first from disk)
@@ -43,7 +45,7 @@ export function usePromptHistory(
     void loadHistory(projectRoot)
       .then((entries) => {
         if (entries.length > 0) {
-          historyRef.current = entries
+          historyRef.current = Chunk.fromIterable(entries)
         }
       })
       .catch(() => undefined)
@@ -56,8 +58,12 @@ export function usePromptHistory(
       if (trimmed.length === 0) return
 
       // Filter consecutive duplicates in memory
-      if (historyRef.current[0] !== trimmed) {
-        historyRef.current = [trimmed, ...historyRef.current].slice(0, 200)
+      const latest = Option.getOrUndefined(Chunk.get(historyRef.current, 0))
+      if (latest !== trimmed) {
+        historyRef.current = Chunk.take(
+          Chunk.prepend(historyRef.current, trimmed),
+          TUI_HISTORY_CONSTANTS.MAX_ENTRIES,
+        )
       }
       indexRef.current = -1
       setHistoryIndex(-1)
@@ -71,12 +77,13 @@ export function usePromptHistory(
   /** Navigate up: returns previous history entry */
   const up = useCallback((currentInput: string): string => {
     const history = historyRef.current
-    if (history.length === 0) return currentInput
+    const size = Chunk.size(history)
+    if (size === 0) return currentInput
     const current = indexRef.current
-    const next = current === -1 ? 0 : Math.min(current + 1, history.length - 1)
+    const next = current === -1 ? 0 : Math.min(current + 1, size - 1)
     indexRef.current = next
     setHistoryIndex(next)
-    return history[next] ?? currentInput
+    return Option.getOrElse(Chunk.get(history, next), () => currentInput)
   }, [])
 
   /** Navigate down: returns next entry or empty string */
@@ -90,7 +97,7 @@ export function usePromptHistory(
     const next = current - 1
     indexRef.current = next
     setHistoryIndex(next)
-    return historyRef.current[next] ?? ""
+    return Option.getOrElse(Chunk.get(historyRef.current, next), () => "")
   }, [])
 
   /** Reset navigation to current input (exit history mode) */

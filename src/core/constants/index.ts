@@ -428,6 +428,14 @@ export const TUI_CONSTANTS = {
   ERROR_LOG_PREVIEW_CHARS: 55,
 } as const
 
+/** @Owl.Core.Constants.TUIHistory - Prompt history storage and retention */
+export const TUI_HISTORY_CONSTANTS = {
+  STORAGE_DIR: ".owl",
+  STORAGE_FILE: "history.jsonl",
+  MAX_ENTRIES: 200,
+  FILE_MODE: 0o600,
+} as const
+
 /** @Owl.Core.Constants.TUIStatus - Strict TUI status literal constants */
 export const AGENT_STATUS = {
   IDLE: "idle",
