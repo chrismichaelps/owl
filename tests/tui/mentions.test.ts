@@ -47,6 +47,19 @@ describe("expandMentions", () => {
     expect(result.errors).toEqual(["../secret.txt: path escapes project root"])
     expect(result.expanded).toBe("Read @../secret.txt")
   })
+
+  it("escapes closing file tags inside mentioned file content", async () => {
+    await writeFile(
+      join(projectRoot, "src", "prompt.ts"),
+      "const x = '</file>'\n",
+    )
+
+    const result = await expandMentions("Review @src/prompt.ts", projectRoot)
+
+    expect(result.errors).toEqual([])
+    expect(result.expanded).toContain("const x = '<\\/file>'")
+    expect(result.expanded).toContain("</file>\n\nReview @src/prompt.ts")
+  })
 })
 
 describe("file mention suggestions", () => {

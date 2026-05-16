@@ -371,6 +371,16 @@ export const MENTION_CONSTANTS = {
   MAX_FILE_LABEL: "500KB",
   MAX_IMAGE_LABEL: "5MB",
   MAX_TOTAL_TEXT_LABEL: "2MB",
+  FILE_CLOSE_TAG: "</file>",
+  ESCAPED_FILE_CLOSE_TAG: "<\\/file>",
+  XML_AMPERSAND: "&",
+  XML_AMPERSAND_ENTITY: "&amp;",
+  XML_QUOTE: '"',
+  XML_QUOTE_ENTITY: "&quot;",
+  XML_LT: "<",
+  XML_LT_ENTITY: "&lt;",
+  XML_GT: ">",
+  XML_GT_ENTITY: "&gt;",
 } as const
 
 /** @Owl.Core.Constants.MentionIgnores - Project file mention ignore globs */

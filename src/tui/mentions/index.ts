@@ -57,6 +57,22 @@ export interface MentionExpansion {
   readonly errors: readonly string[]
 }
 
+const escapeBlockAttribute = (value: string): string =>
+  value
+    .replaceAll(
+      MENTION_CONSTANTS.XML_AMPERSAND,
+      MENTION_CONSTANTS.XML_AMPERSAND_ENTITY,
+    )
+    .replaceAll(MENTION_CONSTANTS.XML_QUOTE, MENTION_CONSTANTS.XML_QUOTE_ENTITY)
+    .replaceAll(MENTION_CONSTANTS.XML_LT, MENTION_CONSTANTS.XML_LT_ENTITY)
+    .replaceAll(MENTION_CONSTANTS.XML_GT, MENTION_CONSTANTS.XML_GT_ENTITY)
+
+const escapeFileBlockContent = (value: string): string =>
+  value.replaceAll(
+    MENTION_CONSTANTS.FILE_CLOSE_TAG,
+    MENTION_CONSTANTS.ESCAPED_FILE_CLOSE_TAG,
+  )
+
 /**
  * @Owl.TUI.Mentions.expandMentions - Async @filepath expansion
  *
@@ -115,7 +131,7 @@ export async function expandMentions(
         files = Chunk.append(files, rawPath)
         fileBlocks = Chunk.append(
           fileBlocks,
-          `<owl:image path="${rawPath}" mime="${mime}" data="${data}"/>`,
+          `<owl:image path="${escapeBlockAttribute(rawPath)}" mime="${mime}" data="${data}"/>`,
         )
       } else {
         const content = await readFile(absPath, "utf-8")
@@ -141,7 +157,7 @@ export async function expandMentions(
         files = Chunk.append(files, rawPath)
         fileBlocks = Chunk.append(
           fileBlocks,
-          `<file path="${rawPath}">\n${content}\n</file>`,
+          `<file path="${escapeBlockAttribute(rawPath)}">\n${escapeFileBlockContent(content)}\n</file>`,
         )
       }
     } catch {
