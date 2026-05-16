@@ -19,12 +19,26 @@
  */
 import React, { memo } from "react"
 import { Box, Text } from "ink"
-import { MARKDOWN_BLOCK_TYPES } from "../../core/constants/index.js"
+import { Data } from "effect"
+import {
+  EDITOR_CONSTANTS,
+  MARKDOWN_BLOCK_TYPES,
+} from "../../core/constants/index.js"
 
 interface MarkdownTextProps {
   readonly content: string
   readonly dimColor?: boolean
 }
+
+type CodeLineColor = "green" | "red" | "cyan" | "gray" | "white" | "yellow"
+
+type SideBySideDiffSegments = Readonly<{
+  readonly left: string
+  readonly leftColor: CodeLineColor
+  readonly separator: string
+  readonly right: string
+  readonly rightColor: CodeLineColor
+}>
 
 interface Block {
   type:
@@ -42,7 +56,22 @@ interface Block {
 export function resolveCodeLineColor(
   lang: string | undefined,
   line: string,
-): "green" | "red" | "cyan" | "gray" | "white" {
+): CodeLineColor {
+  if (lang === "text") {
+    if (line.startsWith("Side-by-side diff:")) {
+      return "cyan"
+    }
+    if (line.startsWith("@@")) {
+      return "cyan"
+    }
+    if (line.includes(EDITOR_CONSTANTS.DIFF_SIDE_BY_SIDE_SEPARATOR)) {
+      return "white"
+    }
+    if (/^-{3,}/.test(line)) {
+      return "gray"
+    }
+  }
+
   if (lang !== "diff") {
     return "green"
   }
@@ -60,6 +89,34 @@ export function resolveCodeLineColor(
     return "red"
   }
   return "white"
+}
+
+const resolveSideColor = (segment: string): CodeLineColor => {
+  if (segment.startsWith("- ")) return "red"
+  if (segment.startsWith("+ ")) return "green"
+  return "white"
+}
+
+/** @Owl.TUI.Components.MarkdownText.SideBySide - Split side-by-side diff rows */
+export function resolveSideBySideDiffSegments(
+  line: string,
+): SideBySideDiffSegments | null {
+  const separatorIndex = line.indexOf(
+    EDITOR_CONSTANTS.DIFF_SIDE_BY_SIDE_SEPARATOR,
+  )
+  if (separatorIndex < 0) return null
+
+  const left = line.slice(0, separatorIndex)
+  const right = line.slice(
+    separatorIndex + EDITOR_CONSTANTS.DIFF_SIDE_BY_SIDE_SEPARATOR.length,
+  )
+  return Data.struct({
+    left,
+    leftColor: resolveSideColor(left),
+    separator: EDITOR_CONSTANTS.DIFF_SIDE_BY_SIDE_SEPARATOR,
+    right,
+    rightColor: resolveSideColor(right),
+  })
 }
 
 /** Split raw markdown into block-level segments */
@@ -210,6 +267,39 @@ function InlineText({
   )
 }
 
+function CodeLineText({
+  lang,
+  line,
+  dimColor,
+}: {
+  lang: string | undefined
+  line: string
+  dimColor?: boolean
+}): React.ReactElement {
+  const sideBySide =
+    lang === "text" ? resolveSideBySideDiffSegments(line) : null
+
+  if (sideBySide !== null) {
+    return (
+      <Text wrap="wrap" dimColor={dimColor ?? false}>
+        <Text color={sideBySide.leftColor}>{sideBySide.left}</Text>
+        <Text color="gray">{sideBySide.separator}</Text>
+        <Text color={sideBySide.rightColor}>{sideBySide.right}</Text>
+      </Text>
+    )
+  }
+
+  return (
+    <Text
+      color={resolveCodeLineColor(lang, line)}
+      dimColor={dimColor ?? false}
+      wrap="wrap"
+    >
+      {line}
+    </Text>
+  )
+}
+
 /** Render a single parsed block */
 function BlockRenderer({
   block,
@@ -234,14 +324,12 @@ function BlockRenderer({
             </Text>
           )}
           {block.content.split("\n").map((line, index) => (
-            <Text
+            <CodeLineText
               key={index}
-              color={resolveCodeLineColor(block.lang, line)}
+              lang={block.lang}
+              line={line}
               dimColor={dimColor ?? false}
-              wrap="wrap"
-            >
-              {line}
-            </Text>
+            />
           ))}
         </Box>
       )
