@@ -4,6 +4,8 @@ import { TUI_HISTORY_CONSTANTS } from "../../src/core/constants/index.js"
 import {
   makeHistoryEntry,
   normalizeHistoryEntries,
+  parseHistoryEntries,
+  resolveHistoryStoragePaths,
 } from "../../src/tui/history/index.js"
 
 describe("makeHistoryEntry", () => {
@@ -15,6 +17,33 @@ describe("makeHistoryEntry", () => {
       project: "/project",
       ts: 123,
     })
+  })
+})
+
+describe("resolveHistoryStoragePaths", () => {
+  it("resolves storage paths from an explicit home directory", () => {
+    const paths = resolveHistoryStoragePaths("/tmp/owl-home")
+
+    expect(paths).toEqual({
+      directory: "/tmp/owl-home/" + TUI_HISTORY_CONSTANTS.STORAGE_DIR,
+      file:
+        "/tmp/owl-home/" +
+        TUI_HISTORY_CONSTANTS.STORAGE_DIR +
+        "/" +
+        TUI_HISTORY_CONSTANTS.STORAGE_FILE,
+    })
+  })
+})
+
+describe("parseHistoryEntries", () => {
+  it("skips malformed and structurally invalid JSONL entries", () => {
+    const valid = JSON.stringify(makeHistoryEntry("valid", "/project", 1))
+    const invalidShape = JSON.stringify({ prompt: "missing project", ts: 2 })
+    const raw = valid + "\nnot-json\n" + invalidShape + "\n"
+
+    expect(parseHistoryEntries(raw)).toEqual([
+      makeHistoryEntry("valid", "/project", 1),
+    ])
   })
 })
 

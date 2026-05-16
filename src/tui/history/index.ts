@@ -21,13 +21,27 @@ import { join } from "node:path"
 import { Chunk, Data } from "effect"
 import { JS_TYPES, TUI_HISTORY_CONSTANTS } from "../../core/constants/index.js"
 
-const OWL_HOME = join(homedir(), TUI_HISTORY_CONSTANTS.STORAGE_DIR)
-const HISTORY_FILE = join(OWL_HOME, TUI_HISTORY_CONSTANTS.STORAGE_FILE)
-
 export interface HistoryEntry {
   readonly prompt: string
   readonly ts: number
   readonly project: string
+}
+
+export interface HistoryStoragePaths {
+  readonly directory: string
+  readonly file: string
+}
+
+/** @Owl.TUI.History.Paths - Resolves prompt history storage */
+export function resolveHistoryStoragePaths(
+  homeDirectory: string = homedir(),
+): HistoryStoragePaths {
+  const directory = join(homeDirectory, TUI_HISTORY_CONSTANTS.STORAGE_DIR)
+
+  return Data.struct({
+    directory,
+    file: join(directory, TUI_HISTORY_CONSTANTS.STORAGE_FILE),
+  })
 }
 
 export const makeHistoryEntry = (
@@ -61,6 +75,21 @@ function parseEntry(line: string): HistoryEntry | null {
   } catch {
     return null
   }
+}
+
+/** @Owl.TUI.History.Parse - Validates JSONL history entries */
+export function parseHistoryEntries(raw: string): readonly HistoryEntry[] {
+  const entries = Chunk.reduce(
+    Chunk.fromIterable(raw.split("\n")),
+    Chunk.empty<HistoryEntry>(),
+    (acc, line) => {
+      if (line.trim().length === 0) return acc
+      const entry = parseEntry(line)
+      return entry === null ? acc : Chunk.append(acc, entry)
+    },
+  )
+
+  return Chunk.toReadonlyArray(entries)
 }
 
 /** @Owl.TUI.History.Normalize - Newest-first project prompt reducer */
@@ -99,20 +128,13 @@ export function normalizeHistoryEntries(
  */
 export async function loadHistory(
   projectRoot: string,
+  storagePaths: HistoryStoragePaths = resolveHistoryStoragePaths(),
 ): Promise<readonly string[]> {
   try {
-    const raw = await readFile(HISTORY_FILE, "utf8")
-    const entries = Chunk.reduce(
-      Chunk.fromIterable(raw.split("\n")),
-      Chunk.empty<HistoryEntry>(),
-      (acc, line) => {
-        if (line.trim().length === 0) return acc
-        const entry = parseEntry(line)
-        return entry === null ? acc : Chunk.append(acc, entry)
-      },
-    )
+    const raw = await readFile(storagePaths.file, "utf8")
+    const entries = parseHistoryEntries(raw)
 
-    return normalizeHistoryEntries(Chunk.toReadonlyArray(entries), projectRoot)
+    return normalizeHistoryEntries(entries, projectRoot)
   } catch {
     return []
   }
@@ -121,19 +143,24 @@ export async function loadHistory(
 /**
  * Append a prompt to the history file. Fire-and-forget (does not throw).
  */
-export function appendHistory(prompt: string, projectRoot: string): void {
-  const entry = makeHistoryEntry(prompt, projectRoot)
+export function appendHistory(
+  prompt: string,
+  projectRoot: string,
+  storagePaths: HistoryStoragePaths = resolveHistoryStoragePaths(),
+  timestamp: number = Date.now(),
+): void {
+  const entry = makeHistoryEntry(prompt, projectRoot, timestamp)
   const line = JSON.stringify(entry) + "\n"
 
   void (async () => {
     try {
-      await mkdir(OWL_HOME, { recursive: true })
+      await mkdir(storagePaths.directory, { recursive: true })
       // Create file with tight permissions if it doesn't exist
-      await writeFile(HISTORY_FILE, "", {
+      await writeFile(storagePaths.file, "", {
         flag: "a",
         mode: TUI_HISTORY_CONSTANTS.FILE_MODE,
       })
-      await appendFile(HISTORY_FILE, line, { encoding: "utf8" })
+      await appendFile(storagePaths.file, line, { encoding: "utf8" })
     } catch {
       // History write failures are silent — never block the user
     }
