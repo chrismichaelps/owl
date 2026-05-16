@@ -1,5 +1,6 @@
 /** @Owl.TUI.Components.WelcomePanel - Claude-style startup workbench */
 import React, { memo } from "react"
+import { homedir } from "node:os"
 import { Box, Text, useWindowSize } from "ink"
 import { CLI_CONSTANTS, TUI_WELCOME } from "../../core/constants/index.js"
 import { formatEstimatedCostUsd } from "../../core/cost.js"
@@ -18,9 +19,11 @@ interface WelcomePanelProps {
 }
 
 /** @Owl.TUI.Components.WelcomePanel.Path - Shortens home-relative paths */
-export const formatProjectPath = (projectRoot: string): string => {
-  const home = process.env.HOME
-  if (home !== undefined && projectRoot.startsWith(home)) {
+export const formatProjectPath = (
+  projectRoot: string,
+  home = homedir(),
+): string => {
+  if (home.length > 0 && projectRoot.startsWith(home)) {
     return "~" + projectRoot.slice(home.length)
   }
   return projectRoot

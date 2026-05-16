@@ -17,7 +17,19 @@ describe("resolveWelcomeWidth", () => {
 })
 
 describe("formatProjectPath", () => {
+  it("shortens paths inside the provided home directory", () => {
+    expect(formatProjectPath("/Users/chris/project/owl", "/Users/chris")).toBe(
+      "~/project/owl",
+    )
+  })
+
   it("returns absolute paths when outside HOME", () => {
-    expect(formatProjectPath("/workspace/owl")).toBe("/workspace/owl")
+    expect(formatProjectPath("/workspace/owl", "/Users/chris")).toBe(
+      "/workspace/owl",
+    )
+  })
+
+  it("returns absolute paths when the home directory is empty", () => {
+    expect(formatProjectPath("/workspace/owl", "")).toBe("/workspace/owl")
   })
 })
