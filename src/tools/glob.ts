@@ -37,6 +37,7 @@ Usage:
 export const GlobTool: BuiltInTool = {
   name: TOOL_NAMES.GLOB,
   description: DESCRIPTION,
+  modelVisible: true,
   input_schema: {
     type: "object",
     properties: {

@@ -70,6 +70,7 @@ function buildFallbackCommand(
 export const GrepTool: BuiltInTool = {
   name: TOOL_NAMES.GREP,
   description: DESCRIPTION,
+  modelVisible: true,
   input_schema: {
     type: "object",
     properties: {

@@ -43,6 +43,7 @@ function truncate(text: string, max: number): string {
 export const BashTool: BuiltInTool = {
   name: TOOL_NAMES.BASH,
   description: DESCRIPTION,
+  modelVisible: false,
   input_schema: {
     type: "object",
     properties: {

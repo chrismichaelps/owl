@@ -23,6 +23,7 @@ Usage:
 export const WriteTool: BuiltInTool = {
   name: TOOL_NAMES.WRITE,
   description: DESCRIPTION,
+  modelVisible: false,
   input_schema: {
     type: "object",
     properties: {

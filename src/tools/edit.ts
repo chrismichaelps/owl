@@ -23,6 +23,7 @@ Usage:
 export const EditTool: BuiltInTool = {
   name: TOOL_NAMES.EDIT,
   description: DESCRIPTION,
+  modelVisible: false,
   input_schema: {
     type: "object",
     properties: {

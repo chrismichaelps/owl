@@ -34,6 +34,7 @@ function formatLines(lines: Chunk.Chunk<string>, startLine: number): string {
 export const ReadTool: BuiltInTool = {
   name: TOOL_NAMES.READ,
   description: DESCRIPTION,
+  modelVisible: true,
   input_schema: {
     type: "object",
     properties: {

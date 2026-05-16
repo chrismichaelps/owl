@@ -13,6 +13,7 @@ export interface BuiltInTool {
   readonly name: string
   readonly description: string
   readonly input_schema: McpTool["input_schema"]
+  readonly modelVisible: boolean
   readonly execute: (
     input: Record<string, unknown>,
     cwd: string,

@@ -250,7 +250,12 @@ describe("AnthropicAdapter — prompt caching", () => {
 
     const callArg = getCreateCallArg(mockCreate.mock.calls.length - 1)
     expect(callArg.tools?.map((tool) => tool.name)).toContain(TOOL_NAMES.READ)
-    expect(callArg.tools?.map((tool) => tool.name)).toContain(TOOL_NAMES.EDIT)
-    expect(callArg.tools?.map((tool) => tool.name)).toContain(TOOL_NAMES.BASH)
+    expect(callArg.tools?.map((tool) => tool.name)).toContain(TOOL_NAMES.GREP)
+    expect(callArg.tools?.map((tool) => tool.name)).not.toContain(
+      TOOL_NAMES.EDIT,
+    )
+    expect(callArg.tools?.map((tool) => tool.name)).not.toContain(
+      TOOL_NAMES.BASH,
+    )
   })
 })

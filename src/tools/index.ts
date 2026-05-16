@@ -41,7 +41,7 @@ const TOOL_MAP: HashMap.HashMap<string, BuiltInTool> = HashMap.fromIterable(
 
 /** Precomputed McpTool descriptors (sent to the LLM) */
 const TOOL_DESCRIPTORS: Chunk.Chunk<McpTool> = Chunk.map(
-  ALL_TOOLS,
+  Chunk.filter(ALL_TOOLS, (tool) => tool.modelVisible),
   (tool): McpTool =>
     Data.struct({
       name: tool.name,

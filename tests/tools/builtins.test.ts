@@ -38,7 +38,7 @@ afterEach(async () => {
 })
 
 describe("BuiltInTools", () => {
-  it("lists registered tool descriptors", async () => {
+  it("lists only model-visible read tools as descriptors", async () => {
     const names = await Effect.runPromise(
       Effect.gen(function* () {
         const tools = yield* BuiltInTools
@@ -47,11 +47,11 @@ describe("BuiltInTools", () => {
     )
 
     expect(names).toContain(TOOL_NAMES.READ)
-    expect(names).toContain(TOOL_NAMES.WRITE)
-    expect(names).toContain(TOOL_NAMES.EDIT)
     expect(names).toContain(TOOL_NAMES.GLOB)
     expect(names).toContain(TOOL_NAMES.GREP)
-    expect(names).toContain(TOOL_NAMES.BASH)
+    expect(names).not.toContain(TOOL_NAMES.WRITE)
+    expect(names).not.toContain(TOOL_NAMES.EDIT)
+    expect(names).not.toContain(TOOL_NAMES.BASH)
   })
 
   it("writes, reads, and edits files inside the project root", async () => {
