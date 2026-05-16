@@ -1,5 +1,5 @@
 /** @Owl.Commands.Management.Providers - Inspect registered provider capabilities */
-import { Effect } from "effect"
+import { Chunk, Effect } from "effect"
 import { formatEstimatedCostUsd } from "../../core/cost.js"
 import type { CommandParseError } from "../../core/errors/index.js"
 import type { RoutingPreferencesService } from "../../providers/preferences/index.js"
@@ -32,9 +32,10 @@ export function formatProviderCapability(
 export function makeProvidersCommand(
   router: ProviderRouterService,
   routingPreferences: RoutingPreferencesService,
+  name = "providers",
 ): CommandHandler {
   return {
-    name: "providers",
+    name,
     description: "List registered provider models and routing capabilities",
     execute: (): Effect.Effect<CommandResult, CommandParseError> =>
       Effect.gen(function* () {
@@ -55,7 +56,12 @@ export function makeProvidersCommand(
             "Active provider: " +
             (preferences.preferredProvider ?? "auto") +
             "\nRegistered models:\n" +
-            capabilities.map(formatProviderCapability).join("\n"),
+            Chunk.toReadonlyArray(
+              Chunk.map(
+                Chunk.fromIterable(capabilities),
+                formatProviderCapability,
+              ),
+            ).join("\n"),
         }
       }),
   }

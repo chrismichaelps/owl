@@ -68,6 +68,23 @@ describe("makeProvidersCommand", () => {
     expect(output).toContain("claude-opus-4-5")
   })
 
+  it("supports models as a command alias", async () => {
+    const output = await run(
+      Effect.gen(function* () {
+        const preferences = yield* RoutingPreferences
+        const command = makeProvidersCommand(
+          makeRouter([CAPABILITY]),
+          preferences,
+          "models",
+        )
+        const result = yield* command.execute([])
+        return { name: command.name, output: result.output }
+      }),
+    )
+    expect(output.name).toBe("models")
+    expect(output.output).toContain("Registered models:")
+  })
+
   it("reports empty provider registration state", async () => {
     const output = await run(
       Effect.gen(function* () {

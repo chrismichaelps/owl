@@ -30,6 +30,7 @@ import {
 import { OWL_CONFIG } from "../../core/config/index.js"
 import {
   ANTHROPIC_MODELS,
+  CONFIG_CONSTANTS,
   HTTP_STATUS,
   PROVIDER_TIMEOUTS,
   RETRY_CONFIG,
@@ -177,7 +178,10 @@ export const AnthropicAdapterLive = Layer.effect(
   Effect.gen(function* () {
     const config = yield* OWL_CONFIG
 
-    const client = new Anthropic({ apiKey: config.anthropicApiKey })
+    const client = new Anthropic({
+      apiKey:
+        config.anthropicApiKey ?? CONFIG_CONSTANTS.MISSING_PROVIDER_API_KEY,
+    })
 
     // Optional MCP manager — present only when McpManager layer is provided
     const mcpManagerOpt = yield* Effect.serviceOption(McpManager)

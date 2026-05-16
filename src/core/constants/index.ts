@@ -97,6 +97,16 @@ export const PROVIDER_IDS = [
   "ollama",
 ] as const
 
+/** @Owl.Core.Constants.Config - Environment configuration defaults */
+export const CONFIG_CONSTANTS = {
+  DEFAULT_OLLAMA_BASE_URL: "http://localhost:11434",
+  DEFAULT_MODE: "standard",
+  DEFAULT_LOG_LEVEL: "info",
+  DEFAULT_MAX_CONCURRENT_PROVIDERS: 3,
+  DEFAULT_TELEMETRY_ENABLED: false,
+  MISSING_PROVIDER_API_KEY: "missing-provider-api-key",
+} as const
+
 /**
  * @Owl.Core.Constants.AnthropicModels - Canonical Anthropic model IDs
  *

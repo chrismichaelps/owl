@@ -22,13 +22,14 @@
  * const client = new Anthropic({ apiKey: config.anthropicApiKey })
  */
 import { Config, Context, Layer, Effect } from "effect"
+import { CONFIG_CONSTANTS } from "../constants/index.js"
 import type { Mode } from "../schema/index.js"
 
 /**
  * @Owl.Core.Config.Contract - Environment variable interface
  */
 export interface OwlConfig {
-  readonly anthropicApiKey: string
+  readonly anthropicApiKey: string | undefined
   readonly openaiApiKey: string | undefined
   readonly googleApiKey: string | undefined
   readonly xaiApiKey: string | undefined
@@ -47,33 +48,36 @@ export class OWL_CONFIG extends Context.Tag("OWL_CONFIG")<
 
 /** @Owl.Core.Config.Implementation - Type-safe environment resolution */
 const owlConfigEffect = Effect.gen(function* () {
-  const anthropicApiKey = yield* Config.string("ANTHROPIC_API_KEY")
+  const anthropicApiKey = yield* Config.option(
+    Config.string("ANTHROPIC_API_KEY"),
+  )
   const openaiApiKey = yield* Config.option(Config.string("OPENAI_API_KEY"))
   const googleApiKey = yield* Config.option(Config.string("GOOGLE_API_KEY"))
   const xaiApiKey = yield* Config.option(Config.string("XAI_API_KEY"))
   const ollamaBaseUrl = yield* Config.withDefault(
     Config.string("OLLAMA_BASE_URL"),
-    "http://localhost:11434",
+    CONFIG_CONSTANTS.DEFAULT_OLLAMA_BASE_URL,
   )
   const defaultMode = yield* Config.withDefault(
     Config.string("OWL_MODE"),
-    "standard",
+    CONFIG_CONSTANTS.DEFAULT_MODE,
   )
   const logLevel = yield* Config.withDefault(
     Config.string("OWL_LOG_LEVEL"),
-    "info",
+    CONFIG_CONSTANTS.DEFAULT_LOG_LEVEL,
   )
   const maxConcurrentProviders = yield* Config.withDefault(
     Config.integer("OWL_MAX_CONCURRENT_PROVIDERS"),
-    3,
+    CONFIG_CONSTANTS.DEFAULT_MAX_CONCURRENT_PROVIDERS,
   )
   const telemetryEnabled = yield* Config.withDefault(
     Config.boolean("OWL_TELEMETRY"),
-    false,
+    CONFIG_CONSTANTS.DEFAULT_TELEMETRY_ENABLED,
   )
 
   return {
-    anthropicApiKey,
+    anthropicApiKey:
+      anthropicApiKey._tag === "Some" ? anthropicApiKey.value : undefined,
     openaiApiKey: openaiApiKey._tag === "Some" ? openaiApiKey.value : undefined,
     googleApiKey: googleApiKey._tag === "Some" ? googleApiKey.value : undefined,
     xaiApiKey: xaiApiKey._tag === "Some" ? xaiApiKey.value : undefined,

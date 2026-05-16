@@ -4,7 +4,7 @@
  * Centralizes Provider adapter registration so the runtime starts with a
  * populated ProviderRouter before any Inference reaches the Orchestrator.
  */
-import { Context, Effect, Layer } from "effect"
+import { Chunk, Context, Data, Effect, Layer } from "effect"
 import { OWL_CONFIG } from "../core/config/index.js"
 import { AnthropicAdapter } from "./anthropic/index.js"
 import { GoogleAdapter } from "./google/index.js"
@@ -44,20 +44,41 @@ export const ProviderBootstrapLive = Layer.effect(
     const xai = yield* XAIAdapter
     const ollama = yield* OllamaAdapter
 
-    const registeredProviders: string[] = [yield* register(router, anthropic)]
+    let registeredProviders = Chunk.empty<string>()
+
+    if (config.anthropicApiKey !== undefined) {
+      registeredProviders = Chunk.append(
+        registeredProviders,
+        yield* register(router, anthropic),
+      )
+    }
 
     if (config.openaiApiKey !== undefined) {
-      registeredProviders.push(yield* register(router, openai))
+      registeredProviders = Chunk.append(
+        registeredProviders,
+        yield* register(router, openai),
+      )
     }
     if (config.googleApiKey !== undefined) {
-      registeredProviders.push(yield* register(router, google))
+      registeredProviders = Chunk.append(
+        registeredProviders,
+        yield* register(router, google),
+      )
     }
     if (config.xaiApiKey !== undefined) {
-      registeredProviders.push(yield* register(router, xai))
+      registeredProviders = Chunk.append(
+        registeredProviders,
+        yield* register(router, xai),
+      )
     }
 
-    registeredProviders.push(yield* register(router, ollama))
+    registeredProviders = Chunk.append(
+      registeredProviders,
+      yield* register(router, ollama),
+    )
 
-    return { registeredProviders } satisfies ProviderBootstrapService
+    return Data.struct({
+      registeredProviders: Chunk.toReadonlyArray(registeredProviders),
+    }) satisfies ProviderBootstrapService
   }),
 )
