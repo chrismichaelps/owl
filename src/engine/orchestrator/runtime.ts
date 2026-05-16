@@ -1,17 +1,22 @@
 /** @Owl.Engine.Orchestrator.Runtime - Shared inference runtime constructors */
-import { Data, HashSet } from "effect"
+import { Data, Effect, HashSet } from "effect"
 import type { SessionTurn } from "../memory/index.js"
+import type { ContextManagerService } from "../context/index.js"
 import type { RecordInferenceMetric } from "../metrics/index.js"
+import type { RoutingPreferencesService } from "../../providers/preferences/index.js"
+import type { TokenBudgetService } from "../../tokens/budget/index.js"
 import type {
   RoutingContext,
   StreamingCallbackResult,
 } from "../../providers/types.js"
+import type { TokenBudgetExceededError } from "../../core/errors/index.js"
 import type {
   InferenceRequest,
   InferenceResponse,
   Message,
   Task,
 } from "../../core/schema/index.js"
+import { estimateConversationTokens } from "../../tokens/pruning/index.js"
 import {
   PROVIDER_TIMEOUTS,
   THINKING_MODES,
@@ -22,6 +27,18 @@ import {
 
 type ProviderId = InferenceResponse["provider"]
 type RuntimeRequest = Omit<InferenceRequest, "model">
+
+interface RuntimePreparationServices {
+  readonly ctx: ContextManagerService
+  readonly budgetService: TokenBudgetService
+  readonly routingPreferences: RoutingPreferencesService
+}
+
+export interface PreparedTaskRuntime {
+  readonly routingCtx: RoutingContext
+  readonly request: RuntimeRequest
+  readonly estimatedInputTokens: number
+}
 
 export const resolveTaskBudget = (task: Task): number =>
   resolveModeTokenBudget(task.mode)
@@ -73,6 +90,41 @@ export const makeInferenceRequest = (
     ...(thinkingBudget !== undefined ? { thinkingBudget } : {}),
   })
 }
+
+/** @Owl.Engine.Orchestrator.Runtime.Prepare - Shared task entry path */
+export const prepareTaskRuntime = (
+  services: RuntimePreparationServices,
+  task: Task,
+  stream: boolean,
+): Effect.Effect<PreparedTaskRuntime, TokenBudgetExceededError> =>
+  Effect.gen(function* () {
+    yield* services.ctx.addMessage(makeTaskUserMessage(task))
+
+    const budget = resolveTaskBudget(task)
+    const windowedMsgs = yield* services.ctx.getWindowedMessages(budget)
+    const estimatedInputTokens = estimateConversationTokens(windowedMsgs)
+    yield* services.budgetService.initSession(task.mode, budget)
+    yield* services.budgetService.consume(task.id, estimatedInputTokens)
+    const systemPrompt = yield* services.ctx.getSystemPrompt()
+
+    const preferredProvider =
+      yield* services.routingPreferences.getPreferredProvider()
+    const privacyMode = yield* services.routingPreferences.getPrivacyMode()
+    const routingCtx = makeRoutingContext(
+      task,
+      estimatedInputTokens,
+      preferredProvider,
+      privacyMode,
+    )
+    const request = makeInferenceRequest(
+      task,
+      windowedMsgs,
+      systemPrompt,
+      stream,
+    )
+
+    return Data.struct({ routingCtx, request, estimatedInputTokens })
+  })
 
 export const makeResponseMetric = (
   task: Task,

@@ -38,14 +38,11 @@ import {
 } from "./parallel.js"
 import {
   makeAssistantMessage,
-  makeInferenceRequest,
   makeParallelSessionTurn,
   makeResponseMetric,
   makeResponseSessionTurn,
-  makeRoutingContext,
   makeStreamingResponse,
-  makeTaskUserMessage,
-  resolveTaskBudget,
+  prepareTaskRuntime,
 } from "./runtime.js"
 import { UsageMetrics } from "../metrics/index.js"
 import { SessionMemory } from "../memory/index.js"
@@ -174,32 +171,16 @@ export const makeOrchestratorLive = (projectRoot: string) =>
         | SessionMemoryFailure
       > =>
         Effect.gen(function* () {
-          yield* ctx.addMessage(makeTaskUserMessage(task))
-
-          const budget = resolveTaskBudget(task)
-          const windowedMsgs = yield* ctx.getWindowedMessages(budget)
-          const estimatedTokens = estimateConversationTokens(windowedMsgs)
-          yield* budgetService.initSession(task.mode, budget)
-          yield* budgetService.consume(task.id, estimatedTokens)
-          const systemPrompt = yield* ctx.getSystemPrompt()
-
-          const preferredProvider =
-            yield* routingPreferences.getPreferredProvider()
-          const privacyMode = yield* routingPreferences.getPrivacyMode()
-          const routingCtx = makeRoutingContext(
+          const prepared = yield* prepareTaskRuntime(
+            { ctx, budgetService, routingPreferences },
             task,
-            estimatedTokens,
-            preferredProvider,
-            privacyMode,
-          )
-          const request = makeInferenceRequest(
-            task,
-            windowedMsgs,
-            systemPrompt,
             false,
           )
 
-          const response = yield* router.complete(routingCtx, request)
+          const response = yield* router.complete(
+            prepared.routingCtx,
+            prepared.request,
+          )
           yield* budgetService.consume(task.id, response.usage.outputTokens)
           yield* usageMetrics.recordInference(
             makeResponseMetric(task, response),
@@ -221,32 +202,16 @@ export const makeOrchestratorLive = (projectRoot: string) =>
         | SessionMemoryFailure
       > =>
         Effect.gen(function* () {
-          yield* ctx.addMessage(makeTaskUserMessage(task))
-
-          const budget = resolveTaskBudget(task)
-          const windowedMsgs = yield* ctx.getWindowedMessages(budget)
-          const estimatedTokens = estimateConversationTokens(windowedMsgs)
-          yield* budgetService.initSession(task.mode, budget)
-          yield* budgetService.consume(task.id, estimatedTokens)
-          const systemPrompt = yield* ctx.getSystemPrompt()
-
-          const preferredProvider =
-            yield* routingPreferences.getPreferredProvider()
-          const privacyMode = yield* routingPreferences.getPrivacyMode()
-          const routingCtx = makeRoutingContext(
+          const prepared = yield* prepareTaskRuntime(
+            { ctx, budgetService, routingPreferences },
             task,
-            estimatedTokens,
-            preferredProvider,
-            privacyMode,
-          )
-          const request = makeInferenceRequest(
-            task,
-            windowedMsgs,
-            systemPrompt,
             false,
           )
 
-          const responses = yield* router.completeParallel(routingCtx, request)
+          const responses = yield* router.completeParallel(
+            prepared.routingCtx,
+            prepared.request,
+          )
           const responseChunk = Chunk.fromIterable(responses)
           const outputTokens = sumParallelOutputTokens(responses)
           yield* budgetService.consume(task.id, outputTokens)
@@ -267,7 +232,7 @@ export const makeOrchestratorLive = (projectRoot: string) =>
             makeParallelSessionTurn(
               task,
               combinedContent,
-              estimatedTokens,
+              prepared.estimatedInputTokens,
               outputTokens,
               first.provider,
               sumParallelCostUsd(responses),
@@ -290,34 +255,15 @@ export const makeOrchestratorLive = (projectRoot: string) =>
         | SessionMemoryFailure
       > =>
         Effect.gen(function* () {
-          yield* ctx.addMessage(makeTaskUserMessage(task))
-
-          const budget = resolveTaskBudget(task)
-          const windowedMsgs = yield* ctx.getWindowedMessages(budget)
-          const estimatedInputTokens = estimateConversationTokens(windowedMsgs)
-          yield* budgetService.initSession(task.mode, budget)
-          yield* budgetService.consume(task.id, estimatedInputTokens)
-          const systemPrompt = yield* ctx.getSystemPrompt()
-
-          const preferredProvider =
-            yield* routingPreferences.getPreferredProvider()
-          const privacyMode = yield* routingPreferences.getPrivacyMode()
-          const routingCtx = makeRoutingContext(
+          const prepared = yield* prepareTaskRuntime(
+            { ctx, budgetService, routingPreferences },
             task,
-            estimatedInputTokens,
-            preferredProvider,
-            privacyMode,
-          )
-          const request = makeInferenceRequest(
-            task,
-            windowedMsgs,
-            systemPrompt,
             true,
           )
 
           const result = yield* router.completeWithCallback(
-            routingCtx,
-            request,
+            prepared.routingCtx,
+            prepared.request,
             onChunk,
             onLog,
           )
@@ -326,7 +272,9 @@ export const makeOrchestratorLive = (projectRoot: string) =>
             makeAssistantMessage(result.content),
           ])
           const inputTokens =
-            result.inputTokens > 0 ? result.inputTokens : estimatedInputTokens
+            result.inputTokens > 0
+              ? result.inputTokens
+              : prepared.estimatedInputTokens
           const outputTokens =
             result.outputTokens > 0
               ? result.outputTokens
