@@ -196,7 +196,11 @@ export const App: React.FC<AppProps> = ({
           const msg =
             err instanceof Error ? err.message : "Unknown inference error"
           dispatch({ type: "SET_ERROR", error: msg })
-          dispatch({ type: "ADD_LOG", msg: `✗ Error: ${msg.slice(0, 60)}` })
+          dispatch({
+            type: "ADD_LOG",
+            msg:
+              "✗ Error: " + msg.slice(0, TUI_CONSTANTS.ERROR_LOG_PREVIEW_CHARS),
+          })
         })
         .finally(() => {
           activeFiberRef.current = null

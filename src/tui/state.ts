@@ -14,7 +14,7 @@
  * - Streaming: In-progress response text
  */
 import type { TokenUsage, ProviderId } from "../core/schema/index.js"
-import { AGENT_STATUS } from "../core/constants/index.js"
+import { AGENT_STATUS, TUI_MAX_LOG_LINES } from "../core/constants/index.js"
 
 export type AgentStatus = (typeof AGENT_STATUS)[keyof typeof AGENT_STATUS]
 
@@ -145,7 +145,7 @@ export function owlReducer(state: OwlAppState, action: OwlAction): OwlAppState {
       return {
         ...state,
         logs: [
-          ...state.logs.slice(-99),
+          ...state.logs.slice(-(TUI_MAX_LOG_LINES - 1)),
           `${new Date().toLocaleTimeString()} ${action.msg}`,
         ],
       }

@@ -3,29 +3,12 @@ import React, { memo } from "react"
 import { Box, Text } from "ink"
 import type { AgentStatus, ActiveRole } from "../state.js"
 import { AgentPipeline } from "./AgentPipeline.js"
-
-const ROLE_COLOR: Record<NonNullable<ActiveRole>, string> = {
-  Architect: "blue",
-  "DNA Engineer": "yellow",
-  Shadow: "magenta",
-  "Forensic Guardian": "green",
-}
-
-const STATUS_ICON: Record<AgentStatus, string> = {
-  idle: "●",
-  routing: "◆",
-  inferring: "◈",
-  complete: "✓",
-  error: "✗",
-}
-
-const STATUS_COLOR: Record<AgentStatus, string> = {
-  idle: "gray",
-  routing: "yellow",
-  inferring: "cyan",
-  complete: "green",
-  error: "red",
-}
+import { TUI_LOG_PANEL } from "../../core/constants/index.js"
+import {
+  resolveRoleColor,
+  resolveStatusColor,
+  resolveStatusIcon,
+} from "../status/visuals.js"
 
 interface LogPanelProps {
   readonly logs: readonly string[]
@@ -41,7 +24,7 @@ export const LogPanel: React.FC<LogPanelProps> = memo(
       borderStyle="round"
       borderColor="blue"
       paddingX={1}
-      width={32}
+      width={TUI_LOG_PANEL.PANEL_WIDTH}
       flexShrink={0}
     >
       {/* Header */}
@@ -51,17 +34,17 @@ export const LogPanel: React.FC<LogPanelProps> = memo(
 
       {/* Status badge */}
       <Box marginTop={1} gap={1}>
-        <Text color={STATUS_COLOR[status]} bold>
-          {STATUS_ICON[status]}
+        <Text color={resolveStatusColor(status)} bold>
+          {resolveStatusIcon(status)}
         </Text>
-        <Text color={STATUS_COLOR[status]}>{status.toUpperCase()}</Text>
+        <Text color={resolveStatusColor(status)}>{status.toUpperCase()}</Text>
       </Box>
 
       {/* Active role */}
       {activeRole !== null ? (
         <Box marginTop={1}>
           <Text color="gray">Role: </Text>
-          <Text color={ROLE_COLOR[activeRole]} bold>
+          <Text color={resolveRoleColor(activeRole)} bold>
             {activeRole}
           </Text>
         </Box>
@@ -70,11 +53,11 @@ export const LogPanel: React.FC<LogPanelProps> = memo(
       <AgentPipeline activeRole={activeRole} />
 
       {/* Divider */}
-      <Text color="gray">{"─".repeat(26)}</Text>
+      <Text color="gray">{"─".repeat(TUI_LOG_PANEL.DIVIDER_WIDTH)}</Text>
 
       {/* Recent logs */}
       <Box flexDirection="column" flexGrow={1}>
-        {logs.slice(-18).map((log, i) => (
+        {logs.slice(-TUI_LOG_PANEL.VISIBLE_LINES).map((log, i) => (
           <Text key={i} color="gray" dimColor wrap="truncate">
             {log}
           </Text>

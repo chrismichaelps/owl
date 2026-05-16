@@ -376,6 +376,48 @@ export const TUI_MODE_COLORS: HashMap.HashMap<string, string> =
 /** @Owl.Core.Constants.TUI - Maximum log entries to display */
 export const TUI_MAX_LOG_LINES = 100
 
+/** @Owl.Core.Constants.TUILogPanel - Engine log panel layout limits */
+export const TUI_LOG_PANEL = {
+  PANEL_WIDTH: 32,
+  DIVIDER_WIDTH: 26,
+  VISIBLE_LINES: 18,
+} as const
+
+/** @Owl.Core.Constants.TUIVisualFallbacks - Safe terminal visual defaults */
+export const TUI_VISUAL_FALLBACKS = {
+  COLOR: "gray",
+  STATUS_ICON: "●",
+} as const
+
+/** @Owl.Core.Constants.TUIStatusIcons - Agent status glyph lookup */
+export const TUI_STATUS_ICONS: HashMap.HashMap<string, string> =
+  HashMap.fromIterable([
+    ["idle", "●"],
+    ["routing", "◆"],
+    ["inferring", "◈"],
+    ["complete", "✓"],
+    ["error", "✗"],
+  ])
+
+/** @Owl.Core.Constants.TUIStatusColors - Agent status color lookup */
+export const TUI_STATUS_COLORS: HashMap.HashMap<string, string> =
+  HashMap.fromIterable([
+    ["idle", "gray"],
+    ["routing", "yellow"],
+    ["inferring", "cyan"],
+    ["complete", "green"],
+    ["error", "red"],
+  ])
+
+/** @Owl.Core.Constants.TUIRoleColors - FMCF role color lookup */
+export const TUI_ROLE_COLORS: HashMap.HashMap<string, string> =
+  HashMap.fromIterable([
+    ["Architect", "blue"],
+    ["DNA Engineer", "yellow"],
+    ["Shadow", "magenta"],
+    ["Forensic Guardian", "green"],
+  ])
+
 /** @Owl.Core.Constants.CLI - Command line flags */
 export const CLI_FLAGS = {
   HELP: ["--help", "-h"],
