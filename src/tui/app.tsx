@@ -66,8 +66,9 @@ export const App: React.FC<AppProps> = ({
   const taskCounterRef = useRef(0)
   const commandCounterRef = useRef(0)
   const didSubmitInitialPromptRef = useRef(false)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const activeFiberRef = useRef<Fiber.RuntimeFiber<any, any> | null>(null)
+  const activeFiberRef = useRef<Fiber.RuntimeFiber<unknown, unknown> | null>(
+    null,
+  )
   const [mode, setMode] = useState<Mode>(initialMode)
   const [paletteState, setPaletteState] = useState({
     open: false,
