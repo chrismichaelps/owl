@@ -36,6 +36,7 @@ function tokenize(input: string): TokenizeResult {
     | typeof PARSER_CHARS.DOUBLE_QUOTE
     | typeof PARSER_CHARS.SINGLE_QUOTE
     | null = null
+  let tokenStarted = false
 
   for (const ch of input) {
     if (inQuote !== null) {
@@ -49,16 +50,19 @@ function tokenize(input: string): TokenizeResult {
       ch === PARSER_CHARS.SINGLE_QUOTE
     ) {
       inQuote = ch
+      tokenStarted = true
     } else if (ch === PARSER_CHARS.SPACE || ch === PARSER_CHARS.TAB) {
-      if (current.length > 0) {
+      if (tokenStarted || current.length > 0) {
         tokens = Chunk.append(tokens, current)
         current = ""
+        tokenStarted = false
       }
     } else {
       current += ch
+      tokenStarted = true
     }
   }
-  if (current.length > 0) tokens = Chunk.append(tokens, current)
+  if (tokenStarted || current.length > 0) tokens = Chunk.append(tokens, current)
   return { tokens, unterminatedQuote: inQuote }
 }
 

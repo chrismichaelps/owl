@@ -33,6 +33,20 @@ describe("parseCommand", () => {
     expect(result.args).toEqual(["file.ts", "old text", "new text"])
   })
 
+  it("preserves empty double-quoted args", async () => {
+    const result = await Effect.runPromise(parseCommand('/edit file.ts "" x'))
+
+    expect(result.name).toBe("edit")
+    expect(result.args).toEqual(["file.ts", "", "x"])
+  })
+
+  it("preserves empty single-quoted args", async () => {
+    const result = await Effect.runPromise(parseCommand("/edit file.ts '' x"))
+
+    expect(result.name).toBe("edit")
+    expect(result.args).toEqual(["file.ts", "", "x"])
+  })
+
   it("fails when a double-quoted argument is unterminated", async () => {
     const exit = await Effect.runPromiseExit(
       parseCommand('/edit file.ts "old text'),
