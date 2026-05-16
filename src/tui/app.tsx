@@ -83,6 +83,23 @@ export const App: React.FC<AppProps> = ({
   const showWelcome =
     state.turns.length === 0 && !isProcessing && state.error === null
 
+  const syncRoutingPreferences = useCallback(() => {
+    const effect = Effect.gen(function* () {
+      const routingPreferences = yield* RoutingPreferences
+      return yield* routingPreferences.snapshot()
+    })
+    return runtime.runPromise(effect).then((snapshot) => {
+      dispatch({
+        type: "SET_PROVIDER_OVERRIDE",
+        provider: snapshot.preferredProvider ?? null,
+      })
+      dispatch({
+        type: "SET_PRIVACY_MODE",
+        enabled: snapshot.privacyMode,
+      })
+    })
+  }, [runtime])
+
   /** Submit a prompt for inference (expands @file mentions first) */
   const handleSubmit = useCallback(
     (prompt: string, submittedMode: Mode) => {
@@ -234,6 +251,10 @@ export const App: React.FC<AppProps> = ({
           provider: preferenceSnapshot.preferredProvider ?? null,
         })
         dispatch({
+          type: "SET_PRIVACY_MODE",
+          enabled: preferenceSnapshot.privacyMode,
+        })
+        dispatch({
           type: "ADD_LOG",
           msg:
             "[cmd] " + result.output.slice(0, TUI_CONSTANTS.LOG_PREVIEW_CHARS),
@@ -303,20 +324,8 @@ export const App: React.FC<AppProps> = ({
   }, [runtime])
 
   useEffect(() => {
-    const effect = Effect.gen(function* () {
-      const routingPreferences = yield* RoutingPreferences
-      return yield* routingPreferences.snapshot()
-    })
-    void runtime
-      .runPromise(effect)
-      .then((snapshot) => {
-        dispatch({
-          type: "SET_PROVIDER_OVERRIDE",
-          provider: snapshot.preferredProvider ?? null,
-        })
-      })
-      .catch(() => undefined)
-  }, [runtime])
+    void syncRoutingPreferences().catch(() => undefined)
+  }, [syncRoutingPreferences])
 
   return (
     <Box flexDirection="column" height="100%">
@@ -380,6 +389,7 @@ export const App: React.FC<AppProps> = ({
         totalEstimatedCostUsd={state.totalEstimatedCostUsd}
         mode={mode}
         providerOverride={state.providerOverride}
+        privacyMode={state.privacyMode}
         model={state.model}
       />
     </Box>

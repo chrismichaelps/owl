@@ -54,6 +54,11 @@ export const MetaPanel: React.FC<MetaPanelProps> = memo(({ state }) => (
         valueColor="magenta"
       />
       <MetricRow
+        label="Privacy"
+        value={state.privacyMode ? "local" : "off"}
+        valueColor={state.privacyMode ? "yellow" : "gray"}
+      />
+      <MetricRow
         label="In tokens"
         value={String(state.totalInputTokens)}
         valueColor="yellow"

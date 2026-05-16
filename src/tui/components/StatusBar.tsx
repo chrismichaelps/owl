@@ -14,6 +14,7 @@ interface StatusBarProps {
   readonly totalEstimatedCostUsd: number
   readonly mode: string
   readonly providerOverride: ProviderId | null
+  readonly privacyMode: boolean
   readonly model: string | null
 }
 
@@ -34,6 +35,7 @@ export const StatusBar: React.FC<StatusBarProps> = memo(
     totalEstimatedCostUsd,
     mode,
     providerOverride,
+    privacyMode,
     model,
   }) => (
     <Box
@@ -55,6 +57,7 @@ export const StatusBar: React.FC<StatusBarProps> = memo(
         ) : null}
         <Text color={STATUS_COLOR[status]}>{status.toUpperCase()}</Text>
         <Text color="cyan">route:{providerOverride ?? "auto"}</Text>
+        {privacyMode ? <Text color="yellow">privacy:local</Text> : null}
         {model !== null ? (
           <Text color="gray" dimColor>
             {model.replace("claude-", "").replace(/-\d{8}$/, "")}

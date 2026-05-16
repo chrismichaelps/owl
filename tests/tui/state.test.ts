@@ -78,6 +78,10 @@ describe("INITIAL_STATE shape", () => {
     expect(INITIAL_STATE.latencyMs).toBeNull()
   })
 
+  it("starts with privacy mode disabled", () => {
+    expect(INITIAL_STATE.privacyMode).toBe(false)
+  })
+
   it("starts at turn 0", () => {
     expect(INITIAL_STATE.turnCount).toBe(0)
   })
@@ -319,6 +323,22 @@ describe("SET_PROVIDER_OVERRIDE action", () => {
   })
 })
 
+describe("SET_PRIVACY_MODE action", () => {
+  it("enables local-only routing visibility", () => {
+    const next = reduce(INITIAL_STATE, {
+      type: "SET_PRIVACY_MODE",
+      enabled: true,
+    })
+    expect(next.privacyMode).toBe(true)
+  })
+
+  it("disables local-only routing visibility", () => {
+    const s = { ...INITIAL_STATE, privacyMode: true }
+    const next = reduce(s, { type: "SET_PRIVACY_MODE", enabled: false })
+    expect(next.privacyMode).toBe(false)
+  })
+})
+
 describe("RESET action", () => {
   it("returns to idle status", () => {
     const s = { ...INITIAL_STATE, status: "inferring" as const }
@@ -382,6 +402,15 @@ describe("RESET action", () => {
     }
     const next = reduce(s, { type: "RESET" })
     expect(next.providerOverride).toBe("google")
+  })
+
+  it("preserves privacy mode across reset", () => {
+    const s = {
+      ...INITIAL_STATE,
+      privacyMode: true,
+    }
+    const next = reduce(s, { type: "RESET" })
+    expect(next.privacyMode).toBe(true)
   })
 })
 

@@ -80,6 +80,7 @@ export interface OwlAppState {
   readonly provider: ProviderId | null
   readonly model: string | null
   readonly providerOverride: ProviderId | null
+  readonly privacyMode: boolean
   readonly latencyMs: number | null
   readonly turnCount: number
   readonly turns: readonly ConversationTurn[]
@@ -98,6 +99,7 @@ export type OwlAction =
       readonly type: "SET_PROVIDER_OVERRIDE"
       readonly provider: ProviderId | null
     }
+  | { readonly type: "SET_PRIVACY_MODE"; readonly enabled: boolean }
   | { readonly type: "APPEND_STREAM"; readonly text: string }
   | { readonly type: "CLEAR_STREAM" }
   | { readonly type: "RESET" }
@@ -115,6 +117,7 @@ export const INITIAL_STATE: OwlAppState = {
   provider: null,
   model: null,
   providerOverride: null,
+  privacyMode: false,
   latencyMs: null,
   turnCount: 0,
   turns: [],
@@ -178,6 +181,10 @@ export function owlReducer(state: OwlAppState, action: OwlAction): OwlAppState {
     case "SET_PROVIDER_OVERRIDE":
       return { ...state, providerOverride: action.provider }
 
+    /** @Owl.TUI.State.Reducer.SET_PRIVACY_MODE — Tracks local-only routing */
+    case "SET_PRIVACY_MODE":
+      return { ...state, privacyMode: action.enabled }
+
     /** @Owl.TUI.State.Reducer.APPEND_STREAM — Accumulates streaming text */
     case "APPEND_STREAM":
       return {
@@ -197,6 +204,7 @@ export function owlReducer(state: OwlAppState, action: OwlAction): OwlAppState {
         totalOutputTokens: state.totalOutputTokens,
         totalEstimatedCostUsd: state.totalEstimatedCostUsd,
         providerOverride: state.providerOverride,
+        privacyMode: state.privacyMode,
         turnCount: state.turnCount,
         turns: state.turns,
       }
