@@ -14,13 +14,17 @@
  * // "You are Owl — an AI coding agent governed by FMCF v3.5..."
  */
 
+import type { ProjectContext } from "./projectContext.js"
+
 /**
  * @Owl.Engine.Context.SystemPrompt.Build - Owl FMCF system prompt
  *
+ * @param ctx - Optional project context (CLAUDE.md + git status) loaded at session start
  * @returns FMCF v3.5 Owl system prompt string
  */
-export function buildFMCFSystemPrompt(): string {
-  return `You are Owl — an AI coding agent governed by FMCF v3.5 (Fibonacci Matrix Context Flow).
+export function buildFMCFSystemPrompt(ctx?: ProjectContext): string {
+  const projectSection = buildProjectSection(ctx)
+  return `You are Owl — an AI coding agent governed by FMCF v3.5 (Fibonacci Matrix Context Flow).${projectSection}
 
 ## Your Identity
 
@@ -70,4 +74,29 @@ Help the developer write excellent software by:
 4. Keeping the /hashes/ registry synchronized at all times
 
 When in doubt: measure first, propose second, implement third, record always.`
+}
+
+/**
+ * @Owl.Engine.Context.SystemPrompt.ProjectSection - Build the project-specific context block
+ *
+ * Injects CLAUDE.md content and git status into the system prompt so the LLM
+ * is project-aware from turn 1. Both sections are optional — if no CLAUDE.md
+ * exists and the directory is not a git repo, nothing is added.
+ */
+function buildProjectSection(ctx?: ProjectContext): string {
+  if (ctx == null) return ""
+
+  const parts: string[] = []
+
+  if (ctx.claudeMd != null) {
+    parts.push(
+      `\n\n## Project Instructions (from CLAUDE.md)\n\n${ctx.claudeMd}`,
+    )
+  }
+
+  if (ctx.gitStatus != null) {
+    parts.push(`\n\n## Project State\n\n${ctx.gitStatus}`)
+  }
+
+  return parts.join("")
 }

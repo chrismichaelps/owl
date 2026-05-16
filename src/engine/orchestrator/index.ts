@@ -28,6 +28,7 @@
 import { Context, Effect, Layer } from "effect"
 import { ContextManager } from "../context/index.js"
 import { buildFMCFSystemPrompt } from "../context/systemPrompt.js"
+import { loadProjectContext } from "../context/projectContext.js"
 import { UsageMetrics } from "../metrics/index.js"
 import { SessionMemory } from "../memory/index.js"
 import type { SessionMemoryFailure } from "../memory/persistence.js"
@@ -89,6 +90,7 @@ export interface OrchestratorService {
    *
    * @param task - Task with id, prompt, mode, createdAt
    * @param onChunk - Callback invoked for each text chunk during Streaming
+   * @param onLog - Optional callback for non-text events (tool calls, etc.)
    * @returns InferenceResponse with full assembled content and estimated usage
    * @throws AnyProviderError - Provider failed during streaming
    * @throws ProviderUnavailableError - No suitable provider found
@@ -96,6 +98,7 @@ export interface OrchestratorService {
   readonly runStream: (
     task: Task,
     onChunk: (text: string) => void,
+    onLog?: (msg: string) => void,
   ) => Effect.Effect<
     InferenceResponse,
     | AnyProviderError
@@ -123,218 +126,243 @@ export class Orchestrator extends Context.Tag("Orchestrator")<
  * Wires together the three core engine services. Session starts on layer creation.
  * Each run() call is a self-contained task execution.
  */
-export const OrchestratorLive = Layer.effect(
-  Orchestrator,
-  Effect.gen(function* () {
-    const ctx = yield* ContextManager
-    const mem = yield* SessionMemory
-    const router = yield* ProviderRouter
-    const budgetService = yield* TokenBudget
-    const routingPreferences = yield* RoutingPreferences
-    const usageMetrics = yield* UsageMetrics
+/**
+ * @Owl.Engine.Orchestrator.Make - Factory that loads project context (CLAUDE.md + git) at startup
+ *
+ * @param projectRoot - Absolute path to project root. Pass "" for test environments.
+ */
+export const makeOrchestratorLive = (projectRoot: string) =>
+  Layer.effect(
+    Orchestrator,
+    Effect.gen(function* () {
+      const ctx = yield* ContextManager
+      const mem = yield* SessionMemory
+      const router = yield* ProviderRouter
+      const budgetService = yield* TokenBudget
+      const routingPreferences = yield* RoutingPreferences
+      const usageMetrics = yield* UsageMetrics
 
-    yield* mem.resumeSession()
-    yield* ctx.setSystemPrompt(buildFMCFSystemPrompt())
+      yield* mem.resumeSession()
 
-    const run = (
-      task: Task,
-    ): Effect.Effect<
-      InferenceResponse,
-      | AnyProviderError
-      | ProviderUnavailableError
-      | TokenBudgetExceededError
-      | SessionMemoryFailure
-    > =>
-      Effect.gen(function* () {
-        const userMsg: Message = {
-          role: "user",
-          content: task.prompt,
-          timestamp: new Date().toISOString(),
-        }
-        yield* ctx.addMessage(userMsg)
+      // Load project context (CLAUDE.md + git status) — non-blocking, never throws
+      const projectCtx =
+        projectRoot.length > 0
+          ? yield* Effect.promise(() => loadProjectContext(projectRoot))
+          : undefined
+      yield* ctx.setSystemPrompt(buildFMCFSystemPrompt(projectCtx))
 
-        const budget = resolveModeBudget(task)
-        const windowedMsgs = yield* ctx.getWindowedMessages(budget)
-        const estimatedTokens = estimateConversationTokens(windowedMsgs)
-        yield* budgetService.initSession(task.mode, budget)
-        yield* budgetService.consume(task.id, estimatedTokens)
-        const systemPrompt = yield* ctx.getSystemPrompt()
+      const run = (
+        task: Task,
+      ): Effect.Effect<
+        InferenceResponse,
+        | AnyProviderError
+        | ProviderUnavailableError
+        | TokenBudgetExceededError
+        | SessionMemoryFailure
+      > =>
+        Effect.gen(function* () {
+          const userMsg: Message = {
+            role: "user",
+            content: task.prompt,
+            timestamp: new Date().toISOString(),
+          }
+          yield* ctx.addMessage(userMsg)
 
-        const preferredProvider =
-          yield* routingPreferences.getPreferredProvider()
-        const routingCtx = {
-          taskId: task.id,
-          mode: task.mode,
-          estimatedInputTokens: estimatedTokens,
-          requiresReasoning: task.mode === "deep" || task.mode === "god",
-          requiresVision: false,
-          latencyBudgetMs: PROVIDER_TIMEOUTS.DEFAULT_MS,
-          ...(preferredProvider !== undefined ? { preferredProvider } : {}),
-        }
+          const budget = resolveModeBudget(task)
+          const windowedMsgs = yield* ctx.getWindowedMessages(budget)
+          const estimatedTokens = estimateConversationTokens(windowedMsgs)
+          yield* budgetService.initSession(task.mode, budget)
+          yield* budgetService.consume(task.id, estimatedTokens)
+          const systemPrompt = yield* ctx.getSystemPrompt()
 
-        const request = {
-          taskId: task.id,
-          messages: windowedMsgs,
-          maxTokens: TOKEN_LIMITS.MAX_OUTPUT_TOKENS,
-          systemPrompt,
-          stream: false,
-        }
+          const preferredProvider =
+            yield* routingPreferences.getPreferredProvider()
+          const routingCtx = {
+            taskId: task.id,
+            mode: task.mode,
+            estimatedInputTokens: estimatedTokens,
+            requiresReasoning: task.mode === "deep" || task.mode === "god",
+            requiresVision: false,
+            latencyBudgetMs: PROVIDER_TIMEOUTS.DEFAULT_MS,
+            ...(preferredProvider !== undefined ? { preferredProvider } : {}),
+          }
 
-        const response = yield* router.complete(routingCtx, request)
-        yield* budgetService.consume(task.id, response.usage.outputTokens)
-        yield* usageMetrics.recordInference({
-          taskId: task.id,
-          mode: task.mode,
-          provider: response.provider,
-          model: response.model,
-          inputTokens: response.usage.inputTokens,
-          outputTokens: response.usage.outputTokens,
-          cacheReadTokens: response.usage.cacheReadTokens,
-          cacheWriteTokens: response.usage.cacheWriteTokens,
-          estimatedCostUsd: response.usage.estimatedCostUsd,
-          latencyMs: response.latencyMs,
-          timestamp: new Date().toISOString(),
+          const request = {
+            taskId: task.id,
+            messages: windowedMsgs,
+            maxTokens: TOKEN_LIMITS.MAX_OUTPUT_TOKENS,
+            systemPrompt,
+            stream: false,
+          }
+
+          const response = yield* router.complete(routingCtx, request)
+          yield* budgetService.consume(task.id, response.usage.outputTokens)
+          yield* usageMetrics.recordInference({
+            taskId: task.id,
+            mode: task.mode,
+            provider: response.provider,
+            model: response.model,
+            inputTokens: response.usage.inputTokens,
+            outputTokens: response.usage.outputTokens,
+            cacheReadTokens: response.usage.cacheReadTokens,
+            cacheWriteTokens: response.usage.cacheWriteTokens,
+            estimatedCostUsd: response.usage.estimatedCostUsd,
+            latencyMs: response.latencyMs,
+            timestamp: new Date().toISOString(),
+          })
+
+          const assistantMsg: Message = {
+            role: "assistant",
+            content: response.content,
+            timestamp: new Date().toISOString(),
+          }
+          yield* ctx.addMessage(assistantMsg)
+
+          yield* mem.recordTurn({
+            taskId: task.id,
+            prompt: task.prompt,
+            response: response.content,
+            tokensUsed:
+              response.usage.inputTokens + response.usage.outputTokens,
+            provider: response.provider,
+            model: response.model,
+            estimatedCostUsd: response.usage.estimatedCostUsd,
+            latencyMs: response.latencyMs,
+            timestamp: new Date().toISOString(),
+          })
+
+          return response
         })
 
-        const assistantMsg: Message = {
-          role: "assistant",
-          content: response.content,
-          timestamp: new Date().toISOString(),
-        }
-        yield* ctx.addMessage(assistantMsg)
+      const runStream = (
+        task: Task,
+        onChunk: (text: string) => void,
+        onLog?: (msg: string) => void,
+      ): Effect.Effect<
+        InferenceResponse,
+        | AnyProviderError
+        | ProviderUnavailableError
+        | TokenBudgetExceededError
+        | SessionMemoryFailure
+      > =>
+        Effect.gen(function* () {
+          const userMsg: Message = {
+            role: "user",
+            content: task.prompt,
+            timestamp: new Date().toISOString(),
+          }
+          yield* ctx.addMessage(userMsg)
 
-        yield* mem.recordTurn({
-          taskId: task.id,
-          prompt: task.prompt,
-          response: response.content,
-          tokensUsed: response.usage.inputTokens + response.usage.outputTokens,
-          provider: response.provider,
-          model: response.model,
-          estimatedCostUsd: response.usage.estimatedCostUsd,
-          latencyMs: response.latencyMs,
-          timestamp: new Date().toISOString(),
-        })
+          const budget = resolveModeBudget(task)
+          const windowedMsgs = yield* ctx.getWindowedMessages(budget)
+          const estimatedInputTokens = estimateConversationTokens(windowedMsgs)
+          yield* budgetService.initSession(task.mode, budget)
+          yield* budgetService.consume(task.id, estimatedInputTokens)
+          const systemPrompt = yield* ctx.getSystemPrompt()
 
-        return response
-      })
+          const preferredProvider =
+            yield* routingPreferences.getPreferredProvider()
+          const routingCtx = {
+            taskId: task.id,
+            mode: task.mode,
+            estimatedInputTokens,
+            requiresReasoning: task.mode === "deep" || task.mode === "god",
+            requiresVision: false,
+            latencyBudgetMs: PROVIDER_TIMEOUTS.DEFAULT_MS,
+            ...(preferredProvider !== undefined ? { preferredProvider } : {}),
+          }
 
-    const runStream = (
-      task: Task,
-      onChunk: (text: string) => void,
-    ): Effect.Effect<
-      InferenceResponse,
-      | AnyProviderError
-      | ProviderUnavailableError
-      | TokenBudgetExceededError
-      | SessionMemoryFailure
-    > =>
-      Effect.gen(function* () {
-        const userMsg: Message = {
-          role: "user",
-          content: task.prompt,
-          timestamp: new Date().toISOString(),
-        }
-        yield* ctx.addMessage(userMsg)
+          const request = {
+            taskId: task.id,
+            messages: windowedMsgs,
+            maxTokens: TOKEN_LIMITS.MAX_OUTPUT_TOKENS,
+            systemPrompt,
+            stream: true,
+          }
 
-        const budget = resolveModeBudget(task)
-        const windowedMsgs = yield* ctx.getWindowedMessages(budget)
-        const estimatedInputTokens = estimateConversationTokens(windowedMsgs)
-        yield* budgetService.initSession(task.mode, budget)
-        yield* budgetService.consume(task.id, estimatedInputTokens)
-        const systemPrompt = yield* ctx.getSystemPrompt()
+          const result = yield* router.completeWithCallback(
+            routingCtx,
+            request,
+            onChunk,
+            onLog,
+          )
 
-        const preferredProvider =
-          yield* routingPreferences.getPreferredProvider()
-        const routingCtx = {
-          taskId: task.id,
-          mode: task.mode,
-          estimatedInputTokens,
-          requiresReasoning: task.mode === "deep" || task.mode === "god",
-          requiresVision: false,
-          latencyBudgetMs: PROVIDER_TIMEOUTS.DEFAULT_MS,
-          ...(preferredProvider !== undefined ? { preferredProvider } : {}),
-        }
+          const estimatedOutputTokens = estimateConversationTokens([
+            {
+              role: "assistant" as const,
+              content: result.content,
+              timestamp: new Date().toISOString(),
+            },
+          ])
+          const inputTokens =
+            result.inputTokens > 0 ? result.inputTokens : estimatedInputTokens
+          const outputTokens =
+            result.outputTokens > 0
+              ? result.outputTokens
+              : estimatedOutputTokens
+          yield* budgetService.consume(task.id, outputTokens)
 
-        const request = {
-          taskId: task.id,
-          messages: windowedMsgs,
-          maxTokens: TOKEN_LIMITS.MAX_OUTPUT_TOKENS,
-          systemPrompt,
-          stream: true,
-        }
+          const response: InferenceResponse = {
+            taskId: task.id,
+            content: result.content,
+            stopReason: "end_turn",
+            usage: {
+              inputTokens,
+              outputTokens,
+              cacheReadTokens: result.cacheReadTokens,
+              cacheWriteTokens: result.cacheWriteTokens,
+              estimatedCostUsd: result.estimatedCostUsd,
+            },
+            model: result.model,
+            provider: result.provider as ProviderId,
+            latencyMs: result.latencyMs,
+          }
+          yield* usageMetrics.recordInference({
+            taskId: task.id,
+            mode: task.mode,
+            provider: response.provider,
+            model: response.model,
+            inputTokens: response.usage.inputTokens,
+            outputTokens: response.usage.outputTokens,
+            cacheReadTokens: response.usage.cacheReadTokens,
+            cacheWriteTokens: response.usage.cacheWriteTokens,
+            estimatedCostUsd: response.usage.estimatedCostUsd,
+            latencyMs: response.latencyMs,
+            timestamp: new Date().toISOString(),
+          })
 
-        const result = yield* router.completeWithCallback(
-          routingCtx,
-          request,
-          onChunk,
-        )
-
-        const estimatedOutputTokens = estimateConversationTokens([
-          {
-            role: "assistant" as const,
+          const assistantMsg: Message = {
+            role: "assistant",
             content: result.content,
             timestamp: new Date().toISOString(),
-          },
-        ])
-        const inputTokens =
-          result.inputTokens > 0 ? result.inputTokens : estimatedInputTokens
-        const outputTokens =
-          result.outputTokens > 0 ? result.outputTokens : estimatedOutputTokens
-        yield* budgetService.consume(task.id, outputTokens)
+          }
+          yield* ctx.addMessage(assistantMsg)
 
-        const response: InferenceResponse = {
-          taskId: task.id,
-          content: result.content,
-          stopReason: "end_turn",
-          usage: {
-            inputTokens,
-            outputTokens,
-            cacheReadTokens: result.cacheReadTokens,
-            cacheWriteTokens: result.cacheWriteTokens,
-            estimatedCostUsd: result.estimatedCostUsd,
-          },
-          model: result.model,
-          provider: result.provider as ProviderId,
-          latencyMs: result.latencyMs,
-        }
-        yield* usageMetrics.recordInference({
-          taskId: task.id,
-          mode: task.mode,
-          provider: response.provider,
-          model: response.model,
-          inputTokens: response.usage.inputTokens,
-          outputTokens: response.usage.outputTokens,
-          cacheReadTokens: response.usage.cacheReadTokens,
-          cacheWriteTokens: response.usage.cacheWriteTokens,
-          estimatedCostUsd: response.usage.estimatedCostUsd,
-          latencyMs: response.latencyMs,
-          timestamp: new Date().toISOString(),
+          yield* mem.recordTurn({
+            taskId: task.id,
+            prompt: task.prompt,
+            response: result.content,
+            tokensUsed: inputTokens + outputTokens,
+            provider: response.provider,
+            model: response.model,
+            estimatedCostUsd: response.usage.estimatedCostUsd,
+            latencyMs: response.latencyMs,
+            timestamp: new Date().toISOString(),
+          })
+
+          return response
         })
 
-        const assistantMsg: Message = {
-          role: "assistant",
-          content: result.content,
-          timestamp: new Date().toISOString(),
-        }
-        yield* ctx.addMessage(assistantMsg)
+      const getSessionSummary = (): Effect.Effect<string> => mem.summarize()
 
-        yield* mem.recordTurn({
-          taskId: task.id,
-          prompt: task.prompt,
-          response: result.content,
-          tokensUsed: inputTokens + outputTokens,
-          provider: response.provider,
-          model: response.model,
-          estimatedCostUsd: response.usage.estimatedCostUsd,
-          latencyMs: response.latencyMs,
-          timestamp: new Date().toISOString(),
-        })
+      return { run, runStream, getSessionSummary } satisfies OrchestratorService
+    }),
+  )
 
-        return response
-      })
-
-    const getSessionSummary = (): Effect.Effect<string> => mem.summarize()
-
-    return { run, runStream, getSessionSummary } satisfies OrchestratorService
-  }),
-)
+/**
+ * @Owl.Engine.Orchestrator.Live - No-project-context alias used by tests
+ *
+ * Tests don't need CLAUDE.md or git status. This alias provides the same
+ * layer signature as before without any project I/O.
+ */
+export const OrchestratorLive = makeOrchestratorLive("")

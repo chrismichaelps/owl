@@ -1,27 +1,24 @@
 /**
- * @Owl.Providers.Anthropic - Anthropic Claude adapter (primary reasoning provider)
+ * @Owl.Providers.Anthropic - Anthropic Claude adapter with MCP tool calling
  *
  * Primary provider for deep reasoning tasks. Anthropic's Claude models excel at
  * complex analysis, code generation, and multi-step reasoning.
  *
  * Authentication: Requires ANTHROPIC_API_KEY environment variable.
  *
+ * MCP Tool Use:
+ * When McpManager is present in the Effect context, its tools are forwarded to
+ * the Anthropic API. If the model returns stop_reason "tool_use", the adapter
+ * executes each tool via McpManager, appends results, and re-calls the API
+ * until stop_reason is "end_turn" or the 10-iteration safety cap is hit.
+ *
  * Models:
  * - claude-opus-4-7: Highest capability, largest context (1M tokens)
  * - claude-sonnet-4-6: Balanced capability and cost
  * - claude-haiku-4-5: Fast, cost-effective for simpler tasks
- *
- * Error handling: Maps Anthropic-specific errors to structured types:
- * - AuthenticationError → ProviderAuthError
- * - RateLimitError → ProviderRateLimitError
- * - APIConnectionTimeoutError → ProviderTimeoutError
- * - Overloaded → ProviderError with status 529
- *
- * @example
- * yield* registerProvider(router, AnthropicAdapterLive)
  */
 import Anthropic from "@anthropic-ai/sdk"
-import { Context, Effect, Layer, Schedule } from "effect"
+import { Context, Effect, Layer, Option, Schedule } from "effect"
 import * as Stream from "effect/Stream"
 import {
   ProviderError,
@@ -37,6 +34,8 @@ import {
   RETRY_CONFIG,
 } from "../../core/constants/index.js"
 import { estimateModelCostUsd } from "../cost.js"
+import { McpManager } from "../../mcp/index.js"
+import type { McpManagerService } from "../../mcp/index.js"
 import type {
   LLMProviderService,
   ProviderCapability,
@@ -46,6 +45,8 @@ import type {
   InferenceRequest,
   InferenceResponse,
 } from "../../core/schema/index.js"
+
+const MAX_TOOL_ITERATIONS = 10
 
 /**
  * @Owl.Providers.Anthropic.Capabilities - High-fidelity model specifications
@@ -91,8 +92,6 @@ const ANTHROPIC_CAPABILITIES: readonly ProviderCapability[] = [
 
 /**
  * @Owl.Providers.Anthropic.ErrorMapping - Resilient error translation
- *
- * Maps Anthropic SDK errors to Owl error types for consistent handling.
  */
 const mapAnthropicError = (
   e: unknown,
@@ -143,40 +142,38 @@ export class AnthropicAdapter extends Context.Tag("AnthropicAdapter")<
  * @Owl.Providers.Anthropic.Implementation - Production layer logic
  *
  * Uses Anthropic messages API with retry and streaming support.
- * Health check uses haiku model to minimize cost.
+ * Optionally integrates with McpManager for dynamic tool calling.
  */
 export const AnthropicAdapterLive = Layer.effect(
   AnthropicAdapter,
   Effect.gen(function* () {
     const config = yield* OWL_CONFIG
 
-    /** @Owl.Providers.Anthropic.Client - Anthropic SDK client */
     const client = new Anthropic({ apiKey: config.anthropicApiKey })
 
-    /** @Owl.Providers.Anthropic.Retry - Exponential backoff retry schedule */
+    // Optional MCP manager — present only when McpManager layer is provided
+    const mcpManagerOpt = yield* Effect.serviceOption(McpManager)
+    const mcpManager: McpManagerService | null = Option.isSome(mcpManagerOpt)
+      ? mcpManagerOpt.value
+      : null
+
     const retrySchedule = Schedule.exponential("1 seconds", 2).pipe(
       Schedule.intersect(Schedule.recurs(RETRY_CONFIG.MAX_ATTEMPTS - 1)),
     )
 
-    const complete = (
+    /** Single Anthropic API call with retry */
+    const callApi = (
+      messages: Anthropic.MessageParam[],
       request: InferenceRequest,
-    ): Effect.Effect<
-      InferenceResponse,
-      | ProviderError
-      | ProviderAuthError
-      | ProviderRateLimitError
-      | ProviderTimeoutError
-    > =>
+      tools: Anthropic.Tool[],
+    ) =>
       Effect.tryPromise({
-        try: async () => {
-          const startMs = Date.now()
-          const response = await client.messages.create({
+        try: () =>
+          client.messages.create({
             model: request.model,
             max_tokens: request.maxTokens,
-            messages: request.messages.map((m) => ({
-              role: m.role as "user" | "assistant",
-              content: m.content,
-            })),
+            messages,
+            ...(tools.length > 0 ? { tools } : {}),
             ...(request.systemPrompt
               ? {
                   system: [
@@ -188,90 +185,228 @@ export const AnthropicAdapterLive = Layer.effect(
                   ],
                 }
               : {}),
-          })
-
-          const content = response.content
-            .filter((b) => b.type === "text")
-            .map((b) => (b as { type: "text"; text: string }).text)
-            .join("")
-
-          return {
-            taskId: request.taskId,
-            content,
-            stopReason: (response.stop_reason ??
-              "end_turn") as InferenceResponse["stopReason"],
-            usage: {
-              inputTokens: response.usage.input_tokens,
-              outputTokens: response.usage.output_tokens,
-              cacheReadTokens: response.usage.cache_read_input_tokens ?? 0,
-              cacheWriteTokens: response.usage.cache_creation_input_tokens ?? 0,
-              estimatedCostUsd: estimateModelCostUsd(
-                ANTHROPIC_CAPABILITIES,
-                response.model,
-                response.usage.input_tokens,
-                response.usage.output_tokens,
-              ),
-            },
-            model: response.model,
-            provider: "anthropic" as const,
-            latencyMs: Date.now() - startMs,
-          } satisfies InferenceResponse
-        },
+          }),
         catch: mapAnthropicError,
       }).pipe(Effect.retry(retrySchedule))
+
+    const complete = (
+      request: InferenceRequest,
+    ): Effect.Effect<
+      InferenceResponse,
+      | ProviderError
+      | ProviderAuthError
+      | ProviderRateLimitError
+      | ProviderTimeoutError
+    > =>
+      Effect.gen(function* () {
+        const startMs = Date.now()
+
+        // Load MCP tools if manager is connected
+        const mcpTools = mcpManager !== null ? yield* mcpManager.getTools() : []
+        const tools: Anthropic.Tool[] = mcpTools.map((t) => ({
+          name: t.name,
+          description: t.description,
+          input_schema: t.input_schema as Anthropic.Tool["input_schema"],
+        }))
+
+        const messages: Anthropic.MessageParam[] = request.messages.map(
+          (m) => ({
+            role: m.role as "user" | "assistant",
+            content: m.content,
+          }),
+        )
+
+        let response = yield* callApi(messages, request, tools)
+        let textContent = ""
+        let iterations = 0
+
+        // Tool-use loop: keep calling until end_turn or safety cap
+        while (
+          response.stop_reason === "tool_use" &&
+          mcpManager !== null &&
+          iterations < MAX_TOOL_ITERATIONS
+        ) {
+          // Collect any text the model generated alongside the tool call
+          for (const block of response.content) {
+            if (block.type === "text") {
+              textContent += block.text
+            }
+          }
+
+          // Append assistant's turn (with tool_use blocks) to history
+          messages.push({ role: "assistant", content: response.content })
+
+          // Execute each tool call and collect results
+          const toolResults: Anthropic.ToolResultBlockParam[] = []
+          for (const block of response.content) {
+            if (block.type === "tool_use") {
+              const result = yield* mcpManager.callTool(
+                block.name,
+                block.input as Record<string, unknown>,
+              )
+              toolResults.push({
+                type: "tool_result",
+                tool_use_id: block.id,
+                content: result,
+              })
+            }
+          }
+
+          // Append tool results as a user turn
+          messages.push({ role: "user", content: toolResults })
+          response = yield* callApi(messages, request, tools)
+          iterations++
+        }
+
+        // Collect final text content
+        for (const block of response.content) {
+          if (block.type === "text") {
+            textContent += block.text
+          }
+        }
+
+        return {
+          taskId: request.taskId,
+          content: textContent,
+          stopReason: (response.stop_reason ??
+            "end_turn") as InferenceResponse["stopReason"],
+          usage: {
+            inputTokens: response.usage.input_tokens,
+            outputTokens: response.usage.output_tokens,
+            cacheReadTokens: response.usage.cache_read_input_tokens ?? 0,
+            cacheWriteTokens: response.usage.cache_creation_input_tokens ?? 0,
+            estimatedCostUsd: estimateModelCostUsd(
+              ANTHROPIC_CAPABILITIES,
+              response.model,
+              response.usage.input_tokens,
+              response.usage.output_tokens,
+            ),
+          },
+          model: response.model,
+          provider: "anthropic" as const,
+          latencyMs: Date.now() - startMs,
+        } satisfies InferenceResponse
+      })
 
     const stream = (request: InferenceRequest) =>
       Stream.async<StreamChunk, ProviderStreamError>((emit) => {
         const run = async () => {
           try {
-            const s = client.messages.stream({
-              model: request.model,
-              max_tokens: request.maxTokens,
-              messages: request.messages.map((m) => ({
+            const messages: Anthropic.MessageParam[] = request.messages.map(
+              (m) => ({
                 role: m.role as "user" | "assistant",
                 content: m.content,
-              })),
-              ...(request.systemPrompt
-                ? {
-                    system: [
-                      {
-                        type: "text" as const,
-                        text: request.systemPrompt,
-                        cache_control: { type: "ephemeral" as const },
-                      },
-                    ],
-                  }
-                : {}),
-            })
+              }),
+            )
+
+            // Load MCP tools if manager is connected
+            const mcpTools =
+              mcpManager !== null
+                ? await Effect.runPromise(mcpManager.getTools())
+                : []
+            const tools: Anthropic.Tool[] = mcpTools.map((t) => ({
+              name: t.name,
+              description: t.description,
+              input_schema: t.input_schema as Anthropic.Tool["input_schema"],
+            }))
+
+            const systemBlock = request.systemPrompt
+              ? [
+                  {
+                    type: "text" as const,
+                    text: request.systemPrompt,
+                    cache_control: { type: "ephemeral" as const },
+                  },
+                ]
+              : undefined
 
             let index = 0
-            for await (const event of s) {
-              if (
-                event.type === "content_block_delta" &&
-                event.delta.type === "text_delta"
-              ) {
-                await emit.single({
-                  type: "text",
-                  content: event.delta.text,
-                  index: index++,
-                })
+            let iterations = 0
+            // Accumulate usage across all iterations for accurate totals
+            let totalInputTokens = 0
+            let totalOutputTokens = 0
+            let totalCacheReadTokens = 0
+            let totalCacheWriteTokens = 0
+            let lastModel = request.model
+
+            while (iterations < MAX_TOOL_ITERATIONS) {
+              const s = client.messages.stream({
+                model: request.model,
+                max_tokens: request.maxTokens,
+                messages,
+                ...(tools.length > 0 ? { tools } : {}),
+                ...(systemBlock !== undefined ? { system: systemBlock } : {}),
+              })
+
+              for await (const event of s) {
+                if (
+                  event.type === "content_block_delta" &&
+                  event.delta.type === "text_delta"
+                ) {
+                  await emit.single({
+                    type: "text",
+                    content: event.delta.text,
+                    index: index++,
+                  })
+                }
               }
+
+              const finalMsg = await s.finalMessage()
+              lastModel = finalMsg.model
+              totalInputTokens += finalMsg.usage.input_tokens
+              totalOutputTokens += finalMsg.usage.output_tokens
+              totalCacheReadTokens +=
+                finalMsg.usage.cache_read_input_tokens ?? 0
+              totalCacheWriteTokens +=
+                finalMsg.usage.cache_creation_input_tokens ?? 0
+
+              if (finalMsg.stop_reason !== "tool_use" || mcpManager === null) {
+                break
+              }
+
+              // Append assistant turn with tool_use blocks
+              messages.push({ role: "assistant", content: finalMsg.content })
+
+              // Emit indicator and execute each tool call
+              const toolResults: Anthropic.ToolResultBlockParam[] = []
+              for (const block of finalMsg.content) {
+                if (block.type === "tool_use") {
+                  await emit.single({
+                    type: "tool_use",
+                    content: block.name,
+                    index: index++,
+                  })
+                  const result = await Effect.runPromise(
+                    mcpManager.callTool(
+                      block.name,
+                      block.input as Record<string, unknown>,
+                    ),
+                  )
+                  toolResults.push({
+                    type: "tool_result",
+                    tool_use_id: block.id,
+                    content: result,
+                  })
+                }
+              }
+
+              messages.push({ role: "user", content: toolResults })
+              iterations++
             }
-            const finalMsg = await s.finalMessage()
+
             await emit.single({
               type: "usage" as const,
               index: 0,
               usage: {
-                inputTokens: finalMsg.usage.input_tokens,
-                outputTokens: finalMsg.usage.output_tokens,
-                cacheReadTokens: finalMsg.usage.cache_read_input_tokens ?? 0,
-                cacheWriteTokens:
-                  finalMsg.usage.cache_creation_input_tokens ?? 0,
+                inputTokens: totalInputTokens,
+                outputTokens: totalOutputTokens,
+                cacheReadTokens: totalCacheReadTokens,
+                cacheWriteTokens: totalCacheWriteTokens,
                 estimatedCostUsd: estimateModelCostUsd(
                   ANTHROPIC_CAPABILITIES,
-                  finalMsg.model,
-                  finalMsg.usage.input_tokens,
-                  finalMsg.usage.output_tokens,
+                  lastModel,
+                  totalInputTokens,
+                  totalOutputTokens,
                 ),
               },
             })

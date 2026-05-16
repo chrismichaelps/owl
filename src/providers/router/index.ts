@@ -83,16 +83,19 @@ export interface ProviderRouterService {
    *
    * Internally calls route() to select provider, then streams via provider.stream().
    * Calls onChunk for each text chunk as it arrives; returns assembled result on completion.
+   * Calls onLog for non-text events like tool calls (optional).
    *
    * @param ctx - RoutingContext for provider selection
    * @param request - InferenceRequest without model (router adds it)
    * @param onChunk - Callback invoked for each text chunk during Streaming
+   * @param onLog - Optional callback for non-text events (tool calls, etc.)
    * @returns StreamingCallbackResult with full content and metadata
    */
   readonly completeWithCallback: (
     ctx: RoutingContext,
     request: Omit<InferenceRequest, "model">,
     onChunk: (text: string) => void,
+    onLog?: (msg: string) => void,
   ) => Effect.Effect<
     StreamingCallbackResult,
     AnyProviderError | ProviderUnavailableError
@@ -278,6 +281,7 @@ export const ProviderRouterLive = Layer.effect(
       ctx: RoutingContext,
       request: Omit<InferenceRequest, "model">,
       onChunk: (text: string) => void,
+      onLog?: (msg: string) => void,
     ): Effect.Effect<
       StreamingCallbackResult,
       AnyProviderError | ProviderUnavailableError
@@ -311,6 +315,12 @@ export const ProviderRouterLive = Layer.effect(
                   chunks.push(chunk.content)
                   emittedChunks += 1
                   onChunk(chunk.content)
+                } else if (
+                  chunk.type === "tool_use" &&
+                  chunk.content != null &&
+                  onLog != null
+                ) {
+                  onLog(`⚙ Tool: ${chunk.content}`)
                 } else if (chunk.type === "usage" && chunk.usage != null) {
                   inputTokens = chunk.usage.inputTokens
                   outputTokens = chunk.usage.outputTokens
