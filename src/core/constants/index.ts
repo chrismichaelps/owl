@@ -192,6 +192,8 @@ export const ROUTING_LIMITS = {
   MAX_NORMALIZED_COST_USD: 0.5,
   FAST_MODEL_OUTPUT_TOKEN_LIMIT: 4_096,
   FALLBACK_PROVIDER_LIMIT: 2,
+  MIN_PARALLEL_PROVIDER_LIMIT: 1,
+  PARALLEL_PROVIDER_LIMIT: 2,
 } as const
 
 /** @Owl.Core.Constants.RoutingScores - Provider scoring lookup tables */

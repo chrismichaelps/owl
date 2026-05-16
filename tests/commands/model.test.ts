@@ -13,6 +13,8 @@ const makeRouter = (
 ): ProviderRouterService => ({
   route: () => Effect.die("route not used in model command"),
   complete: () => Effect.die("complete not used in model command"),
+  completeParallel: () =>
+    Effect.die("completeParallel not used in model command"),
   completeWithCallback: () =>
     Effect.die("completeWithCallback not used in model command"),
   listProviders: () => Effect.succeed(providers),

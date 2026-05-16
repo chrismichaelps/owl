@@ -59,6 +59,11 @@ import type {
 } from "../../core/schema/index.js"
 import type { AnyProviderError } from "../types.js"
 
+type ParallelAttempt = Either.Either<
+  InferenceResponse,
+  AnyProviderError | ProviderUnavailableError
+>
+
 export { formatStreamEventLog } from "./streaming.js"
 
 /**
@@ -90,6 +95,26 @@ export interface ProviderRouterService {
     request: Omit<InferenceRequest, "model">,
   ) => Effect.Effect<
     InferenceResponse,
+    AnyProviderError | ProviderUnavailableError
+  >
+
+  /**
+   * Execute inference against multiple ranked providers concurrently
+   *
+   * Used for model comparison and high-confidence workflows. The router preserves
+   * ranked order in the returned successes while isolating failed providers.
+   *
+   * @param ctx - RoutingContext for provider selection
+   * @param request - InferenceRequest without model (router adds it)
+   * @param maxProviders - Optional cap, bounded by centralized routing limits
+   * @returns Successful InferenceResponses in deterministic ranked order
+   */
+  readonly completeParallel: (
+    ctx: RoutingContext,
+    request: Omit<InferenceRequest, "model">,
+    maxProviders?: number,
+  ) => Effect.Effect<
+    readonly InferenceResponse[],
     AnyProviderError | ProviderUnavailableError
   >
 
@@ -311,6 +336,79 @@ export const ProviderRouterLive = Layer.effect(
         return yield* failLast(lastError, ctx)
       })
 
+    const completeParallel = (
+      ctx: RoutingContext,
+      request: Omit<InferenceRequest, "model">,
+      maxProviders: number = ROUTING_LIMITS.PARALLEL_PROVIDER_LIMIT,
+    ): Effect.Effect<
+      readonly InferenceResponse[],
+      AnyProviderError | ProviderUnavailableError
+    > =>
+      Effect.gen(function* () {
+        const ranked = yield* rankedCapabilities(ctx)
+        const registry = yield* Ref.get(registryRef)
+        const providerLimit = Math.max(
+          ROUTING_LIMITS.MIN_PARALLEL_PROVIDER_LIMIT,
+          Math.min(maxProviders, ROUTING_LIMITS.PARALLEL_PROVIDER_LIMIT),
+        )
+        const attempts = Chunk.take(ranked, providerLimit)
+
+        const attemptComplete = (
+          capability: ProviderCapability,
+        ): Effect.Effect<ParallelAttempt> => {
+          const provider = Option.getOrUndefined(
+            HashMap.get(registry, capability.providerId),
+          )
+
+          if (provider === undefined) {
+            return Effect.succeed(
+              Either.left(missingProvider(capability.providerId)),
+            )
+          }
+
+          return provider
+            .complete({ ...request, model: capability.modelId })
+            .pipe(
+              Effect.map((response) => ({
+                ...response,
+                usage: {
+                  ...response.usage,
+                  estimatedCostUsd: estimateCapabilityCostUsd(
+                    capability,
+                    response.usage.inputTokens,
+                    response.usage.outputTokens,
+                  ),
+                },
+              })),
+              Effect.either,
+            )
+        }
+
+        const results = yield* Effect.forEach(
+          attempts,
+          attemptComplete,
+          { concurrency: providerLimit },
+        )
+        const resultChunk = Chunk.fromIterable(results)
+
+        const successes = Chunk.filterMap(resultChunk, (result) =>
+          Either.isRight(result) ? Option.some(result.right) : Option.none(),
+        )
+
+        if (!Chunk.isEmpty(successes)) {
+          return Chunk.toReadonlyArray(successes)
+        }
+
+        const lastError = Chunk.reduce(
+          resultChunk,
+          undefined as AnyProviderError | ProviderUnavailableError | undefined,
+          (_current, result) =>
+            Either.isLeft(result) ? result.left : undefined,
+        )
+
+        return yield* failLast(lastError, ctx)
+      })
+
     const completeWithCallback = (
       ctx: RoutingContext,
       request: Omit<InferenceRequest, "model">,
@@ -417,6 +515,7 @@ export const ProviderRouterLive = Layer.effect(
     } = {
       route,
       complete,
+      completeParallel,
       completeWithCallback,
       listProviders,
       listCapabilities,

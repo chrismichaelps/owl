@@ -221,6 +221,88 @@ describe("ProviderRouter", () => {
     expect(result.usage.estimatedCostUsd).toBe(0.00025)
   })
 
+  it("completeParallel returns ranked successful provider responses", async () => {
+    const first = makeStubProvider("anthropic")
+    const second = makeStubProvider("openai")
+
+    const program = Effect.gen(function* () {
+      const router = yield* ProviderRouter
+      yield* registerProvider(router, second)
+      yield* registerProvider(router, first)
+      return yield* router.completeParallel(
+        {
+          taskId: "t-parallel",
+          mode: "standard",
+          estimatedInputTokens: 1000,
+          requiresReasoning: false,
+          requiresVision: false,
+          latencyBudgetMs: 30000,
+        },
+        {
+          taskId: "t-parallel",
+          messages: [
+            {
+              role: "user",
+              content: "hello",
+              timestamp: new Date().toISOString(),
+            },
+          ],
+          maxTokens: 1024,
+          stream: false,
+        },
+      )
+    })
+
+    const result = await Effect.runPromise(
+      program.pipe(Effect.provide(ProviderRouterLive)),
+    )
+    expect(result.map((response) => response.provider)).toEqual([
+      "anthropic",
+      "openai",
+    ])
+    expect(result.map((response) => response.usage.estimatedCostUsd)).toEqual([
+      0.00025, 0.00025,
+    ])
+  })
+
+  it("completeParallel isolates failed providers and returns successes", async () => {
+    const first = makeFailingProvider("anthropic")
+    const second = makeStubProvider("openai")
+
+    const program = Effect.gen(function* () {
+      const router = yield* ProviderRouter
+      yield* registerProvider(router, first)
+      yield* registerProvider(router, second)
+      return yield* router.completeParallel(
+        {
+          taskId: "t-parallel-partial",
+          mode: "standard",
+          estimatedInputTokens: 1000,
+          requiresReasoning: false,
+          requiresVision: false,
+          latencyBudgetMs: 30000,
+        },
+        {
+          taskId: "t-parallel-partial",
+          messages: [
+            {
+              role: "user",
+              content: "hello",
+              timestamp: new Date().toISOString(),
+            },
+          ],
+          maxTokens: 1024,
+          stream: false,
+        },
+      )
+    })
+
+    const result = await Effect.runPromise(
+      program.pipe(Effect.provide(ProviderRouterLive)),
+    )
+    expect(result.map((response) => response.provider)).toEqual(["openai"])
+  })
+
   it("does not fall back to cloud providers when localOnly is true", async () => {
     const local = makeFailingProvider("ollama")
     const cloud = makeStubProvider("anthropic")

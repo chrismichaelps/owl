@@ -69,6 +69,8 @@ const TestProviderRouterLive = Layer.succeed(ProviderRouter, {
       completeSpy()
       return { ...stubResponse, taskId: req.taskId }
     }),
+  completeParallel: () =>
+    Effect.die("completeParallel not used in orchestrator tests"),
   completeWithCallback: (
     ctx: RoutingContext,
     req: Parameters<ProviderRouterService["completeWithCallback"]>[1],
