@@ -12,6 +12,7 @@ import { join } from "node:path"
 import { promisify } from "node:util"
 import { Chunk, Data, Effect, Option } from "effect"
 import { PROJECT_CONTEXT_CONSTANTS } from "../../core/constants/index.js"
+import { truncate } from "../../core/utils/format.js"
 
 const execFileAsync = promisify(execFile)
 
@@ -31,9 +32,6 @@ const trimToOption = (content: string): Option.Option<string> => {
   const trimmed = content.trim()
   return trimmed.length > 0 ? Option.some(trimmed) : Option.none()
 }
-
-const truncate = (value: string, maxChars: number, marker: string): string =>
-  value.length > maxChars ? value.slice(0, maxChars) + marker : value
 
 const readFileSafe = (filePath: string): Effect.Effect<Option.Option<string>> =>
   Effect.tryPromise({

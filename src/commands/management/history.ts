@@ -12,16 +12,12 @@
  * //   ✦ Here is a hello world...
  */
 import { Effect } from "effect"
+import { truncate } from "../../core/utils/format.js"
 import type { CommandParseError } from "../../core/errors/index.js"
 import type { SessionMemoryService } from "../../engine/memory/index.js"
 import type { CommandHandler, CommandResult } from "../types.js"
 
 const PREVIEW_CHARS = 80
-
-function truncate(s: string, max: number): string {
-  const single = s.replace(/\n/g, " ").trim()
-  return single.length <= max ? single : single.slice(0, max - 1) + "…"
-}
 
 /**
  * @Owl.Commands.Management.History.Factory - Create the /history command handler

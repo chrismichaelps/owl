@@ -11,6 +11,7 @@
  * //   A: Here is your function...
  */
 import { Effect } from "effect"
+import { truncate } from "../../core/utils/format.js"
 import { COMMAND_CONSTANTS } from "../../core/constants/index.js"
 import { formatEstimatedCostUsd } from "../../core/cost.js"
 import type { CommandParseError } from "../../core/errors/index.js"
@@ -19,13 +20,6 @@ import type {
   SessionTurn,
 } from "../../engine/memory/index.js"
 import type { CommandHandler, CommandResult } from "../types.js"
-
-/** Truncate long strings for display */
-function truncate(s: string): string {
-  return s.length > COMMAND_CONSTANTS.MEMORY_PREVIEW_LENGTH
-    ? s.slice(0, COMMAND_CONSTANTS.MEMORY_PREVIEW_LENGTH) + "..."
-    : s
-}
 
 const formatRuntimeMetadata = (turn: SessionTurn): string => {
   const parts = [
@@ -67,10 +61,18 @@ export function makeMemoryCommand(
               formatRuntimeMetadata(t) +
               ")\n" +
               "  Q: " +
-              truncate(t.prompt) +
+              truncate(
+                t.prompt,
+                COMMAND_CONSTANTS.MEMORY_PREVIEW_LENGTH,
+                "...",
+              ) +
               "\n" +
               "  A: " +
-              truncate(t.response),
+              truncate(
+                t.response,
+                COMMAND_CONSTANTS.MEMORY_PREVIEW_LENGTH,
+                "...",
+              ),
           )
           return { output: lines.join("\n\n") }
         }),

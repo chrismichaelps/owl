@@ -18,6 +18,7 @@
 import { readFile, stat } from "node:fs/promises"
 import { resolve, relative, basename } from "node:path"
 import { Effect } from "effect"
+import { formatBytes } from "../../core/utils/format.js"
 import type { CommandParseError } from "../../core/errors/index.js"
 import { CommandParseError as CommandParseErrorClass } from "../../core/errors/index.js"
 import type { ContextManagerService } from "../../engine/context/index.js"
@@ -25,13 +26,6 @@ import type { CommandHandler, CommandResult } from "../types.js"
 
 const MAX_FILE_BYTES = 500_000 // 500 KB per file
 const MAX_TOTAL_BYTES = 1_000_000 // 1 MB total across all files
-
-/** Format a byte count as a human-readable string */
-function formatBytes(bytes: number): string {
-  if (bytes < 1024) return `${String(bytes)}b`
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)}kb`
-  return `${(bytes / (1024 * 1024)).toFixed(1)}mb`
-}
 
 /**
  * @Owl.Commands.Editing.Add.Factory - Create the /add command handler
