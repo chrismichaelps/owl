@@ -15,6 +15,7 @@
  */
 import { structuredPatch } from "diff"
 import type { StructuredPatchHunk } from "diff"
+import { Chunk } from "effect"
 import { EDITOR_CONSTANTS } from "../../core/constants/index.js"
 import { convertLeadingTabsToSpaces } from "./strings.js"
 
@@ -114,4 +115,86 @@ export function formatUnifiedDiff(
     })
     .join("\n")
   return [header, body].join("\n")
+}
+
+const truncateCell = (value: string): string =>
+  value.length <= EDITOR_CONSTANTS.DIFF_SIDE_BY_SIDE_WIDTH
+    ? value.padEnd(EDITOR_CONSTANTS.DIFF_SIDE_BY_SIDE_WIDTH)
+    : value.slice(0, EDITOR_CONSTANTS.DIFF_SIDE_BY_SIDE_WIDTH - 1) + "…"
+
+const formatSideBySideRow = (
+  leftPrefix: string,
+  left: string,
+  rightPrefix: string,
+  right: string,
+): string =>
+  leftPrefix +
+  truncateCell(left) +
+  EDITOR_CONSTANTS.DIFF_SIDE_BY_SIDE_SEPARATOR +
+  rightPrefix +
+  truncateCell(right)
+
+const formatSideBySideHunk = (
+  hunk: StructuredPatchHunk,
+): Chunk.Chunk<string> => {
+  const rows: string[] = [
+    "@@ -" +
+      String(hunk.oldStart) +
+      "," +
+      String(hunk.oldLines) +
+      " +" +
+      String(hunk.newStart) +
+      "," +
+      String(hunk.newLines) +
+      " @@",
+  ]
+
+  for (let i = 0; i < hunk.lines.length; i++) {
+    const line = hunk.lines[i] ?? ""
+    const next = hunk.lines[i + 1] ?? ""
+
+    if (line.startsWith("-") && next.startsWith("+")) {
+      rows.push(formatSideBySideRow("- ", line.slice(1), "+ ", next.slice(1)))
+      i++
+      continue
+    }
+
+    if (line.startsWith("-")) {
+      rows.push(formatSideBySideRow("- ", line.slice(1), "  ", ""))
+      continue
+    }
+
+    if (line.startsWith("+")) {
+      rows.push(formatSideBySideRow("  ", "", "+ ", line.slice(1)))
+      continue
+    }
+
+    const context = line.startsWith(" ") ? line.slice(1) : line
+    rows.push(formatSideBySideRow("  ", context, "  ", context))
+  }
+
+  return Chunk.fromIterable(rows)
+}
+
+/**
+ * Format hunks as a compact side-by-side diff table.
+ *
+ * @param filePath - File path for the table header
+ * @param hunks - StructuredPatchHunk array
+ * @returns Side-by-side diff string
+ */
+export function formatSideBySideDiff(
+  filePath: string,
+  hunks: readonly StructuredPatchHunk[],
+): string {
+  if (hunks.length === 0) return ""
+  const header = "Side-by-side diff: " + filePath
+  const divider =
+    "-".repeat(EDITOR_CONSTANTS.DIFF_SIDE_BY_SIDE_WIDTH + 2) +
+    EDITOR_CONSTANTS.DIFF_SIDE_BY_SIDE_SEPARATOR +
+    "-".repeat(EDITOR_CONSTANTS.DIFF_SIDE_BY_SIDE_WIDTH + 2)
+  const body = Chunk.flatMap(Chunk.fromIterable(hunks), formatSideBySideHunk)
+  return Chunk.toReadonlyArray(
+    Chunk.prepend(Chunk.prepend(body, divider), header),
+  ).join("\n")
 }

@@ -74,6 +74,36 @@ describe("makeDiffCommand", () => {
     expect(output).toContain("+const value = 2")
   })
 
+  it("renders pending preview diffs side-by-side when requested", async () => {
+    const output = await Effect.runPromise(
+      Effect.gen(function* () {
+        const pending = yield* PendingMutationStore
+        yield* pending.put(
+          "edit-preview",
+          [
+            {
+              file: "src/a.ts",
+              oldString: "const value = 1",
+              newString: "const value = 2",
+            },
+          ],
+          [PREVIEW],
+        )
+        const command = makeDiffCommand(makeRollback(), pending)
+        const result = yield* command.execute([
+          "edit-preview",
+          "--side-by-side",
+        ])
+        return result.output
+      }).pipe(Effect.provide(PendingMutationStoreLive)),
+    )
+
+    expect(output).toContain("```text")
+    expect(output).toContain("Side-by-side diff: src/a.ts")
+    expect(output).toContain("- const value = 1")
+    expect(output).toContain("+ const value = 2")
+  })
+
   it("falls back to rollback snapshots after a mutation is written", async () => {
     const output = await Effect.runPromise(
       Effect.gen(function* () {
