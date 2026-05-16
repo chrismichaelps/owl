@@ -20,7 +20,7 @@
  * yield* Effect.flatMap(ContextManager, (c) => c.addMessage({ role: "user", content: "hi", timestamp: now }))
  * const msgs = yield* Effect.flatMap(ContextManager, (c) => c.getWindowedMessages(32000))
  */
-import { Context, Effect, Layer, Ref } from "effect"
+import { Chunk, Context, Data, Effect, Layer, Ref } from "effect"
 import {
   estimateConversationTokens,
   shouldPrune,
@@ -90,20 +90,20 @@ export class ContextManager extends Context.Tag("ContextManager")<
 export const ContextManagerLive = Layer.effect(
   ContextManager,
   Effect.gen(function* () {
-    const messagesRef = yield* Ref.make<readonly Message[]>([])
+    const messagesRef = yield* Ref.make<Chunk.Chunk<Message>>(Chunk.empty())
     const systemPromptRef = yield* Ref.make<string | undefined>(undefined)
 
     const addMessage = (msg: Message): Effect.Effect<void> =>
-      Ref.update(messagesRef, (msgs) => [...msgs, msg])
+      Ref.update(messagesRef, (msgs) => Chunk.append(msgs, Data.struct(msg)))
 
     const getMessages = (): Effect.Effect<readonly Message[]> =>
-      Ref.get(messagesRef)
+      Ref.get(messagesRef).pipe(Effect.map(Chunk.toReadonlyArray))
 
     const getWindowedMessages = (
       budget: number,
     ): Effect.Effect<readonly Message[]> =>
       Effect.gen(function* () {
-        const msgs = yield* Ref.get(messagesRef)
+        const msgs = Chunk.toReadonlyArray(yield* Ref.get(messagesRef))
         const currentTokens = estimateConversationTokens(msgs)
         if (!shouldPrune(currentTokens, budget)) return msgs
         const result = yield* pruneMessages(msgs, {
@@ -121,10 +121,12 @@ export const ContextManagerLive = Layer.effect(
 
     const estimateTokens = (): Effect.Effect<number> =>
       Ref.get(messagesRef).pipe(
-        Effect.map((msgs) => estimateConversationTokens(msgs)),
+        Effect.map((msgs) =>
+          estimateConversationTokens(Chunk.toReadonlyArray(msgs)),
+        ),
       )
 
-    const clear = (): Effect.Effect<void> => Ref.set(messagesRef, [])
+    const clear = (): Effect.Effect<void> => Ref.set(messagesRef, Chunk.empty())
 
     return {
       addMessage,
