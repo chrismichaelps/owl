@@ -15,13 +15,13 @@
  * parseCommand('/edit "src/foo.ts" "old" "new"')
  * // → { name: "edit", args: ["src/foo.ts", "old", "new"], raw: "..." }
  */
-import { Effect } from "effect"
+import { Chunk, Effect, Option } from "effect"
 import { PARSER_CHARS, TUI_TRIGGERS } from "../core/constants/index.js"
 import { CommandParseError } from "../core/errors/index.js"
 import type { ParsedCommand } from "./types.js"
 
 interface TokenizeResult {
-  readonly tokens: readonly string[]
+  readonly tokens: Chunk.Chunk<string>
   readonly unterminatedQuote:
     | typeof PARSER_CHARS.DOUBLE_QUOTE
     | typeof PARSER_CHARS.SINGLE_QUOTE
@@ -30,7 +30,7 @@ interface TokenizeResult {
 
 /** Tokenize input respecting single/double-quoted spans */
 function tokenize(input: string): TokenizeResult {
-  const tokens: string[] = []
+  let tokens = Chunk.empty<string>()
   let current = ""
   let inQuote:
     | typeof PARSER_CHARS.DOUBLE_QUOTE
@@ -51,14 +51,14 @@ function tokenize(input: string): TokenizeResult {
       inQuote = ch
     } else if (ch === PARSER_CHARS.SPACE || ch === PARSER_CHARS.TAB) {
       if (current.length > 0) {
-        tokens.push(current)
+        tokens = Chunk.append(tokens, current)
         current = ""
       }
     } else {
       current += ch
     }
   }
-  if (current.length > 0) tokens.push(current)
+  if (current.length > 0) tokens = Chunk.append(tokens, current)
   return { tokens, unterminatedQuote: inQuote }
 }
 
@@ -95,7 +95,7 @@ export function parseCommand(
   }
 
   const tokens = tokenized.tokens
-  const name = tokens[0]
+  const name = Option.getOrUndefined(Chunk.head(tokens))
 
   if (name === undefined || name.length === 0) {
     return Effect.fail(
@@ -103,5 +103,9 @@ export function parseCommand(
     )
   }
 
-  return Effect.succeed({ name, args: tokens.slice(1), raw })
+  return Effect.succeed({
+    name,
+    args: Chunk.toReadonlyArray(Chunk.drop(tokens, 1)),
+    raw,
+  })
 }
