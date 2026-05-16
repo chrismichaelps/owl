@@ -1,5 +1,5 @@
 /** @Owl.Commands.Management.Help - Command registry help surface */
-import { Effect } from "effect"
+import { Chunk, Effect, Order } from "effect"
 import type { CommandRegistryService } from "../registry.js"
 import type { CommandHandler, CommandResult } from "../types.js"
 
@@ -8,10 +8,10 @@ const formatCommand = (command: {
   readonly description: string
 }): string => "/" + command.name + " - " + command.description
 
-interface ListedCommand {
-  readonly name: string
-  readonly description: string
-}
+const commandOrder = Order.mapInput(
+  Order.string,
+  (command: { readonly name: string }) => command.name,
+)
 
 /** @Owl.Commands.Management.Help.Factory - Create /help command handler */
 export function makeHelpCommand(
@@ -23,10 +23,12 @@ export function makeHelpCommand(
     execute: (): Effect.Effect<CommandResult> =>
       registry.list().pipe(
         Effect.map((commands) => {
-          const sorted: ListedCommand[] = Array.from(commands).sort((a, b) =>
-            a.name.localeCompare(b.name),
-          )
-          const output = sorted.map(formatCommand).join("\n")
+          const output = Chunk.toReadonlyArray(
+            Chunk.map(
+              Chunk.sort(Chunk.fromIterable(commands), commandOrder),
+              formatCommand,
+            ),
+          ).join("\n")
           return {
             output: output.length > 0 ? output : "No commands registered",
           } satisfies CommandResult
