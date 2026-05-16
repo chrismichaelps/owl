@@ -107,6 +107,13 @@ export interface ProviderRouterService {
    * @returns Array of provider IDs
    */
   readonly listProviders: () => Effect.Effect<readonly string[]>
+
+  /**
+   * List all registered provider model capabilities
+   *
+   * @returns Sorted array of ProviderCapability records
+   */
+  readonly listCapabilities: () => Effect.Effect<readonly ProviderCapability[]>
 }
 
 /** @Owl.Providers.Router.Adapter - Effect-TS service definition */
@@ -362,6 +369,19 @@ export const ProviderRouterLive = Layer.effect(
         Effect.map((registry) => Array.from(registry.keys())),
       )
 
+    const listCapabilities = (): Effect.Effect<readonly ProviderCapability[]> =>
+      Ref.get(registryRef).pipe(
+        Effect.map((registry) =>
+          Array.from(registry.values())
+            .flatMap((provider) => provider.capabilities)
+            .sort(
+              (left, right) =>
+                left.providerId.localeCompare(right.providerId) ||
+                left.modelId.localeCompare(right.modelId),
+            ),
+        ),
+      )
+
     const service: ProviderRouterService & {
       _register: (p: LLMProviderService) => void
     } = {
@@ -369,6 +389,7 @@ export const ProviderRouterLive = Layer.effect(
       complete,
       completeWithCallback,
       listProviders,
+      listCapabilities,
       _register: (provider) => {
         Effect.runSync(
           Ref.update(registryRef, (m) => {

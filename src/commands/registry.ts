@@ -27,6 +27,7 @@ import { RoleContext } from "../fmcf/roles/architect.js"
 import { HashRegistry } from "../fmcf/registry/index.js"
 import { HashRegistryLive } from "../fmcf/registry/index.js"
 import { RoutingPreferences } from "../providers/preferences/index.js"
+import { ProviderRouter } from "../providers/router/index.js"
 import { EditingPipeline } from "../editor/pipeline/index.js"
 import { RollbackSystem } from "../editor/rollback/index.js"
 import { makeAnalyzeCommand } from "./analysis/analyze.js"
@@ -57,6 +58,7 @@ import { makeInitCommand } from "./management/init.js"
 import { makeMcpCommand } from "./management/mcp.js"
 import { makeMemoryCommand } from "./management/memory.js"
 import { makeModelCommand } from "./management/model.js"
+import { makeProvidersCommand } from "./management/providers.js"
 import { makeRegistryCommand } from "./management/registry.js"
 import { makeRoleCommand } from "./management/role.js"
 import { makeStatusCommand } from "./management/status.js"
@@ -186,6 +188,7 @@ export const CommandRegistryLive = Layer.effect(
  * - SessionMemory (for memory/status commands)
  * - RoleContext (for role command)
  * - RoutingPreferences (for model command)
+ * - ProviderRouter (for provider inspection commands)
  *
  * Registers all commands on startup.
  */
@@ -202,6 +205,7 @@ export const makeCommandRegistryLive = (
   | RollbackSystem
   | EditingPipeline
   | RoutingPreferences
+  | ProviderRouter
 > =>
   Layer.effect(
     CommandRegistry,
@@ -216,6 +220,7 @@ export const makeCommandRegistryLive = (
       const fs = yield* FileSystem.FileSystem
       const roleCtx = yield* RoleContext
       const routingPreferences = yield* RoutingPreferences
+      const providerRouter = yield* ProviderRouter
 
       const mapRef = yield* Ref.make<Map<string, CommandHandler>>(new Map())
       const svc = buildRegistryService(mapRef)
@@ -259,6 +264,7 @@ export const makeCommandRegistryLive = (
         makeMcpCommand(),
         makeMemoryCommand(sessionMemory),
         makeModelCommand(routingPreferences),
+        makeProvidersCommand(providerRouter, routingPreferences),
       ]
 
       yield* Effect.forEach(handlers, svc.register, { discard: true })

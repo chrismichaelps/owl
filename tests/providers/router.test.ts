@@ -219,4 +219,24 @@ describe("ProviderRouter", () => {
     )
     expect(exit._tag).toBe("Failure")
   })
+
+  it("lists registered model capabilities deterministically", async () => {
+    const first = makeStubProvider("openai")
+    const second = makeStubProvider("anthropic")
+
+    const program = Effect.gen(function* () {
+      const router = yield* ProviderRouter
+      yield* registerProvider(router, first)
+      yield* registerProvider(router, second)
+      return yield* router.listCapabilities()
+    })
+
+    const capabilities = await Effect.runPromise(
+      program.pipe(Effect.provide(ProviderRouterLive)),
+    )
+    expect(capabilities.map((capability) => capability.providerId)).toEqual([
+      "anthropic",
+      "openai",
+    ])
+  })
 })

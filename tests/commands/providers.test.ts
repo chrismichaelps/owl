@@ -1,0 +1,79 @@
+/** @Owl.Tests.Commands.Providers - Provider capability command tests */
+import { describe, expect, it } from "vitest"
+import { Effect } from "effect"
+import {
+  makeProvidersCommand,
+  formatProviderCapability,
+} from "../../src/commands/management/providers.js"
+import {
+  RoutingPreferences,
+  RoutingPreferencesLive,
+} from "../../src/providers/preferences/index.js"
+import type { ProviderCapability } from "../../src/providers/types.js"
+import type { ProviderRouterService } from "../../src/providers/router/index.js"
+
+const CAPABILITY: ProviderCapability = {
+  providerId: "anthropic",
+  modelId: "claude-opus-4-5",
+  contextWindow: 200000,
+  maxOutputTokens: 8192,
+  inputCostPer1k: 0.015,
+  outputCostPer1k: 0.075,
+  supportsStreaming: true,
+  reasoningDepth: "high",
+  supportsFunctionCalling: true,
+  supportsVision: true,
+}
+
+const makeRouter = (
+  capabilities: readonly ProviderCapability[],
+): ProviderRouterService => ({
+  route: () => Effect.die("route not used in providers command"),
+  complete: () => Effect.die("complete not used in providers command"),
+  completeWithCallback: () =>
+    Effect.die("completeWithCallback not used in providers command"),
+  listProviders: () =>
+    Effect.succeed(capabilities.map((capability) => capability.providerId)),
+  listCapabilities: () => Effect.succeed(capabilities),
+})
+
+const run = <A, E>(eff: Effect.Effect<A, E, RoutingPreferences>) =>
+  Effect.runPromise(eff.pipe(Effect.provide(RoutingPreferencesLive)))
+
+describe("formatProviderCapability", () => {
+  it("renders provider, model, reasoning depth, context, and cost", () => {
+    const output = formatProviderCapability(CAPABILITY)
+    expect(output).toContain("anthropic/claude-opus-4-5")
+    expect(output).toContain("high reasoning")
+    expect(output).toContain("200000 ctx")
+    expect(output).toContain("per 1K")
+  })
+})
+
+describe("makeProvidersCommand", () => {
+  it("lists registered capabilities", async () => {
+    const output = await run(
+      Effect.gen(function* () {
+        const preferences = yield* RoutingPreferences
+        const command = makeProvidersCommand(makeRouter([CAPABILITY]), preferences)
+        const result = yield* command.execute([])
+        return result.output
+      }),
+    )
+    expect(output).toContain("Active provider: auto")
+    expect(output).toContain("Registered models:")
+    expect(output).toContain("claude-opus-4-5")
+  })
+
+  it("reports empty provider registration state", async () => {
+    const output = await run(
+      Effect.gen(function* () {
+        const preferences = yield* RoutingPreferences
+        const command = makeProvidersCommand(makeRouter([]), preferences)
+        const result = yield* command.execute([])
+        return result.output
+      }),
+    )
+    expect(output).toContain("No providers are registered.")
+  })
+})
