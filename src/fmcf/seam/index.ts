@@ -30,6 +30,7 @@ import { Context, Layer } from "effect"
 import {
   DEPTH_THRESHOLDS,
   SEAM_COLLAPSE_MONTHS,
+  SEAM_CAPACITIES,
 } from "../../core/constants/index.js"
 import type { SeamCapacity, DepthStatus } from "../../core/schema/index.js"
 
@@ -161,7 +162,7 @@ export const SeamAnalyzerLive = Layer.succeed(SeamAnalyzer, {
     capacity: SeamCapacity,
     lastReclassifiedAt: Date,
   ): boolean =>
-    capacity === "EXPLORATORY" &&
+    capacity === SEAM_CAPACITIES.EXPLORATORY &&
     monthsSince(lastReclassifiedAt) >= SEAM_COLLAPSE_MONTHS,
 
   analyzeSeam: (
@@ -173,7 +174,7 @@ export const SeamAnalyzerLive = Layer.succeed(SeamAnalyzer, {
     const depthScore = computeScore(metrics)
     const depthStatus = toDepthStatus(depthScore)
     const collapseEligible =
-      capacity === "EXPLORATORY" &&
+      capacity === SEAM_CAPACITIES.EXPLORATORY &&
       monthsSince(lastReclassifiedAt) >= SEAM_COLLAPSE_MONTHS
     return { seamId, depthScore, depthStatus, capacity, collapseEligible }
   },

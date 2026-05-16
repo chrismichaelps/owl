@@ -10,7 +10,11 @@
  * /model anthropic
  */
 import { Chunk, Effect, HashSet } from "effect"
-import { PROVIDER_IDS, PROVIDER_ID_SET } from "../../core/constants/index.js"
+import {
+  PROVIDER_IDS,
+  PROVIDER_ID_SET,
+  PROVIDER_AUTO,
+} from "../../core/constants/index.js"
 import { CommandParseError } from "../../core/errors/index.js"
 import type { ProviderId } from "../../core/schema/index.js"
 import type { RoutingPreferencesService } from "../../providers/preferences/index.js"
@@ -47,7 +51,7 @@ export function makeModelCommand(
           }
         }
 
-        if (requestedProvider === "auto") {
+        if (requestedProvider === PROVIDER_AUTO) {
           yield* routingPreferences.clearPreferredProvider()
           return {
             output: "Active provider: auto",

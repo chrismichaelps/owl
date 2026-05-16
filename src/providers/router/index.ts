@@ -43,6 +43,7 @@ import * as Stream from "effect/Stream"
 import {
   PROVIDER_STREAM_LOG,
   ROUTING_LIMITS,
+  STREAM_CHUNK_TYPES,
 } from "../../core/constants/index.js"
 import {
   ProviderStreamError,
@@ -157,7 +158,7 @@ const handleStreamChunk = (
   onChunk: (text: string) => void,
   onLog?: (msg: string) => void,
 ): Effect.Effect<void, ProviderStreamError> => {
-  if (chunk.type === "text" && chunk.content != null) {
+  if (chunk.type === STREAM_CHUNK_TYPES.TEXT && chunk.content != null) {
     const content = chunk.content
     return Ref.update(accumulatorRef, (state) =>
       appendTextChunk(state, content),
@@ -170,7 +171,7 @@ const handleStreamChunk = (
     )
   }
 
-  if (chunk.type === "usage" && chunk.usage != null) {
+  if (chunk.type === STREAM_CHUNK_TYPES.USAGE && chunk.usage != null) {
     const usage = chunk.usage
     return Ref.update(accumulatorRef, (state) => recordUsage(state, usage))
   }
@@ -294,11 +295,11 @@ export function formatStreamEventLog(chunk: StreamChunk): string | null {
       ? chunk.content.slice(0, PROVIDER_STREAM_LOG.PREVIEW_CHARS) + "…"
       : chunk.content
 
-  if (chunk.type === "thinking") {
+  if (chunk.type === STREAM_CHUNK_TYPES.THINKING) {
     return PROVIDER_STREAM_LOG.THINKING_PREFIX + ": " + preview
   }
 
-  if (chunk.type === "tool_use") {
+  if (chunk.type === STREAM_CHUNK_TYPES.TOOL_USE) {
     return PROVIDER_STREAM_LOG.TOOL_PREFIX + ": " + preview
   }
 

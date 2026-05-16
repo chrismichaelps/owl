@@ -172,6 +172,18 @@ export const PROVIDER_STREAM_LOG = {
   TOOL_PREFIX: "⚙ Tool",
 } as const
 
+/** @Owl.Core.Constants.StreamChunkTypes - Strict chunk type constants */
+export const STREAM_CHUNK_TYPES = {
+  TEXT: "text",
+  THINKING: "thinking",
+  TOOL_USE: "tool_use",
+  STOP: "stop",
+  USAGE: "usage",
+} as const
+
+/** @Owl.Core.Constants.ProviderAuto - Magic string replacement for auto routing */
+export const PROVIDER_AUTO = "auto"
+
 /** @Owl.Core.Constants.MCP - MCP configuration paths and naming */
 export const MCP_CONSTANTS = {
   CONFIG_DIR: ".owl",
@@ -232,12 +244,20 @@ export const SHARD_SPLIT_THRESHOLD = 0.15
 /** @Owl.Core.Constants.Collapse - Months before EXPLORATORY seam can be collapsed */
 export const SEAM_COLLAPSE_MONTHS = 6
 
-/** @Owl.Core.Constants.Capacity - Numeric scores for seam capacity levels */
+/** @Owl.Core.Constants.CapacityScores - Numeric scores for seam capacity levels */
 export const SEAM_CAPACITY_SCORES = {
   BACKBONE: 9,
   CRITICAL: 6,
   EXPLORATORY: 3,
   INTERNAL: 0,
+} as const
+
+/** @Owl.Core.Constants.Capacity - Literal string capacities */
+export const SEAM_CAPACITIES = {
+  BACKBONE: "BACKBONE",
+  CRITICAL: "CRITICAL",
+  EXPLORATORY: "EXPLORATORY",
+  INTERNAL: "INTERNAL",
 } as const
 
 /**
@@ -306,6 +326,15 @@ export const TUI_CONSTANTS = {
   TASK_LOG_PREVIEW_CHARS: 40,
   LOG_PREVIEW_CHARS: 60,
   ERROR_LOG_PREVIEW_CHARS: 55,
+} as const
+
+/** @Owl.Core.Constants.TUIStatus - Strict TUI status literal constants */
+export const AGENT_STATUS = {
+  IDLE: "idle",
+  ROUTING: "routing",
+  INFERRING: "inferring",
+  COMPLETE: "complete",
+  ERROR: "error",
 } as const
 
 /** @Owl.Core.Constants.TUIAnimation - Terminal animation timing and frames */

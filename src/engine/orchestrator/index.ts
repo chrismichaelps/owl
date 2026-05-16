@@ -25,7 +25,7 @@
  *   o.run({ id: "task-1", prompt: "Create a button", mode: "standard", createdAt: now })
  * )
  */
-import { Context, Effect, Layer } from "effect"
+import { Context, Effect, Layer, HashSet } from "effect"
 import { ContextManager } from "../context/index.js"
 import { buildFMCFSystemPrompt } from "../context/systemPrompt.js"
 import { loadProjectContext } from "../context/projectContext.js"
@@ -49,6 +49,7 @@ import {
   MODE_THINKING_BUDGETS,
   PROVIDER_TIMEOUTS,
   TOKEN_LIMITS,
+  THINKING_MODES,
 } from "../../core/constants/index.js"
 import { estimateConversationTokens } from "../../tokens/pruning/index.js"
 import { TokenBudget } from "../../tokens/budget/index.js"
@@ -182,7 +183,7 @@ export const makeOrchestratorLive = (projectRoot: string) =>
             taskId: task.id,
             mode: task.mode,
             estimatedInputTokens: estimatedTokens,
-            requiresReasoning: task.mode === "deep" || task.mode === "god",
+            requiresReasoning: HashSet.has(THINKING_MODES, task.mode),
             requiresVision: false,
             latencyBudgetMs: PROVIDER_TIMEOUTS.DEFAULT_MS,
             ...(preferredProvider !== undefined ? { preferredProvider } : {}),
