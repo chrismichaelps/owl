@@ -27,9 +27,9 @@
  *   r.complete(ctx, { taskId: "1", messages: [...], maxTokens: 8192, ... })
  * )
  */
-import { Chunk, Context, Effect, HashMap, Layer, Order, Ref } from "effect"
+import { Chunk, Context, Effect, Layer, Ref } from "effect"
 import { ROUTING_LIMITS } from "../../core/constants/index.js"
-import { providerCapabilities, sortCapabilities } from "./capabilities.js"
+import { providerCapabilities } from "./capabilities.js"
 import { rankProviders } from "./scoring.js"
 import {
   completeFromRankedProviders,
@@ -44,6 +44,12 @@ import {
   resolveParallelProviderLimit,
 } from "./parallel.js"
 import { makeNoProviderError, makeRoutingDecision } from "./selection.js"
+import {
+  listProviderCapabilities,
+  listProviderIds,
+  makeProviderRegistryRef,
+  registerProviderInRef,
+} from "./registry.js"
 import type { ProviderUnavailableError } from "../../core/errors/index.js"
 import type {
   LLMProviderService,
@@ -185,9 +191,7 @@ export const ProviderRouterLive = Layer.effect(
   ProviderRouter,
   Effect.gen(function* () {
     /** @Owl.Providers.Router.Registry - In-memory provider registry */
-    const registryRef = yield* Ref.make<
-      HashMap.HashMap<string, LLMProviderService>
-    >(HashMap.empty())
+    const registryRef = yield* makeProviderRegistryRef()
 
     const route = (
       ctx: RoutingContext,
@@ -297,27 +301,6 @@ export const ProviderRouterLive = Layer.effect(
         )
       })
 
-    const listProviders = (): Effect.Effect<readonly string[]> =>
-      Ref.get(registryRef).pipe(
-        Effect.map((registry) =>
-          Chunk.toReadonlyArray(
-            Chunk.sort(
-              Chunk.fromIterable(HashMap.keys(registry)),
-              Order.string,
-            ),
-          ),
-        ),
-      )
-
-    const listCapabilities = (): Effect.Effect<readonly ProviderCapability[]> =>
-      Ref.get(registryRef).pipe(
-        Effect.map((registry) =>
-          Chunk.toReadonlyArray(
-            sortCapabilities(providerCapabilities(registry)),
-          ),
-        ),
-      )
-
     const service: ProviderRouterService & {
       _register: (p: LLMProviderService) => void
     } = {
@@ -325,14 +308,10 @@ export const ProviderRouterLive = Layer.effect(
       complete,
       completeParallel,
       completeWithCallback,
-      listProviders,
-      listCapabilities,
+      listProviders: () => listProviderIds(registryRef),
+      listCapabilities: () => listProviderCapabilities(registryRef),
       _register: (provider) => {
-        Effect.runSync(
-          Ref.update(registryRef, (m) => {
-            return HashMap.set(m, provider.id, provider)
-          }),
-        )
+        registerProviderInRef(registryRef, provider)
       },
     }
 
