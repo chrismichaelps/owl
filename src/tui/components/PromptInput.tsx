@@ -15,15 +15,9 @@ import {
 import { detectSlashMode, resolveModeColor } from "../commands/modes.js"
 import type { Mode } from "../../core/schema/index.js"
 import { usePromptHistory } from "../hooks/usePromptHistory.js"
+import { useFileMentions } from "../hooks/useFileMentions.js"
 import type { PaletteCommand } from "../commands/fuzzy.js"
 import { FileMentionPalette } from "./FileMentionPalette.js"
-import {
-  listProjectFiles,
-  filterFiles,
-  extractAtQuery,
-  completeAtMention,
-} from "../mentions/files.js"
-import type { ProjectFile } from "../mentions/files.js"
 
 interface PromptInputProps {
   readonly mode: Mode
@@ -67,43 +61,7 @@ export const PromptInput: React.FC<PromptInputProps> = memo(
     const commandsRef = useRef(commands)
     commandsRef.current = commands
 
-    // @file mention autocomplete state
-    const allFilesRef = useRef<readonly ProjectFile[]>([])
-    const [mentionFiles, setMentionFiles] = useState<readonly ProjectFile[]>([])
-    const [mentionIndex, setMentionIndex] = useState(0)
-    const mentionIndexRef = useRef(0)
-    const mentionFilesRef = useRef<readonly ProjectFile[]>([])
-    const atQuery = extractAtQuery(value)
-    const showMentionPalette =
-      atQuery !== null && !value.startsWith(TUI_TRIGGERS.PALETTE)
-
-    // Load project file list once on mount
-    useEffect(() => {
-      void listProjectFiles(projectRoot ?? process.cwd()).then((files) => {
-        allFilesRef.current = files
-      })
-    }, [projectRoot])
-
-    // Recompute filtered file list whenever the @query changes
-    useEffect(() => {
-      if (atQuery === null) {
-        setMentionFiles([])
-        mentionFilesRef.current = []
-        setMentionIndex(0)
-        mentionIndexRef.current = 0
-        return
-      }
-      const filtered = filterFiles(allFilesRef.current, atQuery)
-      setMentionFiles(filtered)
-      mentionFilesRef.current = filtered
-      setMentionIndex(0)
-      mentionIndexRef.current = 0
-    }, [atQuery])
-
-    const setMentionIdx = useCallback((n: number) => {
-      mentionIndexRef.current = n
-      setMentionIndex(n)
-    }, [])
+    const mentions = useFileMentions(value, projectRoot)
 
     const setValue = useCallback((next: string) => {
       valueRef.current = next
@@ -141,8 +99,7 @@ export const PromptInput: React.FC<PromptInputProps> = memo(
         // Read from refs — never from stale state closure
         const cur = valueRef.current
         const curIdx = paletteIndexRef.current
-        const atQ = extractAtQuery(cur)
-        const inMention = atQ !== null && !cur.startsWith(TUI_TRIGGERS.PALETTE)
+        const inMention = mentions.isMentionInput(cur)
 
         if (input === TUI_TRIGGERS.HELP && cur.length === 0) {
           onShortcuts()
@@ -151,21 +108,18 @@ export const PromptInput: React.FC<PromptInputProps> = memo(
 
         // @file mention palette navigation takes priority
         if (inMention) {
-          const files = mentionFilesRef.current
           if (key.upArrow) {
-            setMentionIdx(Math.max(0, mentionIndexRef.current - 1))
+            mentions.moveMentionIndex(-1)
             return
           }
           if (key.downArrow) {
-            setMentionIdx(
-              Math.min(files.length - 1, mentionIndexRef.current + 1),
-            )
+            mentions.moveMentionIndex(1)
             return
           }
           if (key.tab || key.return) {
-            const selected = files[mentionIndexRef.current]
+            const selected = mentions.selectedFile()
             if (selected !== undefined) {
-              updateValue(completeAtMention(cur, selected.path) + " ")
+              updateValue(mentions.completeMention(cur, selected.path) + " ")
               return
             }
           }
@@ -313,11 +267,11 @@ export const PromptInput: React.FC<PromptInputProps> = memo(
 
     return (
       <Box flexDirection="column">
-        {showMentionPalette && (
+        {mentions.showMentionPalette && (
           <FileMentionPalette
-            files={mentionFiles}
-            selectedIndex={mentionIndex}
-            query={atQuery}
+            files={mentions.mentionFiles}
+            selectedIndex={mentions.mentionIndex}
+            query={mentions.atQuery ?? ""}
           />
         )}
         <Text color="gray" dimColor>
