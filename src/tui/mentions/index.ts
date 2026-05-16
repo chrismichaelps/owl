@@ -18,10 +18,11 @@
  * expandMentions("What's in @screenshot.png?", "/project")
  * // → { expanded: "<owl:image path=\"screenshot.png\" mime=\"image/png\" data=\"...\"/>\n\nWhat's in @screenshot.png?", files: ["screenshot.png"], errors: [] }
  */
-import { Chunk, HashMap, HashSet, Option } from "effect"
+import { Chunk, Effect, HashMap, HashSet, Option } from "effect"
 import { readFile } from "node:fs/promises"
-import { resolve, join, extname } from "node:path"
+import { extname } from "node:path"
 import { MENTION_CONSTANTS } from "../../core/constants/index.js"
+import { resolveProjectPath } from "../../core/path/index.js"
 
 /**
  * Image extensions that trigger vision encoding.
@@ -84,7 +85,15 @@ export async function expandMentions(
     if (HashSet.has(seen, rawPath)) continue
     seen = HashSet.add(seen, rawPath)
 
-    const absPath = resolve(join(projectRoot, rawPath))
+    const resolved = await Effect.runPromiseExit(
+      resolveProjectPath(projectRoot, rawPath, "mention-expansion"),
+    )
+    if (resolved._tag === "Failure") {
+      errors = Chunk.append(errors, `${rawPath}: path escapes project root`)
+      continue
+    }
+
+    const absPath = resolved.value
     const ext = extname(rawPath).toLowerCase()
     const isImage = HashSet.has(IMAGE_EXTENSIONS, ext)
 
