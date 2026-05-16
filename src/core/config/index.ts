@@ -21,7 +21,7 @@
  * const config = yield* OWL_CONFIG
  * const client = new Anthropic({ apiKey: config.anthropicApiKey })
  */
-import { Config, Context, Layer, Effect } from "effect"
+import { Config, Context, Layer, Effect, Option } from "effect"
 import { CONFIG_CONSTANTS } from "../constants/index.js"
 import type { Mode } from "../schema/index.js"
 
@@ -76,11 +76,10 @@ const owlConfigEffect = Effect.gen(function* () {
   )
 
   return {
-    anthropicApiKey:
-      anthropicApiKey._tag === "Some" ? anthropicApiKey.value : undefined,
-    openaiApiKey: openaiApiKey._tag === "Some" ? openaiApiKey.value : undefined,
-    googleApiKey: googleApiKey._tag === "Some" ? googleApiKey.value : undefined,
-    xaiApiKey: xaiApiKey._tag === "Some" ? xaiApiKey.value : undefined,
+    anthropicApiKey: Option.getOrUndefined(anthropicApiKey),
+    openaiApiKey: Option.getOrUndefined(openaiApiKey),
+    googleApiKey: Option.getOrUndefined(googleApiKey),
+    xaiApiKey: Option.getOrUndefined(xaiApiKey),
     ollamaBaseUrl,
     defaultMode: defaultMode as Mode,
     logLevel,
