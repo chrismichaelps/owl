@@ -19,203 +19,20 @@
  */
 import React, { memo } from "react"
 import { Box, Text } from "ink"
-import { Data } from "effect"
+import { Chunk } from "effect"
+import { MARKDOWN_BLOCK_TYPES } from "../../core/constants/index.js"
 import {
-  EDITOR_CONSTANTS,
-  MARKDOWN_BLOCK_TYPES,
-  MARKDOWN_CONSTANTS,
-} from "../../core/constants/index.js"
+  parseMarkdownBlocks,
+  resolveCodeLineColor,
+  resolveSideBySideDiffSegments,
+  type MarkdownBlock,
+} from "../markdown/index.js"
+
+export { resolveCodeLineColor, resolveSideBySideDiffSegments }
 
 interface MarkdownTextProps {
   readonly content: string
   readonly dimColor?: boolean
-}
-
-type CodeLineColor = "green" | "red" | "cyan" | "gray" | "white" | "yellow"
-
-type SideBySideDiffSegments = Readonly<{
-  readonly left: string
-  readonly leftColor: CodeLineColor
-  readonly separator: string
-  readonly right: string
-  readonly rightColor: CodeLineColor
-}>
-
-interface Block {
-  type:
-    | (typeof MARKDOWN_BLOCK_TYPES)[keyof typeof MARKDOWN_BLOCK_TYPES]
-    | "heading"
-    | "rule"
-    | "blank"
-  content: string
-  lang?: string
-  level?: number
-  index?: number
-}
-
-/** @Owl.TUI.Components.MarkdownText.CodeColor - Stable code block line coloring */
-export function resolveCodeLineColor(
-  lang: string | undefined,
-  line: string,
-): CodeLineColor {
-  if (lang === "text") {
-    if (line.startsWith("Side-by-side diff:")) {
-      return "cyan"
-    }
-    if (line.startsWith("@@")) {
-      return "cyan"
-    }
-    if (line.includes(EDITOR_CONSTANTS.DIFF_SIDE_BY_SIDE_SEPARATOR)) {
-      return "white"
-    }
-    if (/^-{3,}/.test(line)) {
-      return "gray"
-    }
-  }
-
-  if (lang !== "diff") {
-    return "green"
-  }
-
-  if (line.startsWith("@@")) {
-    return "cyan"
-  }
-  if (line.startsWith("+++") || line.startsWith("---")) {
-    return "gray"
-  }
-  if (line.startsWith("+")) {
-    return "green"
-  }
-  if (line.startsWith("-")) {
-    return "red"
-  }
-  return "white"
-}
-
-const resolveSideColor = (segment: string): CodeLineColor => {
-  if (segment.startsWith("- ")) return "red"
-  if (segment.startsWith("+ ")) return "green"
-  return "white"
-}
-
-/** @Owl.TUI.Components.MarkdownText.SideBySide - Split side-by-side diff rows */
-export function resolveSideBySideDiffSegments(
-  line: string,
-): SideBySideDiffSegments | null {
-  const separatorIndex = line.indexOf(
-    EDITOR_CONSTANTS.DIFF_SIDE_BY_SIDE_SEPARATOR,
-  )
-  if (separatorIndex < 0) return null
-
-  const left = line.slice(0, separatorIndex)
-  const right = line.slice(
-    separatorIndex + EDITOR_CONSTANTS.DIFF_SIDE_BY_SIDE_SEPARATOR.length,
-  )
-  return Data.struct({
-    left,
-    leftColor: resolveSideColor(left),
-    separator: EDITOR_CONSTANTS.DIFF_SIDE_BY_SIDE_SEPARATOR,
-    right,
-    rightColor: resolveSideColor(right),
-  })
-}
-
-/** Split raw markdown into block-level segments */
-function parseBlocks(raw: string): Block[] {
-  const lines = raw.split("\n")
-  const blocks: Block[] = []
-  let i = 0
-
-  while (i < lines.length) {
-    const line = lines[i] ?? ""
-
-    // Fenced code block
-    if (/^```|^~~~/.test(line)) {
-      const fence = line.slice(0, MARKDOWN_CONSTANTS.CODE_FENCE_LENGTH)
-      const lang = line.slice(fence.length).trim() || undefined
-      const codeLines: string[] = []
-      i++
-      while (i < lines.length && !lines[i]?.startsWith(fence)) {
-        codeLines.push(lines[i] ?? "")
-        i++
-      }
-      i++ // skip closing fence
-      blocks.push({
-        type: MARKDOWN_BLOCK_TYPES.CODE,
-        content: codeLines.join("\n"),
-        ...(lang !== undefined ? { lang } : {}),
-      })
-      continue
-    }
-
-    // Horizontal rule
-    if (/^[-*_]{3,}\s*$/.test(line)) {
-      blocks.push({ type: "rule", content: "" })
-      i++
-      continue
-    }
-
-    // Heading
-    const headingMatch = /^(#{1,3})\s+(.+)/.exec(line)
-    if (headingMatch != null) {
-      blocks.push({
-        type: "heading",
-        content: headingMatch[2] ?? "",
-        level: (headingMatch[1] ?? "").length,
-      })
-      i++
-      continue
-    }
-
-    // Bullet list item
-    const bulletMatch = /^(\s*)[-*+]\s+(.+)/.exec(line)
-    if (bulletMatch != null) {
-      blocks.push({
-        type: MARKDOWN_BLOCK_TYPES.BULLET,
-        content: bulletMatch[2] ?? "",
-      })
-      i++
-      continue
-    }
-
-    // Numbered list item
-    const numberedMatch = /^(\s*)\d+\.\s+(.+)/.exec(line)
-    if (numberedMatch != null) {
-      blocks.push({
-        type: MARKDOWN_BLOCK_TYPES.NUMBERED,
-        content: numberedMatch[2] ?? "",
-      })
-      i++
-      continue
-    }
-
-    // Blank line
-    if (line.trim().length === 0) {
-      blocks.push({ type: "blank", content: "" })
-      i++
-      continue
-    }
-
-    // Text — collect contiguous non-special lines into one paragraph
-    const textLines: string[] = [line]
-    i++
-    while (
-      i < lines.length &&
-      lines[i]?.trim().length !== 0 &&
-      !/^```|^~~~|^#{1,3}\s|^[-*+]\s|^\d+\.\s|^[-*_]{3,}\s*$/.test(
-        lines[i] ?? "",
-      )
-    ) {
-      textLines.push(lines[i] ?? "")
-      i++
-    }
-    blocks.push({
-      type: MARKDOWN_BLOCK_TYPES.TEXT,
-      content: textLines.join(" "),
-    })
-  }
-
-  return blocks
 }
 
 /** Render inline markdown (bold, inline code) inside a Text span */
@@ -306,7 +123,7 @@ function BlockRenderer({
   block,
   dimColor,
 }: {
-  block: Block
+  block: MarkdownBlock
   dimColor?: boolean
 }): React.ReactElement | null {
   switch (block.type) {
@@ -324,14 +141,19 @@ function BlockRenderer({
               {block.lang}
             </Text>
           )}
-          {block.content.split("\n").map((line, index) => (
-            <CodeLineText
-              key={index}
-              lang={block.lang}
-              line={line}
-              dimColor={dimColor ?? false}
-            />
-          ))}
+          {Chunk.toReadonlyArray(
+            Chunk.map(
+              Chunk.fromIterable(block.content.split("\n")),
+              (line, index) => (
+                <CodeLineText
+                  key={index}
+                  lang={block.lang}
+                  line={line}
+                  dimColor={dimColor ?? false}
+                />
+              ),
+            ),
+          )}
         </Box>
       )
 
@@ -397,28 +219,34 @@ function BlockRenderer({
 /** @Owl.TUI.Components.MarkdownText.Component - Root markdown renderer */
 export const MarkdownText: React.FC<MarkdownTextProps> = memo(
   ({ content, dimColor }) => {
-    const blocks = parseBlocks(content)
+    const blocks = parseMarkdownBlocks(content)
     let numberedIndex = 0
 
     return (
       <Box flexDirection="column" gap={0}>
-        {blocks.map((block, idx) => {
-          if (block.type === MARKDOWN_BLOCK_TYPES.NUMBERED) {
-            const b = { ...block, index: numberedIndex++ }
-            return (
-              <BlockRenderer key={idx} block={b} dimColor={dimColor ?? false} />
+        {Chunk.toReadonlyArray(
+          Chunk.map(blocks, (block, idx) => {
+            if (block.type === MARKDOWN_BLOCK_TYPES.NUMBERED) {
+              const b = { ...block, index: numberedIndex++ }
+              return (
+                <BlockRenderer
+                  key={idx}
+                  block={b}
+                  dimColor={dimColor ?? false}
+                />
+              )
+            }
+            numberedIndex = 0
+            const rendered = (
+              <BlockRenderer
+                key={idx}
+                block={block}
+                dimColor={dimColor ?? false}
+              />
             )
-          }
-          numberedIndex = 0
-          const rendered = (
-            <BlockRenderer
-              key={idx}
-              block={block}
-              dimColor={dimColor ?? false}
-            />
-          )
-          return rendered
-        })}
+            return rendered
+          }),
+        )}
       </Box>
     )
   },
