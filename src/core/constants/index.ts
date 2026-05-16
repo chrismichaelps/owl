@@ -86,6 +86,13 @@ export const PROVIDER_CONSTANTS = {
   OLLAMA_STREAM_DELIMITER: "\n",
 } as const
 
+/** @Owl.Core.Constants.ProviderStreamLog - Stream event log formatting */
+export const PROVIDER_STREAM_LOG = {
+  PREVIEW_CHARS: 80,
+  THINKING_PREFIX: "◌ Thinking",
+  TOOL_PREFIX: "⚙ Tool",
+} as const
+
 /** @Owl.Core.Constants.MCP - MCP configuration paths and naming */
 export const MCP_CONSTANTS = {
   CONFIG_DIR: ".owl",

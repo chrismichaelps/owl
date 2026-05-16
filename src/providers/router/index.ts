@@ -29,7 +29,10 @@
  */
 import { Context, Effect, Layer, Ref } from "effect"
 import * as Stream from "effect/Stream"
-import { ROUTING_LIMITS } from "../../core/constants/index.js"
+import {
+  PROVIDER_STREAM_LOG,
+  ROUTING_LIMITS,
+} from "../../core/constants/index.js"
 import { ProviderUnavailableError } from "../../core/errors/index.js"
 import { estimateCapabilityCostUsd } from "../cost.js"
 import { rankProviders, scoreProvider } from "./scoring.js"
@@ -39,6 +42,7 @@ import type {
   RoutingContext,
   RoutingDecision,
   StreamingCallbackResult,
+  StreamChunk,
 } from "../types.js"
 import type {
   InferenceRequest,
@@ -141,6 +145,28 @@ export const registerProvider = (
       router as unknown as { _register: (p: LLMProviderService) => void }
     )._register(provider)
   })
+
+/** @Owl.Providers.Router.StreamLog - Formats non-text stream events for TUI logs */
+export function formatStreamEventLog(chunk: StreamChunk): string | null {
+  if (chunk.content == null) {
+    return null
+  }
+
+  const preview =
+    chunk.content.length > PROVIDER_STREAM_LOG.PREVIEW_CHARS
+      ? chunk.content.slice(0, PROVIDER_STREAM_LOG.PREVIEW_CHARS) + "…"
+      : chunk.content
+
+  if (chunk.type === "thinking") {
+    return PROVIDER_STREAM_LOG.THINKING_PREFIX + ": " + preview
+  }
+
+  if (chunk.type === "tool_use") {
+    return PROVIDER_STREAM_LOG.TOOL_PREFIX + ": " + preview
+  }
+
+  return null
+}
 
 /**
  * @Owl.Providers.Router.Implementation - BACKBONE seam logic
@@ -322,17 +348,16 @@ export const ProviderRouterLive = Layer.effect(
                   chunks.push(chunk.content)
                   emittedChunks += 1
                   onChunk(chunk.content)
-                } else if (
-                  chunk.type === "tool_use" &&
-                  chunk.content != null &&
-                  onLog != null
-                ) {
-                  onLog(`⚙ Tool: ${chunk.content}`)
                 } else if (chunk.type === "usage" && chunk.usage != null) {
                   inputTokens = chunk.usage.inputTokens
                   outputTokens = chunk.usage.outputTokens
                   cacheReadTokens = chunk.usage.cacheReadTokens
                   cacheWriteTokens = chunk.usage.cacheWriteTokens
+                } else if (onLog != null) {
+                  const logMessage = formatStreamEventLog(chunk)
+                  if (logMessage !== null) {
+                    onLog(logMessage)
+                  }
                 }
               }),
           ).pipe(Effect.either)

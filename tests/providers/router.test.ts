@@ -5,13 +5,17 @@ import * as Stream from "effect/Stream"
 import {
   ProviderRouter,
   ProviderRouterLive,
+  formatStreamEventLog,
   registerProvider,
 } from "../../src/providers/router/index.js"
 import {
   ProviderError,
   ProviderStreamError,
 } from "../../src/core/errors/index.js"
-import type { LLMProviderService } from "../../src/providers/types.js"
+import type {
+  LLMProviderService,
+  StreamChunk,
+} from "../../src/providers/types.js"
 import type {
   InferenceRequest,
   ProviderId,
@@ -88,6 +92,39 @@ const makeFailingProvider = (id: ProviderId): LLMProviderService => ({
         provider: id,
         cause: `${id} stream failed`,
       }),
+    ),
+})
+
+const makeObservableProvider = (id: ProviderId): LLMProviderService => ({
+  ...makeStubProvider(id),
+  stream: () =>
+    Stream.make<StreamChunk>(
+      {
+        type: "thinking",
+        content: "checking context",
+        index: 0,
+      },
+      {
+        type: "tool_use",
+        content: "filesystem__read_file",
+        index: 1,
+      },
+      {
+        type: "text",
+        content: "done",
+        index: 2,
+      },
+      {
+        type: "usage",
+        index: 3,
+        usage: {
+          inputTokens: 100,
+          outputTokens: 50,
+          cacheReadTokens: 0,
+          cacheWriteTokens: 0,
+          estimatedCostUsd: 0,
+        },
+      },
     ),
 })
 
@@ -201,6 +238,51 @@ describe("ProviderRouter", () => {
     expect(chunks).toEqual(["stream from openai"])
   })
 
+  it("completeWithCallback forwards thinking and tool events to logs", async () => {
+    const provider = makeObservableProvider("anthropic")
+    const logs: string[] = []
+
+    const program = Effect.gen(function* () {
+      const router = yield* ProviderRouter
+      yield* registerProvider(router, provider)
+      return yield* router.completeWithCallback(
+        {
+          taskId: "t-stream-observable",
+          mode: "standard",
+          estimatedInputTokens: 1000,
+          requiresReasoning: false,
+          requiresVision: false,
+          latencyBudgetMs: 30000,
+        },
+        {
+          taskId: "t-stream-observable",
+          messages: [
+            {
+              role: "user",
+              content: "hello",
+              timestamp: new Date().toISOString(),
+            },
+          ],
+          maxTokens: 1024,
+          stream: true,
+        },
+        () => undefined,
+        (message) => {
+          logs.push(message)
+        },
+      )
+    })
+
+    const result = await Effect.runPromise(
+      program.pipe(Effect.provide(ProviderRouterLive)),
+    )
+    expect(result.content).toBe("done")
+    expect(logs).toEqual([
+      "◌ Thinking: checking context",
+      "⚙ Tool: filesystem__read_file",
+    ])
+  })
+
   it("fails with ProviderUnavailableError when no providers registered", async () => {
     const program = Effect.gen(function* () {
       const router = yield* ProviderRouter
@@ -238,5 +320,22 @@ describe("ProviderRouter", () => {
       "anthropic",
       "openai",
     ])
+  })
+})
+
+describe("formatStreamEventLog", () => {
+  it("formats thinking chunks with bounded previews", () => {
+    const message = formatStreamEventLog({
+      type: "thinking",
+      content: "a".repeat(100),
+      index: 0,
+    })
+    expect(message).toBe("◌ Thinking: " + "a".repeat(80) + "…")
+  })
+
+  it("ignores text chunks because they stream to the output panel", () => {
+    expect(
+      formatStreamEventLog({ type: "text", content: "hello", index: 0 }),
+    ).toBeNull()
   })
 })
