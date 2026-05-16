@@ -1,6 +1,6 @@
 /** @Owl.Tests.Commands.Edit - Editing command mutation ID tests */
 import { describe, expect, it } from "vitest"
-import { Chunk, Effect, Option } from "effect"
+import { Chunk, Effect, Exit, Option } from "effect"
 import { makeApplyCommand } from "../../src/commands/editing/apply.js"
 import {
   formatEditOutput,
@@ -53,6 +53,30 @@ const makePipeline = (): EditingPipelineService => ({
     Effect.succeed({
       ...PIPELINE_RESULT,
       mutationId: input.mutationId,
+      results: Chunk.toReadonlyArray(
+        Chunk.map(Chunk.fromIterable(input.targets), (target) => ({
+          file: target.file,
+          oldContent: target.oldString + "\n",
+          newContent: target.newString + "\n",
+          diff: {
+            file: target.file,
+            hunks: [
+              {
+                oldStart: 1,
+                oldLines: 1,
+                newStart: 1,
+                newLines: 1,
+                lines: ["-" + target.oldString, "+" + target.newString],
+              },
+            ],
+            linesAdded: 1,
+            linesRemoved: 1,
+            totalOldLines: 1,
+            changePercent: 0.1,
+            isShardSplit: false,
+          },
+        })),
+      ),
     }),
 })
 
@@ -188,6 +212,64 @@ describe("makeApplyCommand", () => {
     expect(output).toContain("Applied pending mutations:")
     expect(output).toContain("edit-one")
     expect(output).toContain("edit-two")
+  })
+
+  it("applies selected files and keeps the rest pending", async () => {
+    const output = await Effect.runPromise(
+      Effect.gen(function* () {
+        const pending = yield* PendingMutationStore
+        yield* pending.put("edit-multi", [
+          {
+            file: "src/a.ts",
+            oldString: "const a = 1",
+            newString: "const a = 2",
+          },
+          {
+            file: "src/b.ts",
+            oldString: "const b = 1",
+            newString: "const b = 2",
+          },
+        ])
+        const command = makeApplyCommand(makePipeline(), pending, "/project")
+        const result = yield* command.execute(["edit-multi", "src/a.ts"])
+        const remaining = yield* pending.get("edit-multi")
+
+        expect(Option.isSome(remaining)).toBe(true)
+        if (Option.isSome(remaining)) {
+          expect(Chunk.toReadonlyArray(remaining.value.targets)).toEqual([
+            {
+              file: "src/b.ts",
+              oldString: "const b = 1",
+              newString: "const b = 2",
+            },
+          ])
+        }
+        return result.output
+      }).pipe(Effect.provide(PendingMutationStoreLive)),
+    )
+
+    expect(output).toContain("Applied edit-multi")
+    expect(output).toContain("src/a.ts")
+    expect(output).toContain("remaining: src/b.ts")
+  })
+
+  it("rejects selected files that are not part of the pending mutation", async () => {
+    const exit = await Effect.runPromiseExit(
+      Effect.gen(function* () {
+        const pending = yield* PendingMutationStore
+        yield* pending.put("edit-multi", [
+          {
+            file: "src/a.ts",
+            oldString: "const a = 1",
+            newString: "const a = 2",
+          },
+        ])
+        const command = makeApplyCommand(makePipeline(), pending, "/project")
+        return yield* command.execute(["edit-multi", "src/missing.ts"])
+      }).pipe(Effect.provide(PendingMutationStoreLive)),
+    )
+
+    expect(Exit.isFailure(exit)).toBe(true)
   })
 })
 

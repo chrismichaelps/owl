@@ -1,5 +1,5 @@
 /** @Owl.Commands.Editing.Apply - Apply previewed Mutation proposals */
-import { Chunk, Effect, Option } from "effect"
+import { Chunk, Effect, HashSet, Option } from "effect"
 import { COMMAND_CONSTANTS } from "../../core/constants/index.js"
 import { CommandParseError } from "../../core/errors/index.js"
 import type {
@@ -19,6 +19,66 @@ const formatPendingMutation = (mutation: PendingMutation): string => {
     mutation.createdAt +
     ")"
   )
+}
+
+const selectTargets = (
+  mutation: PendingMutation,
+  selectedFiles: Chunk.Chunk<string>,
+): Effect.Effect<
+  {
+    readonly targetsToApply: typeof mutation.targets
+    readonly remainingTargets: typeof mutation.targets
+    readonly remainingPreviews: typeof mutation.previews
+  },
+  CommandParseError
+> => {
+  if (Chunk.isEmpty(selectedFiles)) {
+    return Effect.succeed({
+      targetsToApply: mutation.targets,
+      remainingTargets: Chunk.empty(),
+      remainingPreviews: Chunk.empty(),
+    })
+  }
+
+  const selectedSet = HashSet.fromIterable(selectedFiles)
+  const targetFileSet = HashSet.fromIterable(
+    Chunk.map(mutation.targets, (target) => target.file),
+  )
+  const unknownFiles = Chunk.filter(
+    selectedFiles,
+    (file) => !HashSet.has(targetFileSet, file),
+  )
+
+  if (!Chunk.isEmpty(unknownFiles)) {
+    return Effect.fail(
+      new CommandParseError({
+        input: "/apply " + mutation.mutationId,
+        reason:
+          "Unknown file(s) for pending mutation: " +
+          Chunk.toReadonlyArray(unknownFiles).join(", "),
+      }),
+    )
+  }
+
+  const targetsToApply = Chunk.filter(mutation.targets, (target) =>
+    HashSet.has(selectedSet, target.file),
+  )
+  const remainingTargets = Chunk.filter(
+    mutation.targets,
+    (target) => !HashSet.has(selectedSet, target.file),
+  )
+  const remainingFileSet = HashSet.fromIterable(
+    Chunk.map(remainingTargets, (target) => target.file),
+  )
+  const remainingPreviews = Chunk.filter(mutation.previews, (preview) =>
+    HashSet.has(remainingFileSet, preview.file),
+  )
+
+  return Effect.succeed({
+    targetsToApply,
+    remainingTargets,
+    remainingPreviews,
+  })
 }
 
 /**
@@ -54,7 +114,7 @@ export function makeApplyCommand(
         )
       }
 
-      const applyOne = (id: string) =>
+      const applyOne = (id: string, selectedFiles = Chunk.empty<string>()) =>
         Effect.gen(function* () {
           const mutationOpt = yield* pending.get(id)
           if (Option.isNone(mutationOpt)) {
@@ -67,15 +127,44 @@ export function makeApplyCommand(
           }
 
           const mutation = mutationOpt.value
+          const { targetsToApply, remainingTargets, remainingPreviews } =
+            yield* selectTargets(mutation, selectedFiles)
           const result = yield* pipeline.execute({
             mutationId: mutation.mutationId,
-            targets: Chunk.toReadonlyArray(mutation.targets),
+            targets: Chunk.toReadonlyArray(targetsToApply),
             projectRoot,
             autoApprove: true,
           })
-          yield* pending.remove(id)
 
-          return id + " across " + String(result.results.length) + " file(s)"
+          if (Chunk.isEmpty(remainingTargets)) {
+            yield* pending.remove(id)
+          } else {
+            yield* pending.put(
+              id,
+              Chunk.toReadonlyArray(remainingTargets),
+              Chunk.toReadonlyArray(remainingPreviews),
+            )
+          }
+
+          const appliedFiles = Chunk.map(
+            targetsToApply,
+            (target) => target.file,
+          )
+          const remainingFiles = Chunk.map(
+            remainingTargets,
+            (target) => target.file,
+          )
+          return (
+            id +
+            " across " +
+            String(result.results.length) +
+            " file(s): " +
+            Chunk.toReadonlyArray(appliedFiles).join(", ") +
+            (Chunk.isEmpty(remainingFiles)
+              ? ""
+              : " | remaining: " +
+                Chunk.toReadonlyArray(remainingFiles).join(", "))
+          )
         })
 
       return Effect.gen(function* () {
@@ -96,7 +185,10 @@ export function makeApplyCommand(
           }
         }
 
-        const applied = yield* applyOne(mutationId)
+        const applied = yield* applyOne(
+          mutationId,
+          Chunk.fromIterable(args.slice(1)),
+        )
 
         return {
           output:
