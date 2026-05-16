@@ -27,31 +27,24 @@
  *   r.complete(ctx, { taskId: "1", messages: [...], maxTokens: 8192, ... })
  * )
  */
-import {
-  Chunk,
-  Context,
-  Effect,
-  HashMap,
-  HashSet,
-  Layer,
-  Option,
-  Order,
-  Ref,
-  Either,
-} from "effect"
-import * as Stream from "effect/Stream"
+import { Chunk, Context, Effect, HashMap, Layer, Order, Ref } from "effect"
 import { ROUTING_LIMITS } from "../../core/constants/index.js"
-import { ProviderUnavailableError } from "../../core/errors/index.js"
-import { estimateCapabilityCostUsd } from "../cost.js"
 import { providerCapabilities, sortCapabilities } from "./capabilities.js"
-import { emptyStreamAccumulator, handleStreamChunk } from "./streaming.js"
-import { rankProviders, scoreProvider } from "./scoring.js"
+import { rankProviders } from "./scoring.js"
+import {
+  completeFromRankedProviders,
+  failLast,
+  missingProvider,
+  streamFromRankedProviders,
+} from "./execution.js"
 import {
   attemptParallelComplete,
   collectParallelSuccesses,
   lastParallelError,
   resolveParallelProviderLimit,
 } from "./parallel.js"
+import { makeNoProviderError, makeRoutingDecision } from "./selection.js"
+import type { ProviderUnavailableError } from "../../core/errors/index.js"
 import type {
   LLMProviderService,
   ProviderCapability,
@@ -201,45 +194,7 @@ export const ProviderRouterLive = Layer.effect(
     ): Effect.Effect<RoutingDecision, ProviderUnavailableError> =>
       Effect.gen(function* () {
         const ranked = yield* rankedCapabilities(ctx)
-        const best = Option.getOrUndefined(Chunk.head(ranked))
-
-        if (best === undefined) {
-          return yield* Effect.fail(
-            new ProviderUnavailableError({
-              provider: ctx.preferredProvider ?? "any",
-              reason: "No providers registered or none match context",
-            }),
-          )
-        }
-
-        let seenFallbacks = HashSet.empty<string>()
-        let fallbacks = Chunk.empty<string>()
-        for (const capability of Chunk.drop(ranked, 1)) {
-          if (
-            capability.providerId === best.providerId ||
-            HashSet.has(seenFallbacks, capability.providerId) ||
-            Chunk.size(fallbacks) >= ROUTING_LIMITS.FALLBACK_PROVIDER_LIMIT
-          ) {
-            continue
-          }
-          seenFallbacks = HashSet.add(seenFallbacks, capability.providerId)
-          fallbacks = Chunk.append(fallbacks, capability.providerId)
-        }
-
-        const estimatedCost = estimateCapabilityCostUsd(
-          best,
-          ctx.estimatedInputTokens,
-          0,
-        )
-
-        return {
-          selectedProvider: best.providerId,
-          selectedModel: best.modelId,
-          score: scoreProvider(best, ctx),
-          fallbackProviders: Chunk.toReadonlyArray(fallbacks),
-          reasoning: `Selected ${best.modelId} for ${ctx.mode} mode`,
-          estimatedCostUsd: estimatedCost,
-        } satisfies RoutingDecision
+        return yield* makeRoutingDecision(ctx, ranked)
       })
 
     const rankedCapabilities = (
@@ -260,32 +215,13 @@ export const ProviderRouterLive = Layer.effect(
           return !Chunk.isEmpty(ranked)
             ? Effect.succeed(ranked)
             : Effect.fail(
-                new ProviderUnavailableError({
-                  provider: ctx.preferredProvider ?? "any",
-                  reason: "No providers registered or none match context",
-                }),
+                makeNoProviderError(
+                  ctx,
+                  "No providers registered or none match context",
+                ),
               )
         }),
       )
-
-    const missingProvider = (providerId: string): ProviderUnavailableError =>
-      new ProviderUnavailableError({
-        provider: providerId,
-        reason: "Provider registered in routing but not in registry",
-      })
-
-    const failLast = <E>(
-      error: E | undefined,
-      ctx: RoutingContext,
-    ): Effect.Effect<never, E | ProviderUnavailableError> =>
-      error === undefined
-        ? Effect.fail(
-            new ProviderUnavailableError({
-              provider: ctx.preferredProvider ?? "any",
-              reason: "No provider attempts were available",
-            }),
-          )
-        : Effect.fail(error)
 
     const complete = (
       ctx: RoutingContext,
@@ -297,44 +233,12 @@ export const ProviderRouterLive = Layer.effect(
       Effect.gen(function* () {
         const ranked = yield* rankedCapabilities(ctx)
         const registry = yield* Ref.get(registryRef)
-        let lastError: AnyProviderError | ProviderUnavailableError | undefined =
-          undefined
-
-        for (const capability of ranked) {
-          const provider = Option.getOrUndefined(
-            HashMap.get(registry, capability.providerId),
-          )
-
-          if (provider === undefined) {
-            lastError = missingProvider(capability.providerId)
-            continue
-          }
-
-          const result = yield* provider
-            .complete({
-              ...request,
-              model: capability.modelId,
-            })
-            .pipe(Effect.either)
-
-          if (Either.isRight(result)) {
-            return {
-              ...result.right,
-              usage: {
-                ...result.right.usage,
-                estimatedCostUsd: estimateCapabilityCostUsd(
-                  capability,
-                  result.right.usage.inputTokens,
-                  result.right.usage.outputTokens,
-                ),
-              },
-            }
-          }
-
-          lastError = result.left
-        }
-
-        return yield* failLast(lastError, ctx)
+        return yield* completeFromRankedProviders(
+          ranked,
+          registry,
+          request,
+          ctx,
+        )
       })
 
     const completeParallel = (
@@ -381,74 +285,16 @@ export const ProviderRouterLive = Layer.effect(
       AnyProviderError | ProviderUnavailableError
     > =>
       Effect.gen(function* () {
-        const startMs = Date.now()
         const ranked = yield* rankedCapabilities(ctx)
         const registry = yield* Ref.get(registryRef)
-        let lastError: AnyProviderError | ProviderUnavailableError | undefined =
-          undefined
-
-        for (const capability of ranked) {
-          const provider = Option.getOrUndefined(
-            HashMap.get(registry, capability.providerId),
-          )
-
-          if (provider === undefined) {
-            lastError = missingProvider(capability.providerId)
-            continue
-          }
-
-          const accumulatorRef = yield* Ref.make(emptyStreamAccumulator())
-          const result = yield* provider
-            .stream({ ...request, model: capability.modelId })
-            .pipe(
-              Stream.mapChunks((streamChunks) => streamChunks),
-              Stream.runForEachChunk((streamChunks) =>
-                Effect.forEach(
-                  streamChunks,
-                  (chunk) =>
-                    handleStreamChunk(
-                      capability.providerId,
-                      chunk,
-                      accumulatorRef,
-                      onChunk,
-                      onLog,
-                    ),
-                  { discard: true },
-                ),
-              ),
-              Effect.either,
-            )
-
-          if (Either.isRight(result)) {
-            const accumulator = yield* Ref.get(accumulatorRef)
-            const content = Chunk.toReadonlyArray(
-              accumulator.contentChunks,
-            ).join("")
-            return {
-              content,
-              provider: capability.providerId,
-              model: capability.modelId,
-              latencyMs: Date.now() - startMs,
-              inputTokens: accumulator.usage.inputTokens,
-              outputTokens: accumulator.usage.outputTokens,
-              cacheReadTokens: accumulator.usage.cacheReadTokens,
-              cacheWriteTokens: accumulator.usage.cacheWriteTokens,
-              estimatedCostUsd: estimateCapabilityCostUsd(
-                capability,
-                accumulator.usage.inputTokens,
-                accumulator.usage.outputTokens,
-              ),
-            } satisfies StreamingCallbackResult
-          }
-
-          lastError = result.left
-          const failedAccumulator = yield* Ref.get(accumulatorRef)
-          if (failedAccumulator.emittedChunkCount > 0) {
-            return yield* Effect.fail(result.left)
-          }
-        }
-
-        return yield* failLast(lastError, ctx)
+        return yield* streamFromRankedProviders(
+          ranked,
+          registry,
+          request,
+          ctx,
+          onChunk,
+          onLog,
+        )
       })
 
     const listProviders = (): Effect.Effect<readonly string[]> =>
