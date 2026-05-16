@@ -88,15 +88,21 @@ export function makeEditCommand(
           })
           .pipe(
             Effect.flatMap((result) =>
-              pending.put(mutationId, [{ file, oldString, newString }]).pipe(
-                Effect.map(() => ({
-                  output:
-                    formatEditOutput(file, mutationId, result) +
-                    "\n\nPending approval. Run /apply " +
-                    mutationId +
-                    " to write this change.",
-                })),
-              ),
+              pending
+                .put(
+                  mutationId,
+                  [{ file, oldString, newString }],
+                  result.results,
+                )
+                .pipe(
+                  Effect.map(() => ({
+                    output:
+                      formatEditOutput(file, mutationId, result) +
+                      "\n\nPending approval. Run /apply " +
+                      mutationId +
+                      " to write this change.",
+                  })),
+                ),
             ),
             Effect.catchAll((err) =>
               Effect.fail(

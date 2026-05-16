@@ -57,10 +57,11 @@ const makePipeline = (): EditingPipelineService => ({
 })
 
 const makePending = (): PendingMutationStoreService => ({
-  put: (mutationId, targets) =>
+  put: (mutationId, targets, previews = []) =>
     Effect.succeed({
       mutationId,
       targets: Chunk.fromIterable(targets),
+      previews: Chunk.fromIterable(previews),
       createdAt: "2026-05-16T00:00:00.000Z",
     }),
   get: () => Effect.succeed(Option.none()),

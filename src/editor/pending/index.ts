@@ -11,12 +11,14 @@ import {
 } from "effect"
 import { COMMAND_CONSTANTS } from "../../core/constants/index.js"
 import type { Option } from "effect"
+import type { PipelineMutationResult } from "../pipeline/index.js"
 import type { TLITarget } from "../tli/index.js"
 
 /** @Owl.Editor.Pending.Mutation - Mutation waiting for approval */
 export interface PendingMutation {
   readonly mutationId: string
   readonly targets: Chunk.Chunk<TLITarget>
+  readonly previews: Chunk.Chunk<PipelineMutationResult>
   readonly createdAt: string
 }
 
@@ -25,6 +27,7 @@ export interface PendingMutationStoreService {
   readonly put: (
     mutationId: string,
     targets: readonly TLITarget[],
+    previews?: readonly PipelineMutationResult[],
   ) => Effect.Effect<PendingMutation>
   readonly get: (
     mutationId: string,
@@ -49,11 +52,13 @@ export const PendingMutationStoreLive = Layer.effect(
     const put = (
       mutationId: string,
       targets: readonly TLITarget[],
+      previews: readonly PipelineMutationResult[] = [],
     ): Effect.Effect<PendingMutation> =>
       Effect.gen(function* () {
         const mutation = Data.struct({
           mutationId,
           targets: Chunk.fromIterable(targets),
+          previews: Chunk.fromIterable(previews),
           createdAt: new Date().toISOString(),
         })
 

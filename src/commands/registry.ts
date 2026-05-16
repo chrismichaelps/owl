@@ -270,7 +270,7 @@ export const makeCommandRegistryLive = (
         makeInjectCommand(pipeline, projectRoot),
         makeCreateCommand(fs, projectRoot),
         makeRefactorCommand(orchestrator),
-        makeDiffCommand(rollback),
+        makeDiffCommand(rollback, pendingMutations),
         makeApplyCommand(pipeline, pendingMutations, projectRoot),
         makeUndoCommand(rollback, projectRoot),
         // Management

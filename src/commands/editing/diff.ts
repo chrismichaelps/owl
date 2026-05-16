@@ -9,8 +9,11 @@
  * // src/foo.ts (snapshot at 2024-01-15T10:30:00Z)
  */
 import { Effect } from "effect"
+import { Chunk, Option } from "effect"
 import { CommandParseError } from "../../core/errors/index.js"
+import type { PendingMutationStoreService } from "../../editor/pending/index.js"
 import type { RollbackSystemService } from "../../editor/rollback/index.js"
+import { formatUnifiedDiff } from "../../editor/utils/patch.js"
 import type { CommandHandler, CommandResult } from "../types.js"
 
 /**
@@ -18,6 +21,7 @@ import type { CommandHandler, CommandResult } from "../types.js"
  */
 export function makeDiffCommand(
   rollback: RollbackSystemService,
+  pending: PendingMutationStoreService,
 ): CommandHandler {
   return {
     name: "diff",
@@ -32,17 +36,30 @@ export function makeDiffCommand(
           }),
         )
       }
-      return rollback.getEntries(mutationId).pipe(
-        Effect.map((entries) => {
-          if (entries.length === 0) {
-            return { output: "No rollback entries for mutation: " + mutationId }
+      return Effect.gen(function* () {
+        const pendingMutation = yield* pending.get(mutationId)
+        if (Option.isSome(pendingMutation)) {
+          const previews = pendingMutation.value.previews
+          if (!Chunk.isEmpty(previews)) {
+            const sections = Chunk.map(previews, (preview) => {
+              const patch = formatUnifiedDiff(preview.file, preview.diff.hunks)
+              return preview.file + "\n\n```diff\n" + patch + "\n```"
+            })
+            return { output: Chunk.toReadonlyArray(sections).join("\n\n") }
           }
-          const lines = entries.map(
-            (e) => e.file + " (snapshot at " + e.timestamp + ")",
-          )
-          return { output: lines.join("\n") }
-        }),
-      )
+        }
+
+        const entries = yield* rollback.getEntries(mutationId)
+        const snapshots = Chunk.fromIterable(entries)
+        if (Chunk.isEmpty(snapshots)) {
+          return { output: "No rollback entries for mutation: " + mutationId }
+        }
+        const lines = Chunk.map(
+          snapshots,
+          (entry) => entry.file + " (snapshot at " + entry.timestamp + ")",
+        )
+        return { output: Chunk.toReadonlyArray(lines).join("\n") }
+      })
     },
   }
 }
