@@ -5,7 +5,8 @@ import {
   PROVIDER_TIMEOUTS,
   RETRY_CONFIG,
   DEPTH_THRESHOLDS,
-  MODE_TOKEN_BUDGETS,
+  resolveModeThinkingBudget,
+  resolveModeTokenBudget,
 } from "../../src/core/constants/index.js"
 
 /** @Owl.Tests.Core.Constants.Contract - System-wide threshold verification */
@@ -33,8 +34,18 @@ describe("system constants", () => {
   })
 
   it("MODE_TOKEN_BUDGETS define per-task limits", () => {
-    const { economy = 0, standard = 0, god = 0 } = MODE_TOKEN_BUDGETS
+    const economy = resolveModeTokenBudget("economy")
+    const standard = resolveModeTokenBudget("standard")
+    const god = resolveModeTokenBudget("god")
     expect(economy).toBeLessThan(standard)
     expect(god).toBeGreaterThan(standard)
+  })
+
+  it("mode budget resolvers return safe defaults and optional thinking", () => {
+    expect(resolveModeTokenBudget("unknown")).toBe(
+      TOKEN_LIMITS.DEFAULT_SESSION_BUDGET,
+    )
+    expect(resolveModeThinkingBudget("deep")).toBe(10000)
+    expect(resolveModeThinkingBudget("quick")).toBeUndefined()
   })
 })

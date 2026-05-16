@@ -11,7 +11,10 @@
  */
 import { Context, Effect, Layer, Ref } from "effect"
 import { TokenBudgetExceededError } from "../../core/errors/index.js"
-import { MODE_TOKEN_BUDGETS } from "../../core/constants/index.js"
+import {
+  TOKEN_LIMITS,
+  resolveModeTokenBudget,
+} from "../../core/constants/index.js"
 
 /** @Owl.Tokens.Budget.State - Mutable runtime state (private) */
 interface BudgetState {
@@ -27,7 +30,7 @@ export interface TokenBudgetService {
   /**
    * Initialize session with mode-specific budget
    *
-   * @param mode - Operating mode (determines budget from MODE_TOKEN_BUDGETS)
+   * @param mode - Operating mode resolved through the budget registry
    * @param budget - Optional override for budget
    */
   readonly initSession: (mode: string, budget?: number) => Effect.Effect<void>
@@ -68,14 +71,14 @@ export const TokenBudgetLive = Layer.effect(
   TokenBudget,
   Effect.gen(function* () {
     const stateRef = yield* Ref.make<BudgetState>({
-      sessionBudget: MODE_TOKEN_BUDGETS.standard ?? 32000,
+      sessionBudget: TOKEN_LIMITS.DEFAULT_SESSION_BUDGET,
       consumed: 0,
       mode: "standard",
     })
 
     const initSession = (mode: string, budget?: number): Effect.Effect<void> =>
       Ref.set(stateRef, {
-        sessionBudget: budget ?? MODE_TOKEN_BUDGETS[mode] ?? 32000,
+        sessionBudget: budget ?? resolveModeTokenBudget(mode),
         consumed: 0,
         mode,
       })

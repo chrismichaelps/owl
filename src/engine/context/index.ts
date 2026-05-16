@@ -18,7 +18,7 @@
  *
  * @example
  * yield* Effect.flatMap(ContextManager, (c) => c.addMessage({ role: "user", content: "hi", timestamp: now }))
- * const msgs = yield* Effect.flatMap(ContextManager, (c) => c.getWindowedMessages(32000))
+ * const msgs = yield* Effect.flatMap(ContextManager, (c) => c.getWindowedMessages(budget))
  */
 import { Chunk, Context, Data, Effect, Layer, Ref } from "effect"
 import {

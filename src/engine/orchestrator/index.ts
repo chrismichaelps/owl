@@ -7,7 +7,7 @@
  * Flow for each task:
  * 1. User prompt arrives → wrapped as Task with id, mode, createdAt
  * 2. Message added to context window
- * 3. Token budget calculated from MODE_TOKEN_BUDGETS based on mode
+ * 3. Token budget resolved from mode budget registry
  * 4. Context windowed to budget (prunes if necessary via ContextManager)
  * 5. RoutingContext built (requiresReasoning, requiresVision, latencyBudgetMs)
  * 6. ProviderRouter selects best provider/model for the task
@@ -45,11 +45,11 @@ import type {
   Message,
 } from "../../core/schema/index.js"
 import {
-  MODE_TOKEN_BUDGETS,
-  MODE_THINKING_BUDGETS,
   PROVIDER_TIMEOUTS,
   TOKEN_LIMITS,
   THINKING_MODES,
+  resolveModeThinkingBudget,
+  resolveModeTokenBudget,
 } from "../../core/constants/index.js"
 import { estimateConversationTokens } from "../../tokens/pruning/index.js"
 import { TokenBudget } from "../../tokens/budget/index.js"
@@ -58,9 +58,7 @@ import { TokenBudget } from "../../tokens/budget/index.js"
 type ProviderId = InferenceResponse["provider"]
 
 const resolveModeBudget = (task: Task): number =>
-  MODE_TOKEN_BUDGETS[task.mode] ??
-  MODE_TOKEN_BUDGETS.standard ??
-  TOKEN_LIMITS.CONTEXT_WINDOW_DEFAULT
+  resolveModeTokenBudget(task.mode)
 
 /**
  * @Owl.Engine.Orchestrator.Service - Main agent loop interface
@@ -191,7 +189,7 @@ export const makeOrchestratorLive = (projectRoot: string) =>
             ...(preferredProvider !== undefined ? { preferredProvider } : {}),
           }
 
-          const thinkingBudget = MODE_THINKING_BUDGETS[task.mode]
+          const thinkingBudget = resolveModeThinkingBudget(task.mode)
           const request = {
             taskId: task.id,
             messages: windowedMsgs,
@@ -280,7 +278,7 @@ export const makeOrchestratorLive = (projectRoot: string) =>
             ...(preferredProvider !== undefined ? { preferredProvider } : {}),
           }
 
-          const thinkingBudget = MODE_THINKING_BUDGETS[task.mode]
+          const thinkingBudget = resolveModeThinkingBudget(task.mode)
           const request = {
             taskId: task.id,
             messages: windowedMsgs,
