@@ -544,7 +544,12 @@ export const ProviderRouterLive = Layer.effect(
     const listProviders = (): Effect.Effect<readonly string[]> =>
       Ref.get(registryRef).pipe(
         Effect.map((registry) =>
-          Chunk.toReadonlyArray(Chunk.fromIterable(HashMap.keys(registry))),
+          Chunk.toReadonlyArray(
+            Chunk.sort(
+              Chunk.fromIterable(HashMap.keys(registry)),
+              Order.string,
+            ),
+          ),
         ),
       )
 

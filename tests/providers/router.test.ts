@@ -432,6 +432,23 @@ describe("ProviderRouter", () => {
       "openai",
     ])
   })
+
+  it("lists registered providers deterministically", async () => {
+    const first = makeStubProvider("openai")
+    const second = makeStubProvider("anthropic")
+
+    const program = Effect.gen(function* () {
+      const router = yield* ProviderRouter
+      yield* registerProvider(router, first)
+      yield* registerProvider(router, second)
+      return yield* router.listProviders()
+    })
+
+    const providers = await Effect.runPromise(
+      program.pipe(Effect.provide(ProviderRouterLive)),
+    )
+    expect(providers).toEqual(["anthropic", "openai"])
+  })
 })
 
 describe("formatStreamEventLog", () => {
