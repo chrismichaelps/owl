@@ -18,6 +18,7 @@
  * // [{ name: "filesystem__read_file", description: "...", input_schema: {...} }]
  */
 import { Context, Effect, Layer } from "effect"
+import { JS_TYPES } from "../core/constants/index.js"
 import { Client } from "@modelcontextprotocol/sdk/client/index.js"
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
 import type { McpConfig } from "./config.js"
@@ -184,7 +185,11 @@ export const makeMcpManagerLayer = (
             if (Array.isArray(content)) {
               return content
                 .map((c) => {
-                  if (typeof c === "object" && c !== null && "text" in c) {
+                  if (
+                    typeof c === JS_TYPES.OBJECT &&
+                    c !== null &&
+                    "text" in c
+                  ) {
                     return String((c as { text: unknown }).text)
                   }
                   return JSON.stringify(c)

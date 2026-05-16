@@ -19,7 +19,7 @@
 import { readFile } from "node:fs/promises"
 import { join } from "node:path"
 import { homedir } from "node:os"
-import { Schema } from "effect"
+import { Schema, Either } from "effect"
 import { MCP_CONSTANTS } from "../core/constants/index.js"
 import { McpConfigSchema } from "./schema.js"
 export type { McpConfig, McpServerConfig } from "./schema.js"
@@ -28,7 +28,7 @@ import type { McpConfig } from "./schema.js"
 /** @Owl.MCP.Config.Parse - Schema-first config boundary parser */
 export function parseMcpConfig(input: unknown): McpConfig | null {
   const decoded = Schema.decodeUnknownEither(McpConfigSchema)(input)
-  return decoded._tag === "Right" ? decoded.right : null
+  return Either.isRight(decoded) ? decoded.right : null
 }
 
 /** @Owl.MCP.Config.Merge - Project config overrides global config */
