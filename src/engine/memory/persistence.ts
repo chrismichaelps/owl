@@ -1,7 +1,7 @@
 /**
  * @Owl.Engine.Memory.Persistence - SessionMemory validation and persistence helpers
  */
-import { Effect, Schema } from "effect"
+import { Chunk, Data, Effect, Schema } from "effect"
 import { SESSION_MEMORY_CONSTANTS } from "../../core/constants/index.js"
 import {
   SessionMemoryPersistenceError,
@@ -22,15 +22,22 @@ export type PersistSessionSnapshot = (
   state: SessionMemoryState,
 ) => Effect.Effect<void, SessionMemoryFailure>
 
-export const makeEmptyState = (sessionId: string): SessionMemoryState => ({
-  version: SESSION_MEMORY_CONSTANTS.PERSISTENCE_SCHEMA_VERSION,
-  sessionId,
-  turns: [],
-})
+export const makeEmptyState = (sessionId: string): SessionMemoryState =>
+  Data.struct({
+    version: SESSION_MEMORY_CONSTANTS.PERSISTENCE_SCHEMA_VERSION,
+    sessionId,
+    turns: [],
+  })
 
 export const boundTurns = (
   turns: readonly SessionTurn[],
-): readonly SessionTurn[] => turns.slice(-SESSION_MEMORY_CONSTANTS.MAX_TURNS)
+): readonly SessionTurn[] =>
+  Chunk.toReadonlyArray(
+    Chunk.takeRight(
+      Chunk.fromIterable(turns),
+      SESSION_MEMORY_CONSTANTS.MAX_TURNS,
+    ),
+  )
 
 export const decodeSessionTurn = (
   turn: SessionTurn,
@@ -51,7 +58,7 @@ export const decodeSessionTurn = (
               reason: "tokensUsed must be greater than or equal to 0",
             }),
           )
-        : Effect.succeed(decoded),
+        : Effect.succeed(Data.struct(decoded)),
     ),
     Effect.flatMap((decoded) =>
       decoded.estimatedCostUsd !== undefined && decoded.estimatedCostUsd < 0
@@ -61,7 +68,7 @@ export const decodeSessionTurn = (
               reason: "estimatedCostUsd must be greater than or equal to 0",
             }),
           )
-        : Effect.succeed(decoded),
+        : Effect.succeed(Data.struct(decoded)),
     ),
     Effect.flatMap((decoded) =>
       decoded.latencyMs !== undefined && decoded.latencyMs < 0
@@ -71,7 +78,7 @@ export const decodeSessionTurn = (
               reason: "latencyMs must be greater than or equal to 0",
             }),
           )
-        : Effect.succeed(decoded),
+        : Effect.succeed(Data.struct(decoded)),
     ),
   )
 
@@ -90,10 +97,12 @@ export const decodePersistedSessionState = (
   }).pipe(
     Effect.flatMap((state) =>
       state.version === SESSION_MEMORY_CONSTANTS.PERSISTENCE_SCHEMA_VERSION
-        ? Effect.succeed({
-            ...state,
-            turns: boundTurns(state.turns),
-          })
+        ? Effect.succeed(
+            Data.struct({
+              ...state,
+              turns: boundTurns(state.turns),
+            }),
+          )
         : Effect.fail(
             new SessionMemoryPersistenceError({
               path: storagePath,

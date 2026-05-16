@@ -66,9 +66,7 @@ const makeService = (
     })
 
   const get = (key: string): Effect.Effect<Option.Option<CacheEntry>> =>
-    Ref.get(storeRef).pipe(
-      Effect.map((current) => HashMap.get(current, key)),
-    )
+    Ref.get(storeRef).pipe(Effect.map((current) => HashMap.get(current, key)))
 
   const invalidate = (key: string): Effect.Effect<void, CacheFailure> =>
     Ref.update(storeRef, (current) => HashMap.remove(current, key)).pipe(
