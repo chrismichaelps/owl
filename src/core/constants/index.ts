@@ -575,11 +575,22 @@ export const MENTION_CONSTANTS = {
   MAX_FILE_BYTES: 500_000,
   MAX_IMAGE_BYTES: 5_000_000,
   MAX_TOTAL_TEXT_BYTES: 2_000_000,
+  PROJECT_FILE_LIMIT: 200,
+  VISIBLE_SUGGESTION_COUNT: 8,
   DISPLAY_UNIT_BYTES: 1_024,
   MAX_FILE_LABEL: "500KB",
   MAX_IMAGE_LABEL: "5MB",
   MAX_TOTAL_TEXT_LABEL: "2MB",
 } as const
+
+/** @Owl.Core.Constants.MentionIgnores - Project file mention ignore globs */
+export const MENTION_FILE_IGNORE_PATTERNS = [
+  "node_modules/**",
+  ".git/**",
+  "dist/**",
+  "*.lock",
+  "*.log",
+] as const
 
 /** @Owl.Core.Constants.ProjectContext - Startup context discovery bounds */
 export const PROJECT_CONTEXT_CONSTANTS = {
