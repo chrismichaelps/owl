@@ -1,21 +1,16 @@
 /** @Owl.TUI.Components.PromptInput - REPL prompt with mode prefix, history nav, slash dispatch */
-import React, { memo, useCallback, useEffect, useRef, useState } from "react"
+import React, { memo, useCallback, useRef, useState } from "react"
 import { Box, Text, useInput, useWindowSize } from "ink"
 import {
   COMMAND_CONSTANTS,
   TUI_WELCOME,
   TUI_TRIGGERS,
 } from "../../core/constants/index.js"
-import {
-  completePaletteCommand,
-  getPaletteSuggestion,
-  parsePaletteInput,
-  rankPaletteCommands,
-} from "../commands/fuzzy.js"
 import { detectSlashMode, resolveModeColor } from "../commands/modes.js"
 import type { Mode } from "../../core/schema/index.js"
 import { usePromptHistory } from "../hooks/usePromptHistory.js"
 import { useFileMentions } from "../hooks/useFileMentions.js"
+import { useSlashPalette } from "../hooks/useSlashPalette.js"
 import type { PaletteCommand } from "../commands/fuzzy.js"
 import { FileMentionPalette } from "./FileMentionPalette.js"
 
@@ -51,46 +46,29 @@ export const PromptInput: React.FC<PromptInputProps> = memo(
     // Refs hold the authoritative current value — readable inside useInput without stale closures.
     // State is only used to trigger re-renders.
     const valueRef = useRef("")
-    const paletteIndexRef = useRef(0)
     const [value, setValueState] = useState("")
-    const [paletteIndex, setPaletteIndexState] = useState(0)
     const { push, up, down, reset } = usePromptHistory(projectRoot)
     const { columns } = useWindowSize()
 
-    // Keep a ref to commands so the input handler always sees the latest list
-    const commandsRef = useRef(commands)
-    commandsRef.current = commands
-
     const mentions = useFileMentions(value, projectRoot)
+    const palette = useSlashPalette(commands, onPaletteChange)
 
     const setValue = useCallback((next: string) => {
       valueRef.current = next
       setValueState(next)
     }, [])
 
-    const setPaletteIndex = useCallback((next: number) => {
-      paletteIndexRef.current = next
-      setPaletteIndexState(next)
-    }, [])
-
     const updateValue = useCallback(
-      (next: string, nextIndex = paletteIndexRef.current): void => {
+      (next: string, nextIndex?: number): void => {
         setValue(next)
-        const open = next.startsWith(TUI_TRIGGERS.PALETTE)
-        const query = open ? parsePaletteInput(next).commandQuery : ""
-        const matches = rankPaletteCommands(commandsRef.current, query)
-        const boundedIndex =
-          matches.length === 0 ? 0 : Math.min(nextIndex, matches.length - 1)
-        setPaletteIndex(boundedIndex)
-        onPaletteChange({ open, query, selectedIndex: boundedIndex })
+        palette.updateForValue(next, nextIndex)
       },
-      [setValue, setPaletteIndex, onPaletteChange],
+      [setValue, palette],
     )
 
     const closePalette = useCallback((): void => {
-      setPaletteIndex(0)
-      onPaletteChange({ open: false, query: "", selectedIndex: 0 })
-    }, [setPaletteIndex, onPaletteChange])
+      palette.close()
+    }, [palette])
 
     useInput(
       (input, key) => {
@@ -98,7 +76,6 @@ export const PromptInput: React.FC<PromptInputProps> = memo(
 
         // Read from refs — never from stale state closure
         const cur = valueRef.current
-        const curIdx = paletteIndexRef.current
         const inMention = mentions.isMentionInput(cur)
 
         if (input === TUI_TRIGGERS.HELP && cur.length === 0) {
@@ -132,11 +109,7 @@ export const PromptInput: React.FC<PromptInputProps> = memo(
 
         if (key.upArrow) {
           if (cur.startsWith(TUI_TRIGGERS.PALETTE)) {
-            const query = parsePaletteInput(cur).commandQuery
-            const ranked = rankPaletteCommands(commandsRef.current, query)
-            const nextIndex = ranked.length === 0 ? 0 : Math.max(0, curIdx - 1)
-            setPaletteIndex(nextIndex)
-            onPaletteChange({ open: true, query, selectedIndex: nextIndex })
+            palette.move(cur, -1)
             return
           }
           const entry = up(cur)
@@ -146,12 +119,7 @@ export const PromptInput: React.FC<PromptInputProps> = memo(
 
         if (key.downArrow) {
           if (cur.startsWith(TUI_TRIGGERS.PALETTE)) {
-            const query = parsePaletteInput(cur).commandQuery
-            const ranked = rankPaletteCommands(commandsRef.current, query)
-            const nextIndex =
-              ranked.length === 0 ? 0 : Math.min(ranked.length - 1, curIdx + 1)
-            setPaletteIndex(nextIndex)
-            onPaletteChange({ open: true, query, selectedIndex: nextIndex })
+            palette.move(cur, 1)
             return
           }
           const entry = down()
@@ -165,49 +133,39 @@ export const PromptInput: React.FC<PromptInputProps> = memo(
         }
 
         if (key.tab && cur.startsWith(TUI_TRIGGERS.PALETTE)) {
-          const query = parsePaletteInput(cur).commandQuery
-          const selected = rankPaletteCommands(commandsRef.current, query)[
-            curIdx
-          ]
-          if (selected !== undefined) {
-            updateValue(completePaletteCommand(cur, selected.name), 0)
+          const completed = palette.completeSelected(cur)
+          if (completed !== undefined) {
+            updateValue(completed, 0)
           }
           return
         }
 
         if (key.rightArrow && cur.startsWith(TUI_TRIGGERS.PALETTE)) {
-          const query = parsePaletteInput(cur).commandQuery
-          const selected = rankPaletteCommands(commandsRef.current, query)[
-            curIdx
-          ]
-          if (selected !== undefined) {
-            updateValue(completePaletteCommand(cur, selected.name), 0)
+          const completed = palette.completeSelected(cur)
+          if (completed !== undefined) {
+            updateValue(completed, 0)
           }
           return
         }
 
         if (key.return) {
-          const paletteInput = cur.startsWith(TUI_TRIGGERS.PALETTE)
-            ? parsePaletteInput(cur)
-            : null
-          const query = paletteInput?.commandQuery ?? ""
-          const ranked = cur.startsWith(TUI_TRIGGERS.PALETTE)
-            ? rankPaletteCommands(commandsRef.current, query)
-            : []
-          const selected = ranked[curIdx]
+          const isPaletteInput = cur.startsWith(TUI_TRIGGERS.PALETTE)
+          const selected = palette.selectedCommand(cur)
           if (
-            cur.startsWith(TUI_TRIGGERS.PALETTE) &&
-            paletteInput?.commandQuery.length === 0 &&
+            isPaletteInput &&
+            cur === TUI_TRIGGERS.PALETTE &&
             selected !== undefined
           ) {
-            updateValue(completePaletteCommand(cur, selected.name), 0)
+            const completed = palette.completeSelected(cur)
+            if (completed !== undefined) {
+              updateValue(completed, 0)
+            }
             return
           }
 
-          const submitted =
-            cur.startsWith(TUI_TRIGGERS.PALETTE) && selected !== undefined
-              ? completePaletteCommand(cur, selected.name)
-              : cur
+          const submitted = isPaletteInput
+            ? (palette.completeSelected(cur) ?? cur)
+            : cur
           const trimmed = submitted.trim()
           if (trimmed.length === 0) return
 
@@ -251,19 +209,11 @@ export const PromptInput: React.FC<PromptInputProps> = memo(
 
     const detectedMode = value.length > 0 ? detectSlashMode(value) : null
     const displayMode = detectedMode ?? mode
-    const paletteSuggestion = getPaletteSuggestion(
-      value,
-      commands,
-      paletteIndex,
-    )
+    const paletteSuggestion = palette.suggestion(value)
     const separatorWidth = Math.max(
       columns - 1,
       TUI_WELCOME.SEPARATOR_MIN_WIDTH,
     )
-
-    // paletteIndex is used only to avoid unused-var warning; palette state is
-    // managed by paletteIndexRef + onPaletteChange in the parent.
-    void paletteIndex
 
     return (
       <Box flexDirection="column">
