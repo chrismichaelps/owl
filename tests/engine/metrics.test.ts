@@ -138,6 +138,98 @@ describe("UsageMetrics", () => {
     expect(snapshot.byModel[0]?.estimatedCostUsd).toBeCloseTo(0.003)
   })
 
+  it("sorts provider usage summaries deterministically", async () => {
+    const snapshot = await run(
+      Effect.gen(function* () {
+        const metrics = yield* UsageMetrics
+        yield* metrics.recordInference({
+          taskId: "task-provider-1",
+          mode: "standard",
+          provider: "xai",
+          model: "grok-4",
+          inputTokens: 10,
+          outputTokens: 5,
+          latencyMs: 30,
+          timestamp: "2026-05-14T21:27:00.000Z",
+        })
+        yield* metrics.recordInference({
+          taskId: "task-provider-2",
+          mode: "standard",
+          provider: "anthropic",
+          model: "claude-sonnet-4",
+          inputTokens: 10,
+          outputTokens: 5,
+          latencyMs: 20,
+          timestamp: "2026-05-14T21:28:00.000Z",
+        })
+        yield* metrics.recordInference({
+          taskId: "task-provider-3",
+          mode: "standard",
+          provider: "ollama",
+          model: "llama3.1",
+          inputTokens: 10,
+          outputTokens: 5,
+          latencyMs: 10,
+          timestamp: "2026-05-14T21:29:00.000Z",
+        })
+        return yield* metrics.snapshot()
+      }),
+    )
+
+    expect(snapshot.byProvider.map((metric) => metric.provider)).toEqual([
+      "anthropic",
+      "ollama",
+      "xai",
+    ])
+  })
+
+  it("sorts model usage summaries by provider and model", async () => {
+    const snapshot = await run(
+      Effect.gen(function* () {
+        const metrics = yield* UsageMetrics
+        yield* metrics.recordInference({
+          taskId: "task-model-1",
+          mode: "standard",
+          provider: "openai",
+          model: "gpt-5.4",
+          inputTokens: 10,
+          outputTokens: 5,
+          latencyMs: 30,
+          timestamp: "2026-05-14T21:30:00.000Z",
+        })
+        yield* metrics.recordInference({
+          taskId: "task-model-2",
+          mode: "standard",
+          provider: "anthropic",
+          model: "claude-opus-4",
+          inputTokens: 10,
+          outputTokens: 5,
+          latencyMs: 20,
+          timestamp: "2026-05-14T21:31:00.000Z",
+        })
+        yield* metrics.recordInference({
+          taskId: "task-model-3",
+          mode: "standard",
+          provider: "anthropic",
+          model: "claude-sonnet-4",
+          inputTokens: 10,
+          outputTokens: 5,
+          latencyMs: 10,
+          timestamp: "2026-05-14T21:32:00.000Z",
+        })
+        return yield* metrics.snapshot()
+      }),
+    )
+
+    expect(
+      snapshot.byModel.map((metric) => metric.provider + "/" + metric.model),
+    ).toEqual([
+      "anthropic/claude-opus-4",
+      "anthropic/claude-sonnet-4",
+      "openai/gpt-5.4",
+    ])
+  })
+
   it("resets metrics", async () => {
     const snapshot = await run(
       Effect.gen(function* () {

@@ -13,6 +13,7 @@ import {
   HashMap,
   Layer,
   Option,
+  Order,
   Ref,
 } from "effect"
 import { METRICS_CONSTANTS } from "../../core/constants/index.js"
@@ -159,6 +160,18 @@ type ModelGroup = Readonly<{
   readonly records: Chunk.Chunk<InferenceMetric>
 }>
 
+const providerUsageOrder = Order.mapInput(
+  Order.string,
+  (usage: ProviderUsageMetrics) => usage.provider,
+)
+
+const modelUsageOrder = Order.make<ModelUsageMetrics>((left, right) => {
+  const providerComparison = Order.string(left.provider, right.provider)
+  return providerComparison === 0
+    ? Order.string(left.model, right.model)
+    : providerComparison
+})
+
 const groupByModel = (
   records: Chunk.Chunk<InferenceMetric>,
 ): HashMap.HashMap<string, ModelGroup> =>
@@ -185,28 +198,37 @@ const aggregateProviders = (
   records: Chunk.Chunk<InferenceMetric>,
 ): readonly ProviderUsageMetrics[] =>
   Chunk.toReadonlyArray(
-    Chunk.map(
-      Chunk.fromIterable(HashMap.entries(groupByProvider(records))),
-      ([provider, providerRecords]) => {
-        const inputTokens = sumMetric(providerRecords, "inputTokens")
-        const outputTokens = sumMetric(providerRecords, "outputTokens")
-        const cacheReadTokens = sumMetric(providerRecords, "cacheReadTokens")
-        const cacheWriteTokens = sumMetric(providerRecords, "cacheWriteTokens")
-        const estimatedCostUsd = sumMetric(providerRecords, "estimatedCostUsd")
-        return Data.struct({
-          provider,
-          calls: Chunk.size(providerRecords),
-          inputTokens,
-          outputTokens,
-          cacheReadTokens,
-          cacheWriteTokens,
-          estimatedCostUsd,
-          totalTokens: inputTokens + outputTokens,
-          averageLatencyMs: average(
-            Chunk.map(providerRecords, (record) => record.latencyMs),
-          ),
-        })
-      },
+    Chunk.sort(
+      Chunk.map(
+        Chunk.fromIterable(HashMap.entries(groupByProvider(records))),
+        ([provider, providerRecords]) => {
+          const inputTokens = sumMetric(providerRecords, "inputTokens")
+          const outputTokens = sumMetric(providerRecords, "outputTokens")
+          const cacheReadTokens = sumMetric(providerRecords, "cacheReadTokens")
+          const cacheWriteTokens = sumMetric(
+            providerRecords,
+            "cacheWriteTokens",
+          )
+          const estimatedCostUsd = sumMetric(
+            providerRecords,
+            "estimatedCostUsd",
+          )
+          return Data.struct({
+            provider,
+            calls: Chunk.size(providerRecords),
+            inputTokens,
+            outputTokens,
+            cacheReadTokens,
+            cacheWriteTokens,
+            estimatedCostUsd,
+            totalTokens: inputTokens + outputTokens,
+            averageLatencyMs: average(
+              Chunk.map(providerRecords, (record) => record.latencyMs),
+            ),
+          })
+        },
+      ),
+      providerUsageOrder,
     ),
   )
 
@@ -214,27 +236,30 @@ const aggregateModels = (
   records: Chunk.Chunk<InferenceMetric>,
 ): readonly ModelUsageMetrics[] =>
   Chunk.toReadonlyArray(
-    Chunk.map(
-      Chunk.fromIterable(HashMap.values(groupByModel(records))),
-      (group) => {
-        const modelRecords = group.records
-        const inputTokens = sumMetric(modelRecords, "inputTokens")
-        const outputTokens = sumMetric(modelRecords, "outputTokens")
-        const cacheReadTokens = sumMetric(modelRecords, "cacheReadTokens")
-        const cacheWriteTokens = sumMetric(modelRecords, "cacheWriteTokens")
-        const estimatedCostUsd = sumMetric(modelRecords, "estimatedCostUsd")
-        return Data.struct({
-          model: group.model,
-          provider: group.provider,
-          calls: Chunk.size(modelRecords),
-          inputTokens,
-          outputTokens,
-          cacheReadTokens,
-          cacheWriteTokens,
-          estimatedCostUsd,
-          totalTokens: inputTokens + outputTokens,
-        })
-      },
+    Chunk.sort(
+      Chunk.map(
+        Chunk.fromIterable(HashMap.values(groupByModel(records))),
+        (group) => {
+          const modelRecords = group.records
+          const inputTokens = sumMetric(modelRecords, "inputTokens")
+          const outputTokens = sumMetric(modelRecords, "outputTokens")
+          const cacheReadTokens = sumMetric(modelRecords, "cacheReadTokens")
+          const cacheWriteTokens = sumMetric(modelRecords, "cacheWriteTokens")
+          const estimatedCostUsd = sumMetric(modelRecords, "estimatedCostUsd")
+          return Data.struct({
+            model: group.model,
+            provider: group.provider,
+            calls: Chunk.size(modelRecords),
+            inputTokens,
+            outputTokens,
+            cacheReadTokens,
+            cacheWriteTokens,
+            estimatedCostUsd,
+            totalTokens: inputTokens + outputTokens,
+          })
+        },
+      ),
+      modelUsageOrder,
     ),
   )
 
