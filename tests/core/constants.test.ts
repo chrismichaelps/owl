@@ -8,6 +8,7 @@ import {
   DEPTH_THRESHOLDS,
   MARKDOWN_CONSTANTS,
   TOOL_CONSTANTS,
+  TUI_OUTPUT_PANEL,
   resolveModeThinkingBudget,
   resolveModeTokenBudget,
 } from "../../src/core/constants/index.js"
@@ -37,6 +38,11 @@ describe("system constants", () => {
 
   it("MARKDOWN_CONSTANTS centralize parser structure", () => {
     expect(MARKDOWN_CONSTANTS.CODE_FENCE_LENGTH).toBe(3)
+  })
+
+  it("TUI_OUTPUT_PANEL centralizes viewport estimates", () => {
+    expect(TUI_OUTPUT_PANEL.RESERVED_ROWS).toBeGreaterThan(0)
+    expect(TUI_OUTPUT_PANEL.ROWS_PER_TURN).toBeGreaterThan(0)
   })
 
   it("RETRY_CONFIG has exponential backoff settings", () => {

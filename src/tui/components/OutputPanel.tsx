@@ -4,7 +4,7 @@ import { Box, Text, useWindowSize } from "ink"
 import type { AgentStatus, ConversationTurn } from "../state.js"
 import { ConversationThread } from "./ConversationThread.js"
 import { MarkdownText } from "./MarkdownText.js"
-import { AGENT_STATUS } from "../../core/constants/index.js"
+import { AGENT_STATUS, TUI_OUTPUT_PANEL } from "../../core/constants/index.js"
 import { Spinner } from "./Spinner.js"
 import { useScrollableList } from "../hooks/useScrollableList.js"
 
@@ -15,14 +15,18 @@ interface OutputPanelProps {
   readonly streamingContent: string
 }
 
-const ROWS_PER_TURN = 6
-
 /** @Owl.TUI.Components.OutputPanel.Component - Center panel with response area */
 export const OutputPanel: React.FC<OutputPanelProps> = memo(
   ({ status, turns, error, streamingContent }) => {
     const { rows } = useWindowSize()
     // Reserve rows for: border(2) + header(1) + marginTop(1) + statusbar(3) + prompt(4)
-    const visibleRows = Math.max(1, Math.floor((rows - 11) / ROWS_PER_TURN))
+    const visibleRows = Math.max(
+      1,
+      Math.floor(
+        (rows - TUI_OUTPUT_PANEL.RESERVED_ROWS) /
+          TUI_OUTPUT_PANEL.ROWS_PER_TURN,
+      ),
+    )
     const isIdle =
       status === AGENT_STATUS.IDLE ||
       status === AGENT_STATUS.COMPLETE ||

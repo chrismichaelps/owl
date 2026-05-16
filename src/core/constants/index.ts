@@ -394,6 +394,12 @@ export const TUI_LOG_PANEL = {
   VISIBLE_LINES: 18,
 } as const
 
+/** @Owl.Core.Constants.TUIOutputPanel - Conversation viewport layout estimates */
+export const TUI_OUTPUT_PANEL = {
+  RESERVED_ROWS: 11,
+  ROWS_PER_TURN: 6,
+} as const
+
 /** @Owl.Core.Constants.TUIVisualFallbacks - Safe terminal visual defaults */
 export const TUI_VISUAL_FALLBACKS = {
   COLOR: "gray",
