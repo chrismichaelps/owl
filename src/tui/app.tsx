@@ -27,7 +27,7 @@ import React, {
   useState,
 } from "react"
 import { Box, useApp, useInput } from "ink"
-import { Effect, Fiber } from "effect"
+import { Effect } from "effect"
 import { LogPanel } from "./components/LogPanel.js"
 import { OutputPanel } from "./components/OutputPanel.js"
 import { MetaPanel } from "./components/MetaPanel.js"
@@ -36,17 +36,13 @@ import { PromptInput } from "./components/PromptInput.js"
 import { WelcomePanel } from "./components/WelcomePanel.js"
 import { CommandPalette } from "./components/CommandPalette.js"
 import { ShortcutsOverlay } from "./components/ShortcutsOverlay.js"
+import { useOwlRuntimeActions } from "./hooks/useOwlRuntimeActions.js"
 import { owlReducer, INITIAL_STATE } from "./state.js"
-import { EFFECT_TAGS, JS_TYPES } from "../core/constants/index.js"
 import type { Mode } from "../core/schema/index.js"
 import type { OwlRuntime } from "../cli/runtime.js"
-import { Orchestrator } from "../engine/orchestrator/index.js"
 import { CommandRegistry } from "../commands/registry.js"
-import { parseCommand } from "../commands/parser.js"
-import { RoutingPreferences } from "../providers/preferences/index.js"
-import { TUI_CONSTANTS, AGENT_STATUS } from "../core/constants/index.js"
+import { AGENT_STATUS } from "../core/constants/index.js"
 import type { PaletteCommand } from "./commands/fuzzy.js"
-import { expandMentions } from "./mentions/index.js"
 
 /** @Owl.TUI.App.Props - Component props */
 interface AppProps {
@@ -63,12 +59,8 @@ export const App: React.FC<AppProps> = ({
 }) => {
   useApp() // access to exit()
   const [state, dispatch] = useReducer(owlReducer, INITIAL_STATE)
-  const taskCounterRef = useRef(0)
-  const commandCounterRef = useRef(0)
   const didSubmitInitialPromptRef = useRef(false)
-  const activeFiberRef = useRef<Fiber.RuntimeFiber<unknown, unknown> | null>(
-    null,
-  )
+  const projectRoot = process.cwd()
   const [mode, setMode] = useState<Mode>(initialMode)
   const [paletteState, setPaletteState] = useState({
     open: false,
@@ -84,140 +76,8 @@ export const App: React.FC<AppProps> = ({
   const showWelcome =
     state.turns.length === 0 && !isProcessing && state.error === null
 
-  const syncRoutingPreferences = useCallback(() => {
-    const effect = Effect.gen(function* () {
-      const routingPreferences = yield* RoutingPreferences
-      return yield* routingPreferences.snapshot()
-    })
-    return runtime.runPromise(effect).then((snapshot) => {
-      dispatch({
-        type: "SET_PROVIDER_OVERRIDE",
-        provider: snapshot.preferredProvider ?? null,
-      })
-      dispatch({
-        type: "SET_PRIVACY_MODE",
-        enabled: snapshot.privacyMode,
-      })
-    })
-  }, [runtime])
-
-  /** Submit a prompt for inference (expands @file mentions first) */
-  const handleSubmit = useCallback(
-    (prompt: string, submittedMode: Mode) => {
-      taskCounterRef.current += 1
-      const taskId =
-        TUI_CONSTANTS.TASK_ID_PREFIX + "-" + String(taskCounterRef.current)
-
-      dispatch({ type: "RESET" })
-      dispatch({
-        type: "ADD_LOG",
-        msg: "▶ Task: " + prompt.slice(0, TUI_CONSTANTS.TASK_LOG_PREVIEW_CHARS),
-      })
-      dispatch({ type: "SET_ROLE", role: "Architect" })
-      dispatch({ type: "SET_STATUS", status: "routing" })
-
-      const effect = Effect.gen(function* () {
-        const orch = yield* Orchestrator
-
-        // Expand @file mentions before sending to the model
-        const { expanded, files, errors } = yield* Effect.promise(() =>
-          expandMentions(prompt, process.cwd()),
-        )
-        if (files.length > 0) {
-          dispatch({
-            type: "ADD_LOG",
-            msg: `📎 Injected: ${files.join(", ")}`,
-          })
-        }
-        if (errors.length > 0) {
-          dispatch({
-            type: "ADD_LOG",
-            msg: `⚠ Mention errors: ${errors.join("; ")}`,
-          })
-        }
-        const effectivePrompt = expanded
-
-        dispatch({ type: "ADD_LOG", msg: "◆ Routing to provider…" })
-        dispatch({ type: "SET_ROLE", role: "DNA Engineer" })
-        dispatch({ type: "SET_STATUS", status: "inferring" })
-        dispatch({ type: "ADD_LOG", msg: "◈ Streaming…" })
-        dispatch({ type: "CLEAR_STREAM" })
-
-        const response = yield* orch.runStream(
-          {
-            id: taskId,
-            prompt: effectivePrompt,
-            mode: submittedMode,
-            createdAt: new Date().toISOString(),
-          },
-          (chunk) => {
-            dispatch({ type: "APPEND_STREAM", text: chunk })
-          },
-          (msg) => {
-            dispatch({ type: "ADD_LOG", msg })
-          },
-        )
-
-        dispatch({ type: "SET_ROLE", role: "Forensic Guardian" })
-        dispatch({ type: "ADD_LOG", msg: "✓ Registry sync complete" })
-        dispatch({ type: "SET_RESPONSE", response })
-        dispatch({
-          type: "ADD_TURN",
-          turn: {
-            id: taskId,
-            kind: "inference",
-            prompt, // show original prompt (without file blobs) in UI
-            response: response.content,
-            provider: response.provider,
-            model: response.model,
-            latencyMs: response.latencyMs,
-            inputTokens: response.usage.inputTokens,
-            outputTokens: response.usage.outputTokens,
-            estimatedCostUsd: response.usage.estimatedCostUsd,
-            timestamp: new Date().toISOString(),
-          },
-        })
-      })
-
-      const fiber = runtime.runFork(effect)
-      activeFiberRef.current = fiber
-      void runtime
-        .runPromise(Fiber.join(fiber))
-        .catch((err: unknown) => {
-          if (
-            err !== null &&
-            typeof err === JS_TYPES.OBJECT &&
-            "_tag" in (err as object) &&
-            (err as { _tag: string })._tag === EFFECT_TAGS.INTERRUPTED
-          ) {
-            dispatch({ type: "SET_STATUS", status: "idle" })
-            return
-          }
-          const msg =
-            err instanceof Error ? err.message : "Unknown inference error"
-          dispatch({ type: "SET_ERROR", error: msg })
-          dispatch({
-            type: "ADD_LOG",
-            msg:
-              "✗ Error: " + msg.slice(0, TUI_CONSTANTS.ERROR_LOG_PREVIEW_CHARS),
-          })
-        })
-        .finally(() => {
-          activeFiberRef.current = null
-        })
-    },
-    [runtime],
-  )
-
-  /** Cancel active inference by interrupting the Effect fiber */
-  const handleCancel = useCallback(() => {
-    const fiber = activeFiberRef.current
-    if (fiber === null) return
-    activeFiberRef.current = null
-    dispatch({ type: "SET_STATUS", status: "idle" })
-    dispatch({ type: "ADD_LOG", msg: "⊘ Cancelled" })
-    void runtime.runPromise(Fiber.interrupt(fiber))
-  }, [runtime])
+  const { handleSubmit, handleCommand, handleCancel, syncRoutingPreferences } =
+    useOwlRuntimeActions(runtime, dispatch, projectRoot)
 
   // Global Escape key: cancel inference when processing
   useInput(
@@ -240,70 +100,6 @@ export const App: React.FC<AppProps> = ({
     setMode(newMode)
     dispatch({ type: "ADD_LOG", msg: `Mode → ${newMode}` })
   }, [])
-
-  /** Dispatch a slash command */
-  const handleCommand = useCallback(
-    (raw: string) => {
-      const effect = Effect.gen(function* () {
-        const registry = yield* CommandRegistry
-        const routingPreferences = yield* RoutingPreferences
-        const parsed = yield* parseCommand(raw)
-        const result = yield* registry.dispatch(parsed)
-        const preferenceSnapshot = yield* routingPreferences.snapshot()
-        commandCounterRef.current += 1
-        dispatch({
-          type: "SET_PROVIDER_OVERRIDE",
-          provider: preferenceSnapshot.preferredProvider ?? null,
-        })
-        dispatch({
-          type: "SET_PRIVACY_MODE",
-          enabled: preferenceSnapshot.privacyMode,
-        })
-        dispatch({
-          type: "ADD_LOG",
-          msg:
-            "[cmd] " + result.output.slice(0, TUI_CONSTANTS.LOG_PREVIEW_CHARS),
-        })
-        dispatch({
-          type: "ADD_TURN",
-          turn: {
-            id:
-              TUI_CONSTANTS.COMMAND_TURN_ID_PREFIX +
-              "-" +
-              String(commandCounterRef.current),
-            kind: "command",
-            command: raw,
-            output: result.output,
-            timestamp: new Date().toISOString(),
-          },
-        })
-      })
-      void runtime.runPromise(effect).catch((err: unknown) => {
-        const msg = err instanceof Error ? err.message : String(err)
-        commandCounterRef.current += 1
-        dispatch({
-          type: "ADD_LOG",
-          msg:
-            "✗ Cmd error: " +
-            msg.slice(0, TUI_CONSTANTS.ERROR_LOG_PREVIEW_CHARS),
-        })
-        dispatch({
-          type: "ADD_TURN",
-          turn: {
-            id:
-              TUI_CONSTANTS.COMMAND_TURN_ID_PREFIX +
-              "-" +
-              String(commandCounterRef.current),
-            kind: "command",
-            command: raw,
-            output: "Error: " + msg,
-            timestamp: new Date().toISOString(),
-          },
-        })
-      })
-    },
-    [runtime],
-  )
 
   /** Auto-submit initial prompt on mount */
   useEffect(() => {
@@ -340,7 +136,7 @@ export const App: React.FC<AppProps> = ({
             mode={mode}
             status={state.status}
             activeRole={state.activeRole}
-            projectRoot={process.cwd()}
+            projectRoot={projectRoot}
             totalInputTokens={state.totalInputTokens}
             totalOutputTokens={state.totalOutputTokens}
             totalEstimatedCostUsd={state.totalEstimatedCostUsd}
@@ -374,7 +170,7 @@ export const App: React.FC<AppProps> = ({
       <PromptInput
         mode={mode}
         disabled={isProcessing || shortcutsOpen}
-        projectRoot={process.cwd()}
+        projectRoot={projectRoot}
         onSubmit={handleSubmit}
         onCommand={handleCommand}
         onModeChange={handleModeChange}
