@@ -13,6 +13,7 @@
  */
 import { Effect } from "effect"
 import { truncate } from "../../core/utils/format.js"
+import { formatEstimatedCostUsd } from "../../core/cost.js"
 import type { CommandParseError } from "../../core/errors/index.js"
 import type { SessionMemoryService } from "../../engine/memory/index.js"
 import type { CommandHandler, CommandResult } from "../types.js"
@@ -53,7 +54,7 @@ export function makeHistoryCommand(
           const tokens = `${String(turn.tokensUsed)}tok`
           const cost =
             turn.estimatedCostUsd != null
-              ? ` $${turn.estimatedCostUsd.toFixed(4)}`
+              ? ` ${formatEstimatedCostUsd(turn.estimatedCostUsd)}`
               : ""
           const provider = turn.provider != null ? ` · ${turn.provider}` : ""
 
