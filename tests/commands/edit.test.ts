@@ -49,6 +49,11 @@ const PIPELINE_RESULT: PipelineResult = {
   ],
 }
 
+const PIPELINE_PREVIEW = PIPELINE_RESULT.results[0]
+if (PIPELINE_PREVIEW === undefined) {
+  throw new Error("Expected test pipeline result fixture")
+}
+
 const makePipeline = (): EditingPipelineService => ({
   execute: (input) =>
     Effect.succeed({
@@ -142,13 +147,17 @@ describe("makeApplyCommand", () => {
     const output = await Effect.runPromise(
       Effect.gen(function* () {
         const pending = yield* PendingMutationStore
-        yield* pending.put("edit-example", [
-          {
-            file: "src/a.ts",
-            oldString: "const value = 1",
-            newString: "const value = 2",
-          },
-        ])
+        yield* pending.put(
+          "edit-example",
+          [
+            {
+              file: "src/a.ts",
+              oldString: "const value = 1",
+              newString: "const value = 2",
+            },
+          ],
+          [PIPELINE_PREVIEW],
+        )
         const command = makeApplyCommand(makePipeline(), pending, "/project")
         const result = yield* command.execute([])
         return result.output
@@ -157,6 +166,7 @@ describe("makeApplyCommand", () => {
 
     expect(output).toContain("Pending mutations:")
     expect(output).toContain("edit-example")
+    expect(output).toContain("medium · +1/-1 · max 10.0%")
     expect(output).toContain("Run /apply <mutationId> or /apply --all")
   })
 
@@ -281,13 +291,17 @@ describe("makeRejectCommand", () => {
     const output = await Effect.runPromise(
       Effect.gen(function* () {
         const pending = yield* PendingMutationStore
-        yield* pending.put("edit-example", [
-          {
-            file: "src/a.ts",
-            oldString: "const value = 1",
-            newString: "const value = 2",
-          },
-        ])
+        yield* pending.put(
+          "edit-example",
+          [
+            {
+              file: "src/a.ts",
+              oldString: "const value = 1",
+              newString: "const value = 2",
+            },
+          ],
+          [PIPELINE_PREVIEW],
+        )
         const command = makeRejectCommand(pending)
         const result = yield* command.execute([])
         return result.output
@@ -296,6 +310,7 @@ describe("makeRejectCommand", () => {
 
     expect(output).toContain("Pending mutations:")
     expect(output).toContain("edit-example")
+    expect(output).toContain("medium · +1/-1 · max 10.0%")
     expect(output).toContain("Run /reject <mutationId>")
   })
 

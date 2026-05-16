@@ -2,25 +2,11 @@
 import { Chunk, Effect, Option } from "effect"
 import { COMMAND_CONSTANTS } from "../../core/constants/index.js"
 import { CommandParseError } from "../../core/errors/index.js"
-import type {
-  PendingMutation,
-  PendingMutationStoreService,
-} from "../../editor/pending/index.js"
+import type { PendingMutationStoreService } from "../../editor/pending/index.js"
+import { formatPendingMutationLine } from "../../editor/pending/format.js"
 import { selectPendingMutationTargets } from "../../editor/pending/selection.js"
 import type { EditingPipelineService } from "../../editor/pipeline/index.js"
 import type { CommandHandler, CommandResult } from "../types.js"
-
-const formatPendingMutation = (mutation: PendingMutation): string => {
-  const files = Chunk.map(mutation.targets, (target) => target.file)
-  return (
-    mutation.mutationId +
-    " — " +
-    Chunk.toReadonlyArray(files).join(", ") +
-    " (" +
-    mutation.createdAt +
-    ")"
-  )
-}
 
 /**
  * @Owl.Commands.Editing.Apply.Factory - Create the /apply command handler
@@ -44,7 +30,7 @@ export function makeApplyCommand(
                   "No pending mutations. Preview first with /edit --preview.",
               }
             }
-            const lines = Chunk.map(mutations, formatPendingMutation)
+            const lines = Chunk.map(mutations, formatPendingMutationLine)
             return {
               output:
                 "Pending mutations:\n" +

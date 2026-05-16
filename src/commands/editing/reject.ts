@@ -2,19 +2,10 @@
 import { Chunk, Effect, Option } from "effect"
 import { COMMAND_CONSTANTS } from "../../core/constants/index.js"
 import { CommandParseError } from "../../core/errors/index.js"
-import type {
-  PendingMutation,
-  PendingMutationStoreService,
-} from "../../editor/pending/index.js"
+import type { PendingMutationStoreService } from "../../editor/pending/index.js"
+import { formatPendingMutationLine } from "../../editor/pending/format.js"
 import { selectPendingMutationTargets } from "../../editor/pending/selection.js"
 import type { CommandHandler, CommandResult } from "../types.js"
-
-const formatPendingMutation = (mutation: PendingMutation): string =>
-  mutation.mutationId +
-  " — " +
-  Chunk.toReadonlyArray(
-    Chunk.map(mutation.targets, (target) => target.file),
-  ).join(", ")
 
 const formatRejectedFiles = (
   mutationId: string,
@@ -51,7 +42,7 @@ export function makeRejectCommand(
             output:
               "Pending mutations:\n" +
               Chunk.toReadonlyArray(
-                Chunk.map(mutations, formatPendingMutation),
+                Chunk.map(mutations, formatPendingMutationLine),
               ).join("\n") +
               "\n\nRun /reject <mutationId> [file...] or /reject --all.",
           }

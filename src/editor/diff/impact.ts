@@ -17,6 +17,14 @@ export type MutationImpact = Readonly<{
   readonly isShardSplit: boolean
 }>
 
+export type MutationImpactSummary = Readonly<{
+  readonly severity: MutationImpactSeverity
+  readonly linesAdded: number
+  readonly linesRemoved: number
+  readonly maxChangePercent: number
+  readonly requiresShardSplit: boolean
+}>
+
 const classifyImpact = (changePercent: number): MutationImpactSeverity => {
   if (changePercent >= SHARD_SPLIT_THRESHOLD) return "high"
   if (changePercent >= EDITOR_CONSTANTS.IMPACT_LOW_THRESHOLD) return "medium"
@@ -38,6 +46,61 @@ export const makeMutationImpact = (diff: FileDiff): MutationImpact =>
     changePercent: diff.changePercent,
     isShardSplit: diff.isShardSplit,
   })
+
+const mergeSeverity = (
+  left: MutationImpactSeverity,
+  right: MutationImpactSeverity,
+): MutationImpactSeverity => {
+  if (left === "high" || right === "high") return "high"
+  if (left === "medium" || right === "medium") return "medium"
+  return "low"
+}
+
+const emptyMutationImpactSummary: MutationImpactSummary = Data.struct({
+  severity: "low",
+  linesAdded: 0,
+  linesRemoved: 0,
+  maxChangePercent: 0,
+  requiresShardSplit: false,
+})
+
+/** @Owl.Editor.Diff.Impact.Summary - Summarize multiple file impacts */
+export const summarizeMutationImpact = (
+  diffs: readonly FileDiff[],
+): MutationImpactSummary =>
+  Chunk.reduce(
+    Chunk.map(Chunk.fromIterable(diffs), makeMutationImpact),
+    emptyMutationImpactSummary,
+    (summary, impact) =>
+      Data.struct({
+        severity: mergeSeverity(summary.severity, impact.severity),
+        linesAdded: summary.linesAdded + impact.linesAdded,
+        linesRemoved: summary.linesRemoved + impact.linesRemoved,
+        maxChangePercent: Math.max(
+          summary.maxChangePercent,
+          impact.changePercent,
+        ),
+        requiresShardSplit: summary.requiresShardSplit || impact.isShardSplit,
+      }),
+  )
+
+/** @Owl.Editor.Diff.Impact.Inline - Render one-line impact summary */
+export const formatMutationImpactInline = (
+  diffs: readonly FileDiff[],
+): string => {
+  if (diffs.length === 0) return "impact unavailable"
+  const summary = summarizeMutationImpact(diffs)
+  return (
+    summary.severity +
+    " · +" +
+    String(summary.linesAdded) +
+    "/-" +
+    String(summary.linesRemoved) +
+    " · max " +
+    formatPercent(summary.maxChangePercent) +
+    (summary.requiresShardSplit ? " · shard split required" : "")
+  )
+}
 
 const formatImpactLine = (impact: MutationImpact): string =>
   "- " +
