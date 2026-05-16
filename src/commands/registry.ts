@@ -43,45 +43,7 @@ import { BuiltInTools } from "../tools/index.js"
 import { EditingPipeline } from "../editor/pipeline/index.js"
 import { PendingMutationStore } from "../editor/pending/index.js"
 import { RollbackSystem } from "../editor/rollback/index.js"
-import { makeAnalyzeCommand } from "./analysis/analyze.js"
-import { makeBrainCommand } from "./analysis/brain.js"
-import { makeDepthCommand } from "./analysis/depth.js"
-import { makeFrictionCommand } from "./analysis/friction.js"
-import { makeGrillCommand } from "./analysis/grill.js"
-import { makeSeamsCommand } from "./analysis/seams.js"
-import { makeDeepCommand } from "./core/deep.js"
-import { makePlanCommand } from "./core/plan.js"
-import { makeQuickCommand } from "./core/quick.js"
-import { makeTaskCommand } from "./core/task.js"
-import { makeAddCommand } from "./editing/add.js"
-import { makeApplyCommand } from "./editing/apply.js"
-import { makeCreateCommand } from "./editing/create.js"
-import { makeDiffCommand } from "./editing/diff.js"
-import { makeEditCommand } from "./editing/edit.js"
-import { makeInjectCommand } from "./editing/inject.js"
-import { makeRejectCommand } from "./editing/reject.js"
-import { makeRefactorCommand } from "./editing/refactor.js"
-import { makeUndoCommand } from "./editing/undo.js"
-import { makeAuditCommand } from "./management/audit.js"
-import { makeClearCommand } from "./management/clear.js"
-import { makeExportCommand } from "./management/export.js"
-import { makeCompactCommand } from "./management/compact.js"
-import { makeHelpCommand } from "./management/help.js"
-import { makeHistoryCommand } from "./management/history.js"
-import { makeInitCommand } from "./management/init.js"
-import { makeMcpCommand } from "./management/mcp.js"
-import { makeMemoryCommand } from "./management/memory.js"
-import { makeModelCommand } from "./management/model.js"
-import { makePrivacyCommand } from "./management/privacy.js"
-import { makeProvidersCommand } from "./management/providers.js"
-import { makeRegistryCommand } from "./management/registry.js"
-import { makeRoleCommand } from "./management/role.js"
-import { makeStatusCommand } from "./management/status.js"
-import { makeToolsCommand } from "./management/tools.js"
-import { makeCompareCommand } from "./power/compare.js"
-import { makeEconomyCommand } from "./power/economy.js"
-import { makeGodCommand } from "./power/god.js"
-import { makeRawCommand } from "./power/raw.js"
+import { makeCommandHandlers, makeHelpHandler } from "./factory.js"
 import type { CommandParseError } from "../core/errors/index.js"
 import { CommandNotFoundError } from "../core/errors/index.js"
 import type { CommandHandler, CommandResult, ParsedCommand } from "./types.js"
@@ -258,55 +220,28 @@ export const makeCommandRegistryLive = (
       )
       const svc = buildRegistryService(mapRef)
 
-      const handlers = Chunk.make(
-        // Core
-        makeTaskCommand(orchestrator),
-        makeDeepCommand(orchestrator),
-        makeQuickCommand(orchestrator),
-        makePlanCommand(orchestrator),
-        // Power
-        makeRawCommand(orchestrator),
-        makeCompareCommand(orchestrator),
-        makeGodCommand(orchestrator),
-        makeEconomyCommand(orchestrator),
-        // Analysis
-        makeAnalyzeCommand(orchestrator),
-        makeBrainCommand(hashRegistry),
-        makeSeamsCommand(hashRegistry),
-        makeDepthCommand(orchestrator),
-        makeFrictionCommand(orchestrator),
-        makeGrillCommand(orchestrator),
-        // Editing
-        makeAddCommand(contextManager, projectRoot),
-        makeEditCommand(pipeline, pendingMutations, projectRoot),
-        makeInjectCommand(pipeline, projectRoot),
-        makeCreateCommand(fs, projectRoot),
-        makeRefactorCommand(orchestrator),
-        makeDiffCommand(rollback, pendingMutations),
-        makeApplyCommand(pipeline, pendingMutations, projectRoot),
-        makeRejectCommand(pendingMutations),
-        makeUndoCommand(rollback, projectRoot),
-        // Management
-        makeRoleCommand(roleCtx),
-        makeRegistryCommand(hashRegistry),
-        makeAuditCommand(orchestrator),
-        makeStatusCommand(sessionMemory, usageMetrics),
-        makeClearCommand(contextManager),
-        makeCompactCommand(orchestrator, contextManager),
-        makeHistoryCommand(sessionMemory, projectRoot),
-        makeInitCommand(projectRoot),
-        makeExportCommand(sessionMemory, projectRoot),
-        makeMcpCommand(mcpManager),
-        makeToolsCommand(builtInTools),
-        makeMemoryCommand(sessionMemory),
-        makeModelCommand(routingPreferences, providerRouter),
-        makePrivacyCommand(routingPreferences),
-        makeProvidersCommand(providerRouter, routingPreferences, "models"),
-        makeProvidersCommand(providerRouter, routingPreferences),
+      const handlers = makeCommandHandlers(
+        {
+          orchestrator,
+          hashRegistry,
+          rollback,
+          pipeline,
+          pendingMutations,
+          mcpManager,
+          sessionMemory,
+          usageMetrics,
+          contextManager,
+          fs,
+          roleCtx,
+          routingPreferences,
+          providerRouter,
+          builtInTools,
+        },
+        projectRoot,
       )
 
       yield* Effect.forEach(handlers, svc.register, { discard: true })
-      yield* svc.register(makeHelpCommand(svc))
+      yield* svc.register(makeHelpHandler(svc))
 
       return svc
     }),
