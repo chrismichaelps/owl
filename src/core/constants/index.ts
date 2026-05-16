@@ -260,6 +260,12 @@ export const SEAM_CAPACITIES = {
   INTERNAL: "INTERNAL",
 } as const
 
+/** @Owl.Core.Constants.Governance - Governance analysis outcomes */
+export const SHARD_SPLIT_STATES = {
+  OK: "OK",
+  SHARD_SPLIT: "SHARD_SPLIT",
+} as const
+
 /**
  * @Owl.Core.Constants.Routing - Weights for provider selection scoring
  *
@@ -316,8 +322,89 @@ export const ROUTING_SCORE_DEFAULTS = {
 /** @Owl.Core.Constants.TUI - Terminal UI refresh and layout */
 export const TUI_REFRESH_INTERVAL_MS = 100
 
+/** @Owl.Core.Constants.TUI - Input special characters */
+export const TUI_TRIGGERS = {
+  HELP: "?",
+  PALETTE: "/",
+  MENTION: "@",
+} as const
+
 /** @Owl.Core.Constants.TUI - Maximum log entries to display */
 export const TUI_MAX_LOG_LINES = 100
+
+/** @Owl.Core.Constants.CLI - Command line flags */
+export const CLI_FLAGS = {
+  HELP: ["--help", "-h"],
+  VERSION: ["--version", "-v"],
+  QUICK: ["--quick", "-q"],
+  DEEP: ["--deep", "-d"],
+  ECONOMY: ["--economy", "-e"],
+  MODE_PREFIX: "--mode=",
+} as const
+
+/** @Owl.Core.Constants.FileExtensions - Common file extensions */
+export const FILE_EXTENSIONS = {
+  MD: ".md",
+  JSON: ".json",
+} as const
+
+/** @Owl.Core.Constants.Markdown - Parser block types */
+export const MARKDOWN_BLOCK_TYPES = {
+  TEXT: "text",
+  CODE: "code",
+  BULLET: "bullet",
+  NUMBERED: "numbered",
+  HEADER: "header",
+  DIVIDER: "divider",
+  IMAGE: "image",
+  THINKING: "thinking",
+} as const
+
+/** @Owl.Core.Constants.Modes - Operational modes */
+export const MODES = {
+  STANDARD: "standard",
+  QUICK: "quick",
+  DEEP: "deep",
+  ECONOMY: "economy",
+  GOD: "god",
+} as const
+
+/** @Owl.Core.Constants.Roles - Deepening Flow role IDs */
+export const ROLES = {
+  ARCHITECT: "architect",
+  DNA_ENGINEER: "dna-engineer",
+  SHADOW: "shadow",
+  GUARDIAN: "guardian",
+} as const
+
+/** @Owl.Core.Constants.Parser - Command line parsing characters */
+export const PARSER_CHARS = {
+  DOUBLE_QUOTE: '"',
+  SINGLE_QUOTE: "'",
+  SPACE: " ",
+  TAB: "\t",
+} as const
+
+/** @Owl.Core.Constants.Effect - Internal Effect-TS tags */
+export const EFFECT_TAGS = {
+  SOME: "Some",
+  NONE: "None",
+  RIGHT: "Right",
+  LEFT: "Left",
+  INTERRUPTED: "Interrupted",
+  FAILURE: "Failure",
+  SUCCESS: "Success",
+} as const
+
+/** @Owl.Core.Constants.JS - Native JavaScript types */
+export const JS_TYPES = {
+  OBJECT: "object",
+  STRING: "string",
+  NUMBER: "number",
+  BOOLEAN: "boolean",
+  FUNCTION: "function",
+  UNDEFINED: "undefined",
+} as const
 
 /** @Owl.Core.Constants.TUIRuntime - TUI IDs and preview limits */
 export const TUI_CONSTANTS = {
