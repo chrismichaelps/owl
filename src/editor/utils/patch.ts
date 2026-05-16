@@ -15,7 +15,7 @@
  */
 import { structuredPatch } from "diff"
 import type { StructuredPatchHunk } from "diff"
-import { Chunk } from "effect"
+import { Chunk, Data } from "effect"
 import { EDITOR_CONSTANTS } from "../../core/constants/index.js"
 import { convertLeadingTabsToSpaces } from "./strings.js"
 
@@ -84,15 +84,23 @@ export function countChangedLines(hunks: StructuredPatchHunk[]): {
   readonly added: number
   readonly removed: number
 } {
-  let added = 0
-  let removed = 0
-  for (const hunk of hunks) {
-    for (const line of hunk.lines) {
-      if (line.startsWith("+")) added++
-      else if (line.startsWith("-")) removed++
-    }
-  }
-  return { added, removed }
+  return Chunk.reduce(
+    Chunk.flatMap(Chunk.fromIterable(hunks), (hunk) =>
+      Chunk.fromIterable(hunk.lines),
+    ),
+    Data.struct({ added: 0, removed: 0 }),
+    (state, line) => {
+      if (line.startsWith("+")) {
+        return Data.struct({ added: state.added + 1, removed: state.removed })
+      }
+
+      if (line.startsWith("-")) {
+        return Data.struct({ added: state.added, removed: state.removed + 1 })
+      }
+
+      return state
+    },
+  )
 }
 
 /**
@@ -134,46 +142,79 @@ const formatSideBySideRow = (
   rightPrefix +
   truncateCell(right)
 
+const formatSideBySideHunkHeader = (hunk: StructuredPatchHunk): string =>
+  "@@ -" +
+  String(hunk.oldStart) +
+  "," +
+  String(hunk.oldLines) +
+  " +" +
+  String(hunk.newStart) +
+  "," +
+  String(hunk.newLines) +
+  " @@"
+
+const formatSideBySideLine = (
+  line: string,
+  next: string,
+): {
+  readonly row: string
+  readonly consumesNext: boolean
+} => {
+  if (line.startsWith("-") && next.startsWith("+")) {
+    return Data.struct({
+      row: formatSideBySideRow("- ", line.slice(1), "+ ", next.slice(1)),
+      consumesNext: true,
+    })
+  }
+
+  if (line.startsWith("-")) {
+    return Data.struct({
+      row: formatSideBySideRow("- ", line.slice(1), "  ", ""),
+      consumesNext: false,
+    })
+  }
+
+  if (line.startsWith("+")) {
+    return Data.struct({
+      row: formatSideBySideRow("  ", "", "+ ", line.slice(1)),
+      consumesNext: false,
+    })
+  }
+
+  const context = line.startsWith(" ") ? line.slice(1) : line
+  return Data.struct({
+    row: formatSideBySideRow("  ", context, "  ", context),
+    consumesNext: false,
+  })
+}
+
 const formatSideBySideHunk = (
   hunk: StructuredPatchHunk,
 ): Chunk.Chunk<string> => {
-  const rows: string[] = [
-    "@@ -" +
-      String(hunk.oldStart) +
-      "," +
-      String(hunk.oldLines) +
-      " +" +
-      String(hunk.newStart) +
-      "," +
-      String(hunk.newLines) +
-      " @@",
-  ]
+  const state = Chunk.reduce(
+    Chunk.range(0, hunk.lines.length - 1),
+    Data.struct({
+      rows: Chunk.make(formatSideBySideHunkHeader(hunk)),
+      skipNext: false,
+    }),
+    (current, index) => {
+      if (current.skipNext) {
+        return Data.struct({ rows: current.rows, skipNext: false })
+      }
 
-  for (let i = 0; i < hunk.lines.length; i++) {
-    const line = hunk.lines[i] ?? ""
-    const next = hunk.lines[i + 1] ?? ""
+      const rendered = formatSideBySideLine(
+        hunk.lines[index] ?? "",
+        hunk.lines[index + 1] ?? "",
+      )
 
-    if (line.startsWith("-") && next.startsWith("+")) {
-      rows.push(formatSideBySideRow("- ", line.slice(1), "+ ", next.slice(1)))
-      i++
-      continue
-    }
+      return Data.struct({
+        rows: Chunk.append(current.rows, rendered.row),
+        skipNext: rendered.consumesNext,
+      })
+    },
+  )
 
-    if (line.startsWith("-")) {
-      rows.push(formatSideBySideRow("- ", line.slice(1), "  ", ""))
-      continue
-    }
-
-    if (line.startsWith("+")) {
-      rows.push(formatSideBySideRow("  ", "", "+ ", line.slice(1)))
-      continue
-    }
-
-    const context = line.startsWith(" ") ? line.slice(1) : line
-    rows.push(formatSideBySideRow("  ", context, "  ", context))
-  }
-
-  return Chunk.fromIterable(rows)
+  return state.rows
 }
 
 /**
