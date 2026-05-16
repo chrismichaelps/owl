@@ -1,0 +1,28 @@
+{
+  "contract_id": "CTR-providers-image-00000001",
+  "module": "@Owl.Providers.Image src/providers/image.ts",
+  "grammar_lock": "@root/hashes/grammar/typescript/typescript.hash.md",
+  "depth_score": "0.75",
+  "seam_capacity": "INTERNAL",
+  "sig_id": "SIG-providers-image-00000001",
+  "interface": {
+    "signatures": [
+      "hasImageTags(content: string) => boolean",
+      "parseImageBlocks(content: string) => AnthropicContentBlock[] | null"
+    ],
+    "error_modes": [],
+    "invariants": [
+      "Returns null when content has no owl:image tags"
+    ]
+  },
+  "responsibilities": [
+    "Check for image tags",
+    "Parse tags into content blocks",
+    "Return multi-modal array"
+  ],
+  "prohibited": [
+    "Mutate content string",
+    "Throw on malformed tags \u2014 return null instead"
+  ],
+  "created_at": "2026-05-16T15:33:00.000000Z"
+}

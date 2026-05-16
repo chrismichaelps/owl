@@ -1,0 +1,30 @@
+{
+  "contract_id": "CTR-mcp-manager-00000001",
+  "module": "@Owl.MCP.Manager src/mcp/manager.ts",
+  "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
+  "depth_score": "0.82",
+  "seam_capacity": "BACKBONE",
+  "sig_id": "SIG-mcp-manager-00000001",
+  "interface": {
+    "signatures": [
+      "makeMcpManagerLayer(config: McpConfig) => Layer<McpManager>"
+    ],
+    "error_modes": [
+      "Connection failure \u2014 server skipped, status.connected = false"
+    ],
+    "invariants": [
+      "Tool names are globally unique via server prefix"
+    ]
+  },
+  "responsibilities": [
+    "Init server connections",
+    "Register tools",
+    "Dispatch tool calls",
+    "Report server status"
+  ],
+  "prohibited": [
+    "Throw on server connection failure",
+    "Expose raw MCP client to callers"
+  ],
+  "created_at": "2026-05-16T15:33:00.000000Z"
+}

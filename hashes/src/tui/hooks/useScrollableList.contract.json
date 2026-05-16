@@ -1,0 +1,30 @@
+{
+  "contract_id": "CTR-tui-hooks-scroll-00000001",
+  "module": "@Owl.TUI.Hooks.ScrollableList src/tui/hooks/useScrollableList.ts",
+  "grammar_lock": "@root/hashes/grammar/typescript/typescript.hash.md",
+  "depth_score": "0.70",
+  "seam_capacity": "INTERNAL",
+  "sig_id": "SIG-tui-hooks-scroll-00000001",
+  "interface": {
+    "signatures": [
+      "useScrollableList({ totalItems, visibleRows, isActive }) => UseScrollableListResult",
+      "UseScrollableListResult: { scrollOffset, canScrollUp, canScrollDown, scrollToBottom }"
+    ],
+    "error_modes": [],
+    "invariants": [
+      "scrollOffset always in [0, totalItems - visibleRows]"
+    ]
+  },
+  "responsibilities": [
+    "Track scroll offset",
+    "Handle keyboard input",
+    "Expose scroll capabilities",
+    "Scroll to bottom"
+  ],
+  "prohibited": [
+    "Perform I/O",
+    "Expose raw setScrollOffset",
+    "Accept negative visibleRows"
+  ],
+  "created_at": "2026-05-16T15:33:00.000000Z"
+}

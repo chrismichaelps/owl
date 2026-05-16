@@ -1,0 +1,31 @@
+{
+  "contract_id": "CTR-mcp-config-00000001",
+  "module": "@Owl.MCP.Config src/mcp/config.ts",
+  "grammar_lock": "@root/hashes/grammar/typescript/typescript.hash.md",
+  "depth_score": "0.78",
+  "seam_capacity": "CRITICAL",
+  "sig_id": "SIG-mcp-config-00000001",
+  "interface": {
+    "signatures": [
+      "parseMcpConfig(input: unknown) => McpConfig | null",
+      "mergeMcpConfigs(global, project) => McpConfig",
+      "loadMcpConfig(projectRoot: string) => Promise<McpConfig>"
+    ],
+    "error_modes": [
+      "Schema parse failure returns null \u2014 not thrown"
+    ],
+    "invariants": [
+      "Project config always overrides global for same-named server"
+    ]
+  },
+  "responsibilities": [
+    "Parse config schema",
+    "Merge global+project",
+    "Load from disk"
+  ],
+  "prohibited": [
+    "Throw on missing config file",
+    "Modify config on disk"
+  ],
+  "created_at": "2026-05-16T15:33:00.000000Z"
+}

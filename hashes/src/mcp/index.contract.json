@@ -1,0 +1,27 @@
+{
+  "contract_id": "CTR-mcp-index-00000001",
+  "module": "@Owl.MCP src/mcp/index.ts",
+  "grammar_lock": "@root/hashes/grammar/typescript/typescript.hash.md",
+  "depth_score": "0.55",
+  "seam_capacity": "INTERNAL",
+  "sig_id": "SIG-mcp-index-00000001",
+  "interface": {
+    "signatures": [
+      "McpManager: Context.Tag<McpManager>",
+      "McpTool: { name, description, input_schema }",
+      "McpServerStatus: { name, connected, toolCount, error? }"
+    ],
+    "error_modes": [],
+    "invariants": []
+  },
+  "responsibilities": [
+    "Export McpManager tag",
+    "Export McpTool type",
+    "Export McpServerStatus type"
+  ],
+  "prohibited": [
+    "Implement connection logic here",
+    "Add business logic to types"
+  ],
+  "created_at": "2026-05-16T15:33:00.000000Z"
+}

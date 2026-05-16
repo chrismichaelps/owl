@@ -1,0 +1,28 @@
+{
+  "contract_id": "CTR-tui-history-00000001",
+  "module": "@Owl.TUI.History src/tui/history/index.ts",
+  "grammar_lock": "@root/hashes/grammar/typescript/typescript.hash.md",
+  "depth_score": "0.74",
+  "seam_capacity": "INTERNAL",
+  "sig_id": "SIG-tui-history-00000001",
+  "interface": {
+    "signatures": [
+      "loadHistory(projectRoot: string) => Promise<string[]>",
+      "appendHistory(prompt: string, projectRoot: string) => void"
+    ],
+    "error_modes": [],
+    "invariants": [
+      "appendHistory never throws",
+      "loadHistory returns [] on any I/O error"
+    ]
+  },
+  "responsibilities": [
+    "Load history for project",
+    "Append prompt to history file"
+  ],
+  "prohibited": [
+    "Throw on history file missing",
+    "Block prompt submission on write failure"
+  ],
+  "created_at": "2026-05-16T15:33:00.000000Z"
+}

@@ -1,0 +1,29 @@
+{
+  "contract_id": "CTR-providers-cost-00000001",
+  "module": "@Owl.Providers.Cost src/providers/cost.ts",
+  "grammar_lock": "@root/hashes/grammar/typescript/typescript.hash.md",
+  "depth_score": "0.70",
+  "seam_capacity": "INTERNAL",
+  "sig_id": "SIG-providers-cost-00000001",
+  "interface": {
+    "signatures": [
+      "estimateCapabilityCostUsd(capability, inputTokens, outputTokens) => number",
+      "estimateModelCostUsd(capabilities, modelId, inputTokens, outputTokens) => number"
+    ],
+    "error_modes": [],
+    "invariants": [
+      "Returns 0 for unknown modelId",
+      "inputTokens >= 0",
+      "outputTokens >= 0"
+    ]
+  },
+  "responsibilities": [
+    "Estimate cost from capability",
+    "Find capability by model ID and estimate"
+  ],
+  "prohibited": [
+    "Throw on unknown model",
+    "Cache capability lookups"
+  ],
+  "created_at": "2026-05-16T15:33:00.000000Z"
+}

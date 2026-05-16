@@ -1,0 +1,37 @@
+{
+  "contract_id": "CTR-tui-mentions-00000001",
+  "module": "@Owl.TUI.Mentions src/tui/mentions/index.ts",
+  "grammar_lock": "@root/hashes/grammar/typescript/typescript.hash.md",
+  "depth_score": "0.82",
+  "seam_capacity": "CRITICAL",
+  "sig_id": "SIG-tui-mentions-00000001",
+  "interface": {
+    "signatures": [
+      "expandMentions(prompt: string, projectRoot: string) => Promise<MentionExpansion>",
+      "IMAGE_EXTENSIONS: HashSet<string>",
+      "MentionExpansion: { expanded, files, errors }"
+    ],
+    "error_modes": [
+      "File not found \u2014 reported in errors, not thrown",
+      "File too large \u2014 reported in errors, not thrown",
+      "Total budget exceeded \u2014 subsequent files skipped"
+    ],
+    "invariants": [
+      "expanded prompt always contains original prompt text",
+      "Files listed in .files[] were successfully read"
+    ]
+  },
+  "responsibilities": [
+    "Scan for @mentions",
+    "Read files from disk",
+    "Encode images",
+    "Prepend file blocks",
+    "Report errors"
+  ],
+  "prohibited": [
+    "Throw on file read failure",
+    "Silently drop large files",
+    "Mutate original prompt"
+  ],
+  "created_at": "2026-05-16T15:33:00.000000Z"
+}
