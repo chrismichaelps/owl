@@ -111,6 +111,28 @@ describe("makeEditCommand", () => {
 })
 
 describe("makeApplyCommand", () => {
+  it("lists pending mutations when no mutation ID is provided", async () => {
+    const output = await Effect.runPromise(
+      Effect.gen(function* () {
+        const pending = yield* PendingMutationStore
+        yield* pending.put("edit-example", [
+          {
+            file: "src/a.ts",
+            oldString: "const value = 1",
+            newString: "const value = 2",
+          },
+        ])
+        const command = makeApplyCommand(makePipeline(), pending, "/project")
+        const result = yield* command.execute([])
+        return result.output
+      }).pipe(Effect.provide(PendingMutationStoreLive)),
+    )
+
+    expect(output).toContain("Pending mutations:")
+    expect(output).toContain("edit-example")
+    expect(output).toContain("Run /apply <mutationId> or /apply --all")
+  })
+
   it("applies and removes a pending mutation", async () => {
     const output = await Effect.runPromise(
       Effect.gen(function* () {
@@ -133,6 +155,39 @@ describe("makeApplyCommand", () => {
 
     expect(output).toContain("Applied edit-example")
     expect(output).toContain("Use /undo edit-example")
+  })
+
+  it("applies every pending mutation with --all", async () => {
+    const output = await Effect.runPromise(
+      Effect.gen(function* () {
+        const pending = yield* PendingMutationStore
+        yield* pending.put("edit-one", [
+          {
+            file: "src/a.ts",
+            oldString: "const value = 1",
+            newString: "const value = 2",
+          },
+        ])
+        yield* pending.put("edit-two", [
+          {
+            file: "src/b.ts",
+            oldString: "const value = 1",
+            newString: "const value = 2",
+          },
+        ])
+        const command = makeApplyCommand(makePipeline(), pending, "/project")
+        const result = yield* command.execute(["--all"])
+        const first = yield* pending.get("edit-one")
+        const second = yield* pending.get("edit-two")
+        expect(Option.isNone(first)).toBe(true)
+        expect(Option.isNone(second)).toBe(true)
+        return result.output
+      }).pipe(Effect.provide(PendingMutationStoreLive)),
+    )
+
+    expect(output).toContain("Applied pending mutations:")
+    expect(output).toContain("edit-one")
+    expect(output).toContain("edit-two")
   })
 })
 
