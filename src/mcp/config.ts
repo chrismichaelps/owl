@@ -19,30 +19,52 @@
 import { readFile } from "node:fs/promises"
 import { join } from "node:path"
 import { homedir } from "node:os"
+import { Schema } from "effect"
+import { MCP_CONSTANTS } from "../core/constants/index.js"
 
-export interface McpServerConfig {
-  readonly command: string
-  readonly args?: readonly string[]
-  readonly env?: Readonly<Record<string, string>>
-  readonly cwd?: string
+/** @Owl.MCP.Config.ServerSchema - Validated server process definition */
+export const McpServerConfigSchema = Schema.Struct({
+  command: Schema.String,
+  args: Schema.optional(Schema.Array(Schema.String)),
+  env: Schema.optional(
+    Schema.Record({ key: Schema.String, value: Schema.String }),
+  ),
+  cwd: Schema.optional(Schema.String),
+})
+export type McpServerConfig = Schema.Schema.Type<typeof McpServerConfigSchema>
+
+/** @Owl.MCP.Config.Schema - Validated MCP config document */
+export const McpConfigSchema = Schema.Struct({
+  mcpServers: Schema.Record({
+    key: Schema.String,
+    value: McpServerConfigSchema,
+  }),
+})
+export type McpConfig = Schema.Schema.Type<typeof McpConfigSchema>
+
+/** @Owl.MCP.Config.Parse - Schema-first config boundary parser */
+export function parseMcpConfig(input: unknown): McpConfig | null {
+  const decoded = Schema.decodeUnknownEither(McpConfigSchema)(input)
+  return decoded._tag === "Right" ? decoded.right : null
 }
 
-export interface McpConfig {
-  readonly mcpServers: Readonly<Record<string, McpServerConfig>>
+/** @Owl.MCP.Config.Merge - Project config overrides global config */
+export function mergeMcpConfigs(
+  globalConfig: McpConfig | null,
+  projectConfig: McpConfig | null,
+): McpConfig {
+  return {
+    mcpServers: {
+      ...(globalConfig?.mcpServers ?? {}),
+      ...(projectConfig?.mcpServers ?? {}),
+    },
+  }
 }
 
 async function tryReadJson(path: string): Promise<McpConfig | null> {
   try {
     const raw = await readFile(path, "utf-8")
-    const parsed: unknown = JSON.parse(raw)
-    if (
-      parsed !== null &&
-      typeof parsed === "object" &&
-      "mcpServers" in parsed &&
-      typeof (parsed as Record<string, unknown>).mcpServers === "object"
-    ) {
-      return parsed as McpConfig
-    }
+    return parseMcpConfig(JSON.parse(raw) as unknown)
   } catch {
     // file missing or invalid JSON — silently skip
   }
@@ -55,18 +77,21 @@ async function tryReadJson(path: string): Promise<McpConfig | null> {
  * Returns an empty config when no files are found.
  */
 export async function loadMcpConfig(projectRoot: string): Promise<McpConfig> {
-  const globalPath = join(homedir(), ".owl", "mcp_servers.json")
-  const projectPath = join(projectRoot, ".owl", "mcp_servers.json")
+  const globalPath = join(
+    homedir(),
+    MCP_CONSTANTS.CONFIG_DIR,
+    MCP_CONSTANTS.CONFIG_FILE,
+  )
+  const projectPath = join(
+    projectRoot,
+    MCP_CONSTANTS.CONFIG_DIR,
+    MCP_CONSTANTS.CONFIG_FILE,
+  )
 
   const [global_, project] = await Promise.all([
     tryReadJson(globalPath),
     tryReadJson(projectPath),
   ])
 
-  const merged: Record<string, McpServerConfig> = {
-    ...(global_?.mcpServers ?? {}),
-    ...(project?.mcpServers ?? {}), // project overrides global
-  }
-
-  return { mcpServers: merged }
+  return mergeMcpConfigs(global_, project)
 }

@@ -86,6 +86,12 @@ export const PROVIDER_CONSTANTS = {
   OLLAMA_STREAM_DELIMITER: "\n",
 } as const
 
+/** @Owl.Core.Constants.MCP - MCP configuration paths and naming */
+export const MCP_CONSTANTS = {
+  CONFIG_DIR: ".owl",
+  CONFIG_FILE: "mcp_servers.json",
+} as const
+
 /** @Owl.Core.Constants.Cache - ContextCache retention and validation bounds */
 export const CACHE_CONSTANTS = {
   MAX_ENTRIES: 100,
