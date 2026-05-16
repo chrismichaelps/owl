@@ -74,6 +74,13 @@ describe("makeStatusCommand", () => {
     expect(output).toContain(
       "Provider anthropic: 1 calls, 150 tokens, $0.0015, 120ms avg",
     )
+    expect(output).toContain(
+      "Model anthropic/claude-sonnet-4: 1 calls, 150 tokens, $0.0015",
+    )
+    expect(output).toContain(
+      "Recent task-1: anthropic/claude-sonnet-4, 150 tokens, 120ms",
+    )
+    expect(output).toContain("Last turn: 2026-05-14T21:24:00.000Z")
   })
 
   it("reports prompt cache efficiency when cache tokens exist", async () => {

@@ -222,6 +222,8 @@ export const SESSION_MEMORY_CONSTANTS = {
 /** @Owl.Core.Constants.Metrics - Runtime UsageMetrics constraints */
 export const METRICS_CONSTANTS = {
   RECENT_INFERENCE_LIMIT: 10,
+  STATUS_MODEL_LIMIT: 5,
+  STATUS_RECENT_LIMIT: 3,
   CACHE_HIT_RATE_PERCENT_MULTIPLIER: 100,
   CACHE_HIT_RATE_DECIMAL_PLACES: 1,
 } as const
