@@ -13,7 +13,7 @@
  *
  * Token estimation: ~4 characters per token (GPT/Claude approximation)
  */
-import { Effect } from "effect"
+import { Chunk, Effect } from "effect"
 import { TOKEN_LIMITS } from "../../core/constants/index.js"
 import type { Message } from "../../core/schema/index.js"
 
@@ -61,7 +61,11 @@ export function estimateMessageTokens(msg: Message): number {
 export function estimateConversationTokens(
   messages: readonly Message[],
 ): number {
-  return messages.reduce((sum, m) => sum + estimateMessageTokens(m), 0)
+  return Chunk.reduce(
+    Chunk.fromIterable(messages),
+    0,
+    (sum, message) => sum + estimateMessageTokens(message),
+  )
 }
 
 /**
@@ -76,7 +80,9 @@ export function extractMarkovWindow(
 ): readonly Message[] {
   const pairsToKeep = windowSize * 2
   if (messages.length <= pairsToKeep) return messages
-  return messages.slice(messages.length - pairsToKeep)
+  return Chunk.toReadonlyArray(
+    Chunk.drop(Chunk.fromIterable(messages), messages.length - pairsToKeep),
+  )
 }
 
 /** Check if pruning is needed */
@@ -137,11 +143,11 @@ function truncateToFit(
   budget: number,
 ): readonly Message[] {
   let remaining = budget
-  const result: Message[] = []
+  let result = Chunk.empty<Message>()
 
   const lastMsg = messages[messages.length - 1]
   if (lastMsg) {
-    result.unshift(lastMsg)
+    result = Chunk.prepend(result, lastMsg)
     remaining -= estimateMessageTokens(lastMsg)
   }
 
@@ -150,9 +156,9 @@ function truncateToFit(
     if (!msg) continue
     const cost = estimateMessageTokens(msg)
     if (remaining - cost < 0) break
-    result.unshift(msg)
+    result = Chunk.prepend(result, msg)
     remaining -= cost
   }
 
-  return result
+  return Chunk.toReadonlyArray(result)
 }
