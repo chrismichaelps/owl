@@ -183,6 +183,7 @@ export const THINKING_MODES: HashSet.HashSet<string> = HashSet.fromIterable([
 /** @Owl.Core.Constants.ProviderRuntime - Provider adapter runtime limits */
 export const PROVIDER_CONSTANTS = {
   TOKEN_ESTIMATION_CHARS_PER_TOKEN: 4,
+  ANTHROPIC_MAX_TOOL_ITERATIONS: 10,
   OLLAMA_STREAM_DELIMITER: "\n",
   XAI_BASE_URL: "https://api.x.ai/v1",
 } as const

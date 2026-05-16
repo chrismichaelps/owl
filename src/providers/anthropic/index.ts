@@ -10,7 +10,7 @@
  * When McpManager is present in the Effect context, its tools are forwarded to
  * the Anthropic API. If the model returns stop_reason "tool_use", the adapter
  * executes each tool via McpManager, appends results, and re-calls the API
- * until stop_reason is "end_turn" or the 10-iteration safety cap is hit.
+ * until stop_reason is "end_turn" or the configured safety cap is hit.
  *
  * Models:
  * - claude-opus-4-7: Highest capability, largest context (1M tokens)
@@ -32,6 +32,7 @@ import {
   ANTHROPIC_MODELS,
   CONFIG_CONSTANTS,
   HTTP_STATUS,
+  PROVIDER_CONSTANTS,
   PROVIDER_TIMEOUTS,
   RETRY_CONFIG,
   STREAM_CHUNK_TYPES,
@@ -51,8 +52,6 @@ import type {
   InferenceRequest,
   InferenceResponse,
 } from "../../core/schema/index.js"
-
-const MAX_TOOL_ITERATIONS = 10
 
 const ANTHROPIC_INTERNAL_CONSTANTS = {
   BLOCK_TYPE_TEXT: "text",
@@ -303,7 +302,7 @@ export const AnthropicAdapterLive = Layer.effect(
           response.stop_reason ===
             ANTHROPIC_INTERNAL_CONSTANTS.STOP_REASON_TOOL_USE &&
           (mcpManager !== null || builtInTools !== null) &&
-          iterations < MAX_TOOL_ITERATIONS
+          iterations < PROVIDER_CONSTANTS.ANTHROPIC_MAX_TOOL_ITERATIONS
         ) {
           // Collect any text the model generated alongside the tool call
           for (const block of response.content) {
@@ -448,7 +447,9 @@ export const AnthropicAdapterLive = Layer.effect(
 
             const streamThinking = resolveThinking(request)
 
-            while (iterations < MAX_TOOL_ITERATIONS) {
+            while (
+              iterations < PROVIDER_CONSTANTS.ANTHROPIC_MAX_TOOL_ITERATIONS
+            ) {
               const streamParams: AnthropicStreamParamsWithThinking = {
                 model: request.model,
                 max_tokens: request.maxTokens,
@@ -584,7 +585,11 @@ export const AnthropicAdapterLive = Layer.effect(
       })
 
     const countTokens = (text: string, _modelId: string) =>
-      Effect.succeed(Math.ceil(text.length / 4))
+      Effect.succeed(
+        Math.ceil(
+          text.length / PROVIDER_CONSTANTS.TOKEN_ESTIMATION_CHARS_PER_TOKEN,
+        ),
+      )
 
     const healthCheck = () =>
       Effect.tryPromise({

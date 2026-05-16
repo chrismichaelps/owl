@@ -3,6 +3,7 @@ import { describe, it, expect } from "vitest"
 import {
   TOKEN_LIMITS,
   PROVIDER_TIMEOUTS,
+  PROVIDER_CONSTANTS,
   RETRY_CONFIG,
   DEPTH_THRESHOLDS,
   resolveModeThinkingBudget,
@@ -20,6 +21,11 @@ describe("system constants", () => {
   it("PROVIDER_TIMEOUTS are reasonable", () => {
     expect(PROVIDER_TIMEOUTS.DEFAULT_MS).toBe(30000)
     expect(PROVIDER_TIMEOUTS.STREAM_CHUNK_TIMEOUT_MS).toBe(5000)
+  })
+
+  it("PROVIDER_CONSTANTS centralize provider runtime bounds", () => {
+    expect(PROVIDER_CONSTANTS.TOKEN_ESTIMATION_CHARS_PER_TOKEN).toBe(4)
+    expect(PROVIDER_CONSTANTS.ANTHROPIC_MAX_TOOL_ITERATIONS).toBe(10)
   })
 
   it("RETRY_CONFIG has exponential backoff settings", () => {
