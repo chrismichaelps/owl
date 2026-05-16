@@ -37,6 +37,7 @@ import { WelcomePanel } from "./components/WelcomePanel.js"
 import { CommandPalette } from "./components/CommandPalette.js"
 import { ShortcutsOverlay } from "./components/ShortcutsOverlay.js"
 import { owlReducer, INITIAL_STATE } from "./state.js"
+import { EFFECT_TAGS, JS_TYPES } from "../core/constants/index.js"
 import type { Mode } from "../core/schema/index.js"
 import type { OwlRuntime } from "../cli/runtime.js"
 import { Orchestrator } from "../engine/orchestrator/index.js"
@@ -167,9 +168,9 @@ export const App: React.FC<AppProps> = ({
         .catch((err: unknown) => {
           if (
             err !== null &&
-            typeof err === "object" &&
-            "_tag" in err &&
-            (err as { _tag: string })._tag === "Interrupted"
+            typeof err === JS_TYPES.OBJECT &&
+            "_tag" in (err as object) &&
+            (err as { _tag: string })._tag === EFFECT_TAGS.INTERRUPTED
           ) {
             dispatch({ type: "SET_STATUS", status: "idle" })
             return

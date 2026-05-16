@@ -18,6 +18,7 @@
 import { appendFile, mkdir, readFile, writeFile } from "node:fs/promises"
 import { homedir } from "node:os"
 import { join } from "node:path"
+import { JS_TYPES } from "../../core/constants/index.js"
 
 const OWL_HOME = join(homedir(), ".owl")
 const HISTORY_FILE = join(OWL_HOME, "history.jsonl")
@@ -34,13 +35,13 @@ function parseEntry(line: string): HistoryEntry | null {
     const parsed = JSON.parse(line) as unknown
     if (
       parsed != null &&
-      typeof parsed === "object" &&
-      "prompt" in parsed &&
-      "ts" in parsed &&
-      "project" in parsed &&
-      typeof (parsed as Record<string, unknown>).prompt === "string" &&
-      typeof (parsed as Record<string, unknown>).ts === "number" &&
-      typeof (parsed as Record<string, unknown>).project === "string"
+      typeof parsed === JS_TYPES.OBJECT &&
+      "prompt" in (parsed as object) &&
+      "ts" in (parsed as object) &&
+      "project" in (parsed as object) &&
+      typeof (parsed as Record<string, unknown>).prompt === JS_TYPES.STRING &&
+      typeof (parsed as Record<string, unknown>).ts === JS_TYPES.NUMBER &&
+      typeof (parsed as Record<string, unknown>).project === JS_TYPES.STRING
     ) {
       return parsed as HistoryEntry
     }
