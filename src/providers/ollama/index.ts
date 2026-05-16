@@ -38,6 +38,11 @@ import type {
   InferenceRequest,
   InferenceResponse,
 } from "../../core/schema/index.js"
+import {
+  OllamaGenerateResponseSchema,
+  OllamaStreamResponseSchema,
+} from "./schema.js"
+import type { OllamaStreamResponse } from "./schema.js"
 
 /**
  * @Owl.Providers.Ollama.Capabilities - Local model specifications
@@ -68,19 +73,6 @@ const OLLAMA_CAPABILITIES: readonly ProviderCapability[] = [
     supportsVision: false,
   }),
 ]
-
-const OllamaGenerateResponseSchema = Schema.Struct({
-  response: Schema.String,
-})
-
-const OllamaStreamResponseSchema = Schema.Struct({
-  response: Schema.optional(Schema.String),
-  done: Schema.Boolean,
-})
-
-type OllamaStreamResponse = Schema.Schema.Type<
-  typeof OllamaStreamResponseSchema
->
 
 const decodeGenerateResponse = Schema.decodeUnknownSync(
   OllamaGenerateResponseSchema,
