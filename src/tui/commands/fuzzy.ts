@@ -1,4 +1,5 @@
 /** @Owl.TUI.Commands.Fuzzy - Deterministic command palette ranking */
+import { Chunk, Data, Order } from "effect"
 
 export interface PaletteCommand {
   readonly name: string
@@ -64,15 +65,51 @@ const scoreCommand = (command: PaletteCommand, rawQuery: string): number => {
   return score
 }
 
+const rankedOrder = Order.make<RankedPaletteCommand>((left, right) => {
+  const scoreDelta = right.score - left.score
+  if (scoreDelta < 0) return -1
+  if (scoreDelta > 0) return 1
+
+  const nameDelta = left.name.localeCompare(right.name)
+  if (nameDelta < 0) return -1
+  if (nameDelta > 0) return 1
+  return 0
+})
+
 /** @Owl.TUI.Commands.Fuzzy.Rank - Rank palette commands by query */
 export const rankPaletteCommands = (
   commands: readonly PaletteCommand[],
   query: string,
 ): readonly RankedPaletteCommand[] =>
-  commands
-    .map((command) => ({
-      ...command,
-      score: scoreCommand(command, query),
-    }))
-    .filter((command) => command.score > 0)
-    .sort((a, b) => b.score - a.score || a.name.localeCompare(b.name))
+  Chunk.toReadonlyArray(
+    Chunk.sort(
+      Chunk.filter(
+        Chunk.map(Chunk.fromIterable(commands), (command) =>
+          Data.struct({
+            ...command,
+            score: scoreCommand(command, query),
+          }),
+        ),
+        (command) => command.score > 0,
+      ),
+      rankedOrder,
+    ),
+  )
+
+/** @Owl.TUI.Commands.Fuzzy.Suggestion - Inline ghost completion suffix */
+export const getPaletteSuggestion = (
+  value: string,
+  commands: readonly PaletteCommand[],
+  selectedIndex: number,
+): string => {
+  if (!value.startsWith("/")) return ""
+
+  const { commandQuery, args } = parsePaletteInput(value)
+  if (args.length > 0) return ""
+
+  const selected = rankPaletteCommands(commands, commandQuery)[selectedIndex]
+  if (selected === undefined) return ""
+
+  const completed = "/" + selected.name + " "
+  return completed.startsWith(value) ? completed.slice(value.length) : ""
+}

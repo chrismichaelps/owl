@@ -2,6 +2,7 @@
 import { describe, expect, it } from "vitest"
 import {
   completePaletteCommand,
+  getPaletteSuggestion,
   parsePaletteInput,
   rankPaletteCommands,
 } from "../../src/tui/commands/fuzzy.js"
@@ -61,5 +62,19 @@ describe("completePaletteCommand", () => {
 
   it("adds a trailing space for command-only completions", () => {
     expect(completePaletteCommand("/mem", "memory")).toBe("/memory ")
+  })
+})
+
+describe("getPaletteSuggestion", () => {
+  it("suggests the selected command when the user types only slash", () => {
+    expect(getPaletteSuggestion("/", COMMANDS, 0)).toBe("edit ")
+  })
+
+  it("suggests the remaining command suffix for a partial command", () => {
+    expect(getPaletteSuggestion("/mo", COMMANDS, 0)).toBe("del ")
+  })
+
+  it("does not suggest after command arguments have started", () => {
+    expect(getPaletteSuggestion("/model auto", COMMANDS, 0)).toBe("")
   })
 })

@@ -1,5 +1,6 @@
 /** @Owl.TUI.Components.CommandPalette - Fuzzy slash command overlay */
 import React, { memo } from "react"
+import { Chunk } from "effect"
 import { Box, Text } from "ink"
 import { COMMAND_CONSTANTS } from "../../core/constants/index.js"
 import { rankPaletteCommands } from "../commands/fuzzy.js"
@@ -17,8 +18,8 @@ export const CommandPalette: React.FC<CommandPaletteProps> = memo(
   ({ open, query, selectedIndex, commands }) => {
     if (!open) return null
 
-    const ranked = rankPaletteCommands(commands, query).slice(
-      0,
+    const ranked = Chunk.take(
+      Chunk.fromIterable(rankPaletteCommands(commands, query)),
       COMMAND_CONSTANTS.PALETTE_VISIBLE_COUNT,
     )
 
@@ -40,12 +41,12 @@ export const CommandPalette: React.FC<CommandPaletteProps> = memo(
         </Box>
         <Text color="gray">/{query}</Text>
 
-        {ranked.length === 0 ? (
+        {Chunk.isEmpty(ranked) ? (
           <Text color="gray" dimColor>
             No matching commands
           </Text>
         ) : (
-          ranked.map((command, index) => {
+          Chunk.toReadonlyArray(ranked).map((command, index) => {
             const selected = index === selectedIndex
             return (
               <Box key={command.name}>

@@ -4,6 +4,7 @@ import { Box, Text, useInput, useWindowSize } from "ink"
 import { COMMAND_CONSTANTS, TUI_WELCOME } from "../../core/constants/index.js"
 import {
   completePaletteCommand,
+  getPaletteSuggestion,
   parsePaletteInput,
   rankPaletteCommands,
 } from "../commands/fuzzy.js"
@@ -240,14 +241,35 @@ export const PromptInput: React.FC<PromptInputProps> = memo(
           return
         }
 
+        if (key.rightArrow && cur.startsWith("/")) {
+          const query = parsePaletteInput(cur).commandQuery
+          const selected = rankPaletteCommands(commandsRef.current, query)[
+            curIdx
+          ]
+          if (selected !== undefined) {
+            updateValue(completePaletteCommand(cur, selected.name), 0)
+          }
+          return
+        }
+
         if (key.return) {
-          const query = cur.startsWith("/")
-            ? parsePaletteInput(cur).commandQuery
-            : ""
+          const paletteInput = cur.startsWith("/")
+            ? parsePaletteInput(cur)
+            : null
+          const query = paletteInput?.commandQuery ?? ""
           const ranked = cur.startsWith("/")
             ? rankPaletteCommands(commandsRef.current, query)
             : []
           const selected = ranked[curIdx]
+          if (
+            cur.startsWith("/") &&
+            paletteInput?.commandQuery.length === 0 &&
+            selected !== undefined
+          ) {
+            updateValue(completePaletteCommand(cur, selected.name), 0)
+            return
+          }
+
           const submitted =
             cur.startsWith("/") && selected !== undefined
               ? completePaletteCommand(cur, selected.name)
@@ -295,6 +317,11 @@ export const PromptInput: React.FC<PromptInputProps> = memo(
 
     const detectedMode = value.length > 0 ? detectSlashMode(value) : null
     const displayMode = detectedMode ?? mode
+    const paletteSuggestion = getPaletteSuggestion(
+      value,
+      commands,
+      paletteIndex,
+    )
     const separatorWidth = Math.max(
       columns - 1,
       TUI_WELCOME.SEPARATOR_MIN_WIDTH,
@@ -323,6 +350,11 @@ export const PromptInput: React.FC<PromptInputProps> = memo(
           <Text color="gray"> {displayMode} </Text>
           <Text>
             {value}
+            {paletteSuggestion.length > 0 ? (
+              <Text color="gray" dimColor>
+                {paletteSuggestion}
+              </Text>
+            ) : null}
             {!disabled ? <Text color="white">█</Text> : null}
           </Text>
           {disabled ? (
