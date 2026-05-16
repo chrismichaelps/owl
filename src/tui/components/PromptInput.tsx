@@ -1,7 +1,11 @@
 /** @Owl.TUI.Components.PromptInput - REPL prompt with mode prefix, history nav, slash dispatch */
 import React, { memo, useCallback, useEffect, useRef, useState } from "react"
 import { Box, Text, useInput, useWindowSize } from "ink"
-import { COMMAND_CONSTANTS, TUI_WELCOME } from "../../core/constants/index.js"
+import {
+  COMMAND_CONSTANTS,
+  TUI_WELCOME,
+  TUI_TRIGGERS,
+} from "../../core/constants/index.js"
 import {
   completePaletteCommand,
   getPaletteSuggestion,
@@ -95,7 +99,8 @@ export const PromptInput: React.FC<PromptInputProps> = memo(
     const mentionIndexRef = useRef(0)
     const mentionFilesRef = useRef<readonly ProjectFile[]>([])
     const atQuery = extractAtQuery(value)
-    const showMentionPalette = atQuery !== null && !value.startsWith("/")
+    const showMentionPalette =
+      atQuery !== null && !value.startsWith(TUI_TRIGGERS.PALETTE)
 
     // Load project file list once on mount
     useEffect(() => {
@@ -138,7 +143,7 @@ export const PromptInput: React.FC<PromptInputProps> = memo(
     const updateValue = useCallback(
       (next: string, nextIndex = paletteIndexRef.current): void => {
         setValue(next)
-        const open = next.startsWith("/")
+        const open = next.startsWith(TUI_TRIGGERS.PALETTE)
         const query = open ? parsePaletteInput(next).commandQuery : ""
         const matches = rankPaletteCommands(commandsRef.current, query)
         const boundedIndex =
@@ -162,9 +167,9 @@ export const PromptInput: React.FC<PromptInputProps> = memo(
         const cur = valueRef.current
         const curIdx = paletteIndexRef.current
         const atQ = extractAtQuery(cur)
-        const inMention = atQ !== null && !cur.startsWith("/")
+        const inMention = atQ !== null && !cur.startsWith(TUI_TRIGGERS.PALETTE)
 
-        if (input === "?" && cur.length === 0) {
+        if (input === TUI_TRIGGERS.HELP && cur.length === 0) {
           onShortcuts()
           return
         }
@@ -197,7 +202,7 @@ export const PromptInput: React.FC<PromptInputProps> = memo(
         }
 
         if (key.upArrow) {
-          if (cur.startsWith("/")) {
+          if (cur.startsWith(TUI_TRIGGERS.PALETTE)) {
             const query = parsePaletteInput(cur).commandQuery
             const ranked = rankPaletteCommands(commandsRef.current, query)
             const nextIndex = ranked.length === 0 ? 0 : Math.max(0, curIdx - 1)
@@ -211,7 +216,7 @@ export const PromptInput: React.FC<PromptInputProps> = memo(
         }
 
         if (key.downArrow) {
-          if (cur.startsWith("/")) {
+          if (cur.startsWith(TUI_TRIGGERS.PALETTE)) {
             const query = parsePaletteInput(cur).commandQuery
             const ranked = rankPaletteCommands(commandsRef.current, query)
             const nextIndex =
@@ -230,7 +235,7 @@ export const PromptInput: React.FC<PromptInputProps> = memo(
           return
         }
 
-        if (key.tab && cur.startsWith("/")) {
+        if (key.tab && cur.startsWith(TUI_TRIGGERS.PALETTE)) {
           const query = parsePaletteInput(cur).commandQuery
           const selected = rankPaletteCommands(commandsRef.current, query)[
             curIdx
@@ -241,7 +246,7 @@ export const PromptInput: React.FC<PromptInputProps> = memo(
           return
         }
 
-        if (key.rightArrow && cur.startsWith("/")) {
+        if (key.rightArrow && cur.startsWith(TUI_TRIGGERS.PALETTE)) {
           const query = parsePaletteInput(cur).commandQuery
           const selected = rankPaletteCommands(commandsRef.current, query)[
             curIdx
@@ -253,16 +258,16 @@ export const PromptInput: React.FC<PromptInputProps> = memo(
         }
 
         if (key.return) {
-          const paletteInput = cur.startsWith("/")
+          const paletteInput = cur.startsWith(TUI_TRIGGERS.PALETTE)
             ? parsePaletteInput(cur)
             : null
           const query = paletteInput?.commandQuery ?? ""
-          const ranked = cur.startsWith("/")
+          const ranked = cur.startsWith(TUI_TRIGGERS.PALETTE)
             ? rankPaletteCommands(commandsRef.current, query)
             : []
           const selected = ranked[curIdx]
           if (
-            cur.startsWith("/") &&
+            cur.startsWith(TUI_TRIGGERS.PALETTE) &&
             paletteInput?.commandQuery.length === 0 &&
             selected !== undefined
           ) {
@@ -271,7 +276,7 @@ export const PromptInput: React.FC<PromptInputProps> = memo(
           }
 
           const submitted =
-            cur.startsWith("/") && selected !== undefined
+            cur.startsWith(TUI_TRIGGERS.PALETTE) && selected !== undefined
               ? completePaletteCommand(cur, selected.name)
               : cur
           const trimmed = submitted.trim()
@@ -280,7 +285,7 @@ export const PromptInput: React.FC<PromptInputProps> = memo(
           push(trimmed)
           reset()
 
-          if (trimmed.startsWith("/")) {
+          if (trimmed.startsWith(TUI_TRIGGERS.PALETTE)) {
             const detected = detectSlashMode(trimmed)
             if (detected !== null) {
               onModeChange(detected)

@@ -19,6 +19,7 @@
  */
 import React, { memo } from "react"
 import { Box, Text } from "ink"
+import { MARKDOWN_BLOCK_TYPES } from "../../core/constants/index.js"
 
 interface MarkdownTextProps {
   readonly content: string
@@ -26,7 +27,11 @@ interface MarkdownTextProps {
 }
 
 interface Block {
-  type: "code" | "heading" | "rule" | "bullet" | "numbered" | "blank" | "text"
+  type:
+    | (typeof MARKDOWN_BLOCK_TYPES)[keyof typeof MARKDOWN_BLOCK_TYPES]
+    | "heading"
+    | "rule"
+    | "blank"
   content: string
   lang?: string
   level?: number
@@ -78,7 +83,7 @@ function parseBlocks(raw: string): Block[] {
       }
       i++ // skip closing fence
       blocks.push({
-        type: "code",
+        type: MARKDOWN_BLOCK_TYPES.CODE,
         content: codeLines.join("\n"),
         ...(lang !== undefined ? { lang } : {}),
       })
@@ -107,7 +112,10 @@ function parseBlocks(raw: string): Block[] {
     // Bullet list item
     const bulletMatch = /^(\s*)[-*+]\s+(.+)/.exec(line)
     if (bulletMatch != null) {
-      blocks.push({ type: "bullet", content: bulletMatch[2] ?? "" })
+      blocks.push({
+        type: MARKDOWN_BLOCK_TYPES.BULLET,
+        content: bulletMatch[2] ?? "",
+      })
       i++
       continue
     }
@@ -115,7 +123,10 @@ function parseBlocks(raw: string): Block[] {
     // Numbered list item
     const numberedMatch = /^(\s*)\d+\.\s+(.+)/.exec(line)
     if (numberedMatch != null) {
-      blocks.push({ type: "numbered", content: numberedMatch[2] ?? "" })
+      blocks.push({
+        type: MARKDOWN_BLOCK_TYPES.NUMBERED,
+        content: numberedMatch[2] ?? "",
+      })
       i++
       continue
     }
@@ -140,7 +151,10 @@ function parseBlocks(raw: string): Block[] {
       textLines.push(lines[i] ?? "")
       i++
     }
-    blocks.push({ type: "text", content: textLines.join(" ") })
+    blocks.push({
+      type: MARKDOWN_BLOCK_TYPES.TEXT,
+      content: textLines.join(" "),
+    })
   }
 
   return blocks
@@ -205,7 +219,7 @@ function BlockRenderer({
   dimColor?: boolean
 }): React.ReactElement | null {
   switch (block.type) {
-    case "code":
+    case MARKDOWN_BLOCK_TYPES.CODE:
       return (
         <Box
           flexDirection="column"
@@ -254,7 +268,7 @@ function BlockRenderer({
         </Text>
       )
 
-    case "bullet":
+    case MARKDOWN_BLOCK_TYPES.BULLET:
       return (
         <Box gap={1}>
           <Text color="cyan" dimColor={dimColor ?? false}>
@@ -266,7 +280,7 @@ function BlockRenderer({
         </Box>
       )
 
-    case "numbered":
+    case MARKDOWN_BLOCK_TYPES.NUMBERED:
       return (
         <Box gap={1}>
           <Text color="cyan" dimColor={dimColor ?? false}>
@@ -281,7 +295,7 @@ function BlockRenderer({
     case "blank":
       return null
 
-    case "text":
+    case MARKDOWN_BLOCK_TYPES.TEXT:
     default:
       return (
         <Text wrap="wrap" dimColor={dimColor ?? false}>
@@ -300,7 +314,7 @@ export const MarkdownText: React.FC<MarkdownTextProps> = memo(
     return (
       <Box flexDirection="column" gap={0}>
         {blocks.map((block, idx) => {
-          if (block.type === "numbered") {
+          if (block.type === MARKDOWN_BLOCK_TYPES.NUMBERED) {
             const b = { ...block, index: numberedIndex++ }
             return (
               <BlockRenderer key={idx} block={b} dimColor={dimColor ?? false} />

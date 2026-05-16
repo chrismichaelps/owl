@@ -4,6 +4,7 @@ import { HashSet } from "effect"
 import { extname } from "node:path"
 import { Box, Text } from "ink"
 import { IMAGE_EXTENSIONS } from "../mentions/index.js"
+import { FILE_EXTENSIONS } from "../../core/constants/index.js"
 import type { ProjectFile } from "../mentions/files.js"
 
 interface FileMentionPaletteProps {
@@ -15,8 +16,8 @@ interface FileMentionPaletteProps {
 function fileIcon(path: string): string {
   const ext = extname(path).toLowerCase()
   if (HashSet.has(IMAGE_EXTENSIONS, ext)) return "[img]"
-  if (ext === ".md") return "[md] "
-  if (ext === ".json") return "{  } "
+  if (ext === FILE_EXTENSIONS.MD) return "[md] "
+  if (ext === FILE_EXTENSIONS.JSON) return "{  } "
   return "     "
 }
 
