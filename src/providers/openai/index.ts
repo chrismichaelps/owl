@@ -14,11 +14,15 @@
  * yield* registerProvider(router, OpenAIAdapterLive)
  */
 import OpenAI from "openai"
-import { Context, Effect, Layer, Schedule } from "effect"
+import { Chunk, Context, Data, Effect, Layer, Schedule } from "effect"
 import * as Stream from "effect/Stream"
 import { ProviderError, ProviderStreamError } from "../../core/errors/index.js"
 import { OWL_CONFIG } from "../../core/config/index.js"
-import { PROVIDER_CONSTANTS, RETRY_CONFIG } from "../../core/constants/index.js"
+import {
+  OPENAI_MODELS,
+  PROVIDER_CONSTANTS,
+  RETRY_CONFIG,
+} from "../../core/constants/index.js"
 import { estimateModelCostUsd } from "../cost.js"
 import type {
   LLMProviderService,
@@ -34,9 +38,9 @@ import type {
  * @Owl.Providers.OpenAI.Capabilities - Model specifications and competitive pricing
  */
 const OPENAI_CAPABILITIES: readonly ProviderCapability[] = [
-  {
+  Data.struct({
     providerId: "openai",
-    modelId: "gpt-4o",
+    modelId: OPENAI_MODELS.GPT_4O,
     contextWindow: 128_000,
     maxOutputTokens: 16_384,
     inputCostPer1k: 0.0025,
@@ -45,10 +49,10 @@ const OPENAI_CAPABILITIES: readonly ProviderCapability[] = [
     reasoningDepth: "high",
     supportsFunctionCalling: true,
     supportsVision: true,
-  },
-  {
+  }),
+  Data.struct({
     providerId: "openai",
-    modelId: "o3",
+    modelId: OPENAI_MODELS.O3,
     contextWindow: 200_000,
     maxOutputTokens: 100_000,
     inputCostPer1k: 0.002,
@@ -57,21 +61,32 @@ const OPENAI_CAPABILITIES: readonly ProviderCapability[] = [
     reasoningDepth: "high",
     supportsFunctionCalling: true,
     supportsVision: true,
-  },
+  }),
 ]
 
 const estimateTextTokens = (text: string): number =>
   Math.ceil(text.length / PROVIDER_CONSTANTS.TOKEN_ESTIMATION_CHARS_PER_TOKEN)
 
-const buildMessages = (request: InferenceRequest) => [
-  ...(request.systemPrompt
-    ? [{ role: "system" as const, content: request.systemPrompt }]
-    : []),
-  ...request.messages.map((message) => ({
-    role: message.role as "user" | "assistant",
-    content: message.content,
-  })),
-]
+const buildMessages = (request: InferenceRequest) => {
+  const messages = Chunk.map(Chunk.fromIterable(request.messages), (message) =>
+    Data.struct({
+      role: message.role as "user" | "assistant",
+      content: message.content,
+    }),
+  )
+
+  return Chunk.toArray(
+    request.systemPrompt !== undefined
+      ? Chunk.prepend(
+          messages,
+          Data.struct({
+            role: "system" as const,
+            content: request.systemPrompt,
+          }),
+        )
+      : messages,
+  )
+}
 
 /** @Owl.Providers.OpenAI.Adapter - service definition */
 export class OpenAIAdapter extends Context.Tag("OpenAIAdapter")<
@@ -147,7 +162,7 @@ export const OpenAIAdapterLive = Layer.effect(
             taskId: request.taskId,
             content,
             stopReason: "end_turn" as const,
-            usage: {
+            usage: Data.struct({
               inputTokens: usage?.prompt_tokens ?? 0,
               outputTokens: usage?.completion_tokens ?? 0,
               cacheReadTokens: 0,
@@ -158,7 +173,7 @@ export const OpenAIAdapterLive = Layer.effect(
                 usage?.prompt_tokens ?? 0,
                 usage?.completion_tokens ?? 0,
               ),
-            },
+            }),
             model: response.model,
             provider: "openai" as const,
             latencyMs: Date.now() - startMs,
@@ -194,7 +209,7 @@ export const OpenAIAdapterLive = Layer.effect(
                 await emit.single({
                   type: "usage",
                   index,
-                  usage: {
+                  usage: Data.struct({
                     inputTokens,
                     outputTokens,
                     cacheReadTokens: 0,
@@ -205,7 +220,7 @@ export const OpenAIAdapterLive = Layer.effect(
                       inputTokens,
                       outputTokens,
                     ),
-                  },
+                  }),
                 })
               }
             }

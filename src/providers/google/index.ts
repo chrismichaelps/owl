@@ -13,11 +13,14 @@
  * // Not configured by default — set GOOGLE_API_KEY to enable
  */
 import { GoogleGenerativeAI } from "@google/generative-ai"
-import { Context, Effect, Layer } from "effect"
+import { Chunk, Context, Data, Effect, Layer } from "effect"
 import * as Stream from "effect/Stream"
 import { ProviderError, ProviderStreamError } from "../../core/errors/index.js"
 import { OWL_CONFIG } from "../../core/config/index.js"
-import { PROVIDER_CONSTANTS } from "../../core/constants/index.js"
+import {
+  GOOGLE_MODELS,
+  PROVIDER_CONSTANTS,
+} from "../../core/constants/index.js"
 import { estimateModelCostUsd } from "../cost.js"
 import type {
   LLMProviderService,
@@ -33,9 +36,9 @@ import type {
  * @Owl.Providers.Google.Capabilities - Multimodal model specifications
  */
 const GOOGLE_CAPABILITIES: readonly ProviderCapability[] = [
-  {
+  Data.struct({
     providerId: "google",
-    modelId: "gemini-2.5-flash",
+    modelId: GOOGLE_MODELS.GEMINI_2_5_FLASH,
     contextWindow: 1_048_576,
     maxOutputTokens: 8_192,
     inputCostPer1k: 0.0001,
@@ -44,7 +47,7 @@ const GOOGLE_CAPABILITIES: readonly ProviderCapability[] = [
     reasoningDepth: "medium",
     supportsFunctionCalling: true,
     supportsVision: true,
-  },
+  }),
 ]
 
 interface GoogleUsageMetadata {
@@ -61,10 +64,15 @@ const estimateTextTokens = (text: string): number =>
   Math.ceil(text.length / PROVIDER_CONSTANTS.TOKEN_ESTIMATION_CHARS_PER_TOKEN)
 
 const buildPrompt = (request: InferenceRequest): string =>
-  request.messages
-    .filter((message) => message.role !== "system")
-    .map((message) => message.content)
-    .join("\n")
+  Chunk.toReadonlyArray(
+    Chunk.map(
+      Chunk.filter(
+        Chunk.fromIterable(request.messages),
+        (message) => message.role !== "system",
+      ),
+      (message) => message.content,
+    ),
+  ).join("\n")
 
 const makeModelParams = (request: InferenceRequest) => ({
   model: request.model,
@@ -87,7 +95,7 @@ const usageFromResponse = (
   const outputTokens =
     response.usageMetadata?.candidatesTokenCount ?? estimateTextTokens(content)
 
-  return {
+  return Data.struct({
     inputTokens,
     outputTokens,
     cacheReadTokens: 0,
@@ -98,7 +106,7 @@ const usageFromResponse = (
       inputTokens,
       outputTokens,
     ),
-  }
+  })
 }
 
 /** @Owl.Providers.Google.Adapter - Effect-TS service definition */
@@ -186,19 +194,19 @@ export const GoogleAdapterLive = Layer.effect(
             const model = genAI.getGenerativeModel(makeModelParams(request))
             const prompt = buildPrompt(request)
             const result = await model.generateContentStream(prompt)
-            const chunks: string[] = []
+            let chunks = Chunk.empty<string>()
             let index = 0
 
             for await (const chunk of result.stream) {
               const content = chunk.text()
               if (content.length > 0) {
-                chunks.push(content)
+                chunks = Chunk.append(chunks, content)
                 await emit.single({ type: "text", content, index: index++ })
               }
             }
 
             const aggregated = await result.response
-            const content = chunks.join("")
+            const content = Chunk.toReadonlyArray(chunks).join("")
             await emit.single({
               type: "usage",
               index,

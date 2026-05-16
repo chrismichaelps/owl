@@ -20,11 +20,14 @@
  * # In Owl:
  * OLLAMA_BASE_URL=http://localhost:11434 owl "my task"
  */
-import { Context, Effect, Layer, Schema } from "effect"
+import { Chunk, Context, Data, Effect, Layer, Schema } from "effect"
 import * as Stream from "effect/Stream"
 import { ProviderError, ProviderStreamError } from "../../core/errors/index.js"
 import { OWL_CONFIG } from "../../core/config/index.js"
-import { PROVIDER_CONSTANTS } from "../../core/constants/index.js"
+import {
+  OLLAMA_MODELS,
+  PROVIDER_CONSTANTS,
+} from "../../core/constants/index.js"
 import { estimateModelCostUsd } from "../cost.js"
 import type {
   LLMProviderService,
@@ -40,9 +43,9 @@ import type {
  * @Owl.Providers.Ollama.Capabilities - Local model specifications
  */
 const OLLAMA_CAPABILITIES: readonly ProviderCapability[] = [
-  {
+  Data.struct({
     providerId: "ollama",
-    modelId: "llama3.2",
+    modelId: OLLAMA_MODELS.LLAMA_3_2,
     contextWindow: 128_000,
     maxOutputTokens: 4_096,
     inputCostPer1k: 0,
@@ -51,10 +54,10 @@ const OLLAMA_CAPABILITIES: readonly ProviderCapability[] = [
     reasoningDepth: "medium",
     supportsFunctionCalling: false,
     supportsVision: false,
-  },
-  {
+  }),
+  Data.struct({
     providerId: "ollama",
-    modelId: "codellama",
+    modelId: OLLAMA_MODELS.CODE_LLAMA,
     contextWindow: 16_000,
     maxOutputTokens: 4_096,
     inputCostPer1k: 0,
@@ -63,7 +66,7 @@ const OLLAMA_CAPABILITIES: readonly ProviderCapability[] = [
     reasoningDepth: "medium",
     supportsFunctionCalling: false,
     supportsVision: false,
-  },
+  }),
 ]
 
 const OllamaGenerateResponseSchema = Schema.Struct({
@@ -91,7 +94,12 @@ const estimateTextTokens = (text: string): number =>
   Math.ceil(text.length / PROVIDER_CONSTANTS.TOKEN_ESTIMATION_CHARS_PER_TOKEN)
 
 const buildPrompt = (request: InferenceRequest): string =>
-  request.messages.map((message) => message.content).join("\n")
+  Chunk.toReadonlyArray(
+    Chunk.map(
+      Chunk.fromIterable(request.messages),
+      (message) => message.content,
+    ),
+  ).join("\n")
 
 const parseStreamLine = (line: string): OllamaStreamResponse =>
   decodeStreamResponse(JSON.parse(line) as unknown)
@@ -127,7 +135,7 @@ export const OllamaAdapterLive = Layer.effect(
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               model: request.model,
-              prompt: request.messages.map((m) => m.content).join("\n"),
+              prompt: buildPrompt(request),
               stream: false,
             }),
           })
@@ -143,7 +151,7 @@ export const OllamaAdapterLive = Layer.effect(
             taskId: request.taskId,
             content: data.response,
             stopReason: "end_turn" as const,
-            usage: {
+            usage: Data.struct({
               inputTokens,
               outputTokens,
               cacheReadTokens: 0,
@@ -154,7 +162,7 @@ export const OllamaAdapterLive = Layer.effect(
                 inputTokens,
                 outputTokens,
               ),
-            },
+            }),
             model: request.model,
             provider: "ollama" as const,
             latencyMs: Date.now() - startMs,
@@ -188,7 +196,7 @@ export const OllamaAdapterLive = Layer.effect(
 
             const reader = response.body.getReader()
             const decoder = new TextDecoder()
-            const chunks: string[] = []
+            let chunks = Chunk.empty<string>()
             let buffer = ""
             let index = 0
 
@@ -198,7 +206,7 @@ export const OllamaAdapterLive = Layer.effect(
 
               const event = parseStreamLine(trimmed)
               if (event.response !== undefined && event.response.length > 0) {
-                chunks.push(event.response)
+                chunks = Chunk.append(chunks, event.response)
                 await emit.single({
                   type: "text",
                   content: event.response,
@@ -224,13 +232,13 @@ export const OllamaAdapterLive = Layer.effect(
             }
 
             await emitLine(buffer)
-            const content = chunks.join("")
+            const content = Chunk.toReadonlyArray(chunks).join("")
             const inputTokens = estimateTextTokens(prompt)
             const outputTokens = estimateTextTokens(content)
             await emit.single({
               type: "usage",
               index,
-              usage: {
+              usage: Data.struct({
                 inputTokens,
                 outputTokens,
                 cacheReadTokens: 0,
@@ -241,7 +249,7 @@ export const OllamaAdapterLive = Layer.effect(
                   inputTokens,
                   outputTokens,
                 ),
-              },
+              }),
             })
             await emit.end()
           } catch (cause) {

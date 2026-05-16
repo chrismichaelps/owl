@@ -18,7 +18,7 @@
  * - CLI: Startup metadata and early-exit output
  */
 
-import { HashSet } from "effect"
+import { HashMap, HashSet } from "effect"
 
 /** @Owl.Core.Constants.Budgets - Token and mode-specific constraints */
 export const TOKEN_LIMITS = {
@@ -121,6 +121,28 @@ export const ANTHROPIC_MODELS = {
 export type AnthropicModelId =
   (typeof ANTHROPIC_MODELS)[keyof typeof ANTHROPIC_MODELS]
 
+/** @Owl.Core.Constants.OpenAIModels - Canonical OpenAI model IDs */
+export const OPENAI_MODELS = {
+  GPT_4O: "gpt-4o",
+  O3: "o3",
+} as const
+
+/** @Owl.Core.Constants.GoogleModels - Canonical Google model IDs */
+export const GOOGLE_MODELS = {
+  GEMINI_2_5_FLASH: "gemini-2.5-flash",
+} as const
+
+/** @Owl.Core.Constants.XAIModels - Canonical xAI model IDs */
+export const XAI_MODELS = {
+  GROK_3: "grok-3",
+} as const
+
+/** @Owl.Core.Constants.OllamaModels - Canonical local model IDs */
+export const OLLAMA_MODELS = {
+  LLAMA_3_2: "llama3.2",
+  CODE_LLAMA: "codellama",
+} as const
+
 /**
  * @Owl.Core.Constants.ThinkingModes - Modes that activate extended thinking
  *
@@ -136,6 +158,7 @@ export const THINKING_MODES: HashSet.HashSet<string> = HashSet.fromIterable([
 export const PROVIDER_CONSTANTS = {
   TOKEN_ESTIMATION_CHARS_PER_TOKEN: 4,
   OLLAMA_STREAM_DELIMITER: "\n",
+  XAI_BASE_URL: "https://api.x.ai/v1",
 } as const
 
 /** @Owl.Core.Constants.ProviderStreamLog - Stream event log formatting */
@@ -233,6 +256,37 @@ export const ROUTING_LIMITS = {
   MAX_NORMALIZED_COST_USD: 0.5,
   FAST_MODEL_OUTPUT_TOKEN_LIMIT: 4_096,
   FALLBACK_PROVIDER_LIMIT: 2,
+} as const
+
+/** @Owl.Core.Constants.RoutingScores - Provider scoring lookup tables */
+export const ROUTING_REASONING_SCORES: HashMap.HashMap<string, number> =
+  HashMap.fromIterable([
+    ["high", 1.0],
+    ["medium", 0.6],
+    ["low", 0.3],
+  ])
+
+/** @Owl.Core.Constants.RoutingDemand - Mode-based reasoning requirements */
+export const ROUTING_MODE_REASONING_DEMAND: HashMap.HashMap<string, number> =
+  HashMap.fromIterable([
+    ["god", 1.0],
+    ["deep", 0.9],
+    ["standard", 0.5],
+    ["quick", 0.3],
+    ["economy", 0.1],
+  ])
+
+/** @Owl.Core.Constants.RoutingScoreDefaults - Provider score constants */
+export const ROUTING_SCORE_DEFAULTS = {
+  DEFAULT_REASONING_SCORE: 0.5,
+  DEFAULT_MODE_DEMAND: 0.5,
+  MIN_COST_SCORE: 0,
+  MAX_COST_SCORE: 1,
+  FAST_LATENCY_SCORE: 0.8,
+  STANDARD_LATENCY_SCORE: 0.6,
+  UNSUPPORTED_VISION_PENALTY: -1.0,
+  NO_VISION_PENALTY: 0.0,
+  BASE_RELIABILITY_SCORE: 0.8,
 } as const
 
 /** @Owl.Core.Constants.TUI - Terminal UI refresh and layout */

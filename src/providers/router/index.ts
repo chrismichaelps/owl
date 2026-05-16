@@ -36,6 +36,7 @@ import {
   HashSet,
   Layer,
   Option,
+  Order,
   Ref,
 } from "effect"
 import * as Stream from "effect/Stream"
@@ -62,6 +63,28 @@ import type {
   InferenceResponse,
 } from "../../core/schema/index.js"
 import type { AnyProviderError } from "../types.js"
+
+const providerCapabilities = (
+  registry: HashMap.HashMap<string, LLMProviderService>,
+): Chunk.Chunk<ProviderCapability> =>
+  Chunk.flatMap(Chunk.fromIterable(HashMap.values(registry)), (provider) =>
+    Chunk.fromIterable(provider.capabilities),
+  )
+
+const capabilityOrder = Order.make<ProviderCapability>((left, right) => {
+  const providerDelta = left.providerId.localeCompare(right.providerId)
+  if (providerDelta < 0) return -1
+  if (providerDelta > 0) return 1
+
+  const modelDelta = left.modelId.localeCompare(right.modelId)
+  if (modelDelta < 0) return -1
+  if (modelDelta > 0) return 1
+  return 0
+})
+
+const sortCapabilities = (
+  capabilities: Chunk.Chunk<ProviderCapability>,
+): Chunk.Chunk<ProviderCapability> => Chunk.sort(capabilities, capabilityOrder)
 
 type StreamUsageAccumulator = Readonly<{
   readonly inputTokens: number
@@ -300,7 +323,7 @@ export const ProviderRouterLive = Layer.effect(
     ): Effect.Effect<RoutingDecision, ProviderUnavailableError> =>
       Effect.gen(function* () {
         const ranked = yield* rankedCapabilities(ctx)
-        const best = ranked[0]
+        const best = Option.getOrUndefined(Chunk.head(ranked))
 
         if (best === undefined) {
           return yield* Effect.fail(
@@ -313,7 +336,7 @@ export const ProviderRouterLive = Layer.effect(
 
         let seenFallbacks = HashSet.empty<string>()
         let fallbacks = Chunk.empty<string>()
-        for (const capability of ranked.slice(1)) {
+        for (const capability of Chunk.drop(ranked, 1)) {
           if (
             capability.providerId === best.providerId ||
             HashSet.has(seenFallbacks, capability.providerId) ||
@@ -343,15 +366,20 @@ export const ProviderRouterLive = Layer.effect(
 
     const rankedCapabilities = (
       ctx: RoutingContext,
-    ): Effect.Effect<readonly ProviderCapability[], ProviderUnavailableError> =>
+    ): Effect.Effect<
+      Chunk.Chunk<ProviderCapability>,
+      ProviderUnavailableError
+    > =>
       Ref.get(registryRef).pipe(
         Effect.flatMap((registry) => {
-          const capabilities = Array.from(HashMap.values(registry)).flatMap(
-            (provider) => provider.capabilities,
+          const ranked = Chunk.fromIterable(
+            rankProviders(
+              Chunk.toReadonlyArray(providerCapabilities(registry)),
+              ctx,
+            ),
           )
-          const ranked = rankProviders(capabilities, ctx)
 
-          return ranked.length > 0
+          return !Chunk.isEmpty(ranked)
             ? Effect.succeed(ranked)
             : Effect.fail(
                 new ProviderUnavailableError({
@@ -513,19 +541,17 @@ export const ProviderRouterLive = Layer.effect(
 
     const listProviders = (): Effect.Effect<readonly string[]> =>
       Ref.get(registryRef).pipe(
-        Effect.map((registry) => Array.from(HashMap.keys(registry))),
+        Effect.map((registry) =>
+          Chunk.toReadonlyArray(Chunk.fromIterable(HashMap.keys(registry))),
+        ),
       )
 
     const listCapabilities = (): Effect.Effect<readonly ProviderCapability[]> =>
       Ref.get(registryRef).pipe(
         Effect.map((registry) =>
-          Array.from(HashMap.values(registry))
-            .flatMap((provider) => provider.capabilities)
-            .sort(
-              (left, right) =>
-                left.providerId.localeCompare(right.providerId) ||
-                left.modelId.localeCompare(right.modelId),
-            ),
+          Chunk.toReadonlyArray(
+            sortCapabilities(providerCapabilities(registry)),
+          ),
         ),
       )
 

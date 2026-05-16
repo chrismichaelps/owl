@@ -12,11 +12,11 @@
  * yield* registerProvider(router, XAIAdapterLive)
  */
 import OpenAI from "openai"
-import { Context, Effect, Layer } from "effect"
+import { Chunk, Context, Data, Effect, Layer } from "effect"
 import * as Stream from "effect/Stream"
 import { ProviderError, ProviderStreamError } from "../../core/errors/index.js"
 import { OWL_CONFIG } from "../../core/config/index.js"
-import { PROVIDER_CONSTANTS } from "../../core/constants/index.js"
+import { PROVIDER_CONSTANTS, XAI_MODELS } from "../../core/constants/index.js"
 import { estimateModelCostUsd } from "../cost.js"
 import type {
   LLMProviderService,
@@ -32,9 +32,9 @@ import type {
  * @Owl.Providers.xAI.Capabilities - Grok model specifications
  */
 const XAI_CAPABILITIES: readonly ProviderCapability[] = [
-  {
+  Data.struct({
     providerId: "xai",
-    modelId: "grok-3",
+    modelId: XAI_MODELS.GROK_3,
     contextWindow: 131_072,
     maxOutputTokens: 8_192,
     inputCostPer1k: 0.003,
@@ -43,21 +43,32 @@ const XAI_CAPABILITIES: readonly ProviderCapability[] = [
     reasoningDepth: "high",
     supportsFunctionCalling: true,
     supportsVision: true,
-  },
+  }),
 ]
 
 const estimateTextTokens = (text: string): number =>
   Math.ceil(text.length / PROVIDER_CONSTANTS.TOKEN_ESTIMATION_CHARS_PER_TOKEN)
 
-const buildMessages = (request: InferenceRequest) => [
-  ...(request.systemPrompt
-    ? [{ role: "system" as const, content: request.systemPrompt }]
-    : []),
-  ...request.messages.map((message) => ({
-    role: message.role as "user" | "assistant",
-    content: message.content,
-  })),
-]
+const buildMessages = (request: InferenceRequest) => {
+  const messages = Chunk.map(Chunk.fromIterable(request.messages), (message) =>
+    Data.struct({
+      role: message.role as "user" | "assistant",
+      content: message.content,
+    }),
+  )
+
+  return Chunk.toArray(
+    request.systemPrompt !== undefined
+      ? Chunk.prepend(
+          messages,
+          Data.struct({
+            role: "system" as const,
+            content: request.systemPrompt,
+          }),
+        )
+      : messages,
+  )
+}
 
 /** @Owl.Providers.xAI.Adapter - service definition */
 export class XAIAdapter extends Context.Tag("XAIAdapter")<
@@ -108,7 +119,7 @@ export const XAIAdapterLive = Layer.effect(
     /** @Owl.Providers.xAI.Client - OpenAI-compatible xAI client */
     const client = new OpenAI({
       apiKey: config.xaiApiKey,
-      baseURL: "https://api.x.ai/v1",
+      baseURL: PROVIDER_CONSTANTS.XAI_BASE_URL,
     })
 
     const complete = (
@@ -126,7 +137,7 @@ export const XAIAdapterLive = Layer.effect(
             taskId: request.taskId,
             content: response.choices[0]?.message.content ?? "",
             stopReason: "end_turn" as const,
-            usage: {
+            usage: Data.struct({
               inputTokens: response.usage?.prompt_tokens ?? 0,
               outputTokens: response.usage?.completion_tokens ?? 0,
               cacheReadTokens: 0,
@@ -137,7 +148,7 @@ export const XAIAdapterLive = Layer.effect(
                 response.usage?.prompt_tokens ?? 0,
                 response.usage?.completion_tokens ?? 0,
               ),
-            },
+            }),
             model: response.model,
             provider: "xai" as const,
             latencyMs: Date.now() - startMs,
@@ -170,7 +181,7 @@ export const XAIAdapterLive = Layer.effect(
                 await emit.single({
                   type: "usage",
                   index,
-                  usage: {
+                  usage: Data.struct({
                     inputTokens,
                     outputTokens,
                     cacheReadTokens: 0,
@@ -181,7 +192,7 @@ export const XAIAdapterLive = Layer.effect(
                       inputTokens,
                       outputTokens,
                     ),
-                  },
+                  }),
                 })
               }
             }
