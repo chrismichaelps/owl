@@ -46,18 +46,18 @@ describe("CommandRegistry", () => {
     }
   })
 
-  it("list returns all registered commands", async () => {
+  it("list returns registered commands sorted by name", async () => {
     const result = await Effect.runPromise(
       Effect.gen(function* () {
         const registry = yield* CommandRegistry
-        yield* registry.register(stubHandler("foo"))
         yield* registry.register(stubHandler("bar"))
+        yield* registry.register(stubHandler("foo"))
+        yield* registry.register(stubHandler("alpha"))
         return yield* registry.list()
       }).pipe(Effect.provide(CommandRegistryLive)),
     )
     const names = result.map((r) => r.name)
-    expect(names).toContain("foo")
-    expect(names).toContain("bar")
+    expect(names).toEqual(["alpha", "bar", "foo"])
   })
 
   it("dispatch runs the correct handler", async () => {

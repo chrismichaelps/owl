@@ -26,6 +26,7 @@ import {
   HashMap,
   Layer,
   Option,
+  Order,
   Ref,
 } from "effect"
 import { ContextManager } from "../engine/context/index.js"
@@ -161,11 +162,15 @@ export const buildRegistryService = (
     Ref.get(mapRef).pipe(
       Effect.map((map) =>
         Chunk.toReadonlyArray(
-          Chunk.map(Chunk.fromIterable(HashMap.values(map)), (handler) =>
-            Data.struct({
-              name: handler.name,
-              description: handler.description,
-            }),
+          Chunk.sortWith(
+            Chunk.map(Chunk.fromIterable(HashMap.values(map)), (handler) =>
+              Data.struct({
+                name: handler.name,
+                description: handler.description,
+              }),
+            ),
+            (command) => command.name,
+            Order.string,
           ),
         ),
       ),
