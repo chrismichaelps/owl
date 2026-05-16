@@ -16,16 +16,21 @@
  * // ✓ Added 1 file to context: CLAUDE.md (3.2kb)
  */
 import { readFile, stat } from "node:fs/promises"
-import { resolve, relative, basename } from "node:path"
-import { Effect } from "effect"
+import { relative, basename } from "node:path"
+import { Chunk, Data, Effect } from "effect"
+import { COMMAND_CONSTANTS } from "../../core/constants/index.js"
+import { resolveProjectPath } from "../../core/path/index.js"
 import { formatBytes } from "../../core/utils/format.js"
 import type { CommandParseError } from "../../core/errors/index.js"
 import { CommandParseError as CommandParseErrorClass } from "../../core/errors/index.js"
 import type { ContextManagerService } from "../../engine/context/index.js"
 import type { CommandHandler, CommandResult } from "../types.js"
 
-const MAX_FILE_BYTES = 500_000 // 500 KB per file
-const MAX_TOTAL_BYTES = 1_000_000 // 1 MB total across all files
+interface LoadedFile {
+  readonly path: string
+  readonly content: string
+  readonly bytes: number
+}
 
 /**
  * @Owl.Commands.Editing.Add.Factory - Create the /add command handler
@@ -49,11 +54,23 @@ export function makeAddCommand(
       }
 
       return Effect.gen(function* () {
-        const loaded: { path: string; content: string; bytes: number }[] = []
+        let loaded = Chunk.empty<LoadedFile>()
         let totalBytes = 0
 
         for (const rawPath of args) {
-          const absPath = resolve(projectRoot, rawPath)
+          const absPath = yield* resolveProjectPath(
+            projectRoot,
+            rawPath,
+            "add",
+          ).pipe(
+            Effect.mapError(
+              (err) =>
+                new CommandParseErrorClass({
+                  input: "add",
+                  reason: `${rawPath}: ${err.reason}`,
+                }),
+            ),
+          )
 
           // Stat the file first to check size
           const info = yield* Effect.tryPromise({
@@ -74,21 +91,21 @@ export function makeAddCommand(
             )
           }
 
-          if (info.size > MAX_FILE_BYTES) {
+          if (info.size > COMMAND_CONSTANTS.ADD_MAX_FILE_BYTES) {
             return yield* Effect.fail(
               new CommandParseErrorClass({
                 input: "add",
-                reason: `File too large (${formatBytes(info.size)}): ${rawPath}. Max: ${formatBytes(MAX_FILE_BYTES)}`,
+                reason: `File too large (${formatBytes(info.size)}): ${rawPath}. Max: ${formatBytes(COMMAND_CONSTANTS.ADD_MAX_FILE_BYTES)}`,
               }),
             )
           }
 
           totalBytes += info.size
-          if (totalBytes > MAX_TOTAL_BYTES) {
+          if (totalBytes > COMMAND_CONSTANTS.ADD_MAX_TOTAL_BYTES) {
             return yield* Effect.fail(
               new CommandParseErrorClass({
                 input: "add",
-                reason: `Total file size exceeds limit (${formatBytes(MAX_TOTAL_BYTES)})`,
+                reason: `Total file size exceeds limit (${formatBytes(COMMAND_CONSTANTS.ADD_MAX_TOTAL_BYTES)})`,
               }),
             )
           }
@@ -102,19 +119,23 @@ export function makeAddCommand(
               }),
           })
 
-          loaded.push({
-            path: relative(projectRoot, absPath),
-            content,
-            bytes: info.size,
-          })
+          loaded = Chunk.append(
+            loaded,
+            Data.struct({
+              path: relative(projectRoot, absPath),
+              content,
+              bytes: info.size,
+            }),
+          )
         }
 
         // Build a structured user message with all file contents
-        const fileBlocks = loaded
-          .map(
+        const fileBlocks = Chunk.toReadonlyArray(
+          Chunk.map(
+            loaded,
             ({ path, content }) => `<file path="${path}">\n${content}\n</file>`,
-          )
-          .join("\n\n")
+          ),
+        ).join("\n\n")
 
         const contextMsg = `The following files have been added to context:\n\n${fileBlocks}`
 
@@ -124,16 +145,18 @@ export function makeAddCommand(
           timestamp: new Date().toISOString(),
         })
 
-        const summary = loaded
-          .map(
+        const summary = Chunk.toReadonlyArray(
+          Chunk.map(
+            loaded,
             ({ path, bytes }) =>
               `  • ${basename(path)} (${formatBytes(bytes)})`,
-          )
-          .join("\n")
+          ),
+        ).join("\n")
 
+        const loadedCount = Chunk.size(loaded)
         return {
           output:
-            `✓ Added ${String(loaded.length)} file${loaded.length === 1 ? "" : "s"} to context:\n${summary}\n\n` +
+            `✓ Added ${String(loadedCount)} file${loadedCount === 1 ? "" : "s"} to context:\n${summary}\n\n` +
             `File content is now included in the next inference.`,
         }
       })
