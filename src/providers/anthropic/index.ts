@@ -3,15 +3,13 @@
  */
 import Anthropic from "@anthropic-ai/sdk"
 import { Chunk, Context, Effect, Layer, Option, Schedule } from "effect"
-import * as Stream from "effect/Stream"
-import { ProviderError, ProviderStreamError } from "../../core/errors/index.js"
+import { ProviderError } from "../../core/errors/index.js"
 import { OWL_CONFIG } from "../../core/config/index.js"
 import {
   ANTHROPIC_MODELS,
   CONFIG_CONSTANTS,
   PROVIDER_CONSTANTS,
   RETRY_CONFIG,
-  STREAM_CHUNK_TYPES,
 } from "../../core/constants/index.js"
 import { estimateModelCostUsd } from "../cost.js"
 import { mapAnthropicError } from "./errors.js"
@@ -25,11 +23,12 @@ import {
   loadAnthropicTools,
   toAnthropicMessages,
 } from "./tools.js"
+import { makeAnthropicStream } from "./stream.js"
 import { McpManager } from "../../mcp/index.js"
 import type { McpManagerService } from "../../mcp/index.js"
 import { BuiltInTools } from "../../tools/index.js"
 import type { BuiltInToolsService } from "../../tools/index.js"
-import type { LLMProviderService, StreamChunk } from "../types.js"
+import type { LLMProviderService } from "../types.js"
 import type {
   InferenceRequest,
   InferenceResponse,
@@ -39,10 +38,7 @@ import type {
   ProviderRateLimitError,
   ProviderTimeoutError,
 } from "../../core/errors/index.js"
-import type {
-  AnthropicNonStreamingParamsWithThinking,
-  AnthropicStreamParamsWithThinking,
-} from "./model.js"
+import type { AnthropicNonStreamingParamsWithThinking } from "./model.js"
 
 /** @Owl.Providers.Anthropic.Adapter - service definition */
 export class AnthropicAdapter extends Context.Tag("AnthropicAdapter")<
@@ -225,168 +221,7 @@ export const AnthropicAdapterLive = Layer.effect(
         } satisfies InferenceResponse
       })
 
-    const stream = (request: InferenceRequest) =>
-      Stream.async<StreamChunk, ProviderStreamError>((emit) => {
-        const run = async () => {
-          try {
-            let messages = toAnthropicMessages(request.messages)
-            const tools = await Effect.runPromise(
-              loadAnthropicTools(builtInTools, mcpManager),
-            )
-
-            const systemBlock = request.systemPrompt
-              ? Chunk.toArray(
-                  Chunk.make({
-                    type: "text" as const,
-                    text: request.systemPrompt,
-                    cache_control: { type: "ephemeral" as const },
-                  }),
-                )
-              : undefined
-
-            let index = 0
-            let iterations = 0
-            // Accumulate usage across all iterations for accurate totals
-            let totalInputTokens = 0
-            let totalOutputTokens = 0
-            let totalCacheReadTokens = 0
-            let totalCacheWriteTokens = 0
-            let lastModel = request.model
-
-            const streamThinking = resolveThinking(request)
-
-            while (
-              iterations < PROVIDER_CONSTANTS.ANTHROPIC_MAX_TOOL_ITERATIONS
-            ) {
-              const streamParams: AnthropicStreamParamsWithThinking = {
-                model: request.model,
-                max_tokens: request.maxTokens,
-                messages: Chunk.toArray(messages),
-                ...(!Chunk.isEmpty(tools)
-                  ? { tools: Chunk.toArray(tools) }
-                  : {}),
-                ...(systemBlock !== undefined ? { system: systemBlock } : {}),
-              }
-              if (streamThinking !== undefined) {
-                streamParams.thinking = streamThinking
-              }
-              const s = client.messages.stream(streamParams)
-
-              for await (const event of s) {
-                if (
-                  event.type ===
-                  ANTHROPIC_INTERNAL_CONSTANTS.EVENT_TYPE_CONTENT_BLOCK_DELTA
-                ) {
-                  if (
-                    event.delta.type ===
-                    ANTHROPIC_INTERNAL_CONSTANTS.DELTA_TYPE_TEXT_DELTA
-                  ) {
-                    await emit.single({
-                      type: STREAM_CHUNK_TYPES.TEXT,
-                      content: event.delta.text,
-                      index: index++,
-                    })
-                  } else if (
-                    event.delta.type ===
-                      ANTHROPIC_INTERNAL_CONSTANTS.DELTA_TYPE_THINKING_DELTA &&
-                    "thinking" in event.delta
-                  ) {
-                    // Emit thinking tokens as a separate chunk type so the
-                    // router can forward them to the log callback without
-                    // polluting the response text.
-                    await emit.single({
-                      type: "thinking",
-                      content: (event.delta as { thinking: string }).thinking,
-                      index: index++,
-                    })
-                  }
-                }
-              }
-
-              const finalMsg = await s.finalMessage()
-              lastModel = finalMsg.model
-              totalInputTokens += finalMsg.usage.input_tokens
-              totalOutputTokens += finalMsg.usage.output_tokens
-              totalCacheReadTokens +=
-                finalMsg.usage.cache_read_input_tokens ?? 0
-              totalCacheWriteTokens +=
-                finalMsg.usage.cache_creation_input_tokens ?? 0
-
-              if (
-                finalMsg.stop_reason !==
-                  ANTHROPIC_INTERNAL_CONSTANTS.STOP_REASON_TOOL_USE ||
-                (mcpManager === null && builtInTools === null)
-              ) {
-                break
-              }
-
-              // Append assistant turn with tool_use blocks
-              messages = Chunk.append(messages, {
-                role: "assistant" as const,
-                content: finalMsg.content,
-              })
-
-              // Emit indicator and execute each tool call
-              let toolResults = Chunk.empty<Anthropic.ToolResultBlockParam>()
-              for (const block of finalMsg.content) {
-                if (
-                  block.type ===
-                  ANTHROPIC_INTERNAL_CONSTANTS.BLOCK_TYPE_TOOL_USE
-                ) {
-                  await emit.single({
-                    type: "tool_use",
-                    content: block.name,
-                    index: index++,
-                  })
-                  const input = block.input as Record<string, unknown>
-                  const result = await Effect.runPromise(
-                    executeAnthropicTool(
-                      block.name,
-                      input,
-                      builtInTools,
-                      mcpManager,
-                    ),
-                  )
-                  toolResults = Chunk.append(toolResults, {
-                    type: "tool_result",
-                    tool_use_id: block.id,
-                    content: result,
-                  })
-                }
-              }
-
-              messages = Chunk.append(messages, {
-                role: "user" as const,
-                content: Chunk.toArray(toolResults),
-              })
-              iterations++
-            }
-
-            await emit.single({
-              type: "usage" as const,
-              index: 0,
-              usage: {
-                inputTokens: totalInputTokens,
-                outputTokens: totalOutputTokens,
-                cacheReadTokens: totalCacheReadTokens,
-                cacheWriteTokens: totalCacheWriteTokens,
-                estimatedCostUsd: estimateModelCostUsd(
-                  ANTHROPIC_CAPABILITIES,
-                  lastModel,
-                  totalInputTokens,
-                  totalOutputTokens,
-                ),
-              },
-            })
-            await emit.end()
-          } catch (e) {
-            await emit.fail(
-              new ProviderStreamError({ provider: "anthropic", cause: e }),
-            )
-          }
-        }
-        void run()
-      })
+    const stream = makeAnthropicStream({ client, builtInTools, mcpManager })
 
     const countTokens = (text: string, _modelId: string) =>
       Effect.succeed(
