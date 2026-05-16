@@ -40,11 +40,13 @@ export function usePromptHistory(
 
   // Load persisted history on mount (newest-first from disk)
   useEffect(() => {
-    loadHistory(projectRoot).then((entries) => {
-      if (entries.length > 0) {
-        historyRef.current = entries
-      }
-    })
+    void loadHistory(projectRoot)
+      .then((entries) => {
+        if (entries.length > 0) {
+          historyRef.current = entries
+        }
+      })
+      .catch(() => undefined)
   }, [projectRoot])
 
   /** Push new entry to history and persist to disk */

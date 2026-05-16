@@ -33,7 +33,7 @@ export function makeExportCommand(
       Effect.gen(function* () {
         const turns = yield* sessionMemory.getTurns()
 
-        const rawName = args[0] ?? `owl-export-${Date.now()}`
+        const rawName = args[0] ?? `owl-export-${String(Date.now())}`
         const filename = rawName.endsWith(".md") ? rawName : `${rawName}.md`
         const filePath = join(projectRoot, filename)
 
