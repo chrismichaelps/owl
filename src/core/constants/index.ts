@@ -353,6 +353,26 @@ export const TUI_TRIGGERS = {
   MENTION: "@",
 } as const
 
+/** @Owl.Core.Constants.TUIModeCommands - Slash commands that submit mode-scoped prompts */
+export const TUI_SLASH_MODE_COMMANDS: HashMap.HashMap<string, string> =
+  HashMap.fromIterable([
+    ["/task", "standard"],
+    ["/quick", "quick"],
+    ["/deep", "deep"],
+    ["/economy", "economy"],
+    ["/god", "god"],
+  ])
+
+/** @Owl.Core.Constants.TUIModeColors - Prompt glyph color lookup by mode */
+export const TUI_MODE_COLORS: HashMap.HashMap<string, string> =
+  HashMap.fromIterable([
+    ["standard", "green"],
+    ["quick", "yellow"],
+    ["deep", "blue"],
+    ["economy", "gray"],
+    ["god", "red"],
+  ])
+
 /** @Owl.Core.Constants.TUI - Maximum log entries to display */
 export const TUI_MAX_LOG_LINES = 100
 

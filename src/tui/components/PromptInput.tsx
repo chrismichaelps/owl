@@ -12,6 +12,7 @@ import {
   parsePaletteInput,
   rankPaletteCommands,
 } from "../commands/fuzzy.js"
+import { detectSlashMode, resolveModeColor } from "../commands/modes.js"
 import type { Mode } from "../../core/schema/index.js"
 import { usePromptHistory } from "../hooks/usePromptHistory.js"
 import type { PaletteCommand } from "../commands/fuzzy.js"
@@ -23,32 +24,6 @@ import {
   completeAtMention,
 } from "../mentions/files.js"
 import type { ProjectFile } from "../mentions/files.js"
-
-const MODE_COLOR: Record<Mode, string> = {
-  standard: "green",
-  quick: "yellow",
-  deep: "blue",
-  economy: "gray",
-  god: "red",
-}
-
-/** Mode detection for slash commands */
-const SLASH_MODE_MAP: Partial<Record<string, Mode>> = {
-  "/task": "standard",
-  "/quick": "quick",
-  "/deep": "deep",
-  "/economy": "economy",
-  "/god": "god",
-}
-
-function detectSlashMode(value: string): Mode | null {
-  for (const [prefix, mode] of Object.entries(SLASH_MODE_MAP)) {
-    if (value === prefix || value.startsWith(prefix + " ")) {
-      return mode ?? null
-    }
-  }
-  return null
-}
 
 interface PromptInputProps {
   readonly mode: Mode
@@ -349,7 +324,7 @@ export const PromptInput: React.FC<PromptInputProps> = memo(
           {"─".repeat(separatorWidth)}
         </Text>
         <Box paddingX={1}>
-          <Text color={MODE_COLOR[displayMode]} bold>
+          <Text color={resolveModeColor(displayMode)} bold>
             ❯
           </Text>
           <Text color="gray"> {displayMode} </Text>

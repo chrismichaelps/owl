@@ -6,6 +6,10 @@ import {
   parsePaletteInput,
   rankPaletteCommands,
 } from "../../src/tui/commands/fuzzy.js"
+import {
+  detectSlashMode,
+  resolveModeColor,
+} from "../../src/tui/commands/modes.js"
 
 const COMMANDS = [
   { name: "help", description: "List available commands" },
@@ -76,5 +80,30 @@ describe("getPaletteSuggestion", () => {
 
   it("does not suggest after command arguments have started", () => {
     expect(getPaletteSuggestion("/model auto", COMMANDS, 0)).toBe("")
+  })
+})
+
+describe("detectSlashMode", () => {
+  it("detects exact mode commands", () => {
+    expect(detectSlashMode("/task")).toBe("standard")
+    expect(detectSlashMode("/quick")).toBe("quick")
+    expect(detectSlashMode("/deep")).toBe("deep")
+    expect(detectSlashMode("/economy")).toBe("economy")
+    expect(detectSlashMode("/god")).toBe("god")
+  })
+
+  it("detects mode commands with prompt arguments", () => {
+    expect(detectSlashMode("/deep refactor the editor")).toBe("deep")
+  })
+
+  it("does not treat partial command names as mode commands", () => {
+    expect(detectSlashMode("/deeply consider this")).toBeNull()
+  })
+})
+
+describe("resolveModeColor", () => {
+  it("resolves prompt colors from the mode lookup", () => {
+    expect(resolveModeColor("standard")).toBe("green")
+    expect(resolveModeColor("god")).toBe("red")
   })
 })
