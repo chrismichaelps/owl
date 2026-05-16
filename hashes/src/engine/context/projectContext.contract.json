@@ -1,0 +1,29 @@
+{
+  "contract_id": "CTR-engine-ctx-projctx-00000001",
+  "module": "@Owl.Engine.Context.ProjectContext src/engine/context/projectContext.ts",
+  "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
+  "depth_score": "0.62",
+  "seam_capacity": "INTERNAL",
+  "sig_id": "SIG-engine-ctx-projctx-00000001",
+  "interface": {
+    "signatures": [
+      "loadProjectContext(projectRoot: string) => Effect<ProjectContext>",
+      "ProjectContext: { claudeMd, gitStatus, projectRoot }"
+    ],
+    "error_modes": [],
+    "invariants": [
+      "projectRoot must be an absolute path",
+      "claudeMd is empty string when CLAUDE.md is absent (not an error)"
+    ]
+  },
+  "responsibilities": [
+    "Load CLAUDE.md",
+    "Load git status",
+    "Compose ProjectContext"
+  ],
+  "prohibited": [
+    "Fail when CLAUDE.md is missing",
+    "Cache git output across sessions"
+  ],
+  "created_at": "2026-05-16T15:29:00.000000Z"
+}

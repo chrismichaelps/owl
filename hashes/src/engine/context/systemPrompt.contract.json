@@ -1,0 +1,18 @@
+{
+  "contract_id": "CTR-engine-context-systemPrompt-00000001",
+  "module": "@Owl.Engine.Context.SystemPrompt src/engine/context/systemPrompt.ts",
+  "grammar_lock": "@root/hashes/grammar/typescript/typescript.hash.md",
+  "depth_score": "0.62",
+  "seam_capacity": "INTERNAL",
+  "sig_id": "SIG-engine-sysprompt-00000001",
+  "interface": {
+    "signatures": [
+      "buildFMCFSystemPrompt() => string"
+    ],
+    "error_modes": [],
+    "invariants": []
+  },
+  "responsibilities": [],
+  "prohibited": [],
+  "created_at": "2026-05-16T15:29:00.000000Z"
+}

@@ -1,0 +1,32 @@
+{
+  "contract_id": "CTR-engine-memory-schema-00000001",
+  "module": "@Owl.Engine.Memory.Schema src/engine/memory/schema.ts",
+  "grammar_lock": "@root/hashes/grammar/typescript/typescript.hash.md",
+  "depth_score": "0.55",
+  "seam_capacity": "INTERNAL",
+  "sig_id": "SIG-engine-memory-schema-00000001",
+  "interface": {
+    "signatures": [
+      "SessionTurnSchema: Schema.Struct",
+      "SessionMemoryStateSchema: Schema.Struct",
+      "type SessionTurn",
+      "type SessionMemoryState"
+    ],
+    "error_modes": [],
+    "invariants": [
+      "All required fields must be present",
+      "Optional fields default to undefined"
+    ]
+  },
+  "responsibilities": [
+    "Define SessionTurn schema",
+    "Define SessionMemoryState schema",
+    "Export inferred types"
+  ],
+  "prohibited": [
+    "Add business logic to schema",
+    "Perform I/O",
+    "Duplicate schema definitions"
+  ],
+  "created_at": "2026-05-16T15:29:00.000000Z"
+}
