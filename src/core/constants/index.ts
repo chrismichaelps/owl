@@ -210,6 +210,7 @@ export const PROVIDER_AUTO = "auto"
 export const MCP_CONSTANTS = {
   CONFIG_DIR: ".owl",
   CONFIG_FILE: "mcp_servers.json",
+  TOOL_SEPARATOR: "__",
 } as const
 
 /** @Owl.Core.Constants.Cache - ContextCache retention and validation bounds */

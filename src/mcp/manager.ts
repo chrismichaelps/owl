@@ -17,13 +17,20 @@
  * const tools = yield* McpManager.pipe(Effect.flatMap(m => m.getTools()))
  * // [{ name: "filesystem__read_file", description: "...", input_schema: {...} }]
  */
-import { Context, Effect, Layer } from "effect"
-import { JS_TYPES } from "../core/constants/index.js"
+import {
+  Chunk,
+  Context,
+  Data,
+  Effect,
+  HashMap,
+  Layer,
+  Option,
+  Order,
+} from "effect"
+import { JS_TYPES, MCP_CONSTANTS } from "../core/constants/index.js"
 import { Client } from "@modelcontextprotocol/sdk/client/index.js"
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
 import type { McpConfig } from "./config.js"
-
-const TOOL_SEP = "__"
 
 /** Anthropic-compatible tool definition */
 export interface McpTool {
@@ -61,13 +68,23 @@ export class McpManager extends Context.Tag("McpManager")<
 >() {}
 
 interface ConnectedServer {
-  name: string
-  client: Client
-  tools: readonly McpTool[]
+  readonly name: string
+  readonly client: Client
+  readonly tools: Chunk.Chunk<McpTool>
+}
+
+interface McpServerEntry {
+  readonly name: string
+  readonly config: McpConfig["mcpServers"][string]
+}
+
+export interface QualifiedToolName {
+  readonly serverName: string
+  readonly toolName: string
 }
 
 /** Build an Anthropic-compatible tool definition from an MCP tool */
-function toMcpTool(
+export function toMcpTool(
   serverName: string,
   raw: {
     name: string
@@ -80,7 +97,7 @@ function toMcpTool(
   },
 ): McpTool {
   return {
-    name: `${serverName}${TOOL_SEP}${raw.name}`,
+    name: `${serverName}${MCP_CONSTANTS.TOOL_SEPARATOR}${raw.name}`,
     description: raw.description ?? raw.name,
     input_schema: {
       type: "object",
@@ -92,6 +109,30 @@ function toMcpTool(
     },
   }
 }
+
+/** @Owl.MCP.Manager.SplitTool - Parse namespaced MCP tool names */
+export function splitQualifiedToolName(
+  qualifiedName: string,
+): QualifiedToolName {
+  const sepIdx = qualifiedName.indexOf(MCP_CONSTANTS.TOOL_SEPARATOR)
+  return Data.struct({
+    serverName: sepIdx >= 0 ? qualifiedName.slice(0, sepIdx) : "",
+    toolName:
+      sepIdx >= 0
+        ? qualifiedName.slice(sepIdx + MCP_CONSTANTS.TOOL_SEPARATOR.length)
+        : qualifiedName,
+  })
+}
+
+const mcpServerEntries = (config: McpConfig): Chunk.Chunk<McpServerEntry> =>
+  Chunk.sortWith(
+    Chunk.map(
+      Chunk.fromIterable(Object.entries(config.mcpServers)),
+      ([name, cfg]) => Data.struct({ name, config: cfg }),
+    ),
+    (entry) => entry.name,
+    Order.string,
+  )
 
 /**
  * @Owl.MCP.Manager.makeLayer - Create the McpManager layer for a given config
@@ -105,10 +146,10 @@ export const makeMcpManagerLayer = (
   Layer.effect(
     McpManager,
     Effect.gen(function* () {
-      const servers: ConnectedServer[] = []
-      const statuses: McpServerStatus[] = []
+      let servers = HashMap.empty<string, ConnectedServer>()
+      let statuses = Chunk.empty<McpServerStatus>()
 
-      for (const [name, cfg] of Object.entries(config.mcpServers)) {
+      for (const { name, config: cfg } of mcpServerEntries(config)) {
         const client = new Client(
           { name: "owl", version: "0.1.0" },
           {
@@ -127,8 +168,8 @@ export const makeMcpManagerLayer = (
           try {
             await client.connect(transport)
             const listed = await client.listTools()
-            const tools = listed.tools.map((t) =>
-              toMcpTool(name, t as Parameters<typeof toMcpTool>[1]),
+            const tools = Chunk.map(Chunk.fromIterable(listed.tools), (tool) =>
+              toMcpTool(name, tool as Parameters<typeof toMcpTool>[1]),
             )
             return { ok: true as const, tools }
           } catch (e) {
@@ -138,37 +179,48 @@ export const makeMcpManagerLayer = (
         })
 
         if (result.ok) {
-          servers.push({ name, client, tools: result.tools })
-          statuses.push({
+          servers = HashMap.set(
+            servers,
             name,
-            connected: true,
-            toolCount: result.tools.length,
-          })
+            Data.struct({ name, client, tools: result.tools }),
+          )
+          statuses = Chunk.append(
+            statuses,
+            Data.struct({
+              name,
+              connected: true,
+              toolCount: Chunk.size(result.tools),
+            }),
+          )
         } else {
-          statuses.push({
-            name,
-            connected: false,
-            toolCount: 0,
-            error: result.error,
-          })
+          statuses = Chunk.append(
+            statuses,
+            Data.struct({
+              name,
+              connected: false,
+              toolCount: 0,
+              error: result.error,
+            }),
+          )
         }
       }
 
       const getTools = (): Effect.Effect<readonly McpTool[]> =>
-        Effect.succeed(servers.flatMap((s) => s.tools))
+        Effect.succeed(
+          Chunk.toReadonlyArray(
+            Chunk.flatMap(
+              Chunk.fromIterable(HashMap.values(servers)),
+              (server) => server.tools,
+            ),
+          ),
+        )
 
       const callTool = (
         qualifiedName: string,
         input: Record<string, unknown>,
       ): Effect.Effect<string> => {
-        const sepIdx = qualifiedName.indexOf(TOOL_SEP)
-        const serverName = sepIdx >= 0 ? qualifiedName.slice(0, sepIdx) : ""
-        const toolName =
-          sepIdx >= 0
-            ? qualifiedName.slice(sepIdx + TOOL_SEP.length)
-            : qualifiedName
-
-        const server = servers.find((s) => s.name === serverName)
+        const { serverName, toolName } = splitQualifiedToolName(qualifiedName)
+        const server = Option.getOrUndefined(HashMap.get(servers, serverName))
         if (server === undefined) {
           return Effect.succeed(
             `[tool error: server "${serverName}" not connected]`,
@@ -204,7 +256,7 @@ export const makeMcpManagerLayer = (
       }
 
       const getServers = (): Effect.Effect<readonly McpServerStatus[]> =>
-        Effect.succeed([...statuses])
+        Effect.succeed(Chunk.toReadonlyArray(statuses))
 
       return { getTools, callTool, getServers }
     }),
