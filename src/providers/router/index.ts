@@ -27,13 +27,26 @@
  *   r.complete(ctx, { taskId: "1", messages: [...], maxTokens: 8192, ... })
  * )
  */
-import { Context, Effect, Layer, Ref } from "effect"
+import {
+  Chunk,
+  Context,
+  Data,
+  Effect,
+  HashMap,
+  HashSet,
+  Layer,
+  Option,
+  Ref,
+} from "effect"
 import * as Stream from "effect/Stream"
 import {
   PROVIDER_STREAM_LOG,
   ROUTING_LIMITS,
 } from "../../core/constants/index.js"
-import { ProviderUnavailableError } from "../../core/errors/index.js"
+import {
+  ProviderStreamError,
+  ProviderUnavailableError,
+} from "../../core/errors/index.js"
 import { estimateCapabilityCostUsd } from "../cost.js"
 import { rankProviders, scoreProvider } from "./scoring.js"
 import type {
@@ -49,6 +62,107 @@ import type {
   InferenceResponse,
 } from "../../core/schema/index.js"
 import type { AnyProviderError } from "../types.js"
+
+type StreamUsageAccumulator = Readonly<{
+  readonly inputTokens: number
+  readonly outputTokens: number
+  readonly cacheReadTokens: number
+  readonly cacheWriteTokens: number
+  readonly estimatedCostUsd: number
+}>
+
+type StreamAccumulator = Readonly<{
+  readonly contentChunks: Chunk.Chunk<string>
+  readonly emittedChunkCount: number
+  readonly usage: StreamUsageAccumulator
+}>
+
+const emptyStreamUsage = (): StreamUsageAccumulator =>
+  Data.struct({
+    inputTokens: 0,
+    outputTokens: 0,
+    cacheReadTokens: 0,
+    cacheWriteTokens: 0,
+    estimatedCostUsd: 0,
+  })
+
+const emptyStreamAccumulator = (): StreamAccumulator =>
+  Data.struct({
+    contentChunks: Chunk.empty<string>(),
+    emittedChunkCount: 0,
+    usage: emptyStreamUsage(),
+  })
+
+const appendTextChunk = (
+  state: StreamAccumulator,
+  content: string,
+): StreamAccumulator =>
+  Data.struct({
+    ...state,
+    contentChunks: Chunk.append(state.contentChunks, content),
+    emittedChunkCount: state.emittedChunkCount + 1,
+  })
+
+const recordUsage = (
+  state: StreamAccumulator,
+  usage: NonNullable<StreamChunk["usage"]>,
+): StreamAccumulator =>
+  Data.struct({
+    ...state,
+    usage: Data.struct({
+      inputTokens: usage.inputTokens,
+      outputTokens: usage.outputTokens,
+      cacheReadTokens: usage.cacheReadTokens,
+      cacheWriteTokens: usage.cacheWriteTokens,
+      estimatedCostUsd: usage.estimatedCostUsd,
+    }),
+  })
+
+const runStreamCallback = (
+  provider: string,
+  callback: () => void,
+): Effect.Effect<void, ProviderStreamError> =>
+  Effect.try({
+    try: callback,
+    catch: (cause) => new ProviderStreamError({ provider, cause }),
+  })
+
+const handleStreamChunk = (
+  provider: string,
+  chunk: StreamChunk,
+  accumulatorRef: Ref.Ref<StreamAccumulator>,
+  onChunk: (text: string) => void,
+  onLog?: (msg: string) => void,
+): Effect.Effect<void, ProviderStreamError> => {
+  if (chunk.type === "text" && chunk.content != null) {
+    const content = chunk.content
+    return Ref.update(accumulatorRef, (state) =>
+      appendTextChunk(state, content),
+    ).pipe(
+      Effect.flatMap(() =>
+        runStreamCallback(provider, () => {
+          onChunk(content)
+        }),
+      ),
+    )
+  }
+
+  if (chunk.type === "usage" && chunk.usage != null) {
+    const usage = chunk.usage
+    return Ref.update(accumulatorRef, (state) => recordUsage(state, usage))
+  }
+
+  if (onLog == null) {
+    return Effect.void
+  }
+
+  const logMessage = formatStreamEventLog(chunk)
+  return logMessage === null
+    ? Effect.void
+    : runStreamCallback(provider, () => {
+        onLog(logMessage)
+      })
+}
 
 /**
  * @Owl.Providers.Router.Service - Coordinator interface for multi-provider strategies
@@ -177,9 +291,9 @@ export const ProviderRouterLive = Layer.effect(
   ProviderRouter,
   Effect.gen(function* () {
     /** @Owl.Providers.Router.Registry - In-memory provider registry */
-    const registryRef = yield* Ref.make<Map<string, LLMProviderService>>(
-      new Map(),
-    )
+    const registryRef = yield* Ref.make<
+      HashMap.HashMap<string, LLMProviderService>
+    >(HashMap.empty())
 
     const route = (
       ctx: RoutingContext,
@@ -197,14 +311,19 @@ export const ProviderRouterLive = Layer.effect(
           )
         }
 
-        const fallbacks = Array.from(
-          new Set(
-            ranked
-              .slice(1)
-              .filter((capability) => capability.providerId !== best.providerId)
-              .map((capability) => capability.providerId),
-          ),
-        ).slice(0, ROUTING_LIMITS.FALLBACK_PROVIDER_LIMIT)
+        let seenFallbacks = HashSet.empty<string>()
+        let fallbacks = Chunk.empty<string>()
+        for (const capability of ranked.slice(1)) {
+          if (
+            capability.providerId === best.providerId ||
+            HashSet.has(seenFallbacks, capability.providerId) ||
+            Chunk.size(fallbacks) >= ROUTING_LIMITS.FALLBACK_PROVIDER_LIMIT
+          ) {
+            continue
+          }
+          seenFallbacks = HashSet.add(seenFallbacks, capability.providerId)
+          fallbacks = Chunk.append(fallbacks, capability.providerId)
+        }
 
         const estimatedCost = estimateCapabilityCostUsd(
           best,
@@ -216,7 +335,7 @@ export const ProviderRouterLive = Layer.effect(
           selectedProvider: best.providerId,
           selectedModel: best.modelId,
           score: scoreProvider(best, ctx),
-          fallbackProviders: fallbacks,
+          fallbackProviders: Chunk.toReadonlyArray(fallbacks),
           reasoning: `Selected ${best.modelId} for ${ctx.mode} mode`,
           estimatedCostUsd: estimatedCost,
         } satisfies RoutingDecision
@@ -227,7 +346,7 @@ export const ProviderRouterLive = Layer.effect(
     ): Effect.Effect<readonly ProviderCapability[], ProviderUnavailableError> =>
       Ref.get(registryRef).pipe(
         Effect.flatMap((registry) => {
-          const capabilities = Array.from(registry.values()).flatMap(
+          const capabilities = Array.from(HashMap.values(registry)).flatMap(
             (provider) => provider.capabilities,
           )
           const ranked = rankProviders(capabilities, ctx)
@@ -276,7 +395,9 @@ export const ProviderRouterLive = Layer.effect(
           undefined
 
         for (const capability of ranked) {
-          const provider = registry.get(capability.providerId)
+          const provider = Option.getOrUndefined(
+            HashMap.get(registry, capability.providerId),
+          )
 
           if (provider === undefined) {
             lastError = missingProvider(capability.providerId)
@@ -327,61 +448,62 @@ export const ProviderRouterLive = Layer.effect(
           undefined
 
         for (const capability of ranked) {
-          const provider = registry.get(capability.providerId)
+          const provider = Option.getOrUndefined(
+            HashMap.get(registry, capability.providerId),
+          )
 
           if (provider === undefined) {
             lastError = missingProvider(capability.providerId)
             continue
           }
 
-          const chunks: string[] = []
-          let emittedChunks = 0
-          let inputTokens = 0
-          let outputTokens = 0
-          let cacheReadTokens = 0
-          let cacheWriteTokens = 0
-          const result = yield* Stream.runForEach(
-            provider.stream({ ...request, model: capability.modelId }),
-            (chunk) =>
-              Effect.sync(() => {
-                if (chunk.type === "text" && chunk.content != null) {
-                  chunks.push(chunk.content)
-                  emittedChunks += 1
-                  onChunk(chunk.content)
-                } else if (chunk.type === "usage" && chunk.usage != null) {
-                  inputTokens = chunk.usage.inputTokens
-                  outputTokens = chunk.usage.outputTokens
-                  cacheReadTokens = chunk.usage.cacheReadTokens
-                  cacheWriteTokens = chunk.usage.cacheWriteTokens
-                } else if (onLog != null) {
-                  const logMessage = formatStreamEventLog(chunk)
-                  if (logMessage !== null) {
-                    onLog(logMessage)
-                  }
-                }
-              }),
-          ).pipe(Effect.either)
+          const accumulatorRef = yield* Ref.make(emptyStreamAccumulator())
+          const result = yield* provider
+            .stream({ ...request, model: capability.modelId })
+            .pipe(
+              Stream.mapChunks((streamChunks) => streamChunks),
+              Stream.runForEachChunk((streamChunks) =>
+                Effect.forEach(
+                  streamChunks,
+                  (chunk) =>
+                    handleStreamChunk(
+                      capability.providerId,
+                      chunk,
+                      accumulatorRef,
+                      onChunk,
+                      onLog,
+                    ),
+                  { discard: true },
+                ),
+              ),
+              Effect.either,
+            )
 
           if (result._tag === "Right") {
+            const accumulator = yield* Ref.get(accumulatorRef)
+            const content = Chunk.toReadonlyArray(
+              accumulator.contentChunks,
+            ).join("")
             return {
-              content: chunks.join(""),
+              content,
               provider: capability.providerId,
               model: capability.modelId,
               latencyMs: Date.now() - startMs,
-              inputTokens,
-              outputTokens,
-              cacheReadTokens,
-              cacheWriteTokens,
+              inputTokens: accumulator.usage.inputTokens,
+              outputTokens: accumulator.usage.outputTokens,
+              cacheReadTokens: accumulator.usage.cacheReadTokens,
+              cacheWriteTokens: accumulator.usage.cacheWriteTokens,
               estimatedCostUsd: estimateCapabilityCostUsd(
                 capability,
-                inputTokens,
-                outputTokens,
+                accumulator.usage.inputTokens,
+                accumulator.usage.outputTokens,
               ),
             } satisfies StreamingCallbackResult
           }
 
           lastError = result.left
-          if (emittedChunks > 0) {
+          const failedAccumulator = yield* Ref.get(accumulatorRef)
+          if (failedAccumulator.emittedChunkCount > 0) {
             return yield* Effect.fail(result.left)
           }
         }
@@ -391,13 +513,13 @@ export const ProviderRouterLive = Layer.effect(
 
     const listProviders = (): Effect.Effect<readonly string[]> =>
       Ref.get(registryRef).pipe(
-        Effect.map((registry) => Array.from(registry.keys())),
+        Effect.map((registry) => Array.from(HashMap.keys(registry))),
       )
 
     const listCapabilities = (): Effect.Effect<readonly ProviderCapability[]> =>
       Ref.get(registryRef).pipe(
         Effect.map((registry) =>
-          Array.from(registry.values())
+          Array.from(HashMap.values(registry))
             .flatMap((provider) => provider.capabilities)
             .sort(
               (left, right) =>
@@ -418,9 +540,7 @@ export const ProviderRouterLive = Layer.effect(
       _register: (provider) => {
         Effect.runSync(
           Ref.update(registryRef, (m) => {
-            const next = new Map(m)
-            next.set(provider.id, provider)
-            return next
+            return HashMap.set(m, provider.id, provider)
           }),
         )
       },

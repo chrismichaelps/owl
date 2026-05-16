@@ -27,7 +27,7 @@
  * )
  * // result.completedStage: "verification" on success
  */
-import { Context, Effect, Layer } from "effect"
+import { Chunk, Context, Effect, Layer } from "effect"
 import { GovernanceViolationError } from "../../core/errors/index.js"
 import type {
   MutationError,
@@ -155,40 +155,41 @@ export const EditingPipelineLive = Layer.effect(
 
         // Stage 2: Contract Planning
         // Dry-run: validate all targets can find their old_strings.
-        const prepared: TLIResult[] = []
+        let prepared = Chunk.empty<TLIResult>()
         for (const target of input.targets) {
           const result = yield* tli.prepare(target, input.projectRoot)
-          prepared.push(result)
+          prepared = Chunk.append(prepared, result)
         }
 
         // Stage 3: Diff Generation
-        const diffs: FileDiff[] = []
+        let diffs = Chunk.empty<FileDiff>()
         for (const p of prepared) {
           const diff = yield* diffGen.generate(
             p.file,
             p.oldContent,
             p.newContent,
           )
-          diffs.push(diff)
+          diffs = Chunk.append(diffs, diff)
         }
 
         // Stage 4: Impact Analysis
         // Collect Shard Split warnings; block if any trigger.
-        const shardSplitWarnings: string[] = []
+        let shardSplitWarnings = Chunk.empty<string>()
         for (const diff of diffs) {
           if (diff.isShardSplit) {
-            shardSplitWarnings.push(
+            shardSplitWarnings = Chunk.append(
+              shardSplitWarnings,
               `${diff.file}: ${(diff.changePercent * 100).toFixed(1)}% changed ` +
                 `(threshold ${(SHARD_SPLIT_THRESHOLD * 100).toFixed(0)}%) — run Shard Split Protocol`,
             )
           }
         }
-        if (shardSplitWarnings.length > 0) {
+        if (!Chunk.isEmpty(shardSplitWarnings)) {
           return yield* Effect.fail(
             new GovernanceViolationError({
               rule: "SHARD_SPLIT",
               module: input.subsystemId ?? "unknown",
-              detail: shardSplitWarnings.join("; "),
+              detail: Chunk.toReadonlyArray(shardSplitWarnings).join("; "),
             }),
           )
         }
@@ -203,7 +204,7 @@ export const EditingPipelineLive = Layer.effect(
             mutationId: input.mutationId,
             completedStage: PIPELINE_STAGES[4],
             results: [],
-            shardSplitWarnings,
+            shardSplitWarnings: Chunk.toReadonlyArray(shardSplitWarnings),
             approved: false,
             rolledBack: false,
           } satisfies PipelineResult
@@ -211,12 +212,10 @@ export const EditingPipelineLive = Layer.effect(
 
         // Stage 6: TLI Execution
         // Register rollback before each write so restore is always possible.
-        const mutationResults: PipelineMutationResult[] = []
-        for (let i = 0; i < prepared.length; i++) {
-          const p = prepared[i]
-          const diff = diffs[i]
-
-          if (p === undefined || diff === undefined) continue
+        let mutationResults = Chunk.empty<PipelineMutationResult>()
+        for (let i = 0; i < Chunk.size(prepared); i++) {
+          const p = Chunk.unsafeGet(prepared, i)
+          const diff = Chunk.unsafeGet(diffs, i)
 
           yield* rollback.register(input.mutationId, p.file, p.oldContent)
           yield* tli.write(p.file, p.newContent, input.projectRoot).pipe(
@@ -227,7 +226,7 @@ export const EditingPipelineLive = Layer.effect(
               ),
             ),
           )
-          mutationResults.push({
+          mutationResults = Chunk.append(mutationResults, {
             file: p.file,
             oldContent: p.oldContent,
             newContent: p.newContent,
@@ -244,19 +243,18 @@ export const EditingPipelineLive = Layer.effect(
             result.diff.totalOldLines,
           )
           if (scope === "SHARD_SPLIT") {
-            shardSplitWarnings.push(
+            shardSplitWarnings = Chunk.append(
+              shardSplitWarnings,
               `${result.file}: post-write scope check flagged Shard Split`,
             )
           }
         }
 
-        yield* rollback.clear(input.mutationId)
-
         return {
           mutationId: input.mutationId,
           completedStage: PIPELINE_STAGES[6],
-          results: mutationResults,
-          shardSplitWarnings,
+          results: Chunk.toReadonlyArray(mutationResults),
+          shardSplitWarnings: Chunk.toReadonlyArray(shardSplitWarnings),
           approved: true,
           rolledBack: false,
         } satisfies PipelineResult

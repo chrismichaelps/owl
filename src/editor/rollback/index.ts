@@ -6,8 +6,8 @@
  *
  * Design:
  * - **register()**: Before each write, snapshot the original file content
- * - **rollback()**: On any failure, restore ALL files in the mutation to their pre-state
- * - **clear()**: After successful completion, discard rollback entries
+ * - **rollback()**: Restore ALL files in the mutation to their pre-state
+ * - **clear()**: Explicitly discard rollback entries when undo is no longer needed
  *
  * Atomicity guarantee: If ANY target in a mutation fails, ALL previous targets
  * in that mutation are restored. This prevents partial mutations.
@@ -24,21 +24,40 @@
  * )
  * // All files in "mutation-1" are restored to registered content
  */
-import { Context, Effect, Layer, Ref } from "effect"
+import {
+  Chunk,
+  Context,
+  Data,
+  Effect,
+  HashMap,
+  Layer,
+  Option,
+  Ref,
+} from "effect"
 import { FileSystem } from "@effect/platform"
 import { NodeFileSystem } from "@effect/platform-node"
 import { RollbackError } from "../../core/errors/index.js"
 import { resolveProjectPath } from "../../core/path/index.js"
 
-/**
- * @Owl.Editor.Rollback.Entry - Immutable snapshot of a file before mutation
- */
-export interface RollbackEntry {
+/** @Owl.Editor.Rollback.Entry - Immutable snapshot of a file */
+export type RollbackEntry = Readonly<{
   readonly mutationId: string
   readonly file: string
   readonly originalContent: string
   readonly timestamp: string
-}
+}>
+
+const makeRollbackEntry = (
+  mutationId: string,
+  file: string,
+  originalContent: string,
+): RollbackEntry =>
+  Data.struct({
+    mutationId,
+    file,
+    originalContent,
+    timestamp: new Date().toISOString(),
+  })
 
 /**
  * @Owl.Editor.Rollback.Service - Per-mutation file snapshot registry with atomic restore
@@ -80,7 +99,7 @@ export interface RollbackSystemService {
     mutationId: string,
   ) => Effect.Effect<readonly RollbackEntry[]>
   /**
-   * Clear rollback entries after successful mutation
+   * Clear rollback entries explicitly
    *
    * @param mutationId - Mutation to clear
    */
@@ -93,15 +112,18 @@ export class RollbackSystem extends Context.Tag("RollbackSystem")<
 >() {}
 
 /**
- * @Owl.Editor.Rollback.Live - Ref<Map>-backed store; writes via NodeFileSystem on restore
+ * @Owl.Editor.Rollback.Live - HashMap-backed store; writes via NodeFileSystem on restore
  *
- * Maintains Map<mutationId, RollbackEntry[]> in memory. On rollback, reads entries
- * and writes originalContent back to disk. Entries cleared after successful rollback.
+ * Maintains HashMap<mutationId, Chunk<RollbackEntry>> in memory. On rollback,
+ * reads entries and writes originalContent back to disk. Entries clear only after
+ * rollback or explicit cleanup, so successful mutations remain undoable.
  */
 export const RollbackSystemLive = Layer.effect(
   RollbackSystem,
   Effect.gen(function* () {
-    const storeRef = yield* Ref.make<Map<string, RollbackEntry[]>>(new Map())
+    const storeRef = yield* Ref.make<
+      HashMap.HashMap<string, Chunk.Chunk<RollbackEntry>>
+    >(HashMap.empty())
     const fs = yield* FileSystem.FileSystem
 
     const register = (
@@ -110,18 +132,17 @@ export const RollbackSystemLive = Layer.effect(
       originalContent: string,
     ): Effect.Effect<void> =>
       Ref.update(storeRef, (store) => {
-        const next = new Map(store)
-        const existing = next.get(mutationId) ?? []
-        next.set(mutationId, [
-          ...existing,
-          {
-            mutationId,
-            file,
-            originalContent,
-            timestamp: new Date().toISOString(),
-          },
-        ])
-        return next
+        const existing = Option.getOrElse(HashMap.get(store, mutationId), () =>
+          Chunk.empty<RollbackEntry>(),
+        )
+        return HashMap.set(
+          store,
+          mutationId,
+          Chunk.append(
+            existing,
+            makeRollbackEntry(mutationId, file, originalContent),
+          ),
+        )
       })
 
     const rollback = (
@@ -130,9 +151,11 @@ export const RollbackSystemLive = Layer.effect(
     ): Effect.Effect<readonly string[], RollbackError> =>
       Effect.gen(function* () {
         const store = yield* Ref.get(storeRef)
-        const entries = store.get(mutationId) ?? []
+        const entries = Option.getOrElse(HashMap.get(store, mutationId), () =>
+          Chunk.empty<RollbackEntry>(),
+        )
 
-        if (entries.length === 0) {
+        if (Chunk.isEmpty(entries)) {
           return yield* Effect.fail(
             new RollbackError({
               files: [],
@@ -141,7 +164,7 @@ export const RollbackSystemLive = Layer.effect(
           )
         }
 
-        const restored: string[] = []
+        let restored = Chunk.empty<string>()
         for (const entry of entries) {
           const fullPath = yield* resolveProjectPath(
             projectRoot,
@@ -165,29 +188,29 @@ export const RollbackSystemLive = Layer.effect(
                 }),
             ),
           )
-          restored.push(entry.file)
+          restored = Chunk.append(restored, entry.file)
         }
 
-        yield* Ref.update(storeRef, (s) => {
-          const next = new Map(s)
-          next.delete(mutationId)
-          return next
-        })
+        yield* Ref.update(storeRef, (s) => HashMap.remove(s, mutationId))
 
-        return restored
+        return Chunk.toReadonlyArray(restored)
       })
 
     const getEntries = (
       mutationId: string,
     ): Effect.Effect<readonly RollbackEntry[]> =>
-      Ref.get(storeRef).pipe(Effect.map((store) => store.get(mutationId) ?? []))
+      Ref.get(storeRef).pipe(
+        Effect.map((store) =>
+          Chunk.toReadonlyArray(
+            Option.getOrElse(HashMap.get(store, mutationId), () =>
+              Chunk.empty<RollbackEntry>(),
+            ),
+          ),
+        ),
+      )
 
     const clear = (mutationId: string): Effect.Effect<void> =>
-      Ref.update(storeRef, (store) => {
-        const next = new Map(store)
-        next.delete(mutationId)
-        return next
-      })
+      Ref.update(storeRef, (store) => HashMap.remove(store, mutationId))
 
     return {
       register,

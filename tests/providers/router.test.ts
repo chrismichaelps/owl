@@ -128,6 +128,34 @@ const makeObservableProvider = (id: ProviderId): LLMProviderService => ({
     ),
 })
 
+const makeChunkedProvider = (id: ProviderId): LLMProviderService => ({
+  ...makeStubProvider(id),
+  stream: () =>
+    Stream.make<StreamChunk>(
+      {
+        type: "text",
+        content: "hello ",
+        index: 0,
+      },
+      {
+        type: "text",
+        content: "world",
+        index: 1,
+      },
+      {
+        type: "usage",
+        index: 2,
+        usage: {
+          inputTokens: 200,
+          outputTokens: 80,
+          cacheReadTokens: 25,
+          cacheWriteTokens: 5,
+          estimatedCostUsd: 0,
+        },
+      },
+    ),
+})
+
 /** @Owl.Tests.Providers.Router.Logic - Selection and error path tests */
 describe("ProviderRouter", () => {
   it("routes to registered provider", async () => {
@@ -281,6 +309,51 @@ describe("ProviderRouter", () => {
       "◌ Thinking: checking context",
       "⚙ Tool: filesystem__read_file",
     ])
+  })
+
+  it("completeWithCallback accumulates ordered chunks and final usage", async () => {
+    const provider = makeChunkedProvider("anthropic")
+    const chunks: string[] = []
+
+    const program = Effect.gen(function* () {
+      const router = yield* ProviderRouter
+      yield* registerProvider(router, provider)
+      return yield* router.completeWithCallback(
+        {
+          taskId: "t-stream-chunks",
+          mode: "standard",
+          estimatedInputTokens: 1000,
+          requiresReasoning: false,
+          requiresVision: false,
+          latencyBudgetMs: 30000,
+        },
+        {
+          taskId: "t-stream-chunks",
+          messages: [
+            {
+              role: "user",
+              content: "hello",
+              timestamp: new Date().toISOString(),
+            },
+          ],
+          maxTokens: 1024,
+          stream: true,
+        },
+        (chunk) => {
+          chunks.push(chunk)
+        },
+      )
+    })
+
+    const result = await Effect.runPromise(
+      program.pipe(Effect.provide(ProviderRouterLive)),
+    )
+    expect(result.content).toBe("hello world")
+    expect(chunks).toEqual(["hello ", "world"])
+    expect(result.inputTokens).toBe(200)
+    expect(result.outputTokens).toBe(80)
+    expect(result.cacheReadTokens).toBe(25)
+    expect(result.cacheWriteTokens).toBe(5)
   })
 
   it("fails with ProviderUnavailableError when no providers registered", async () => {
