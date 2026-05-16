@@ -466,6 +466,11 @@ export const MARKDOWN_BLOCK_TYPES = {
   THINKING: "thinking",
 } as const
 
+/** @Owl.Core.Constants.MarkdownParsing - Markdown parser structural constants */
+export const MARKDOWN_CONSTANTS = {
+  CODE_FENCE_LENGTH: 3,
+} as const
+
 /** @Owl.Core.Constants.Modes - Operational modes */
 export const MODES = {
   STANDARD: "standard",

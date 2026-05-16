@@ -6,6 +6,7 @@ import {
   PROVIDER_CONSTANTS,
   RETRY_CONFIG,
   DEPTH_THRESHOLDS,
+  MARKDOWN_CONSTANTS,
   TOOL_CONSTANTS,
   resolveModeThinkingBudget,
   resolveModeTokenBudget,
@@ -32,6 +33,10 @@ describe("system constants", () => {
   it("TOOL_CONSTANTS centralize command buffer bounds", () => {
     expect(TOOL_CONSTANTS.BASH_MAX_BUFFER_MULTIPLIER).toBe(4)
     expect(TOOL_CONSTANTS.GREP_MAX_BUFFER_MULTIPLIER).toBe(4)
+  })
+
+  it("MARKDOWN_CONSTANTS centralize parser structure", () => {
+    expect(MARKDOWN_CONSTANTS.CODE_FENCE_LENGTH).toBe(3)
   })
 
   it("RETRY_CONFIG has exponential backoff settings", () => {

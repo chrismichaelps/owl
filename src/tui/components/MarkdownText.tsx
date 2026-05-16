@@ -23,6 +23,7 @@ import { Data } from "effect"
 import {
   EDITOR_CONSTANTS,
   MARKDOWN_BLOCK_TYPES,
+  MARKDOWN_CONSTANTS,
 } from "../../core/constants/index.js"
 
 interface MarkdownTextProps {
@@ -130,7 +131,7 @@ function parseBlocks(raw: string): Block[] {
 
     // Fenced code block
     if (/^```|^~~~/.test(line)) {
-      const fence = line.slice(0, 3)
+      const fence = line.slice(0, MARKDOWN_CONSTANTS.CODE_FENCE_LENGTH)
       const lang = line.slice(fence.length).trim() || undefined
       const codeLines: string[] = []
       i++
