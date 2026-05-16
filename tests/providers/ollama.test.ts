@@ -1,6 +1,6 @@
 /** @Owl.Tests.Providers.Ollama - Local provider adapter tests */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { ConfigProvider, Effect, Layer } from "effect"
+import { Cause, ConfigProvider, Effect, Layer, Option } from "effect"
 import * as Stream from "effect/Stream"
 import { OWLConfigLive } from "../../src/core/config/index.js"
 import {
@@ -98,6 +98,21 @@ describe("OllamaAdapter", () => {
     expect(response.usage.estimatedCostUsd).toBe(0)
   })
 
+  it("complete() maps HTTP failures to ProviderError", async () => {
+    mockFetch(new Response("not found", { status: 404, statusText: "Nope" }))
+
+    const exit = await Effect.runPromiseExit(
+      Effect.gen(function* () {
+        const adapter = yield* OllamaAdapter
+        return yield* adapter.complete(makeRequest())
+      }).pipe(Effect.provide(makeLayer())),
+    )
+
+    expect(exit._tag).toBe("Failure")
+    expect(String(exit.cause)).toContain("ProviderError")
+    expect(String(exit.cause)).toContain("Ollama error: Nope")
+  })
+
   it("stream() emits text chunks and final usage", async () => {
     const { requestBodies } = mockFetch(
       streamResponse([
@@ -132,5 +147,22 @@ describe("OllamaAdapter", () => {
         estimatedCostUsd: 0,
       },
     })
+  })
+
+  it("stream() maps empty response bodies to ProviderStreamError", async () => {
+    mockFetch(new Response(null, { status: 200 }))
+
+    const exit = await Effect.runPromiseExit(
+      Effect.gen(function* () {
+        const adapter = yield* OllamaAdapter
+        return yield* Stream.runCollect(adapter.stream(makeRequest()))
+      }).pipe(Effect.provide(makeLayer())),
+    )
+
+    expect(exit._tag).toBe("Failure")
+    if (exit._tag === "Success") return
+    const failure = Option.getOrThrow(Cause.failureOption(exit.cause))
+    expect(failure._tag).toBe("ProviderStreamError")
+    expect(failure.cause).toBe("Ollama stream response body is empty")
   })
 })

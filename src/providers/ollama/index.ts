@@ -96,6 +96,18 @@ const buildPrompt = (request: InferenceRequest): string =>
 const parseStreamLine = (line: string): OllamaStreamResponse =>
   decodeStreamResponse(JSON.parse(line) as unknown)
 
+const ollamaGenerateUrl = (baseUrl: string): string =>
+  baseUrl + PROVIDER_CONSTANTS.OLLAMA_GENERATE_PATH
+
+const ollamaTagsUrl = (baseUrl: string): string =>
+  baseUrl + PROVIDER_CONSTANTS.OLLAMA_TAGS_PATH
+
+const providerError = (message: string): ProviderError =>
+  new ProviderError({ provider: "ollama", message })
+
+const providerStreamError = (cause: unknown): ProviderStreamError =>
+  new ProviderStreamError({ provider: "ollama", cause })
+
 /** @Owl.Providers.Ollama.Adapter - Effect-TS service definition */
 export class OllamaAdapter extends Context.Tag("OllamaAdapter")<
   OllamaAdapter,
@@ -119,49 +131,57 @@ export const OllamaAdapterLive = Layer.effect(
     const complete = (
       request: InferenceRequest,
     ): Effect.Effect<InferenceResponse, ProviderError> =>
-      Effect.tryPromise({
-        try: async () => {
-          const startMs = Date.now()
-          const response = await fetch(`${baseUrl}/api/generate`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              model: request.model,
-              prompt: buildPrompt(request),
-              stream: false,
+      Effect.gen(function* () {
+        const startMs = Date.now()
+        const response = yield* Effect.tryPromise({
+          try: () =>
+            fetch(ollamaGenerateUrl(baseUrl), {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                model: request.model,
+                prompt: buildPrompt(request),
+                stream: false,
+              }),
             }),
-          })
-          if (!response.ok) {
-            throw new Error(`Ollama error: ${response.statusText}`)
-          }
-          const rawData = (await response.json()) as unknown
-          const data = decodeGenerateResponse(rawData)
-          const prompt = buildPrompt(request)
-          const inputTokens = estimateTextTokens(prompt)
-          const outputTokens = estimateTextTokens(data.response)
-          return {
-            taskId: request.taskId,
-            content: data.response,
-            stopReason: "end_turn" as const,
-            usage: Data.struct({
+          catch: (e) => providerError(String(e)),
+        })
+        if (!response.ok) {
+          return yield* Effect.fail(
+            providerError("Ollama error: " + response.statusText),
+          )
+        }
+        const rawData = yield* Effect.tryPromise({
+          try: () => response.json() as Promise<unknown>,
+          catch: (e) => providerError(String(e)),
+        })
+        const data = yield* Effect.try({
+          try: () => decodeGenerateResponse(rawData),
+          catch: (e) => providerError(String(e)),
+        })
+        const prompt = buildPrompt(request)
+        const inputTokens = estimateTextTokens(prompt)
+        const outputTokens = estimateTextTokens(data.response)
+        return {
+          taskId: request.taskId,
+          content: data.response,
+          stopReason: "end_turn" as const,
+          usage: Data.struct({
+            inputTokens,
+            outputTokens,
+            cacheReadTokens: 0,
+            cacheWriteTokens: 0,
+            estimatedCostUsd: estimateModelCostUsd(
+              OLLAMA_CAPABILITIES,
+              request.model,
               inputTokens,
               outputTokens,
-              cacheReadTokens: 0,
-              cacheWriteTokens: 0,
-              estimatedCostUsd: estimateModelCostUsd(
-                OLLAMA_CAPABILITIES,
-                request.model,
-                inputTokens,
-                outputTokens,
-              ),
-            }),
-            model: request.model,
-            provider: "ollama" as const,
-            latencyMs: Date.now() - startMs,
-          } satisfies InferenceResponse
-        },
-        catch: (e) =>
-          new ProviderError({ provider: "ollama", message: String(e) }),
+            ),
+          }),
+          model: request.model,
+          provider: "ollama" as const,
+          latencyMs: Date.now() - startMs,
+        } satisfies InferenceResponse
       })
 
     const stream = (request: InferenceRequest) =>
@@ -169,7 +189,7 @@ export const OllamaAdapterLive = Layer.effect(
         const run = async () => {
           try {
             const prompt = buildPrompt(request)
-            const response = await fetch(`${baseUrl}/api/generate`, {
+            const response = await fetch(ollamaGenerateUrl(baseUrl), {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
@@ -178,12 +198,21 @@ export const OllamaAdapterLive = Layer.effect(
                 stream: true,
               }),
             })
-
             if (!response.ok) {
-              throw new Error(`Ollama stream error: ${response.statusText}`)
+              await emit.fail(
+                providerStreamError(
+                  "Ollama stream error: " + response.statusText,
+                ),
+              )
+              return
             }
             if (response.body === null) {
-              throw new Error("Ollama stream response body is empty")
+              await emit.fail(
+                providerStreamError(
+                  PROVIDER_CONSTANTS.OLLAMA_EMPTY_STREAM_BODY_MESSAGE,
+                ),
+              )
+              return
             }
 
             const reader = response.body.getReader()
@@ -245,9 +274,7 @@ export const OllamaAdapterLive = Layer.effect(
             })
             await emit.end()
           } catch (cause) {
-            await emit.fail(
-              new ProviderStreamError({ provider: "ollama", cause }),
-            )
+            await emit.fail(providerStreamError(cause))
           }
         }
         void run()
@@ -256,11 +283,10 @@ export const OllamaAdapterLive = Layer.effect(
     const healthCheck = (): Effect.Effect<boolean, ProviderError> =>
       Effect.tryPromise({
         try: async () => {
-          const response = await fetch(`${baseUrl}/api/tags`)
+          const response = await fetch(ollamaTagsUrl(baseUrl))
           return response.ok
         },
-        catch: (e) =>
-          new ProviderError({ provider: "ollama", message: String(e) }),
+        catch: (e) => providerError(String(e)),
       })
 
     return {
