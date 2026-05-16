@@ -18,7 +18,16 @@
  */
 import { FileSystem } from "@effect/platform"
 import { NodeFileSystem } from "@effect/platform-node"
-import { Context, Effect, Layer, Ref } from "effect"
+import {
+  Chunk,
+  Context,
+  Data,
+  Effect,
+  HashMap,
+  Layer,
+  Option,
+  Ref,
+} from "effect"
 import { ContextManager } from "../engine/context/index.js"
 import { UsageMetrics } from "../engine/metrics/index.js"
 import { Orchestrator } from "../engine/orchestrator/index.js"
@@ -117,28 +126,26 @@ export class CommandRegistry extends Context.Tag("CommandRegistry")<
 /**
  * @Owl.Commands.Registry.buildService - Shared factory used by bare Live and full-wired variants
  *
- * Builds the core registry service from a Ref<Map>.
+ * Builds the core registry service from a Ref<HashMap>.
  * Used by both CommandRegistryLive (bare, for tests) and makeCommandRegistryLive (full).
  */
 export const buildRegistryService = (
-  mapRef: Ref.Ref<Map<string, CommandHandler>>,
+  mapRef: Ref.Ref<HashMap.HashMap<string, CommandHandler>>,
 ): CommandRegistryService => {
   const register = (handler: CommandHandler): Effect.Effect<void> =>
-    Ref.update(mapRef, (map) => {
-      const next = new Map(map)
-      next.set(handler.name, handler)
-      return next
-    })
+    Ref.update(mapRef, (map) => HashMap.set(map, handler.name, handler))
 
   const lookup = (
     name: string,
   ): Effect.Effect<CommandHandler, CommandNotFoundError> =>
     Ref.get(mapRef).pipe(
       Effect.flatMap((map) => {
-        const handler = map.get(name)
-        return handler !== undefined
-          ? Effect.succeed(handler)
-          : Effect.fail(new CommandNotFoundError({ command: name }))
+        const handler = HashMap.get(map, name)
+        return Option.match(handler, {
+          onNone: () =>
+            Effect.fail(new CommandNotFoundError({ command: name })),
+          onSome: Effect.succeed,
+        })
       }),
     )
 
@@ -147,10 +154,14 @@ export const buildRegistryService = (
   > =>
     Ref.get(mapRef).pipe(
       Effect.map((map) =>
-        Array.from(map.values()).map((h) => ({
-          name: h.name,
-          description: h.description,
-        })),
+        Chunk.toReadonlyArray(
+          Chunk.map(Chunk.fromIterable(HashMap.values(map)), (handler) =>
+            Data.struct({
+              name: handler.name,
+              description: handler.description,
+            }),
+          ),
+        ),
       ),
     )
 
@@ -171,7 +182,9 @@ export const buildRegistryService = (
 export const CommandRegistryLive = Layer.effect(
   CommandRegistry,
   Effect.gen(function* () {
-    const mapRef = yield* Ref.make<Map<string, CommandHandler>>(new Map())
+    const mapRef = yield* Ref.make<HashMap.HashMap<string, CommandHandler>>(
+      HashMap.empty(),
+    )
     return buildRegistryService(mapRef)
   }),
 )
@@ -222,10 +235,12 @@ export const makeCommandRegistryLive = (
       const routingPreferences = yield* RoutingPreferences
       const providerRouter = yield* ProviderRouter
 
-      const mapRef = yield* Ref.make<Map<string, CommandHandler>>(new Map())
+      const mapRef = yield* Ref.make<HashMap.HashMap<string, CommandHandler>>(
+        HashMap.empty(),
+      )
       const svc = buildRegistryService(mapRef)
 
-      const handlers: CommandHandler[] = [
+      const handlers = Chunk.make(
         // Core
         makeTaskCommand(orchestrator),
         makeDeepCommand(orchestrator),
@@ -265,7 +280,7 @@ export const makeCommandRegistryLive = (
         makeMemoryCommand(sessionMemory),
         makeModelCommand(routingPreferences),
         makeProvidersCommand(providerRouter, routingPreferences),
-      ]
+      )
 
       yield* Effect.forEach(handlers, svc.register, { discard: true })
       yield* svc.register(makeHelpCommand(svc))
