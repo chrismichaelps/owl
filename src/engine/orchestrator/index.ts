@@ -25,7 +25,7 @@
  *   o.run({ id: "task-1", prompt: "Create a button", mode: "standard", createdAt: now })
  * )
  */
-import { Chunk, Context, Effect, HashSet, Layer, Option } from "effect"
+import { Chunk, Context, Effect, Layer, Option } from "effect"
 import { ContextManager } from "../context/index.js"
 import { buildFMCFSystemPrompt } from "../context/systemPrompt.js"
 import { loadProjectContext } from "../context/projectContext.js"
@@ -36,6 +36,17 @@ import {
   sumParallelCostUsd,
   sumParallelOutputTokens,
 } from "./parallel.js"
+import {
+  makeAssistantMessage,
+  makeInferenceRequest,
+  makeParallelSessionTurn,
+  makeResponseMetric,
+  makeResponseSessionTurn,
+  makeRoutingContext,
+  makeStreamingResponse,
+  makeTaskUserMessage,
+  resolveTaskBudget,
+} from "./runtime.js"
 import { UsageMetrics } from "../metrics/index.js"
 import { SessionMemory } from "../memory/index.js"
 import type { SessionMemoryFailure } from "../memory/persistence.js"
@@ -46,26 +57,9 @@ import type {
   ProviderUnavailableError,
   TokenBudgetExceededError,
 } from "../../core/errors/index.js"
-import type {
-  Task,
-  InferenceResponse,
-  Message,
-} from "../../core/schema/index.js"
-import {
-  PROVIDER_TIMEOUTS,
-  TOKEN_LIMITS,
-  THINKING_MODES,
-  resolveModeThinkingBudget,
-  resolveModeTokenBudget,
-} from "../../core/constants/index.js"
+import type { Task, InferenceResponse } from "../../core/schema/index.js"
 import { estimateConversationTokens } from "../../tokens/pruning/index.js"
 import { TokenBudget } from "../../tokens/budget/index.js"
-
-/** ProviderId union — mirrors the schema literal for safe casting */
-type ProviderId = InferenceResponse["provider"]
-
-const resolveModeBudget = (task: Task): number =>
-  resolveModeTokenBudget(task.mode)
 
 /**
  * @Owl.Engine.Orchestrator.Service - Main agent loop interface
@@ -180,14 +174,9 @@ export const makeOrchestratorLive = (projectRoot: string) =>
         | SessionMemoryFailure
       > =>
         Effect.gen(function* () {
-          const userMsg: Message = {
-            role: "user",
-            content: task.prompt,
-            timestamp: new Date().toISOString(),
-          }
-          yield* ctx.addMessage(userMsg)
+          yield* ctx.addMessage(makeTaskUserMessage(task))
 
-          const budget = resolveModeBudget(task)
+          const budget = resolveTaskBudget(task)
           const windowedMsgs = yield* ctx.getWindowedMessages(budget)
           const estimatedTokens = estimateConversationTokens(windowedMsgs)
           yield* budgetService.initSession(task.mode, budget)
@@ -197,62 +186,27 @@ export const makeOrchestratorLive = (projectRoot: string) =>
           const preferredProvider =
             yield* routingPreferences.getPreferredProvider()
           const privacyMode = yield* routingPreferences.getPrivacyMode()
-          const routingCtx = {
-            taskId: task.id,
-            mode: task.mode,
-            estimatedInputTokens: estimatedTokens,
-            requiresReasoning: HashSet.has(THINKING_MODES, task.mode),
-            requiresVision: false,
-            latencyBudgetMs: PROVIDER_TIMEOUTS.DEFAULT_MS,
-            ...(privacyMode ? { localOnly: true } : {}),
-            ...(preferredProvider !== undefined ? { preferredProvider } : {}),
-          }
-
-          const thinkingBudget = resolveModeThinkingBudget(task.mode)
-          const request = {
-            taskId: task.id,
-            messages: windowedMsgs,
-            maxTokens: TOKEN_LIMITS.MAX_OUTPUT_TOKENS,
+          const routingCtx = makeRoutingContext(
+            task,
+            estimatedTokens,
+            preferredProvider,
+            privacyMode,
+          )
+          const request = makeInferenceRequest(
+            task,
+            windowedMsgs,
             systemPrompt,
-            stream: false,
-            ...(thinkingBudget !== undefined ? { thinkingBudget } : {}),
-          }
+            false,
+          )
 
           const response = yield* router.complete(routingCtx, request)
           yield* budgetService.consume(task.id, response.usage.outputTokens)
-          yield* usageMetrics.recordInference({
-            taskId: task.id,
-            mode: task.mode,
-            provider: response.provider,
-            model: response.model,
-            inputTokens: response.usage.inputTokens,
-            outputTokens: response.usage.outputTokens,
-            cacheReadTokens: response.usage.cacheReadTokens,
-            cacheWriteTokens: response.usage.cacheWriteTokens,
-            estimatedCostUsd: response.usage.estimatedCostUsd,
-            latencyMs: response.latencyMs,
-            timestamp: new Date().toISOString(),
-          })
+          yield* usageMetrics.recordInference(
+            makeResponseMetric(task, response),
+          )
 
-          const assistantMsg: Message = {
-            role: "assistant",
-            content: response.content,
-            timestamp: new Date().toISOString(),
-          }
-          yield* ctx.addMessage(assistantMsg)
-
-          yield* mem.recordTurn({
-            taskId: task.id,
-            prompt: task.prompt,
-            response: response.content,
-            tokensUsed:
-              response.usage.inputTokens + response.usage.outputTokens,
-            provider: response.provider,
-            model: response.model,
-            estimatedCostUsd: response.usage.estimatedCostUsd,
-            latencyMs: response.latencyMs,
-            timestamp: new Date().toISOString(),
-          })
+          yield* ctx.addMessage(makeAssistantMessage(response.content))
+          yield* mem.recordTurn(makeResponseSessionTurn(task, response))
 
           return response
         })
@@ -267,14 +221,9 @@ export const makeOrchestratorLive = (projectRoot: string) =>
         | SessionMemoryFailure
       > =>
         Effect.gen(function* () {
-          const userMsg: Message = {
-            role: "user",
-            content: task.prompt,
-            timestamp: new Date().toISOString(),
-          }
-          yield* ctx.addMessage(userMsg)
+          yield* ctx.addMessage(makeTaskUserMessage(task))
 
-          const budget = resolveModeBudget(task)
+          const budget = resolveTaskBudget(task)
           const windowedMsgs = yield* ctx.getWindowedMessages(budget)
           const estimatedTokens = estimateConversationTokens(windowedMsgs)
           yield* budgetService.initSession(task.mode, budget)
@@ -284,26 +233,18 @@ export const makeOrchestratorLive = (projectRoot: string) =>
           const preferredProvider =
             yield* routingPreferences.getPreferredProvider()
           const privacyMode = yield* routingPreferences.getPrivacyMode()
-          const routingCtx = {
-            taskId: task.id,
-            mode: task.mode,
-            estimatedInputTokens: estimatedTokens,
-            requiresReasoning: HashSet.has(THINKING_MODES, task.mode),
-            requiresVision: false,
-            latencyBudgetMs: PROVIDER_TIMEOUTS.DEFAULT_MS,
-            ...(privacyMode ? { localOnly: true } : {}),
-            ...(preferredProvider !== undefined ? { preferredProvider } : {}),
-          }
-
-          const thinkingBudget = resolveModeThinkingBudget(task.mode)
-          const request = {
-            taskId: task.id,
-            messages: windowedMsgs,
-            maxTokens: TOKEN_LIMITS.MAX_OUTPUT_TOKENS,
+          const routingCtx = makeRoutingContext(
+            task,
+            estimatedTokens,
+            preferredProvider,
+            privacyMode,
+          )
+          const request = makeInferenceRequest(
+            task,
+            windowedMsgs,
             systemPrompt,
-            stream: false,
-            ...(thinkingBudget !== undefined ? { thinkingBudget } : {}),
-          }
+            false,
+          )
 
           const responses = yield* router.completeParallel(routingCtx, request)
           const responseChunk = Chunk.fromIterable(responses)
@@ -313,43 +254,26 @@ export const makeOrchestratorLive = (projectRoot: string) =>
           yield* Effect.forEach(
             responseChunk,
             (response) =>
-              usageMetrics.recordInference({
-                taskId: task.id,
-                mode: task.mode,
-                provider: response.provider,
-                model: response.model,
-                inputTokens: response.usage.inputTokens,
-                outputTokens: response.usage.outputTokens,
-                cacheReadTokens: response.usage.cacheReadTokens,
-                cacheWriteTokens: response.usage.cacheWriteTokens,
-                estimatedCostUsd: response.usage.estimatedCostUsd,
-                latencyMs: response.latencyMs,
-                timestamp: new Date().toISOString(),
-              }),
+              usageMetrics.recordInference(makeResponseMetric(task, response)),
             { discard: true },
           )
 
           const combinedContent = formatParallelContent(responses)
 
-          const assistantMsg: Message = {
-            role: "assistant",
-            content: combinedContent,
-            timestamp: new Date().toISOString(),
-          }
-          yield* ctx.addMessage(assistantMsg)
+          yield* ctx.addMessage(makeAssistantMessage(combinedContent))
 
           const first = Option.getOrThrow(firstParallelResponse(responses))
-          yield* mem.recordTurn({
-            taskId: task.id,
-            prompt: task.prompt,
-            response: combinedContent,
-            tokensUsed: estimatedTokens + outputTokens,
-            provider: first.provider,
-            model: "parallel",
-            estimatedCostUsd: sumParallelCostUsd(responses),
-            latencyMs: maxParallelLatencyMs(responses),
-            timestamp: new Date().toISOString(),
-          })
+          yield* mem.recordTurn(
+            makeParallelSessionTurn(
+              task,
+              combinedContent,
+              estimatedTokens,
+              outputTokens,
+              first.provider,
+              sumParallelCostUsd(responses),
+              maxParallelLatencyMs(responses),
+            ),
+          )
 
           return responses
         })
@@ -366,14 +290,9 @@ export const makeOrchestratorLive = (projectRoot: string) =>
         | SessionMemoryFailure
       > =>
         Effect.gen(function* () {
-          const userMsg: Message = {
-            role: "user",
-            content: task.prompt,
-            timestamp: new Date().toISOString(),
-          }
-          yield* ctx.addMessage(userMsg)
+          yield* ctx.addMessage(makeTaskUserMessage(task))
 
-          const budget = resolveModeBudget(task)
+          const budget = resolveTaskBudget(task)
           const windowedMsgs = yield* ctx.getWindowedMessages(budget)
           const estimatedInputTokens = estimateConversationTokens(windowedMsgs)
           yield* budgetService.initSession(task.mode, budget)
@@ -383,26 +302,18 @@ export const makeOrchestratorLive = (projectRoot: string) =>
           const preferredProvider =
             yield* routingPreferences.getPreferredProvider()
           const privacyMode = yield* routingPreferences.getPrivacyMode()
-          const routingCtx = {
-            taskId: task.id,
-            mode: task.mode,
+          const routingCtx = makeRoutingContext(
+            task,
             estimatedInputTokens,
-            requiresReasoning: HashSet.has(THINKING_MODES, task.mode),
-            requiresVision: false,
-            latencyBudgetMs: PROVIDER_TIMEOUTS.DEFAULT_MS,
-            ...(privacyMode ? { localOnly: true } : {}),
-            ...(preferredProvider !== undefined ? { preferredProvider } : {}),
-          }
-
-          const thinkingBudget = resolveModeThinkingBudget(task.mode)
-          const request = {
-            taskId: task.id,
-            messages: windowedMsgs,
-            maxTokens: TOKEN_LIMITS.MAX_OUTPUT_TOKENS,
+            preferredProvider,
+            privacyMode,
+          )
+          const request = makeInferenceRequest(
+            task,
+            windowedMsgs,
             systemPrompt,
-            stream: true,
-            ...(thinkingBudget !== undefined ? { thinkingBudget } : {}),
-          }
+            true,
+          )
 
           const result = yield* router.completeWithCallback(
             routingCtx,
@@ -412,11 +323,7 @@ export const makeOrchestratorLive = (projectRoot: string) =>
           )
 
           const estimatedOutputTokens = estimateConversationTokens([
-            {
-              role: "assistant" as const,
-              content: result.content,
-              timestamp: new Date().toISOString(),
-            },
+            makeAssistantMessage(result.content),
           ])
           const inputTokens =
             result.inputTokens > 0 ? result.inputTokens : estimatedInputTokens
@@ -426,53 +333,18 @@ export const makeOrchestratorLive = (projectRoot: string) =>
               : estimatedOutputTokens
           yield* budgetService.consume(task.id, outputTokens)
 
-          const response: InferenceResponse = {
-            taskId: task.id,
-            content: result.content,
-            stopReason: "end_turn",
-            usage: {
-              inputTokens,
-              outputTokens,
-              cacheReadTokens: result.cacheReadTokens,
-              cacheWriteTokens: result.cacheWriteTokens,
-              estimatedCostUsd: result.estimatedCostUsd,
-            },
-            model: result.model,
-            provider: result.provider as ProviderId,
-            latencyMs: result.latencyMs,
-          }
-          yield* usageMetrics.recordInference({
-            taskId: task.id,
-            mode: task.mode,
-            provider: response.provider,
-            model: response.model,
-            inputTokens: response.usage.inputTokens,
-            outputTokens: response.usage.outputTokens,
-            cacheReadTokens: response.usage.cacheReadTokens,
-            cacheWriteTokens: response.usage.cacheWriteTokens,
-            estimatedCostUsd: response.usage.estimatedCostUsd,
-            latencyMs: response.latencyMs,
-            timestamp: new Date().toISOString(),
-          })
+          const response = makeStreamingResponse(
+            task,
+            result,
+            inputTokens,
+            outputTokens,
+          )
+          yield* usageMetrics.recordInference(
+            makeResponseMetric(task, response),
+          )
 
-          const assistantMsg: Message = {
-            role: "assistant",
-            content: result.content,
-            timestamp: new Date().toISOString(),
-          }
-          yield* ctx.addMessage(assistantMsg)
-
-          yield* mem.recordTurn({
-            taskId: task.id,
-            prompt: task.prompt,
-            response: result.content,
-            tokensUsed: inputTokens + outputTokens,
-            provider: response.provider,
-            model: response.model,
-            estimatedCostUsd: response.usage.estimatedCostUsd,
-            latencyMs: response.latencyMs,
-            timestamp: new Date().toISOString(),
-          })
+          yield* ctx.addMessage(makeAssistantMessage(result.content))
+          yield* mem.recordTurn(makeResponseSessionTurn(task, response))
 
           return response
         })
