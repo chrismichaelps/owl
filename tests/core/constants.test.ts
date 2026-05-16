@@ -6,6 +6,7 @@ import {
   PROVIDER_CONSTANTS,
   RETRY_CONFIG,
   DEPTH_THRESHOLDS,
+  TOOL_CONSTANTS,
   resolveModeThinkingBudget,
   resolveModeTokenBudget,
 } from "../../src/core/constants/index.js"
@@ -26,6 +27,11 @@ describe("system constants", () => {
   it("PROVIDER_CONSTANTS centralize provider runtime bounds", () => {
     expect(PROVIDER_CONSTANTS.TOKEN_ESTIMATION_CHARS_PER_TOKEN).toBe(4)
     expect(PROVIDER_CONSTANTS.ANTHROPIC_MAX_TOOL_ITERATIONS).toBe(10)
+  })
+
+  it("TOOL_CONSTANTS centralize command buffer bounds", () => {
+    expect(TOOL_CONSTANTS.BASH_MAX_BUFFER_MULTIPLIER).toBe(4)
+    expect(TOOL_CONSTANTS.GREP_MAX_BUFFER_MULTIPLIER).toBe(4)
   })
 
   it("RETRY_CONFIG has exponential backoff settings", () => {

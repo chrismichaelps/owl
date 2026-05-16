@@ -124,7 +124,9 @@ export const GrepTool: BuiltInTool = {
             args,
             {
               cwd,
-              maxBuffer: TOOL_CONSTANTS.GREP_MAX_OUTPUT_CHARS * 4,
+              maxBuffer:
+                TOOL_CONSTANTS.GREP_MAX_OUTPUT_CHARS *
+                TOOL_CONSTANTS.GREP_MAX_BUFFER_MULTIPLIER,
               timeout: TOOL_CONSTANTS.GREP_TIMEOUT_MS,
             },
             (err, stdout, stderr) => {
