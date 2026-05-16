@@ -5,7 +5,7 @@
  * Orchestrator reads this state when building RoutingContext; ProviderRouter
  * still owns scoring, availability, and failover.
  */
-import { Context, Effect, Layer, Ref } from "effect"
+import { Context, Data, Effect, Layer, Ref } from "effect"
 import type { ProviderId } from "../../core/schema/index.js"
 
 export interface RoutingPreferencesState {
@@ -32,13 +32,13 @@ export class RoutingPreferences extends Context.Tag("RoutingPreferences")<
 export const RoutingPreferencesLive = Layer.effect(
   RoutingPreferences,
   Effect.gen(function* () {
-    const stateRef = yield* Ref.make<RoutingPreferencesState>({})
+    const stateRef = yield* Ref.make<RoutingPreferencesState>(Data.struct({}))
 
     const setPreferredProvider = (provider: ProviderId): Effect.Effect<void> =>
-      Ref.set(stateRef, { preferredProvider: provider })
+      Ref.set(stateRef, Data.struct({ preferredProvider: provider }))
 
     const clearPreferredProvider = (): Effect.Effect<void> =>
-      Ref.set(stateRef, {})
+      Ref.set(stateRef, Data.struct({}))
 
     const getPreferredProvider = (): Effect.Effect<ProviderId | undefined> =>
       Ref.get(stateRef).pipe(Effect.map((state) => state.preferredProvider))

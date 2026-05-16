@@ -1,4 +1,5 @@
 /** @Owl.Providers.Cost - Provider capability cost estimators */
+import { Chunk, Option } from "effect"
 import { estimateTokenCostUsd } from "../core/cost.js"
 import type { ProviderCapability } from "./types.js"
 
@@ -22,8 +23,11 @@ export const estimateModelCostUsd = (
   inputTokens: number,
   outputTokens: number,
 ): number => {
-  const capability = capabilities.find((entry) => entry.modelId === modelId)
-  return capability === undefined
+  const capability = Chunk.findFirst(
+    Chunk.fromIterable(capabilities),
+    (entry) => entry.modelId === modelId,
+  )
+  return Option.isNone(capability)
     ? 0
-    : estimateCapabilityCostUsd(capability, inputTokens, outputTokens)
+    : estimateCapabilityCostUsd(capability.value, inputTokens, outputTokens)
 }

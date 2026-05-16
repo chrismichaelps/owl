@@ -40,9 +40,11 @@ export function makeProvidersCommand(
     execute: (): Effect.Effect<CommandResult, CommandParseError> =>
       Effect.gen(function* () {
         const preferences = yield* routingPreferences.snapshot()
-        const capabilities = yield* router.listCapabilities()
+        const capabilities = Chunk.fromIterable(
+          yield* router.listCapabilities(),
+        )
 
-        if (capabilities.length === 0) {
+        if (Chunk.isEmpty(capabilities)) {
           return {
             output:
               "Active provider: " +
@@ -57,10 +59,7 @@ export function makeProvidersCommand(
             (preferences.preferredProvider ?? "auto") +
             "\nRegistered models:\n" +
             Chunk.toReadonlyArray(
-              Chunk.map(
-                Chunk.fromIterable(capabilities),
-                formatProviderCapability,
-              ),
+              Chunk.map(capabilities, formatProviderCapability),
             ).join("\n"),
         }
       }),

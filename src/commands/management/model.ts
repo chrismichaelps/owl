@@ -9,8 +9,8 @@
  * @example
  * /model anthropic
  */
-import { Effect } from "effect"
-import { PROVIDER_IDS } from "../../core/constants/index.js"
+import { Chunk, Effect, HashSet } from "effect"
+import { PROVIDER_IDS, PROVIDER_ID_SET } from "../../core/constants/index.js"
 import { CommandParseError } from "../../core/errors/index.js"
 import type { ProviderId } from "../../core/schema/index.js"
 import type { RoutingPreferencesService } from "../../providers/preferences/index.js"
@@ -22,9 +22,11 @@ import type { CommandHandler, CommandResult } from "../types.js"
 export function makeModelCommand(
   routingPreferences: RoutingPreferencesService,
 ): CommandHandler {
-  const validProviders = PROVIDER_IDS.join(", ")
+  const validProviders = Chunk.toReadonlyArray(
+    Chunk.fromIterable(PROVIDER_IDS),
+  ).join(", ")
   const isProviderId = (value: string): value is ProviderId =>
-    (PROVIDER_IDS as readonly string[]).includes(value)
+    HashSet.has(PROVIDER_ID_SET, value)
 
   return {
     name: "model",
