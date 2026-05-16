@@ -12,6 +12,7 @@ interface StatusBarProps {
   readonly totalEstimatedCostUsd: number
   readonly mode: string
   readonly providerOverride: ProviderId | null
+  readonly model: string | null
 }
 
 const STATUS_COLOR: Record<AgentStatus, string> = {
@@ -31,6 +32,7 @@ export const StatusBar: React.FC<StatusBarProps> = memo(
     totalEstimatedCostUsd,
     mode,
     providerOverride,
+    model,
   }) => (
     <Box
       borderStyle="single"
@@ -38,14 +40,24 @@ export const StatusBar: React.FC<StatusBarProps> = memo(
       paddingX={1}
       justifyContent="space-between"
     >
-      {/* Left: version + mode */}
+      {/* Left: version + mode + model */}
       <Box gap={2}>
         <Text color="gray" dimColor>
           Owl v0.1.0
         </Text>
         <Text color="magenta">[{mode.toUpperCase()}]</Text>
+        {mode === "deep" || mode === "god" ? (
+          <Text color="blueBright" dimColor>
+            ◌ thinking
+          </Text>
+        ) : null}
         <Text color={STATUS_COLOR[status]}>{status.toUpperCase()}</Text>
         <Text color="cyan">route:{providerOverride ?? "auto"}</Text>
+        {model !== null ? (
+          <Text color="gray" dimColor>
+            {model.replace("claude-", "").replace(/-\d{8}$/, "")}
+          </Text>
+        ) : null}
       </Box>
 
       {/* Center: token usage */}

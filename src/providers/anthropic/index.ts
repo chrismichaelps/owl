@@ -34,6 +34,7 @@ import {
   RETRY_CONFIG,
 } from "../../core/constants/index.js"
 import { estimateModelCostUsd } from "../cost.js"
+import { parseImageBlocks } from "../image.js"
 import { McpManager } from "../../mcp/index.js"
 import type { McpManagerService } from "../../mcp/index.js"
 import type {
@@ -168,8 +169,8 @@ export const AnthropicAdapterLive = Layer.effect(
       tools: Anthropic.Tool[],
     ) =>
       Effect.tryPromise({
-        try: () =>
-          client.messages.create({
+        try: () => {
+          const params: Anthropic.MessageCreateParamsNonStreaming = {
             model: request.model,
             max_tokens: request.maxTokens,
             messages,
@@ -185,7 +186,17 @@ export const AnthropicAdapterLive = Layer.effect(
                   ],
                 }
               : {}),
-          }),
+          }
+          if (request.thinkingBudget !== undefined) {
+            // Extended thinking — experimental API field not yet in SDK types
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ;(params as any).thinking = {
+              type: "enabled",
+              budget_tokens: request.thinkingBudget,
+            }
+          }
+          return client.messages.create(params)
+        },
         catch: mapAnthropicError,
       }).pipe(Effect.retry(retrySchedule))
 
@@ -209,12 +220,16 @@ export const AnthropicAdapterLive = Layer.effect(
           input_schema: t.input_schema as Anthropic.Tool["input_schema"],
         }))
 
-        const messages: Anthropic.MessageParam[] = request.messages.map(
-          (m) => ({
+        const messages: Anthropic.MessageParam[] = request.messages.map((m) => {
+          const imageBlocks = parseImageBlocks(m.content)
+          return {
             role: m.role as "user" | "assistant",
-            content: m.content,
-          }),
-        )
+            content:
+              imageBlocks !== null
+                ? (imageBlocks as Anthropic.MessageParam["content"])
+                : m.content,
+          }
+        })
 
         let response = yield* callApi(messages, request, tools)
         let textContent = ""
@@ -293,10 +308,16 @@ export const AnthropicAdapterLive = Layer.effect(
         const run = async () => {
           try {
             const messages: Anthropic.MessageParam[] = request.messages.map(
-              (m) => ({
-                role: m.role as "user" | "assistant",
-                content: m.content,
-              }),
+              (m) => {
+                const imageBlocks = parseImageBlocks(m.content)
+                return {
+                  role: m.role as "user" | "assistant",
+                  content:
+                    imageBlocks !== null
+                      ? (imageBlocks as Anthropic.MessageParam["content"])
+                      : m.content,
+                }
+              },
             )
 
             // Load MCP tools if manager is connected
@@ -329,25 +350,49 @@ export const AnthropicAdapterLive = Layer.effect(
             let totalCacheWriteTokens = 0
             let lastModel = request.model
 
+            const streamThinking =
+              request.thinkingBudget !== undefined
+                ? {
+                    type: "enabled" as const,
+                    budget_tokens: request.thinkingBudget,
+                  }
+                : undefined
+
             while (iterations < MAX_TOOL_ITERATIONS) {
-              const s = client.messages.stream({
+              const streamParams: Anthropic.MessageStreamParams = {
                 model: request.model,
                 max_tokens: request.maxTokens,
                 messages,
                 ...(tools.length > 0 ? { tools } : {}),
                 ...(systemBlock !== undefined ? { system: systemBlock } : {}),
-              })
+              }
+              if (streamThinking !== undefined) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                ;(streamParams as any).thinking = streamThinking
+              }
+              const s = client.messages.stream(streamParams)
 
               for await (const event of s) {
-                if (
-                  event.type === "content_block_delta" &&
-                  event.delta.type === "text_delta"
-                ) {
-                  await emit.single({
-                    type: "text",
-                    content: event.delta.text,
-                    index: index++,
-                  })
+                if (event.type === "content_block_delta") {
+                  if (event.delta.type === "text_delta") {
+                    await emit.single({
+                      type: "text",
+                      content: event.delta.text,
+                      index: index++,
+                    })
+                  } else if (
+                    event.delta.type === "thinking_delta" &&
+                    "thinking" in event.delta
+                  ) {
+                    // Emit thinking tokens as a separate chunk type so the
+                    // router can forward them to the log callback without
+                    // polluting the response text.
+                    await emit.single({
+                      type: "thinking",
+                      content: (event.delta as { thinking: string }).thinking,
+                      index: index++,
+                    })
+                  }
                 }
               }
 

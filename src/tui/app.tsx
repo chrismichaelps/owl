@@ -378,6 +378,7 @@ export const App: React.FC<AppProps> = ({
         totalEstimatedCostUsd={state.totalEstimatedCostUsd}
         mode={mode}
         providerOverride={state.providerOverride}
+        model={state.model}
       />
     </Box>
   )

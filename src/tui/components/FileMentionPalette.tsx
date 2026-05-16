@@ -1,5 +1,6 @@
 /** @Owl.TUI.Components.FileMentionPalette - Autocomplete popup for @file mentions */
 import React, { memo } from "react"
+import { extname } from "node:path"
 import { Box, Text } from "ink"
 import type { ProjectFile } from "../mentions/files.js"
 
@@ -7,6 +8,16 @@ interface FileMentionPaletteProps {
   readonly files: readonly ProjectFile[]
   readonly selectedIndex: number
   readonly query: string
+}
+
+const IMAGE_EXTS = new Set([".png", ".jpg", ".jpeg", ".gif", ".webp"])
+
+function fileIcon(path: string): string {
+  const ext = extname(path).toLowerCase()
+  if (IMAGE_EXTS.has(ext)) return "🖼"
+  if (ext === ".md") return "📝"
+  if (ext === ".json") return "{ }"
+  return "  "
 }
 
 /** Shown just above the prompt when the user types @ */
@@ -31,6 +42,9 @@ export const FileMentionPalette: React.FC<FileMentionPaletteProps> = memo(
               <Text color={isSelected ? "cyan" : "gray"}>
                 {isSelected ? "›" : " "}
               </Text>
+              <Text color="gray" dimColor>
+                {fileIcon(file.path)}
+              </Text>
               <Text color={isSelected ? "white" : "gray"} bold={isSelected}>
                 {file.path}
               </Text>
@@ -38,7 +52,7 @@ export const FileMentionPalette: React.FC<FileMentionPaletteProps> = memo(
           )
         })}
         <Text color="gray" dimColor>
-          {"  "}Tab to complete · Esc to dismiss
+          {"  "}Tab · Esc · 🖼=vision
         </Text>
       </Box>
     )

@@ -46,6 +46,21 @@ export const MODE_TOKEN_BUDGETS: Record<string, number> = {
   god: 200_000,
 } as const
 
+/**
+ * @Owl.Core.Constants.Thinking - Extended thinking token budgets per mode
+ *
+ * Extended thinking is enabled for deep/god modes on Anthropic models that support it.
+ * Budget is the maximum tokens the model may use for internal reasoning before responding.
+ * Must be less than max_tokens for the request.
+ */
+export const MODE_THINKING_BUDGETS: Record<string, number | undefined> = {
+  economy: undefined,
+  quick: undefined,
+  standard: undefined,
+  deep: 10_000,
+  god: 20_000,
+} as const
+
 /** @Owl.Core.Constants.Networking - Timeout and retry policies */
 export const PROVIDER_TIMEOUTS = {
   DEFAULT_MS: 30_000,

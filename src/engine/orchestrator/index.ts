@@ -46,6 +46,7 @@ import type {
 } from "../../core/schema/index.js"
 import {
   MODE_TOKEN_BUDGETS,
+  MODE_THINKING_BUDGETS,
   PROVIDER_TIMEOUTS,
   TOKEN_LIMITS,
 } from "../../core/constants/index.js"
@@ -187,12 +188,14 @@ export const makeOrchestratorLive = (projectRoot: string) =>
             ...(preferredProvider !== undefined ? { preferredProvider } : {}),
           }
 
+          const thinkingBudget = MODE_THINKING_BUDGETS[task.mode]
           const request = {
             taskId: task.id,
             messages: windowedMsgs,
             maxTokens: TOKEN_LIMITS.MAX_OUTPUT_TOKENS,
             systemPrompt,
             stream: false,
+            ...(thinkingBudget !== undefined ? { thinkingBudget } : {}),
           }
 
           const response = yield* router.complete(routingCtx, request)
@@ -272,12 +275,14 @@ export const makeOrchestratorLive = (projectRoot: string) =>
             ...(preferredProvider !== undefined ? { preferredProvider } : {}),
           }
 
+          const thinkingBudget = MODE_THINKING_BUDGETS[task.mode]
           const request = {
             taskId: task.id,
             messages: windowedMsgs,
             maxTokens: TOKEN_LIMITS.MAX_OUTPUT_TOKENS,
             systemPrompt,
             stream: true,
+            ...(thinkingBudget !== undefined ? { thinkingBudget } : {}),
           }
 
           const result = yield* router.completeWithCallback(

@@ -103,6 +103,8 @@ export const InferenceRequestSchema = Schema.Struct({
   temperature: Schema.optional(Schema.Number),
   systemPrompt: Schema.optional(Schema.String),
   stream: Schema.Boolean,
+  /** Extended thinking budget in tokens (Anthropic-only, deep/god modes) */
+  thinkingBudget: Schema.optional(Schema.Number),
 })
 export type InferenceRequest = Schema.Schema.Type<typeof InferenceRequestSchema>
 
