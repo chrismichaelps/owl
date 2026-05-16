@@ -48,6 +48,7 @@ const completeSpy = vi.fn()
 const observedRoutingContexts: RoutingContext[] = []
 const observedInferenceMetrics: RecordInferenceMetric[] = []
 let testPreferredProvider: ProviderId | undefined
+let testPrivacyMode = false
 
 const TestProviderRouterLive = Layer.succeed(ProviderRouter, {
   route: (_ctx: RoutingContext) =>
@@ -101,12 +102,18 @@ const TestRoutingPreferencesLive = Layer.succeed(RoutingPreferences, {
       testPreferredProvider = undefined
     }),
   getPreferredProvider: () => Effect.succeed(testPreferredProvider),
+  setPrivacyMode: (enabled: boolean) =>
+    Effect.sync(() => {
+      testPrivacyMode = enabled
+    }),
+  getPrivacyMode: () => Effect.succeed(testPrivacyMode),
   snapshot: () =>
-    Effect.succeed(
-      testPreferredProvider === undefined
-        ? {}
-        : { preferredProvider: testPreferredProvider },
-    ),
+    Effect.succeed({
+      ...(testPreferredProvider !== undefined
+        ? { preferredProvider: testPreferredProvider }
+        : {}),
+      privacyMode: testPrivacyMode,
+    }),
 })
 
 const TestUsageMetricsLive = Layer.succeed(UsageMetrics, {
@@ -187,6 +194,7 @@ describe("Orchestrator.run", () => {
 
   it("passes active RoutingPreference to ProviderRouter", async () => {
     observedRoutingContexts.length = 0
+    testPrivacyMode = false
     testPreferredProvider = "openai"
     const response = await run(
       Effect.gen(function* () {
@@ -196,6 +204,21 @@ describe("Orchestrator.run", () => {
     )
     expect(response.taskId).toBe("preferred-provider")
     expect(observedRoutingContexts.at(-1)?.preferredProvider).toBe("openai")
+  })
+
+  it("passes localOnly when privacy mode is enabled", async () => {
+    observedRoutingContexts.length = 0
+    testPrivacyMode = true
+    testPreferredProvider = undefined
+    const response = await run(
+      Effect.gen(function* () {
+        const orch = yield* Orchestrator
+        return yield* orch.run(makeTask({ id: "privacy-mode" }))
+      }),
+    )
+    expect(response.taskId).toBe("privacy-mode")
+    expect(observedRoutingContexts.at(-1)?.localOnly).toBe(true)
+    testPrivacyMode = false
   })
 
   it("records UsageMetrics after a successful run", async () => {

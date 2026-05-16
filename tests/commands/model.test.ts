@@ -21,6 +21,7 @@ describe("makeModelCommand", () => {
       }),
     )
     expect(output).toContain("Active provider: auto")
+    expect(output).toContain("Privacy mode: off")
   })
 
   it("sets a valid RoutingPreference", async () => {

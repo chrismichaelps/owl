@@ -221,6 +221,44 @@ describe("ProviderRouter", () => {
     expect(result.usage.estimatedCostUsd).toBe(0.00025)
   })
 
+  it("does not fall back to cloud providers when localOnly is true", async () => {
+    const local = makeFailingProvider("ollama")
+    const cloud = makeStubProvider("anthropic")
+
+    const exit = await Effect.runPromiseExit(
+      Effect.gen(function* () {
+        const router = yield* ProviderRouter
+        yield* registerProvider(router, local)
+        yield* registerProvider(router, cloud)
+        return yield* router.complete(
+          {
+            taskId: "t-private",
+            mode: "standard",
+            estimatedInputTokens: 1000,
+            requiresReasoning: false,
+            requiresVision: false,
+            latencyBudgetMs: 30000,
+            localOnly: true,
+          },
+          {
+            taskId: "t-private",
+            messages: [
+              {
+                role: "user",
+                content: "hello",
+                timestamp: new Date().toISOString(),
+              },
+            ],
+            maxTokens: 1024,
+            stream: false,
+          },
+        )
+      }).pipe(Effect.provide(ProviderRouterLive)),
+    )
+
+    expect(exit._tag).toBe("Failure")
+  })
+
   it("completeWithCallback falls back when stream fails before chunks", async () => {
     const first = makeFailingProvider("anthropic")
     const fallback = makeStubProvider("openai")

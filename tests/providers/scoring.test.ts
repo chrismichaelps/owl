@@ -38,6 +38,19 @@ const ANTHROPIC_HAIKU: ProviderCapability = {
   supportsVision: true,
 }
 
+const OLLAMA_LLAMA: ProviderCapability = {
+  providerId: "ollama",
+  modelId: "llama3.2",
+  contextWindow: 128_000,
+  maxOutputTokens: 4_096,
+  inputCostPer1k: 0,
+  outputCostPer1k: 0,
+  supportsStreaming: true,
+  reasoningDepth: "medium",
+  supportsFunctionCalling: false,
+  supportsVision: false,
+}
+
 const ECONOMY_CTX: RoutingContext = {
   taskId: "t-001",
   mode: "economy",
@@ -95,6 +108,27 @@ describe("provider scoring", () => {
       preferredProvider: "anthropic",
     })
     expect(ranked[0]?.providerId).toBe("anthropic")
+  })
+
+  it("rankProviders filters to local providers when localOnly is enabled", () => {
+    const ranked = rankProviders(
+      [ANTHROPIC_OPUS, ANTHROPIC_HAIKU, OLLAMA_LLAMA],
+      {
+        ...ECONOMY_CTX,
+        localOnly: true,
+      },
+    )
+
+    expect(ranked.map((cap) => cap.providerId)).toEqual(["ollama"])
+  })
+
+  it("selectBestProvider returns null in localOnly mode without local providers", () => {
+    const best = selectBestProvider([ANTHROPIC_OPUS, ANTHROPIC_HAIKU], {
+      ...ECONOMY_CTX,
+      localOnly: true,
+    })
+
+    expect(best).toBeNull()
   })
 
   it("estimates cost from input and output token pricing", () => {

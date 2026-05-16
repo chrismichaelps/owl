@@ -34,6 +34,7 @@ export const RoutingContextSchema = Schema.Struct({
   latencyBudgetMs: Schema.Number,
   costBudgetUsd: Schema.optional(Schema.Number),
   preferredProvider: Schema.optional(Schema.String),
+  localOnly: Schema.optional(Schema.Boolean),
 })
 export type RoutingContext = Schema.Schema.Type<typeof RoutingContextSchema>
 

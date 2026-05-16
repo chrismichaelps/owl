@@ -101,6 +101,13 @@ export const PROVIDER_IDS = [
 export const PROVIDER_ID_SET: HashSet.HashSet<string> =
   HashSet.fromIterable(PROVIDER_IDS)
 
+/** @Owl.Core.Constants.LocalProviders - Provider identifiers allowed in privacy mode */
+export const LOCAL_PROVIDER_IDS = ["ollama"] as const
+
+/** @Owl.Core.Constants.LocalProviderSet - Local provider membership lookup */
+export const LOCAL_PROVIDER_ID_SET: HashSet.HashSet<string> =
+  HashSet.fromIterable(LOCAL_PROVIDER_IDS)
+
 /** @Owl.Core.Constants.Config - Environment configuration defaults */
 export const CONFIG_CONSTANTS = {
   DEFAULT_OLLAMA_BASE_URL: "http://localhost:11434",

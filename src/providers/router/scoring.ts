@@ -4,8 +4,9 @@
  * Scores Provider capabilities against a RoutingContext using centralized
  * routing constants and Effect immutable collections.
  */
-import { Chunk, Data, HashMap, Option, Order } from "effect"
+import { Chunk, Data, HashMap, HashSet, Option, Order } from "effect"
 import {
+  LOCAL_PROVIDER_ID_SET,
   ROUTING_LIMITS,
   ROUTING_MODE_REASONING_DEMAND,
   ROUTING_REASONING_SCORES,
@@ -106,11 +107,18 @@ const rankCapabilities = (
 ): Chunk.Chunk<RankedCapability> =>
   Chunk.sort(
     Chunk.filter(
-      Chunk.map(Chunk.fromIterable(capabilities), (capability) =>
-        Data.struct({
-          capability,
-          score: scoreProvider(capability, ctx),
-        }),
+      Chunk.map(
+        Chunk.filter(
+          Chunk.fromIterable(capabilities),
+          (capability) =>
+            ctx.localOnly !== true ||
+            HashSet.has(LOCAL_PROVIDER_ID_SET, capability.providerId),
+        ),
+        (capability) =>
+          Data.struct({
+            capability,
+            score: scoreProvider(capability, ctx),
+          }),
       ),
       (entry) => Number.isFinite(entry.score),
     ),

@@ -69,6 +69,7 @@ import { makeInitCommand } from "./management/init.js"
 import { makeMcpCommand } from "./management/mcp.js"
 import { makeMemoryCommand } from "./management/memory.js"
 import { makeModelCommand } from "./management/model.js"
+import { makePrivacyCommand } from "./management/privacy.js"
 import { makeProvidersCommand } from "./management/providers.js"
 import { makeRegistryCommand } from "./management/registry.js"
 import { makeRoleCommand } from "./management/role.js"
@@ -287,6 +288,7 @@ export const makeCommandRegistryLive = (
         makeToolsCommand(builtInTools),
         makeMemoryCommand(sessionMemory),
         makeModelCommand(routingPreferences),
+        makePrivacyCommand(routingPreferences),
         makeProvidersCommand(providerRouter, routingPreferences, "models"),
         makeProvidersCommand(providerRouter, routingPreferences),
       )

@@ -45,6 +45,8 @@ export function makeModelCommand(
             output:
               "Active provider: " +
               (snapshot.preferredProvider ?? "auto") +
+              "\nPrivacy mode: " +
+              (snapshot.privacyMode ? "on" : "off") +
               "\nAvailable providers: " +
               validProviders +
               "\nUse `/model auto` to restore automatic routing.",

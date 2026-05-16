@@ -179,6 +179,7 @@ export const makeOrchestratorLive = (projectRoot: string) =>
 
           const preferredProvider =
             yield* routingPreferences.getPreferredProvider()
+          const privacyMode = yield* routingPreferences.getPrivacyMode()
           const routingCtx = {
             taskId: task.id,
             mode: task.mode,
@@ -186,6 +187,7 @@ export const makeOrchestratorLive = (projectRoot: string) =>
             requiresReasoning: HashSet.has(THINKING_MODES, task.mode),
             requiresVision: false,
             latencyBudgetMs: PROVIDER_TIMEOUTS.DEFAULT_MS,
+            ...(privacyMode ? { localOnly: true } : {}),
             ...(preferredProvider !== undefined ? { preferredProvider } : {}),
           }
 
@@ -266,6 +268,7 @@ export const makeOrchestratorLive = (projectRoot: string) =>
 
           const preferredProvider =
             yield* routingPreferences.getPreferredProvider()
+          const privacyMode = yield* routingPreferences.getPrivacyMode()
           const routingCtx = {
             taskId: task.id,
             mode: task.mode,
@@ -273,6 +276,7 @@ export const makeOrchestratorLive = (projectRoot: string) =>
             requiresReasoning: HashSet.has(THINKING_MODES, task.mode),
             requiresVision: false,
             latencyBudgetMs: PROVIDER_TIMEOUTS.DEFAULT_MS,
+            ...(privacyMode ? { localOnly: true } : {}),
             ...(preferredProvider !== undefined ? { preferredProvider } : {}),
           }
 
