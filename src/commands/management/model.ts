@@ -14,6 +14,7 @@ import {
   PROVIDER_IDS,
   PROVIDER_ID_SET,
   PROVIDER_AUTO,
+  LOCAL_PROVIDER_ID_SET,
 } from "../../core/constants/index.js"
 import { CommandParseError } from "../../core/errors/index.js"
 import type { ProviderId } from "../../core/schema/index.js"
@@ -71,6 +72,20 @@ export function makeModelCommand(
                 validProviders +
                 ", " +
                 PROVIDER_AUTO,
+            }),
+          )
+        }
+
+        const snapshot = yield* routingPreferences.snapshot()
+        if (
+          snapshot.privacyMode &&
+          !HashSet.has(LOCAL_PROVIDER_ID_SET, requestedProvider)
+        ) {
+          return yield* Effect.fail(
+            new CommandParseError({
+              input: "/model " + requestedProvider,
+              reason:
+                "Privacy mode is enabled. Select a local provider or run /privacy off.",
             }),
           )
         }

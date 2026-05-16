@@ -85,4 +85,32 @@ describe("makeModelCommand", () => {
     )
     expect(exit._tag).toBe("Failure")
   })
+
+  it("rejects cloud provider overrides while privacy mode is enabled", async () => {
+    const exit = await Effect.runPromiseExit(
+      Effect.gen(function* () {
+        const routingPreferences = yield* RoutingPreferences
+        yield* routingPreferences.setPrivacyMode(true)
+        const command = makeModelCommand(routingPreferences, makeRouter())
+        return yield* command.execute(["anthropic"])
+      }).pipe(Effect.provide(RoutingPreferencesLive)),
+    )
+    expect(exit._tag).toBe("Failure")
+  })
+
+  it("allows local provider overrides while privacy mode is enabled", async () => {
+    const preferredProvider = await run(
+      Effect.gen(function* () {
+        const routingPreferences = yield* RoutingPreferences
+        yield* routingPreferences.setPrivacyMode(true)
+        const command = makeModelCommand(
+          routingPreferences,
+          makeRouter(["ollama"]),
+        )
+        yield* command.execute(["ollama"])
+        return yield* routingPreferences.getPreferredProvider()
+      }),
+    )
+    expect(preferredProvider).toBe("ollama")
+  })
 })
