@@ -4,7 +4,7 @@ import { join } from "node:path"
 import { tmpdir } from "node:os"
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
 import { Effect } from "effect"
-import { TOOL_NAMES } from "../../src/core/constants/index.js"
+import { TOOL_CONSTANTS, TOOL_NAMES } from "../../src/core/constants/index.js"
 import { ToolExecutionError } from "../../src/core/errors/index.js"
 import { makeBuiltInToolsLive, BuiltInTools } from "../../src/tools/index.js"
 
@@ -101,6 +101,17 @@ describe("BuiltInTools", () => {
       include: "*.ts",
     })
     expect(grepOutput).toContain("alpha.ts")
+  })
+
+  it("clamps Bash timeouts to the configured minimum", async () => {
+    const output = await runTool(TOOL_NAMES.BASH, {
+      command: "sleep 2",
+      timeout_ms: 1,
+    })
+
+    expect(output).toContain(
+      "[Timed out after " + String(TOOL_CONSTANTS.BASH_MIN_TIMEOUT_MS) + "ms]",
+    )
   })
 
   it("returns a tagged error for unknown built-in tools", async () => {

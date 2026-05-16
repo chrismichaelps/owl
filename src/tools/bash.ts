@@ -16,8 +16,6 @@ import { TOOL_NAMES, TOOL_CONSTANTS } from "../core/constants/index.js"
 import { ToolExecutionError } from "../core/errors/index.js"
 import type { BuiltInTool } from "./types.js"
 
-const SHELL = "/bin/sh"
-
 const DESCRIPTION = `Execute a shell command in the working directory and return its output.
 
 Usage:
@@ -79,17 +77,23 @@ export const BashTool: BuiltInTool = {
       typeof input.timeout_ms === "number" ? input.timeout_ms : null
     const timeoutMs =
       rawTimeout !== null
-        ? clamp(rawTimeout, 1_000, TOOL_CONSTANTS.BASH_MAX_TIMEOUT_MS)
+        ? clamp(
+            rawTimeout,
+            TOOL_CONSTANTS.BASH_MIN_TIMEOUT_MS,
+            TOOL_CONSTANTS.BASH_MAX_TIMEOUT_MS,
+          )
         : TOOL_CONSTANTS.BASH_DEFAULT_TIMEOUT_MS
 
     return Effect.async<string, ToolExecutionError>((resume) => {
       const child = execFile(
-        SHELL,
+        TOOL_CONSTANTS.BASH_SHELL,
         ["-c", command],
         {
           cwd,
           timeout: timeoutMs,
-          maxBuffer: TOOL_CONSTANTS.BASH_MAX_OUTPUT_CHARS * 4,
+          maxBuffer:
+            TOOL_CONSTANTS.BASH_MAX_OUTPUT_CHARS *
+            TOOL_CONSTANTS.BASH_MAX_BUFFER_MULTIPLIER,
           env: { ...process.env },
         },
         (err, stdout, stderr) => {
