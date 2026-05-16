@@ -1,7 +1,13 @@
 {
   "graph_version": "1.0",
-  "state_anchor": "BigInt:0x0000000000000000",
+  "state_anchor": "BigInt:0x00000000000000a5",
   "description": "Directional dependency edges. When upstream changes, all downstream nodes are flagged DIRTY.",
+  "registry_mirror": {
+    "verified_at": "2026-05-16T15:54:00Z",
+    "src_modules": 116,
+    "hash_files": 348,
+    "map_nodes": 52
+  },
   "grammar_refs": {
     "typescript": "@root/hashes/grammar/typescript/typescript.hash.md",
     "effect": "@root/hashes/grammar/effect/effect.hash.md",
@@ -43,6 +49,15 @@
       "type": "LAYER_DEPENDENCY",
       "impact": "HIGH",
       "reason": "Core primitives used by orchestration engine"
+    },
+    {
+      "from": "subsystem-core",
+      "to": "subsystem-mcp",
+      "seam_id": null,
+      "seam_capacity": "INTERNAL",
+      "type": "LAYER_DEPENDENCY",
+      "impact": "MEDIUM",
+      "reason": "MCP config uses core constants and schema validation"
     },
     {
       "from": "subsystem-providers",
@@ -106,6 +121,33 @@
       "type": "LAYER_DEPENDENCY",
       "impact": "LOW",
       "reason": "TUI captures and dispatches commands to registry"
+    },
+    {
+      "from": "subsystem-mcp",
+      "to": "subsystem-engine",
+      "seam_id": "seam-mcp-engine",
+      "seam_capacity": "CRITICAL",
+      "type": "SCHEMA_CONTRACT",
+      "impact": "MEDIUM",
+      "reason": "Engine calls McpManager.callTool() during inference — tool use seam"
+    },
+    {
+      "from": "subsystem-mcp",
+      "to": "subsystem-commands",
+      "seam_id": null,
+      "seam_capacity": "INTERNAL",
+      "type": "LAYER_DEPENDENCY",
+      "impact": "LOW",
+      "reason": "/mcp command reads McpManager server statuses for display"
+    },
+    {
+      "from": "subsystem-providers",
+      "to": "subsystem-tui",
+      "seam_id": null,
+      "seam_capacity": "INTERNAL",
+      "type": "LAYER_DEPENDENCY",
+      "impact": "LOW",
+      "reason": "providers/image parses owl:image tags produced by tui/mentions"
     }
   ],
   "dirty_propagation_rule": "When a node's fidelity_level becomes DIRTY, recursively mark all reachable downstream nodes DIRTY.",

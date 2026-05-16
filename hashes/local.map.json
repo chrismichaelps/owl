@@ -1,6 +1,6 @@
 {
   "shard_id": "@root/src",
-  "state_anchor": "BigInt:0x0000000000000078",
+  "state_anchor": "BigInt:0x00000000000000a5",
   "parent_bridge": "@root/hashes/local.map.json",
   "git_anchor": "HEAD",
   "cache_integrity": "VERIFIED",
@@ -33,7 +33,9 @@
       "file_path": "@root/src/core/config/index.ts",
       "hash_reference": "@root/hashes/src/core/config/index.hash.md",
       "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
-      "dependencies": ["@root/hashes/src/core/schema/index.hash.md"],
+      "dependencies": [
+        "@root/hashes/src/core/schema/index.hash.md"
+      ],
       "fidelity_level": "Active",
       "sig_id": "SIG-core-config-00000001"
     },
@@ -99,7 +101,10 @@
       "file_path": "@root/src/providers/anthropic/index.ts",
       "hash_reference": "@root/hashes/src/providers/anthropic/index.hash.md",
       "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
-      "dependencies": ["@root/hashes/src/core/config/index.hash.md", "@root/hashes/src/core/constants/index.hash.md"],
+      "dependencies": [
+        "@root/hashes/src/core/config/index.hash.md",
+        "@root/hashes/src/core/constants/index.hash.md"
+      ],
       "fidelity_level": "Active",
       "sig_id": "SIG-providers-anthropic-00000001"
     },
@@ -107,7 +112,10 @@
       "file_path": "@root/src/providers/openai/index.ts",
       "hash_reference": "@root/hashes/src/providers/openai/index.hash.md",
       "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
-      "dependencies": ["@root/hashes/src/core/config/index.hash.md", "@root/hashes/src/core/constants/index.hash.md"],
+      "dependencies": [
+        "@root/hashes/src/core/config/index.hash.md",
+        "@root/hashes/src/core/constants/index.hash.md"
+      ],
       "fidelity_level": "Active",
       "sig_id": "SIG-providers-openai-00000001"
     },
@@ -115,7 +123,9 @@
       "file_path": "@root/src/providers/google/index.ts",
       "hash_reference": "@root/hashes/src/providers/google/index.hash.md",
       "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
-      "dependencies": ["@root/hashes/src/core/config/index.hash.md"],
+      "dependencies": [
+        "@root/hashes/src/core/config/index.hash.md"
+      ],
       "fidelity_level": "Active",
       "sig_id": "SIG-providers-google-00000001"
     },
@@ -123,7 +133,9 @@
       "file_path": "@root/src/providers/xai/index.ts",
       "hash_reference": "@root/hashes/src/providers/xai/index.hash.md",
       "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
-      "dependencies": ["@root/hashes/src/core/config/index.hash.md"],
+      "dependencies": [
+        "@root/hashes/src/core/config/index.hash.md"
+      ],
       "fidelity_level": "Active",
       "sig_id": "SIG-providers-xai-00000001"
     },
@@ -131,7 +143,9 @@
       "file_path": "@root/src/providers/ollama/index.ts",
       "hash_reference": "@root/hashes/src/providers/ollama/index.hash.md",
       "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
-      "dependencies": ["@root/hashes/src/core/config/index.hash.md"],
+      "dependencies": [
+        "@root/hashes/src/core/config/index.hash.md"
+      ],
       "fidelity_level": "Active",
       "sig_id": "SIG-providers-ollama-00000001"
     },
@@ -161,6 +175,364 @@
       ],
       "fidelity_level": "Active",
       "sig_id": "SIG-providers-preferences-00000001"
+    },
+    "cli/help": {
+      "file_path": "@root/src/cli/help.ts",
+      "hash_reference": "@root/hashes/src/cli/help.hash.md",
+      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
+      "dependencies": [
+        "@root/hashes/src/core/constants/index.hash.md"
+      ],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-cli-help-00000001"
+    },
+    "cli/run": {
+      "file_path": "@root/src/cli/run.ts",
+      "hash_reference": "@root/hashes/src/cli/run.hash.md",
+      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
+      "dependencies": [
+        "@root/hashes/src/core/constants/index.hash.md",
+        "@root/hashes/src/mcp/config.hash.md",
+        "@root/hashes/src/mcp/manager.hash.md"
+      ],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-cli-run-00000001"
+    },
+    "commands/editing/add": {
+      "file_path": "@root/src/commands/editing/add.ts",
+      "hash_reference": "@root/hashes/src/commands/editing/add.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [
+        "@root/hashes/src/commands/utils/ids.hash.md",
+        "@root/hashes/src/commands/utils/prompt.hash.md",
+        "@root/hashes/src/editor/pipeline/index.hash.md",
+        "@root/hashes/src/engine/orchestrator/index.hash.md"
+      ],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-cmd-editing-add-00000001"
+    },
+    "commands/management/compact": {
+      "file_path": "@root/src/commands/management/compact.ts",
+      "hash_reference": "@root/hashes/src/commands/management/compact.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [
+        "@root/hashes/src/core/constants/index.hash.md",
+        "@root/hashes/src/engine/context/index.hash.md",
+        "@root/hashes/src/engine/orchestrator/index.hash.md",
+        "@root/hashes/src/tokens/pruning/index.hash.md"
+      ],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-cmd-management-compact-00000001"
+    },
+    "commands/management/export": {
+      "file_path": "@root/src/commands/management/export.ts",
+      "hash_reference": "@root/hashes/src/commands/management/export.hash.md",
+      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
+      "dependencies": [
+        "@root/hashes/src/engine/memory/index.hash.md"
+      ],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-cmd-management-export-00000001"
+    },
+    "commands/management/help": {
+      "file_path": "@root/src/commands/management/help.ts",
+      "hash_reference": "@root/hashes/src/commands/management/help.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [
+        "@root/hashes/src/commands/registry.hash.md"
+      ],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-cmd-management-help-00000001"
+    },
+    "commands/management/history": {
+      "file_path": "@root/src/commands/management/history.ts",
+      "hash_reference": "@root/hashes/src/commands/management/history.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [
+        "@root/hashes/src/engine/memory/index.hash.md",
+        "@root/hashes/src/core/constants/index.hash.md"
+      ],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-cmd-management-history-00000001"
+    },
+    "commands/management/init": {
+      "file_path": "@root/src/commands/management/init.ts",
+      "hash_reference": "@root/hashes/src/commands/management/init.hash.md",
+      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
+      "dependencies": [
+        "@root/hashes/src/core/constants/index.hash.md"
+      ],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-cmd-management-init-00000001"
+    },
+    "commands/management/mcp": {
+      "file_path": "@root/src/commands/management/mcp.ts",
+      "hash_reference": "@root/hashes/src/commands/management/mcp.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [
+        "@root/hashes/src/mcp/manager.hash.md"
+      ],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-cmd-management-mcp-00000001"
+    },
+    "commands/management/providers": {
+      "file_path": "@root/src/commands/management/providers.ts",
+      "hash_reference": "@root/hashes/src/commands/management/providers.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [
+        "@root/hashes/src/providers/router/index.hash.md",
+        "@root/hashes/src/providers/preferences/index.hash.md",
+        "@root/hashes/src/providers/types.hash.md",
+        "@root/hashes/src/core/cost.hash.md"
+      ],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-cmd-management-providers-00000001"
+    },
+    "commands/utils/ids": {
+      "file_path": "@root/src/commands/utils/ids.ts",
+      "hash_reference": "@root/hashes/src/commands/utils/ids.hash.md",
+      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
+      "dependencies": [
+        "@root/hashes/src/core/constants/index.hash.md"
+      ],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-cmd-utils-ids-00000001"
+    },
+    "commands/utils/prompt": {
+      "file_path": "@root/src/commands/utils/prompt.ts",
+      "hash_reference": "@root/hashes/src/commands/utils/prompt.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [
+        "@root/hashes/src/core/constants/index.hash.md",
+        "@root/hashes/src/core/errors/index.hash.md"
+      ],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-cmd-utils-prompt-00000001"
+    },
+    "core/cost": {
+      "file_path": "@root/src/core/cost.ts",
+      "hash_reference": "@root/hashes/src/core/cost.hash.md",
+      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
+      "dependencies": [
+        "@root/hashes/src/core/constants/index.hash.md"
+      ],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-core-cost-00000001"
+    },
+    "core/path": {
+      "file_path": "@root/src/core/path/index.ts",
+      "hash_reference": "@root/hashes/src/core/path/index.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [
+        "@root/hashes/src/core/errors/index.hash.md"
+      ],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-core-path-00000001"
+    },
+    "engine/context/projectContext": {
+      "file_path": "@root/src/engine/context/projectContext.ts",
+      "hash_reference": "@root/hashes/src/engine/context/projectContext.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [
+        "@root/hashes/src/core/errors/index.hash.md"
+      ],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-engine-ctx-projctx-00000001"
+    },
+    "engine/context/systemPrompt": {
+      "file_path": "@root/src/engine/context/systemPrompt.ts",
+      "hash_reference": "@root/hashes/src/engine/context/systemPrompt.hash.md",
+      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
+      "dependencies": [
+        "@root/hashes/src/engine/orchestrator/index.hash.md"
+      ],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-engine-sysprompt-00000001"
+    },
+    "engine/memory/persistence": {
+      "file_path": "@root/src/engine/memory/persistence.ts",
+      "hash_reference": "@root/hashes/src/engine/memory/persistence.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [
+        "@root/hashes/src/engine/memory/schema.hash.md",
+        "@root/hashes/src/core/errors/index.hash.md",
+        "@root/hashes/src/core/constants/index.hash.md"
+      ],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-engine-memory-persist-00000001"
+    },
+    "engine/memory/schema": {
+      "file_path": "@root/src/engine/memory/schema.ts",
+      "hash_reference": "@root/hashes/src/engine/memory/schema.hash.md",
+      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-engine-memory-schema-00000001"
+    },
+    "mcp/config": {
+      "file_path": "@root/src/mcp/config.ts",
+      "hash_reference": "@root/hashes/src/mcp/config.hash.md",
+      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
+      "dependencies": [
+        "@root/hashes/src/core/constants/index.hash.md"
+      ],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-mcp-config-00000001"
+    },
+    "mcp/index": {
+      "file_path": "@root/src/mcp/index.ts",
+      "hash_reference": "@root/hashes/src/mcp/index.hash.md",
+      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-mcp-index-00000001"
+    },
+    "mcp/manager": {
+      "file_path": "@root/src/mcp/manager.ts",
+      "hash_reference": "@root/hashes/src/mcp/manager.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [
+        "@root/hashes/src/mcp/config.hash.md"
+      ],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-mcp-manager-00000001"
+    },
+    "providers/cost": {
+      "file_path": "@root/src/providers/cost.ts",
+      "hash_reference": "@root/hashes/src/providers/cost.hash.md",
+      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
+      "dependencies": [
+        "@root/hashes/src/core/cost.hash.md",
+        "@root/hashes/src/providers/types.hash.md"
+      ],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-providers-cost-00000001"
+    },
+    "providers/image": {
+      "file_path": "@root/src/providers/image.ts",
+      "hash_reference": "@root/hashes/src/providers/image.hash.md",
+      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
+      "dependencies": [
+        "@root/hashes/src/providers/anthropic/index.hash.md"
+      ],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-providers-image-00000001"
+    },
+    "tui/commands/fuzzy": {
+      "file_path": "@root/src/tui/commands/fuzzy.ts",
+      "hash_reference": "@root/hashes/src/tui/commands/fuzzy.hash.md",
+      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tui-commands-fuzzy-00000001"
+    },
+    "tui/history": {
+      "file_path": "@root/src/tui/history/index.ts",
+      "hash_reference": "@root/hashes/src/tui/history/index.hash.md",
+      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tui-history-00000001"
+    },
+    "tui/hooks/useScrollableList": {
+      "file_path": "@root/src/tui/hooks/useScrollableList.ts",
+      "hash_reference": "@root/hashes/src/tui/hooks/useScrollableList.hash.md",
+      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tui-hooks-scroll-00000001"
+    },
+    "tui/hooks/useTerminalAnimation": {
+      "file_path": "@root/src/tui/hooks/useTerminalAnimation.ts",
+      "hash_reference": "@root/hashes/src/tui/hooks/useTerminalAnimation.hash.md",
+      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
+      "dependencies": [
+        "@root/hashes/src/core/constants/index.hash.md"
+      ],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tui-hooks-animation-00000001"
+    },
+    "tui/mentions/files": {
+      "file_path": "@root/src/tui/mentions/files.ts",
+      "hash_reference": "@root/hashes/src/tui/mentions/files.hash.md",
+      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tui-mentions-files-00000001"
+    },
+    "tui/mentions": {
+      "file_path": "@root/src/tui/mentions/index.ts",
+      "hash_reference": "@root/hashes/src/tui/mentions/index.hash.md",
+      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
+      "dependencies": [
+        "@root/hashes/src/providers/image.hash.md",
+        "@root/hashes/src/core/constants/index.hash.md"
+      ],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tui-mentions-00000001"
+    },
+    "tui/components/AgentPipeline": {
+      "file_path": "@root/src/tui/components/AgentPipeline.tsx",
+      "hash_reference": "@root/hashes/src/tui/components/AgentPipeline.hash.md",
+      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
+      "dependencies": [
+        "@root/hashes/src/tui/hooks/useTerminalAnimation.hash.md",
+        "@root/hashes/src/core/constants/index.hash.md"
+      ],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tui-cmp-agentpipeline-00000001"
+    },
+    "tui/components/CommandPalette": {
+      "file_path": "@root/src/tui/components/CommandPalette.tsx",
+      "hash_reference": "@root/hashes/src/tui/components/CommandPalette.hash.md",
+      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
+      "dependencies": [
+        "@root/hashes/src/tui/commands/fuzzy.hash.md",
+        "@root/hashes/src/core/constants/index.hash.md"
+      ],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tui-cmp-cmdpalette-00000001"
+    },
+    "tui/components/FileMentionPalette": {
+      "file_path": "@root/src/tui/components/FileMentionPalette.tsx",
+      "hash_reference": "@root/hashes/src/tui/components/FileMentionPalette.hash.md",
+      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
+      "dependencies": [
+        "@root/hashes/src/tui/mentions/files.hash.md",
+        "@root/hashes/src/tui/mentions/index.hash.md"
+      ],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tui-cmp-filemention-00000001"
+    },
+    "tui/components/MarkdownText": {
+      "file_path": "@root/src/tui/components/MarkdownText.tsx",
+      "hash_reference": "@root/hashes/src/tui/components/MarkdownText.hash.md",
+      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tui-cmp-markdowntext-00000001"
+    },
+    "tui/components/ShortcutsOverlay": {
+      "file_path": "@root/src/tui/components/ShortcutsOverlay.tsx",
+      "hash_reference": "@root/hashes/src/tui/components/ShortcutsOverlay.hash.md",
+      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
+      "dependencies": [
+        "@root/hashes/src/core/constants/index.hash.md"
+      ],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tui-cmp-shortcuts-00000001"
+    },
+    "tui/components/WelcomePanel": {
+      "file_path": "@root/src/tui/components/WelcomePanel.tsx",
+      "hash_reference": "@root/hashes/src/tui/components/WelcomePanel.hash.md",
+      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
+      "dependencies": [
+        "@root/hashes/src/tui/components/AgentPipeline.hash.md",
+        "@root/hashes/src/core/constants/index.hash.md",
+        "@root/hashes/src/core/cost.hash.md"
+      ],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tui-cmp-welcomepanel-00000001"
     }
   }
 }

@@ -2,23 +2,43 @@
   "contract_id": "CTR-main-00000001",
   "module": "@Owl.Entry (src/main.ts)",
   "grammar_lock": "@root/hashes/grammar/typescript/typescript.hash.md",
-  "depth_score": "0.10 — SHALLOW",
+  "depth_score": "0.10 — SHALLOW (intentional entry point)",
   "seam_capacity": "INTERNAL",
   "sig_id": "SIG-main-44a17ae7",
   "interface": {
     "signatures": [
-      "main: Effect<void, never, never> — entry point effect"
+      "main: Effect<void, never, never> — Phase 0 bootstrap effect",
+      "bootCli(argv?, projectRoot?) => void — Phase 1 process-level entry",
+      "runCli(argv, projectRoot) => Promise<void> — Phase 1 async CLI runner"
     ],
-    "error_modes": [],
-    "invariants": []
+    "error_modes": [
+      "ProcessFatalError — unhandled boot failure written to stderr, exit(1)"
+    ],
+    "invariants": [
+      "runtime.dispose() always called in finally block",
+      "Fatal errors always formatted before writing to stderr"
+    ]
   },
   "responsibilities": [
-    "Bootstrap CLI application",
-    "Initialize Effect runtime"
+    "Parse CLI argv into mode/prompt/projectRoot",
+    "Load and merge MCP server configs (global + project)",
+    "Construct Effect runtime with all service layers",
+    "Mount Ink TUI and block until exit",
+    "Dispose runtime on clean exit and on error"
   ],
   "prohibited": [
-    "No business logic in entry point",
-    "No direct console I/O — use logging layer"
+    "No business logic in src/main.ts — delegate to cli/run.ts",
+    "No direct console.log — use logging layer",
+    "No throw from bootCli — catch all, format, exit(1)",
+    "No skipping runtime.dispose()"
   ],
+  "registry_snapshot": {
+    "state_id": "BigInt(0x00000000000000a5)",
+    "total_src_modules": 116,
+    "total_hash_files": 348,
+    "total_map_nodes": 52,
+    "mirror_verified": "2026-05-16T15:51:00Z"
+  },
+  "updated_at": "2026-05-16T15:54:00Z",
   "created_at": "2026-05-14T16:00:00Z"
 }
