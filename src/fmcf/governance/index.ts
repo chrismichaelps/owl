@@ -26,7 +26,10 @@
  */
 import { Context, Effect, Layer } from "effect"
 import { GovernanceViolationError } from "../../core/errors/index.js"
-import { SHARD_SPLIT_THRESHOLD } from "../../core/constants/index.js"
+import {
+  SHARD_SPLIT_THRESHOLD,
+  SHARD_SPLIT_STATES,
+} from "../../core/constants/index.js"
 import type { RoleId } from "../roles/architect.js"
 
 /**
@@ -69,7 +72,9 @@ export interface GovernanceEngineService {
     file: string,
     changedLines: number,
     totalLines: number,
-  ) => Effect.Effect<"OK" | "SHARD_SPLIT">
+  ) => Effect.Effect<
+    (typeof SHARD_SPLIT_STATES)[keyof typeof SHARD_SPLIT_STATES]
+  >
 
   /**
    * Validate role transition follows Deepening Flow
@@ -146,9 +151,15 @@ export const GovernanceEngineLive = Layer.succeed(GovernanceEngine, {
     _file: string,
     changedLines: number,
     totalLines: number,
-  ): Effect.Effect<"OK" | "SHARD_SPLIT"> => {
+  ): Effect.Effect<
+    (typeof SHARD_SPLIT_STATES)[keyof typeof SHARD_SPLIT_STATES]
+  > => {
     const ratio = changedLines / totalLines
-    return Effect.succeed(ratio >= SHARD_SPLIT_THRESHOLD ? "SHARD_SPLIT" : "OK")
+    return Effect.succeed(
+      ratio >= SHARD_SPLIT_THRESHOLD
+        ? SHARD_SPLIT_STATES.SHARD_SPLIT
+        : SHARD_SPLIT_STATES.OK,
+    )
   },
 
   validateRoleTransition: (

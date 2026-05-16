@@ -38,6 +38,7 @@ import type {
 import {
   PIPELINE_STAGES,
   SHARD_SPLIT_THRESHOLD,
+  SHARD_SPLIT_STATES,
 } from "../../core/constants/index.js"
 import type { PipelineStage } from "../../core/constants/index.js"
 import { GovernanceEngine } from "../../fmcf/governance/index.js"
@@ -242,7 +243,7 @@ export const EditingPipelineLive = Layer.effect(
             result.diff.linesAdded + result.diff.linesRemoved,
             result.diff.totalOldLines,
           )
-          if (scope === "SHARD_SPLIT") {
+          if (scope === SHARD_SPLIT_STATES.SHARD_SPLIT) {
             shardSplitWarnings = Chunk.append(
               shardSplitWarnings,
               `${result.file}: post-write scope check flagged Shard Split`,

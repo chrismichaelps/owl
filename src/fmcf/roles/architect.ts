@@ -26,6 +26,7 @@
  * yield* Effect.flatMap(RoleContext, (ctx) => ctx.reset())
  */
 import { Context, Effect, Layer, Ref } from "effect"
+import { ROLES } from "../../core/constants/index.js"
 import { GovernanceViolationError } from "../../core/errors/index.js"
 
 /**
@@ -34,7 +35,7 @@ import { GovernanceViolationError } from "../../core/errors/index.js"
  * Four specialist silos: Architect (topology/seams), DNA Engineer (contracts/blueprints),
  * Shadow (TLI code injection), Forensic Guardian (registry/forensics).
  */
-export type RoleId = "architect" | "dna-engineer" | "shadow" | "guardian"
+export type RoleId = (typeof ROLES)[keyof typeof ROLES]
 
 /**
  * @Owl.FMCF.Roles.Architect.Definition - Role contract structure
@@ -72,10 +73,10 @@ export interface RoleDefinition {
  * // After shadow: next role must be guardian, then flow restarts
  */
 export const DEEPENING_FLOW: readonly RoleId[] = [
-  "architect",
-  "dna-engineer",
-  "shadow",
-  "guardian",
+  ROLES.ARCHITECT,
+  ROLES.DNA_ENGINEER,
+  ROLES.SHADOW,
+  ROLES.GUARDIAN,
 ]
 
 /**
@@ -90,7 +91,7 @@ export const DEEPENING_FLOW: readonly RoleId[] = [
  * ARCHITECT_ROLE.prohibited.includes("write-code") // true
  */
 export const ARCHITECT_ROLE: RoleDefinition = {
-  id: "architect",
+  id: ROLES.ARCHITECT,
   responsibilities: [
     "topology",
     "friction-discovery",
@@ -140,7 +141,7 @@ export class RoleContext extends Context.Tag("RoleContext")<
 export const RoleContextLive = Layer.effect(
   RoleContext,
   Effect.gen(function* () {
-    const roleRef = yield* Ref.make<RoleId>("architect")
+    const roleRef = yield* Ref.make<RoleId>(ROLES.ARCHITECT)
 
     const current = (): Effect.Effect<RoleId> => Ref.get(roleRef)
 
@@ -163,7 +164,7 @@ export const RoleContextLive = Layer.effect(
         yield* Ref.set(roleRef, to)
       })
 
-    const reset = (): Effect.Effect<void> => Ref.set(roleRef, "architect")
+    const reset = (): Effect.Effect<void> => Ref.set(roleRef, ROLES.ARCHITECT)
 
     return { current, transition, reset } satisfies RoleContextService
   }),

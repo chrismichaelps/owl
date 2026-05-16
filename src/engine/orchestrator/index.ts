@@ -270,7 +270,7 @@ export const makeOrchestratorLive = (projectRoot: string) =>
             taskId: task.id,
             mode: task.mode,
             estimatedInputTokens,
-            requiresReasoning: task.mode === "deep" || task.mode === "god",
+            requiresReasoning: HashSet.has(THINKING_MODES, task.mode),
             requiresVision: false,
             latencyBudgetMs: PROVIDER_TIMEOUTS.DEFAULT_MS,
             ...(preferredProvider !== undefined ? { preferredProvider } : {}),
