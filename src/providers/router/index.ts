@@ -30,7 +30,6 @@
 import {
   Chunk,
   Context,
-  Data,
   Effect,
   HashMap,
   HashSet,
@@ -41,16 +40,11 @@ import {
   Either,
 } from "effect"
 import * as Stream from "effect/Stream"
-import {
-  PROVIDER_STREAM_LOG,
-  ROUTING_LIMITS,
-  STREAM_CHUNK_TYPES,
-} from "../../core/constants/index.js"
-import {
-  ProviderStreamError,
-  ProviderUnavailableError,
-} from "../../core/errors/index.js"
+import { ROUTING_LIMITS } from "../../core/constants/index.js"
+import { ProviderUnavailableError } from "../../core/errors/index.js"
 import { estimateCapabilityCostUsd } from "../cost.js"
+import { providerCapabilities, sortCapabilities } from "./capabilities.js"
+import { emptyStreamAccumulator, handleStreamChunk } from "./streaming.js"
 import { rankProviders, scoreProvider } from "./scoring.js"
 import type {
   LLMProviderService,
@@ -58,7 +52,6 @@ import type {
   RoutingContext,
   RoutingDecision,
   StreamingCallbackResult,
-  StreamChunk,
 } from "../types.js"
 import type {
   InferenceRequest,
@@ -66,128 +59,7 @@ import type {
 } from "../../core/schema/index.js"
 import type { AnyProviderError } from "../types.js"
 
-const providerCapabilities = (
-  registry: HashMap.HashMap<string, LLMProviderService>,
-): Chunk.Chunk<ProviderCapability> =>
-  Chunk.flatMap(Chunk.fromIterable(HashMap.values(registry)), (provider) =>
-    Chunk.fromIterable(provider.capabilities),
-  )
-
-const capabilityOrder = Order.make<ProviderCapability>((left, right) => {
-  const providerDelta = left.providerId.localeCompare(right.providerId)
-  if (providerDelta < 0) return -1
-  if (providerDelta > 0) return 1
-
-  const modelDelta = left.modelId.localeCompare(right.modelId)
-  if (modelDelta < 0) return -1
-  if (modelDelta > 0) return 1
-  return 0
-})
-
-const sortCapabilities = (
-  capabilities: Chunk.Chunk<ProviderCapability>,
-): Chunk.Chunk<ProviderCapability> => Chunk.sort(capabilities, capabilityOrder)
-
-type StreamUsageAccumulator = Readonly<{
-  readonly inputTokens: number
-  readonly outputTokens: number
-  readonly cacheReadTokens: number
-  readonly cacheWriteTokens: number
-  readonly estimatedCostUsd: number
-}>
-
-type StreamAccumulator = Readonly<{
-  readonly contentChunks: Chunk.Chunk<string>
-  readonly emittedChunkCount: number
-  readonly usage: StreamUsageAccumulator
-}>
-
-const emptyStreamUsage = (): StreamUsageAccumulator =>
-  Data.struct({
-    inputTokens: 0,
-    outputTokens: 0,
-    cacheReadTokens: 0,
-    cacheWriteTokens: 0,
-    estimatedCostUsd: 0,
-  })
-
-const emptyStreamAccumulator = (): StreamAccumulator =>
-  Data.struct({
-    contentChunks: Chunk.empty<string>(),
-    emittedChunkCount: 0,
-    usage: emptyStreamUsage(),
-  })
-
-const appendTextChunk = (
-  state: StreamAccumulator,
-  content: string,
-): StreamAccumulator =>
-  Data.struct({
-    ...state,
-    contentChunks: Chunk.append(state.contentChunks, content),
-    emittedChunkCount: state.emittedChunkCount + 1,
-  })
-
-const recordUsage = (
-  state: StreamAccumulator,
-  usage: NonNullable<StreamChunk["usage"]>,
-): StreamAccumulator =>
-  Data.struct({
-    ...state,
-    usage: Data.struct({
-      inputTokens: usage.inputTokens,
-      outputTokens: usage.outputTokens,
-      cacheReadTokens: usage.cacheReadTokens,
-      cacheWriteTokens: usage.cacheWriteTokens,
-      estimatedCostUsd: usage.estimatedCostUsd,
-    }),
-  })
-
-const runStreamCallback = (
-  provider: string,
-  callback: () => void,
-): Effect.Effect<void, ProviderStreamError> =>
-  Effect.try({
-    try: callback,
-    catch: (cause) => new ProviderStreamError({ provider, cause }),
-  })
-
-const handleStreamChunk = (
-  provider: string,
-  chunk: StreamChunk,
-  accumulatorRef: Ref.Ref<StreamAccumulator>,
-  onChunk: (text: string) => void,
-  onLog?: (msg: string) => void,
-): Effect.Effect<void, ProviderStreamError> => {
-  if (chunk.type === STREAM_CHUNK_TYPES.TEXT && chunk.content != null) {
-    const content = chunk.content
-    return Ref.update(accumulatorRef, (state) =>
-      appendTextChunk(state, content),
-    ).pipe(
-      Effect.flatMap(() =>
-        runStreamCallback(provider, () => {
-          onChunk(content)
-        }),
-      ),
-    )
-  }
-
-  if (chunk.type === STREAM_CHUNK_TYPES.USAGE && chunk.usage != null) {
-    const usage = chunk.usage
-    return Ref.update(accumulatorRef, (state) => recordUsage(state, usage))
-  }
-
-  if (onLog == null) {
-    return Effect.void
-  }
-
-  const logMessage = formatStreamEventLog(chunk)
-  return logMessage === null
-    ? Effect.void
-    : runStreamCallback(provider, () => {
-        onLog(logMessage)
-      })
-}
+export { formatStreamEventLog } from "./streaming.js"
 
 /**
  * @Owl.Providers.Router.Service - Coordinator interface for multi-provider strategies
@@ -284,28 +156,6 @@ export const registerProvider = (
       router as unknown as { _register: (p: LLMProviderService) => void }
     )._register(provider)
   })
-
-/** @Owl.Providers.Router.StreamLog - Formats non-text stream events for TUI logs */
-export function formatStreamEventLog(chunk: StreamChunk): string | null {
-  if (chunk.content == null) {
-    return null
-  }
-
-  const preview =
-    chunk.content.length > PROVIDER_STREAM_LOG.PREVIEW_CHARS
-      ? chunk.content.slice(0, PROVIDER_STREAM_LOG.PREVIEW_CHARS) + "…"
-      : chunk.content
-
-  if (chunk.type === STREAM_CHUNK_TYPES.THINKING) {
-    return PROVIDER_STREAM_LOG.THINKING_PREFIX + ": " + preview
-  }
-
-  if (chunk.type === STREAM_CHUNK_TYPES.TOOL_USE) {
-    return PROVIDER_STREAM_LOG.TOOL_PREFIX + ": " + preview
-  }
-
-  return null
-}
 
 /**
  * @Owl.Providers.Router.Implementation - BACKBONE seam logic
