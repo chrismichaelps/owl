@@ -18,7 +18,7 @@
  * - CLI: Startup metadata and early-exit output
  */
 
-import { HashMap, HashSet, Option } from "effect"
+import { Chunk, HashMap, HashSet, Option } from "effect"
 
 /** @Owl.Core.Constants.Budgets - Token and mode-specific constraints */
 export const TOKEN_LIMITS = {
@@ -429,6 +429,15 @@ export const CLI_FLAGS = {
   MODE_PREFIX: "--mode=",
 } as const
 
+/** @Owl.Core.Constants.CLIFlagSets - Command line flag membership lookups */
+export const CLI_FLAG_SETS = {
+  HELP: HashSet.fromIterable(CLI_FLAGS.HELP),
+  VERSION: HashSet.fromIterable(CLI_FLAGS.VERSION),
+  QUICK: HashSet.fromIterable(CLI_FLAGS.QUICK),
+  DEEP: HashSet.fromIterable(CLI_FLAGS.DEEP),
+  ECONOMY: HashSet.fromIterable(CLI_FLAGS.ECONOMY),
+} as const
+
 /** @Owl.Core.Constants.FileExtensions - Common file extensions */
 export const FILE_EXTENSIONS = {
   MD: ".md",
@@ -455,6 +464,19 @@ export const MODES = {
   ECONOMY: "economy",
   GOD: "god",
 } as const
+
+/** @Owl.Core.Constants.ModeIds - Ordered operational mode identifiers */
+export const MODE_IDS: Chunk.Chunk<string> = Chunk.make(
+  MODES.STANDARD,
+  MODES.QUICK,
+  MODES.DEEP,
+  MODES.ECONOMY,
+  MODES.GOD,
+)
+
+/** @Owl.Core.Constants.ModeIdSet - Operational mode membership lookup */
+export const MODE_ID_SET: HashSet.HashSet<string> =
+  HashSet.fromIterable(MODE_IDS)
 
 /** @Owl.Core.Constants.Roles - Deepening Flow role IDs */
 export const ROLES = {

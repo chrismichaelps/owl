@@ -16,10 +16,21 @@
  * parseArgs([]) // { mode: "standard", prompt: null }
  */
 import type { Mode } from "../core/schema/index.js"
-import { CLI_FLAGS, MODES } from "../core/constants/index.js"
+import { Chunk, HashSet } from "effect"
+import {
+  CLI_FLAGS,
+  CLI_FLAG_SETS,
+  MODE_IDS,
+  MODE_ID_SET,
+  MODES,
+} from "../core/constants/index.js"
 
 /** @Owl.CLI.Args.ValidModes - Supported operating modes */
-export const VALID_MODES: readonly string[] = Object.values(MODES)
+export const VALID_MODES: readonly string[] = Chunk.toReadonlyArray(MODE_IDS)
+
+/** @Owl.CLI.Args.ValidModeGuard - Validate mode literals */
+export const isValidMode = (value: string): value is Mode =>
+  HashSet.has(MODE_ID_SET, value)
 
 /**
  * @Owl.CLI.Args.Parsed - Output of parseArgs
@@ -51,16 +62,16 @@ export function parseArgs(argv: readonly string[]): ParsedArgs {
   for (const arg of argv) {
     if (arg.startsWith(CLI_FLAGS.MODE_PREFIX)) {
       const val = arg.slice(CLI_FLAGS.MODE_PREFIX.length)
-      if (VALID_MODES.includes(val)) mode = val as Mode
-    } else if ((CLI_FLAGS.HELP as readonly string[]).includes(arg)) {
+      if (isValidMode(val)) mode = val
+    } else if (HashSet.has(CLI_FLAG_SETS.HELP, arg)) {
       help = true
-    } else if ((CLI_FLAGS.VERSION as readonly string[]).includes(arg)) {
+    } else if (HashSet.has(CLI_FLAG_SETS.VERSION, arg)) {
       version = true
-    } else if ((CLI_FLAGS.QUICK as readonly string[]).includes(arg)) {
+    } else if (HashSet.has(CLI_FLAG_SETS.QUICK, arg)) {
       mode = MODES.QUICK
-    } else if ((CLI_FLAGS.DEEP as readonly string[]).includes(arg)) {
+    } else if (HashSet.has(CLI_FLAG_SETS.DEEP, arg)) {
       mode = MODES.DEEP
-    } else if ((CLI_FLAGS.ECONOMY as readonly string[]).includes(arg)) {
+    } else if (HashSet.has(CLI_FLAG_SETS.ECONOMY, arg)) {
       mode = MODES.ECONOMY
     } else if (!arg.startsWith("-")) {
       prompt ??= arg

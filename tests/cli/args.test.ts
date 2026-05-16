@@ -4,7 +4,7 @@
  * Zero I/O — passes synthetic argv arrays directly.
  */
 import { describe, it, expect } from "vitest"
-import { parseArgs, VALID_MODES } from "../../src/cli/args.js"
+import { isValidMode, parseArgs, VALID_MODES } from "../../src/cli/args.js"
 
 describe("VALID_MODES", () => {
   it("includes standard", () => {
@@ -29,6 +29,11 @@ describe("VALID_MODES", () => {
 
   it("has exactly 5 entries", () => {
     expect(VALID_MODES).toHaveLength(5)
+  })
+
+  it("validates mode membership", () => {
+    expect(isValidMode("deep")).toBe(true)
+    expect(isValidMode("invalid")).toBe(false)
   })
 })
 
