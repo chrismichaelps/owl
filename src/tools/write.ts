@@ -9,6 +9,7 @@ import { dirname } from "node:path"
 import { Chunk, Effect } from "effect"
 import { TOOL_NAMES, TOOL_CONSTANTS } from "../core/constants/index.js"
 import { ToolExecutionError } from "../core/errors/index.js"
+import { formatBytes } from "../core/utils/format.js"
 import { resolveToolPath } from "./path.js"
 import type { BuiltInTool } from "./types.js"
 
@@ -18,7 +19,7 @@ Usage:
 - file_path must be an absolute path or a path relative to the project root
 - Overwrites the file if it already exists
 - Parent directories are created automatically
-- Content size is limited to ${String(TOOL_CONSTANTS.WRITE_MAX_BYTES / 1024 / 1024)}MB`
+- Content size is limited to ${formatBytes(TOOL_CONSTANTS.WRITE_MAX_BYTES)}`
 
 export const WriteTool: BuiltInTool = {
   name: TOOL_NAMES.WRITE,
@@ -66,7 +67,7 @@ export const WriteTool: BuiltInTool = {
         return yield* Effect.fail(
           new ToolExecutionError({
             tool: TOOL_NAMES.WRITE,
-            reason: `Content too large (${String(Math.round(byteLength / 1024))}KB, max ${String(TOOL_CONSTANTS.WRITE_MAX_BYTES / 1024 / 1024)}MB)`,
+            reason: `Content too large (${formatBytes(byteLength)}, max ${formatBytes(TOOL_CONSTANTS.WRITE_MAX_BYTES)})`,
           }),
         )
       }

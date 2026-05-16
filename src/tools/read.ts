@@ -9,6 +9,7 @@ import { readFile } from "node:fs/promises"
 import { Chunk, Effect } from "effect"
 import { TOOL_NAMES, TOOL_CONSTANTS } from "../core/constants/index.js"
 import { ToolExecutionError } from "../core/errors/index.js"
+import { formatBytes } from "../core/utils/format.js"
 import { resolveToolPath } from "./path.js"
 import type { BuiltInTool } from "./types.js"
 
@@ -19,7 +20,7 @@ Usage:
 - Returns content in cat -n format: "   1\\t<line>"
 - By default reads up to ${String(TOOL_CONSTANTS.READ_MAX_LINES)} lines from the start
 - Use offset (1-based line number) and limit to read specific sections of large files
-- Files larger than ${String(TOOL_CONSTANTS.READ_MAX_BYTES / 1024)}KB are truncated`
+- Files larger than ${formatBytes(TOOL_CONSTANTS.READ_MAX_BYTES)} are truncated`
 
 function formatLines(lines: Chunk.Chunk<string>, startLine: number): string {
   return Chunk.toReadonlyArray(
@@ -82,7 +83,7 @@ export const ReadTool: BuiltInTool = {
         return yield* Effect.fail(
           new ToolExecutionError({
             tool: TOOL_NAMES.READ,
-            reason: `File too large (${String(Math.round(content.length / 1024))}KB, max ${String(TOOL_CONSTANTS.READ_MAX_BYTES / 1024)}KB)`,
+            reason: `File too large (${formatBytes(content.length)}, max ${formatBytes(TOOL_CONSTANTS.READ_MAX_BYTES)})`,
           }),
         )
       }

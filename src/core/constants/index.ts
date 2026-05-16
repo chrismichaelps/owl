@@ -251,6 +251,15 @@ export const COST_CONSTANTS = {
   STANDARD_COST_DECIMAL_PLACES: 2,
 } as const
 
+/** @Owl.Core.Constants.Format - Shared display formatting units */
+export const FORMAT_CONSTANTS = {
+  BYTE_UNIT: 1_024,
+  BYTE_DECIMAL_PLACES: 1,
+  BYTE_SUFFIX: "b",
+  KILOBYTE_SUFFIX: "kb",
+  MEGABYTE_SUFFIX: "mb",
+} as const
+
 /**
  * @Owl.Core.Constants.FMCF - Governance and metric thresholds
  *
