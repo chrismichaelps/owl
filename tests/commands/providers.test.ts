@@ -55,7 +55,10 @@ describe("makeProvidersCommand", () => {
     const output = await run(
       Effect.gen(function* () {
         const preferences = yield* RoutingPreferences
-        const command = makeProvidersCommand(makeRouter([CAPABILITY]), preferences)
+        const command = makeProvidersCommand(
+          makeRouter([CAPABILITY]),
+          preferences,
+        )
         const result = yield* command.execute([])
         return result.output
       }),
