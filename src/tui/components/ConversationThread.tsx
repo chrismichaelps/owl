@@ -2,6 +2,7 @@
 import React, { memo } from "react"
 import { Box, Text } from "ink"
 import { formatEstimatedCostUsd } from "../../core/cost.js"
+import { MarkdownText } from "./MarkdownText.js"
 import type { ConversationTurn } from "../state.js"
 
 interface ConversationThreadProps {
@@ -27,7 +28,7 @@ const InferenceTurnRow = memo(function InferenceTurnRow({
       </Box>
       {/* Assistant response */}
       <Box paddingLeft={2} flexDirection="column">
-        <Text wrap="wrap">{turn.response}</Text>
+        <MarkdownText content={turn.response} />
         <Text color="gray" dimColor>
           {turn.provider} · {String(turn.latencyMs)}ms ·{" "}
           {String(turn.inputTokens)}↑ {String(turn.outputTokens)}↓ ·{" "}
@@ -55,7 +56,7 @@ const CommandTurnRow = memo(function CommandTurnRow({
         </Text>
       </Box>
       <Box paddingLeft={2} flexDirection="column">
-        <Text wrap="wrap">{turn.output}</Text>
+        <MarkdownText content={turn.output} />
         <Text color="gray" dimColor>
           command
         </Text>

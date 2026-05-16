@@ -64,13 +64,19 @@ export const StatusBar: React.FC<StatusBarProps> = memo(
         </Box>
       </Box>
 
-      {/* Right: keybindings */}
+      {/* Right: keybindings — change hint when processing */}
       <Box gap={2}>
+        {status === "routing" || status === "inferring" ? (
+          <Text color="yellow" dimColor>
+            [esc] cancel
+          </Text>
+        ) : (
+          <Text color="gray" dimColor>
+            [ctrl+c] quit
+          </Text>
+        )}
         <Text color="gray" dimColor>
-          [ctrl+c] quit
-        </Text>
-        <Text color="gray" dimColor>
-          [/task /quick /deep]
+          [/task /quick /deep] · [@file]
         </Text>
       </Box>
     </Box>

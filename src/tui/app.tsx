@@ -26,8 +26,8 @@ import React, {
   useRef,
   useState,
 } from "react"
-import { Box, useApp } from "ink"
-import { Effect } from "effect"
+import { Box, useApp, useInput } from "ink"
+import { Effect, Fiber } from "effect"
 import { LogPanel } from "./components/LogPanel.js"
 import { OutputPanel } from "./components/OutputPanel.js"
 import { MetaPanel } from "./components/MetaPanel.js"
@@ -43,6 +43,7 @@ import { CommandRegistry } from "../commands/registry.js"
 import { parseCommand } from "../commands/parser.js"
 import { TUI_CONSTANTS } from "../core/constants/index.js"
 import type { PaletteCommand } from "./commands/fuzzy.js"
+import { expandMentions } from "./mentions/index.js"
 
 /** @Owl.TUI.App.Props - Component props */
 interface AppProps {
@@ -62,6 +63,8 @@ export const App: React.FC<AppProps> = ({
   const taskCounterRef = useRef(0)
   const commandCounterRef = useRef(0)
   const didSubmitInitialPromptRef = useRef(false)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const activeFiberRef = useRef<Fiber.RuntimeFiber<any, any> | null>(null)
   const [mode, setMode] = useState<Mode>(initialMode)
   const [paletteState, setPaletteState] = useState({
     open: false,
@@ -75,7 +78,7 @@ export const App: React.FC<AppProps> = ({
   const showWelcome =
     state.turns.length === 0 && !isProcessing && state.error === null
 
-  /** Submit a prompt for inference */
+  /** Submit a prompt for inference (expands @file mentions first) */
   const handleSubmit = useCallback(
     (prompt: string, submittedMode: Mode) => {
       taskCounterRef.current += 1
@@ -93,6 +96,24 @@ export const App: React.FC<AppProps> = ({
       const effect = Effect.gen(function* () {
         const orch = yield* Orchestrator
 
+        // Expand @file mentions before sending to the model
+        const { expanded, files, errors } = yield* Effect.promise(() =>
+          expandMentions(prompt, process.cwd()),
+        )
+        if (files.length > 0) {
+          dispatch({
+            type: "ADD_LOG",
+            msg: `📎 Injected: ${files.join(", ")}`,
+          })
+        }
+        if (errors.length > 0) {
+          dispatch({
+            type: "ADD_LOG",
+            msg: `⚠ Mention errors: ${errors.join("; ")}`,
+          })
+        }
+        const effectivePrompt = expanded
+
         dispatch({ type: "ADD_LOG", msg: "◆ Routing to provider…" })
         dispatch({ type: "SET_ROLE", role: "DNA Engineer" })
         dispatch({ type: "SET_STATUS", status: "inferring" })
@@ -102,12 +123,15 @@ export const App: React.FC<AppProps> = ({
         const response = yield* orch.runStream(
           {
             id: taskId,
-            prompt,
+            prompt: effectivePrompt,
             mode: submittedMode,
             createdAt: new Date().toISOString(),
           },
           (chunk) => {
             dispatch({ type: "APPEND_STREAM", text: chunk })
+          },
+          (msg) => {
+            dispatch({ type: "ADD_LOG", msg })
           },
         )
 
@@ -119,7 +143,7 @@ export const App: React.FC<AppProps> = ({
           turn: {
             id: taskId,
             kind: "inference",
-            prompt,
+            prompt, // show original prompt (without file blobs) in UI
             response: response.content,
             provider: response.provider,
             latencyMs: response.latencyMs,
@@ -131,14 +155,48 @@ export const App: React.FC<AppProps> = ({
         })
       })
 
-      void runtime.runPromise(effect).catch((err: unknown) => {
-        const msg =
-          err instanceof Error ? err.message : "Unknown inference error"
-        dispatch({ type: "SET_ERROR", error: msg })
-        dispatch({ type: "ADD_LOG", msg: `✗ Error: ${msg.slice(0, 60)}` })
-      })
+      const fiber = runtime.runFork(effect)
+      activeFiberRef.current = fiber
+      void runtime
+        .runPromise(Fiber.join(fiber))
+        .catch((err: unknown) => {
+          if (
+            err !== null &&
+            typeof err === "object" &&
+            "_tag" in err &&
+            (err as { _tag: string })._tag === "Interrupted"
+          ) {
+            dispatch({ type: "SET_STATUS", status: "idle" })
+            return
+          }
+          const msg =
+            err instanceof Error ? err.message : "Unknown inference error"
+          dispatch({ type: "SET_ERROR", error: msg })
+          dispatch({ type: "ADD_LOG", msg: `✗ Error: ${msg.slice(0, 60)}` })
+        })
+        .finally(() => {
+          activeFiberRef.current = null
+        })
     },
     [runtime],
+  )
+
+  /** Cancel active inference by interrupting the Effect fiber */
+  const handleCancel = useCallback(() => {
+    const fiber = activeFiberRef.current
+    if (fiber === null) return
+    activeFiberRef.current = null
+    dispatch({ type: "SET_STATUS", status: "idle" })
+    dispatch({ type: "ADD_LOG", msg: "⊘ Cancelled" })
+    void runtime.runPromise(Fiber.interrupt(fiber))
+  }, [runtime])
+
+  // Global Escape key: cancel inference when processing
+  useInput(
+    (_input, key) => {
+      if (key.escape) handleCancel()
+    },
+    { isActive: isProcessing },
   )
 
   /** Update mode (affects PromptInput border color and token budget) */
@@ -265,6 +323,7 @@ export const App: React.FC<AppProps> = ({
       <PromptInput
         mode={mode}
         disabled={isProcessing}
+        projectRoot={process.cwd()}
         onSubmit={handleSubmit}
         onCommand={handleCommand}
         onModeChange={handleModeChange}

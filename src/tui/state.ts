@@ -38,6 +38,7 @@ export interface InferenceConversationTurn {
   readonly prompt: string
   readonly response: string
   readonly provider: ProviderId
+  readonly model: string
   readonly latencyMs: number
   readonly inputTokens: number
   readonly outputTokens: number
