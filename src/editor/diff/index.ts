@@ -96,7 +96,7 @@ export const DiffGeneratorLive = Layer.succeed(DiffGenerator, {
         const hunks = getPatchFromContents(file, oldContent, newContent)
         const { added, removed } = countChangedLines(hunks)
         const totalOldLines =
-          oldContent === "" ? 0 : oldContent.split("\n").length
+          oldContent.length === 0 ? 0 : oldContent.split("\n").length
         const changePercent =
           totalOldLines > 0 ? (added + removed) / totalOldLines : 0
 

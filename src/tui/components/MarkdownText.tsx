@@ -121,7 +121,7 @@ function parseBlocks(raw: string): Block[] {
     }
 
     // Blank line
-    if (line.trim() === "") {
+    if (line.trim().length === 0) {
       blocks.push({ type: "blank", content: "" })
       i++
       continue
@@ -132,7 +132,7 @@ function parseBlocks(raw: string): Block[] {
     i++
     while (
       i < lines.length &&
-      lines[i]?.trim() !== "" &&
+      lines[i]?.trim().length !== 0 &&
       !/^```|^~~~|^#{1,3}\s|^[-*+]\s|^\d+\.\s|^[-*_]{3,}\s*$/.test(
         lines[i] ?? "",
       )

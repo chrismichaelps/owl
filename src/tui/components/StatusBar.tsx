@@ -3,7 +3,7 @@ import React, { memo } from "react"
 import { HashSet } from "effect"
 import { Box, Text } from "ink"
 import { formatEstimatedCostUsd } from "../../core/cost.js"
-import { THINKING_MODES } from "../../core/constants/index.js"
+import { THINKING_MODES, AGENT_STATUS } from "../../core/constants/index.js"
 import type { AgentStatus } from "../state.js"
 import type { ProviderId } from "../../core/schema/index.js"
 
@@ -84,7 +84,8 @@ export const StatusBar: React.FC<StatusBarProps> = memo(
 
       {/* Right: keybindings — change hint when processing */}
       <Box gap={2}>
-        {status === "routing" || status === "inferring" ? (
+        {status === AGENT_STATUS.ROUTING ||
+        status === AGENT_STATUS.INFERRING ? (
           <Text color="yellow" dimColor>
             [esc] cancel
           </Text>

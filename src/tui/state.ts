@@ -14,14 +14,9 @@
  * - Streaming: In-progress response text
  */
 import type { TokenUsage, ProviderId } from "../core/schema/index.js"
+import { AGENT_STATUS } from "../core/constants/index.js"
 
-/** @Owl.TUI.State.Status - Agent workflow states */
-export type AgentStatus =
-  | "idle"
-  | "routing"
-  | "inferring"
-  | "complete"
-  | "error"
+export type AgentStatus = (typeof AGENT_STATUS)[keyof typeof AGENT_STATUS]
 
 /** @Owl.TUI.State.Role - Active FMCF specialist role */
 export type ActiveRole =
@@ -109,7 +104,7 @@ export type OwlAction =
 
 /** @Owl.TUI.State.Initial - Default state for new sessions */
 export const INITIAL_STATE: OwlAppState = {
-  status: "idle",
+  status: AGENT_STATUS.IDLE,
   activeRole: null,
   logs: [],
   response: null,
@@ -156,7 +151,7 @@ export function owlReducer(state: OwlAppState, action: OwlAction): OwlAppState {
     case "SET_RESPONSE":
       return {
         ...state,
-        status: "complete",
+        status: AGENT_STATUS.COMPLETE,
         activeRole: "Forensic Guardian",
         response: action.response,
         totalInputTokens:
@@ -173,7 +168,7 @@ export function owlReducer(state: OwlAppState, action: OwlAction): OwlAppState {
 
     /** @Owl.TUI.State.Reducer.SET_ERROR — Sets error state */
     case "SET_ERROR":
-      return { ...state, status: "error", error: action.error }
+      return { ...state, status: AGENT_STATUS.ERROR, error: action.error }
 
     /** @Owl.TUI.State.Reducer.ADD_TURN — Appends completed turn to history */
     case "ADD_TURN":

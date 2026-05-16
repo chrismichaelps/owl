@@ -43,7 +43,7 @@ import { Orchestrator } from "../engine/orchestrator/index.js"
 import { CommandRegistry } from "../commands/registry.js"
 import { parseCommand } from "../commands/parser.js"
 import { RoutingPreferences } from "../providers/preferences/index.js"
-import { TUI_CONSTANTS } from "../core/constants/index.js"
+import { TUI_CONSTANTS, AGENT_STATUS } from "../core/constants/index.js"
 import type { PaletteCommand } from "./commands/fuzzy.js"
 import { expandMentions } from "./mentions/index.js"
 
@@ -77,7 +77,8 @@ export const App: React.FC<AppProps> = ({
   const [shortcutsOpen, setShortcutsOpen] = useState(false)
 
   const isProcessing =
-    state.status === "routing" || state.status === "inferring"
+    state.status === AGENT_STATUS.ROUTING ||
+    state.status === AGENT_STATUS.INFERRING
   const showWelcome =
     state.turns.length === 0 && !isProcessing && state.error === null
 

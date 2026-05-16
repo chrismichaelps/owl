@@ -54,7 +54,7 @@ export function makeModelCommand(
         if (requestedProvider === PROVIDER_AUTO) {
           yield* routingPreferences.clearPreferredProvider()
           return {
-            output: "Active provider: auto",
+            output: "Active provider: " + PROVIDER_AUTO,
           }
         }
 
@@ -65,7 +65,8 @@ export function makeModelCommand(
               reason:
                 "Invalid provider. Valid providers: " +
                 validProviders +
-                ", auto",
+                ", " +
+                PROVIDER_AUTO,
             }),
           )
         }
