@@ -6,7 +6,7 @@
  *
  * Commands are organized by category:
  * - Core: task, deep, quick, plan
- * - Power: raw, god, economy
+ * - Power: raw, compare, god, economy
  * - Analysis: analyze, brain, depth, friction, grill, seams
  * - Editing: edit, inject, create, diff, apply, undo, refactor
  * - Management: role, registry, audit, status, clear, memory, model
@@ -78,6 +78,7 @@ import { makeRegistryCommand } from "./management/registry.js"
 import { makeRoleCommand } from "./management/role.js"
 import { makeStatusCommand } from "./management/status.js"
 import { makeToolsCommand } from "./management/tools.js"
+import { makeCompareCommand } from "./power/compare.js"
 import { makeEconomyCommand } from "./power/economy.js"
 import { makeGodCommand } from "./power/god.js"
 import { makeRawCommand } from "./power/raw.js"
@@ -265,6 +266,7 @@ export const makeCommandRegistryLive = (
         makePlanCommand(orchestrator),
         // Power
         makeRawCommand(orchestrator),
+        makeCompareCommand(orchestrator),
         makeGodCommand(orchestrator),
         makeEconomyCommand(orchestrator),
         // Analysis

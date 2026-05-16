@@ -63,6 +63,7 @@ describe("makeCompactCommand", () => {
         const command = makeCompactCommand(
           {
             run,
+            runParallel: () => Effect.succeed([makeResponse("unused")]),
             runStream: () => Effect.succeed(makeResponse("unused")),
             getSessionSummary: () => Effect.succeed("summary"),
           } satisfies OrchestratorService,
@@ -87,6 +88,7 @@ describe("makeCompactCommand", () => {
           {
             run: () =>
               Effect.succeed(makeResponse("## Conversation Summary\nDone")),
+            runParallel: () => Effect.succeed([makeResponse("unused")]),
             runStream: () => Effect.succeed(makeResponse("unused")),
             getSessionSummary: () => Effect.succeed("summary"),
           } satisfies OrchestratorService,
@@ -121,6 +123,7 @@ describe("makeCompactCommand", () => {
               message: "provider unavailable",
             }),
           ),
+        runParallel: () => Effect.succeed([makeResponse("unused")]),
         runStream: () => Effect.succeed(makeResponse("unused")),
         getSessionSummary: () => Effect.succeed("summary"),
       } satisfies OrchestratorService,

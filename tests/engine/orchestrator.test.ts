@@ -69,8 +69,28 @@ const TestProviderRouterLive = Layer.succeed(ProviderRouter, {
       completeSpy()
       return { ...stubResponse, taskId: req.taskId }
     }),
-  completeParallel: () =>
-    Effect.die("completeParallel not used in orchestrator tests"),
+  completeParallel: (
+    ctx: RoutingContext,
+    req: Parameters<ProviderRouterService["completeParallel"]>[1],
+  ) =>
+    Effect.sync(() => {
+      observedRoutingContexts.push(ctx)
+      return [
+        { ...stubResponse, taskId: req.taskId },
+        {
+          ...stubResponse,
+          taskId: req.taskId,
+          content: "OpenAI comparison response",
+          provider: "openai" as const,
+          model: "gpt-5",
+          usage: {
+            ...stubResponse.usage,
+            estimatedCostUsd: 0.002,
+          },
+          latencyMs: 180,
+        },
+      ]
+    }),
   completeWithCallback: (
     ctx: RoutingContext,
     req: Parameters<ProviderRouterService["completeWithCallback"]>[1],
@@ -270,6 +290,27 @@ describe("Orchestrator.getSessionSummary", () => {
       }),
     )
     expect(summary).toContain("2")
+  })
+})
+
+describe("Orchestrator.runParallel", () => {
+  it("returns ranked parallel responses and records metrics for each", async () => {
+    observedInferenceMetrics.length = 0
+    const responses = await run(
+      Effect.gen(function* () {
+        const orch = yield* Orchestrator
+        return yield* orch.runParallel(makeTask({ id: "parallel-1" }))
+      }),
+    )
+
+    expect(responses.map((response) => response.provider)).toEqual([
+      "anthropic",
+      "openai",
+    ])
+    expect(observedInferenceMetrics.map((metric) => metric.provider)).toEqual([
+      "anthropic",
+      "openai",
+    ])
   })
 })
 

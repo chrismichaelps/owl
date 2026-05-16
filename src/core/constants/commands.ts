@@ -45,6 +45,7 @@ export const COMMAND_CONSTANTS = {
   ADD_MAX_TOTAL_BYTES: 1_000_000,
   HISTORY_PROMPTS_SUBCOMMAND: "prompts",
   PENDING_MUTATION_LIMIT: 100,
+  COMPARE_RESPONSE_SEPARATOR: "\n\n---\n\n",
 } as const
 
 /** @Owl.Core.Constants.Compact - Conversation compaction command policy */

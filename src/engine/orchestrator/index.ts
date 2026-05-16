@@ -25,10 +25,17 @@
  *   o.run({ id: "task-1", prompt: "Create a button", mode: "standard", createdAt: now })
  * )
  */
-import { Context, Effect, Layer, HashSet } from "effect"
+import { Chunk, Context, Effect, HashSet, Layer, Option } from "effect"
 import { ContextManager } from "../context/index.js"
 import { buildFMCFSystemPrompt } from "../context/systemPrompt.js"
 import { loadProjectContext } from "../context/projectContext.js"
+import {
+  firstParallelResponse,
+  formatParallelContent,
+  maxParallelLatencyMs,
+  sumParallelCostUsd,
+  sumParallelOutputTokens,
+} from "./parallel.js"
 import { UsageMetrics } from "../metrics/index.js"
 import { SessionMemory } from "../memory/index.js"
 import type { SessionMemoryFailure } from "../memory/persistence.js"
@@ -81,6 +88,18 @@ export interface OrchestratorService {
     | TokenBudgetExceededError
     | SessionMemoryFailure
   >
+
+  /** Execute a task against ranked providers in parallel. */
+  readonly runParallel: (
+    task: Task,
+  ) => Effect.Effect<
+    readonly InferenceResponse[],
+    | AnyProviderError
+    | ProviderUnavailableError
+    | TokenBudgetExceededError
+    | SessionMemoryFailure
+  >
+
   /**
    * Execute a task with real-time Streaming — delivers chunks via callback
    *
@@ -238,6 +257,103 @@ export const makeOrchestratorLive = (projectRoot: string) =>
           return response
         })
 
+      const runParallel = (
+        task: Task,
+      ): Effect.Effect<
+        readonly InferenceResponse[],
+        | AnyProviderError
+        | ProviderUnavailableError
+        | TokenBudgetExceededError
+        | SessionMemoryFailure
+      > =>
+        Effect.gen(function* () {
+          const userMsg: Message = {
+            role: "user",
+            content: task.prompt,
+            timestamp: new Date().toISOString(),
+          }
+          yield* ctx.addMessage(userMsg)
+
+          const budget = resolveModeBudget(task)
+          const windowedMsgs = yield* ctx.getWindowedMessages(budget)
+          const estimatedTokens = estimateConversationTokens(windowedMsgs)
+          yield* budgetService.initSession(task.mode, budget)
+          yield* budgetService.consume(task.id, estimatedTokens)
+          const systemPrompt = yield* ctx.getSystemPrompt()
+
+          const preferredProvider =
+            yield* routingPreferences.getPreferredProvider()
+          const privacyMode = yield* routingPreferences.getPrivacyMode()
+          const routingCtx = {
+            taskId: task.id,
+            mode: task.mode,
+            estimatedInputTokens: estimatedTokens,
+            requiresReasoning: HashSet.has(THINKING_MODES, task.mode),
+            requiresVision: false,
+            latencyBudgetMs: PROVIDER_TIMEOUTS.DEFAULT_MS,
+            ...(privacyMode ? { localOnly: true } : {}),
+            ...(preferredProvider !== undefined ? { preferredProvider } : {}),
+          }
+
+          const thinkingBudget = resolveModeThinkingBudget(task.mode)
+          const request = {
+            taskId: task.id,
+            messages: windowedMsgs,
+            maxTokens: TOKEN_LIMITS.MAX_OUTPUT_TOKENS,
+            systemPrompt,
+            stream: false,
+            ...(thinkingBudget !== undefined ? { thinkingBudget } : {}),
+          }
+
+          const responses = yield* router.completeParallel(routingCtx, request)
+          const responseChunk = Chunk.fromIterable(responses)
+          const outputTokens = sumParallelOutputTokens(responses)
+          yield* budgetService.consume(task.id, outputTokens)
+
+          yield* Effect.forEach(
+            responseChunk,
+            (response) =>
+              usageMetrics.recordInference({
+                taskId: task.id,
+                mode: task.mode,
+                provider: response.provider,
+                model: response.model,
+                inputTokens: response.usage.inputTokens,
+                outputTokens: response.usage.outputTokens,
+                cacheReadTokens: response.usage.cacheReadTokens,
+                cacheWriteTokens: response.usage.cacheWriteTokens,
+                estimatedCostUsd: response.usage.estimatedCostUsd,
+                latencyMs: response.latencyMs,
+                timestamp: new Date().toISOString(),
+              }),
+            { discard: true },
+          )
+
+          const combinedContent = formatParallelContent(responses)
+
+          const assistantMsg: Message = {
+            role: "assistant",
+            content: combinedContent,
+            timestamp: new Date().toISOString(),
+          }
+          yield* ctx.addMessage(assistantMsg)
+
+          const first = Option.getOrThrow(firstParallelResponse(responses))
+          yield* mem.recordTurn({
+            taskId: task.id,
+            prompt: task.prompt,
+            response: combinedContent,
+            tokensUsed: estimatedTokens + outputTokens,
+            provider: first.provider,
+            model: "parallel",
+            estimatedCostUsd: sumParallelCostUsd(responses),
+            latencyMs: maxParallelLatencyMs(responses),
+            timestamp: new Date().toISOString(),
+          })
+
+          return responses
+        })
+
       const runStream = (
         task: Task,
         onChunk: (text: string) => void,
@@ -363,7 +479,12 @@ export const makeOrchestratorLive = (projectRoot: string) =>
 
       const getSessionSummary = (): Effect.Effect<string> => mem.summarize()
 
-      return { run, runStream, getSessionSummary } satisfies OrchestratorService
+      return {
+        run,
+        runParallel,
+        runStream,
+        getSessionSummary,
+      } satisfies OrchestratorService
     }),
   )
 

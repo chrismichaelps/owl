@@ -122,6 +122,11 @@ export const COST_CONSTANTS = {
   STANDARD_COST_DECIMAL_PLACES: 2,
 } as const
 
+/** @Owl.Core.Constants.Orchestrator - Engine response composition constants */
+export const ORCHESTRATOR_CONSTANTS = {
+  PARALLEL_RESPONSE_SEPARATOR: "\n\n---\n\n",
+} as const
+
 /** @Owl.Core.Constants.Format - Shared display formatting units */
 export const FORMAT_CONSTANTS = {
   BYTE_UNIT: 1_024,

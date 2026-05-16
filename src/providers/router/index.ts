@@ -46,6 +46,12 @@ import { estimateCapabilityCostUsd } from "../cost.js"
 import { providerCapabilities, sortCapabilities } from "./capabilities.js"
 import { emptyStreamAccumulator, handleStreamChunk } from "./streaming.js"
 import { rankProviders, scoreProvider } from "./scoring.js"
+import {
+  attemptParallelComplete,
+  collectParallelSuccesses,
+  lastParallelError,
+  resolveParallelProviderLimit,
+} from "./parallel.js"
 import type {
   LLMProviderService,
   ProviderCapability,
@@ -58,11 +64,6 @@ import type {
   InferenceResponse,
 } from "../../core/schema/index.js"
 import type { AnyProviderError } from "../types.js"
-
-type ParallelAttempt = Either.Either<
-  InferenceResponse,
-  AnyProviderError | ProviderUnavailableError
->
 
 export { formatStreamEventLog } from "./streaming.js"
 
@@ -347,66 +348,27 @@ export const ProviderRouterLive = Layer.effect(
       Effect.gen(function* () {
         const ranked = yield* rankedCapabilities(ctx)
         const registry = yield* Ref.get(registryRef)
-        const providerLimit = Math.max(
-          ROUTING_LIMITS.MIN_PARALLEL_PROVIDER_LIMIT,
-          Math.min(maxProviders, ROUTING_LIMITS.PARALLEL_PROVIDER_LIMIT),
-        )
+        const providerLimit = resolveParallelProviderLimit(maxProviders)
         const attempts = Chunk.take(ranked, providerLimit)
-
-        const attemptComplete = (
-          capability: ProviderCapability,
-        ): Effect.Effect<ParallelAttempt> => {
-          const provider = Option.getOrUndefined(
-            HashMap.get(registry, capability.providerId),
-          )
-
-          if (provider === undefined) {
-            return Effect.succeed(
-              Either.left(missingProvider(capability.providerId)),
-            )
-          }
-
-          return provider
-            .complete({ ...request, model: capability.modelId })
-            .pipe(
-              Effect.map((response) => ({
-                ...response,
-                usage: {
-                  ...response.usage,
-                  estimatedCostUsd: estimateCapabilityCostUsd(
-                    capability,
-                    response.usage.inputTokens,
-                    response.usage.outputTokens,
-                  ),
-                },
-              })),
-              Effect.either,
-            )
-        }
 
         const results = yield* Effect.forEach(
           attempts,
-          attemptComplete,
+          (capability) =>
+            attemptParallelComplete(
+              registry,
+              capability,
+              request,
+              missingProvider,
+            ),
           { concurrency: providerLimit },
         )
-        const resultChunk = Chunk.fromIterable(results)
-
-        const successes = Chunk.filterMap(resultChunk, (result) =>
-          Either.isRight(result) ? Option.some(result.right) : Option.none(),
-        )
+        const successes = collectParallelSuccesses(results)
 
         if (!Chunk.isEmpty(successes)) {
           return Chunk.toReadonlyArray(successes)
         }
 
-        const lastError = Chunk.reduce(
-          resultChunk,
-          undefined as AnyProviderError | ProviderUnavailableError | undefined,
-          (_current, result) =>
-            Either.isLeft(result) ? result.left : undefined,
-        )
-
-        return yield* failLast(lastError, ctx)
+        return yield* failLast(lastParallelError(results), ctx)
       })
 
     const completeWithCallback = (
