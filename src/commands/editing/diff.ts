@@ -12,7 +12,9 @@ import { Effect } from "effect"
 import { Chunk, Option } from "effect"
 import { COMMAND_CONSTANTS } from "../../core/constants/index.js"
 import { CommandParseError } from "../../core/errors/index.js"
+import { formatMutationImpactBlock } from "../../editor/diff/impact.js"
 import type { PendingMutationStoreService } from "../../editor/pending/index.js"
+import type { PipelineMutationResult } from "../../editor/pipeline/index.js"
 import type { RollbackSystemService } from "../../editor/rollback/index.js"
 import {
   formatSideBySideDiff,
@@ -21,15 +23,23 @@ import {
 import type { CommandHandler, CommandResult } from "../types.js"
 
 const formatPreviewDiff = (
-  file: string,
-  hunks: Parameters<typeof formatUnifiedDiff>[1],
+  preview: PipelineMutationResult,
   sideBySide: boolean,
 ): string => {
   const rendered = sideBySide
-    ? formatSideBySideDiff(file, hunks)
-    : formatUnifiedDiff(file, hunks)
+    ? formatSideBySideDiff(preview.file, preview.diff.hunks)
+    : formatUnifiedDiff(preview.file, preview.diff.hunks)
   const fence = sideBySide ? "text" : "diff"
-  return file + "\n\n```" + fence + "\n" + rendered + "\n```"
+  return (
+    preview.file +
+    "\n" +
+    formatMutationImpactBlock([preview.diff]) +
+    "\n\n```" +
+    fence +
+    "\n" +
+    rendered +
+    "\n```"
+  )
 }
 
 /**
@@ -59,11 +69,7 @@ export function makeDiffCommand(
           const previews = pendingMutation.value.previews
           if (!Chunk.isEmpty(previews)) {
             const sections = Chunk.map(previews, (preview) => {
-              return formatPreviewDiff(
-                preview.file,
-                preview.diff.hunks,
-                sideBySide,
-              )
+              return formatPreviewDiff(preview, sideBySide)
             })
             return { output: Chunk.toReadonlyArray(sections).join("\n\n") }
           }

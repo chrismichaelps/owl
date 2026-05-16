@@ -70,6 +70,8 @@ describe("makeDiffCommand", () => {
     )
 
     expect(output).toContain("src/a.ts")
+    expect(output).toContain("Impact overlay")
+    expect(output).toContain("medium · +1/-1 · 10.0% changed")
     expect(output).toContain("```diff")
     expect(output).toContain("+const value = 2")
   })

@@ -114,6 +114,8 @@ describe("makeEditCommand", () => {
       command.execute(["src/a.ts", "const value = 1", "const value = 2"]),
     )
 
+    expect(result.output).toContain("Impact overlay")
+    expect(result.output).toContain("medium · +1/-1 · 10.0% changed")
     expect(result.output).toContain("```diff")
     expect(result.output).toContain("--- a/src/a.ts")
     expect(result.output).toContain("+const value = 2")

@@ -20,6 +20,7 @@ import { CommandParseError } from "../../core/errors/index.js"
 import type { PendingMutationStoreService } from "../../editor/pending/index.js"
 import type { EditingPipelineService } from "../../editor/pipeline/index.js"
 import type { PipelineResult } from "../../editor/pipeline/index.js"
+import { formatMutationImpactBlock } from "../../editor/diff/impact.js"
 import { formatUnifiedDiff } from "../../editor/utils/patch.js"
 import type { CommandHandler, CommandResult } from "../types.js"
 import { makeMutationId } from "../utils/ids.js"
@@ -44,9 +45,12 @@ export function formatEditOutput(
     String(first.diff.linesRemoved) +
     " removed | mutation " +
     mutationId
+  const impact = formatMutationImpactBlock([first.diff])
   const patch = formatUnifiedDiff(first.file, first.diff.hunks)
 
-  return patch.length > 0 ? header + "\n\n```diff\n" + patch + "\n```" : header
+  return patch.length > 0
+    ? header + "\n" + impact + "\n\n```diff\n" + patch + "\n```"
+    : header + "\n" + impact
 }
 
 /**
