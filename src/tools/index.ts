@@ -63,6 +63,15 @@ export class BuiltInTools extends Context.Tag("BuiltInTools")<
  */
 export const makeBuiltInToolsLive = (cwd: string): Layer.Layer<BuiltInTools> =>
   Layer.succeed(BuiltInTools, {
+    listAllTools: () =>
+      Chunk.map(ALL_TOOLS, (tool) =>
+        Data.struct({
+          name: tool.name,
+          description: tool.description,
+          modelVisible: tool.modelVisible,
+        }),
+      ),
+
     getTools: () => Chunk.toReadonlyArray(TOOL_DESCRIPTORS),
 
     callTool: (name, input) => {

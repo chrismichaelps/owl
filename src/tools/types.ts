@@ -4,7 +4,7 @@
  * BuiltInTool is the internal descriptor for each tool.
  * BuiltInToolsService is the Effect service interface consumed by provider adapters.
  */
-import type { Effect } from "effect"
+import type { Chunk, Effect } from "effect"
 import type { McpTool } from "../mcp/manager.js"
 import type { ToolExecutionError } from "../core/errors/index.js"
 
@@ -22,6 +22,11 @@ export interface BuiltInTool {
 
 /** Effect service interface — mirrors McpManagerService so adapters can treat both uniformly */
 export interface BuiltInToolsService {
+  readonly listAllTools: () => Chunk.Chunk<{
+    readonly name: string
+    readonly description: string
+    readonly modelVisible: boolean
+  }>
   readonly getTools: () => readonly McpTool[]
   readonly callTool: (
     name: string,

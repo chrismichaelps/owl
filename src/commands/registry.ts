@@ -37,6 +37,7 @@ import { HashRegistry } from "../fmcf/registry/index.js"
 import { HashRegistryLive } from "../fmcf/registry/index.js"
 import { RoutingPreferences } from "../providers/preferences/index.js"
 import { ProviderRouter } from "../providers/router/index.js"
+import { BuiltInTools } from "../tools/index.js"
 import { EditingPipeline } from "../editor/pipeline/index.js"
 import { RollbackSystem } from "../editor/rollback/index.js"
 import { makeAnalyzeCommand } from "./analysis/analyze.js"
@@ -71,6 +72,7 @@ import { makeProvidersCommand } from "./management/providers.js"
 import { makeRegistryCommand } from "./management/registry.js"
 import { makeRoleCommand } from "./management/role.js"
 import { makeStatusCommand } from "./management/status.js"
+import { makeToolsCommand } from "./management/tools.js"
 import { makeEconomyCommand } from "./power/economy.js"
 import { makeGodCommand } from "./power/god.js"
 import { makeRawCommand } from "./power/raw.js"
@@ -219,6 +221,7 @@ export const makeCommandRegistryLive = (
   | EditingPipeline
   | RoutingPreferences
   | ProviderRouter
+  | BuiltInTools
 > =>
   Layer.effect(
     CommandRegistry,
@@ -234,6 +237,7 @@ export const makeCommandRegistryLive = (
       const roleCtx = yield* RoleContext
       const routingPreferences = yield* RoutingPreferences
       const providerRouter = yield* ProviderRouter
+      const builtInTools = yield* BuiltInTools
 
       const mapRef = yield* Ref.make<HashMap.HashMap<string, CommandHandler>>(
         HashMap.empty(),
@@ -277,6 +281,7 @@ export const makeCommandRegistryLive = (
         makeInitCommand(projectRoot),
         makeExportCommand(sessionMemory, projectRoot),
         makeMcpCommand(),
+        makeToolsCommand(builtInTools),
         makeMemoryCommand(sessionMemory),
         makeModelCommand(routingPreferences),
         makeProvidersCommand(providerRouter, routingPreferences, "models"),

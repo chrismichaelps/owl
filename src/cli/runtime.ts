@@ -130,6 +130,7 @@ export const makeOwlRuntime = (projectRoot: string): OwlRuntime => {
     UsageMetricsLive,
     ProviderRouterLive,
     RoutingPreferencesLive,
+    builtInToolsLayer,
     providerAdapterLayer,
     RoleContextLive,
     RollbackSystemLive,
