@@ -14,64 +14,73 @@
  * //
  * // ✗ github  — connection failed: spawn npx ENOENT
  */
-import { Effect, Option } from "effect"
+import { Chunk, Effect } from "effect"
+import { MCP_CONSTANTS } from "../../core/constants/index.js"
 import type { CommandParseError } from "../../core/errors/index.js"
-import { McpManager } from "../../mcp/index.js"
+import type {
+  McpManagerService,
+  McpServerStatus,
+  McpTool,
+} from "../../mcp/index.js"
 import type { CommandHandler, CommandResult } from "../types.js"
+
+const formatConnectedServer = (
+  server: McpServerStatus,
+  tools: Chunk.Chunk<McpTool>,
+): Chunk.Chunk<string> => {
+  const serverPrefix = server.name + MCP_CONSTANTS.TOOL_SEPARATOR
+  const serverTools = Chunk.filter(tools, (tool) =>
+    tool.name.startsWith(serverPrefix),
+  )
+  return Chunk.appendAll(
+    Chunk.make(
+      `✓ ${server.name}  — ${String(server.toolCount)} tool${
+        server.toolCount === 1 ? "" : "s"
+      }`,
+    ),
+    Chunk.map(serverTools, (tool) => `  • ${tool.name}`),
+  )
+}
+
+const formatDisconnectedServer = (server: McpServerStatus): string =>
+  `✗ ${server.name}  — connection failed: ${server.error ?? "unknown error"}`
 
 /**
  * @Owl.Commands.Management.Mcp.Factory - Create the /mcp command handler
  */
-export function makeMcpCommand(): CommandHandler {
+export function makeMcpCommand(manager: McpManagerService): CommandHandler {
   return {
     name: "mcp",
     description: "Show MCP server connection status and available tools: /mcp",
     execute: (_args): Effect.Effect<CommandResult, CommandParseError> =>
       Effect.gen(function* () {
-        const managerOpt = yield* Effect.serviceOption(McpManager)
-
-        if (Option.isNone(managerOpt)) {
-          return {
-            output:
-              "MCP not configured.\n" +
-              "Create ~/.owl/mcp_servers.json or <project>/.owl/mcp_servers.json\n" +
-              "then restart Owl.\n\n" +
-              'Example:\n{\n  "mcpServers": {\n    "filesystem": {\n      "command": "npx",\n      "args": ["-y", "@modelcontextprotocol/server-filesystem", "."]\n    }\n  }\n}',
-          }
-        }
-
-        const manager = managerOpt.value
         const [statuses, tools] = yield* Effect.all([
           manager.getServers(),
           manager.getTools(),
         ])
 
         if (statuses.length === 0) {
-          return { output: "MCP configured but no servers defined." }
+          return {
+            output:
+              "MCP configured but no servers defined.\n" +
+              "Create ~/.owl/mcp_servers.json or <project>/.owl/mcp_servers.json.",
+          }
         }
 
-        const lines: string[] = ["MCP Servers", ""]
+        let lines = Chunk.make("MCP Servers", "")
+        const toolChunk = Chunk.fromIterable(tools)
 
         for (const srv of statuses) {
-          if (srv.connected) {
-            lines.push(
-              `✓ ${srv.name}  — ${String(srv.toolCount)} tool${srv.toolCount === 1 ? "" : "s"}`,
-            )
-            const srvTools = tools.filter((t) =>
-              t.name.startsWith(srv.name + "__"),
-            )
-            for (const tool of srvTools) {
-              lines.push(`  • ${tool.name}`)
-            }
-          } else {
-            lines.push(
-              `✗ ${srv.name}  — connection failed: ${srv.error ?? "unknown error"}`,
-            )
-          }
-          lines.push("")
+          lines = Chunk.appendAll(
+            lines,
+            srv.connected
+              ? formatConnectedServer(srv, toolChunk)
+              : Chunk.make(formatDisconnectedServer(srv)),
+          )
+          lines = Chunk.append(lines, "")
         }
 
-        return { output: lines.join("\n").trimEnd() }
+        return { output: Chunk.toReadonlyArray(lines).join("\n").trimEnd() }
       }),
   }
 }

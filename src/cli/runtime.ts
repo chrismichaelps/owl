@@ -111,6 +111,11 @@ export const makeOwlRuntime = (projectRoot: string): OwlRuntime => {
   )
 
   const builtInToolsLayer = makeBuiltInToolsLive(projectRoot)
+  const providerSupportLayer = Layer.mergeAll(
+    OWLConfigLive,
+    mcpManagerLayer,
+    builtInToolsLayer,
+  )
 
   const providerAdapterLayer = Layer.mergeAll(
     AnthropicAdapterLive,
@@ -118,15 +123,11 @@ export const makeOwlRuntime = (projectRoot: string): OwlRuntime => {
     GoogleAdapterLive,
     XAIAdapterLive,
     OllamaAdapterLive,
-  ).pipe(
-    Layer.provide(OWLConfigLive),
-    Layer.provide(mcpManagerLayer),
-    Layer.provide(builtInToolsLayer),
-  )
+  ).pipe(Layer.provide(providerSupportLayer))
 
   // Self-sufficient leaf layers plus Provider adapters.
   const leafLayer = Layer.mergeAll(
-    OWLConfigLive,
+    providerSupportLayer,
     ContextManagerLive,
     sessionMemoryLayer,
     UsageMetricsLive,

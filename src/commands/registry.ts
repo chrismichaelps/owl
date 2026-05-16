@@ -35,6 +35,7 @@ import { SessionMemory } from "../engine/memory/index.js"
 import { RoleContext } from "../fmcf/roles/architect.js"
 import { HashRegistry } from "../fmcf/registry/index.js"
 import { HashRegistryLive } from "../fmcf/registry/index.js"
+import { McpManager } from "../mcp/index.js"
 import { RoutingPreferences } from "../providers/preferences/index.js"
 import { ProviderRouter } from "../providers/router/index.js"
 import { BuiltInTools } from "../tools/index.js"
@@ -223,6 +224,7 @@ export const makeCommandRegistryLive = (
   | RollbackSystem
   | EditingPipeline
   | PendingMutationStore
+  | McpManager
   | RoutingPreferences
   | ProviderRouter
   | BuiltInTools
@@ -235,6 +237,7 @@ export const makeCommandRegistryLive = (
       const rollback = yield* RollbackSystem
       const pipeline = yield* EditingPipeline
       const pendingMutations = yield* PendingMutationStore
+      const mcpManager = yield* McpManager
       const sessionMemory = yield* SessionMemory
       const usageMetrics = yield* UsageMetrics
       const contextManager = yield* ContextManager
@@ -286,7 +289,7 @@ export const makeCommandRegistryLive = (
         makeHistoryCommand(sessionMemory, projectRoot),
         makeInitCommand(projectRoot),
         makeExportCommand(sessionMemory, projectRoot),
-        makeMcpCommand(),
+        makeMcpCommand(mcpManager),
         makeToolsCommand(builtInTools),
         makeMemoryCommand(sessionMemory),
         makeModelCommand(routingPreferences),
