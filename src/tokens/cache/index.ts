@@ -9,7 +9,8 @@ import { FileSystem } from "@effect/platform"
 import { NodeFileSystem } from "@effect/platform-node"
 import path from "node:path"
 import { CachePersistenceError } from "../../core/errors/index.js"
-import { Context, Effect, Layer, Option, Ref } from "effect"
+import { Chunk, Context, Effect, HashMap, Layer, Ref } from "effect"
+import type { Option } from "effect"
 import {
   boundStore,
   decodeCacheEntry,
@@ -58,38 +59,32 @@ const makeService = (
   ): Effect.Effect<void, CacheFailure> =>
     Effect.gen(function* () {
       const decoded = yield* decodeCacheEntry(key, entry)
-      yield* Ref.update(storeRef, (current) => {
-        const next = new Map(current)
-        next.set(key, decoded)
-        return boundStore(next)
-      })
+      yield* Ref.update(storeRef, (current) =>
+        boundStore(HashMap.set(current, key, decoded)),
+      )
       yield* persistCurrent()
     })
 
   const get = (key: string): Effect.Effect<Option.Option<CacheEntry>> =>
     Ref.get(storeRef).pipe(
-      Effect.map((current) => {
-        const entry = current.get(key)
-        return entry === undefined ? Option.none() : Option.some(entry)
-      }),
+      Effect.map((current) => HashMap.get(current, key)),
     )
 
   const invalidate = (key: string): Effect.Effect<void, CacheFailure> =>
-    Ref.update(storeRef, (current) => {
-      const next = new Map(current)
-      next.delete(key)
-      return next
-    }).pipe(Effect.zipRight(persistCurrent()))
+    Ref.update(storeRef, (current) => HashMap.remove(current, key)).pipe(
+      Effect.zipRight(persistCurrent()),
+    )
 
   const invalidateAll = (): Effect.Effect<void, CacheFailure> =>
-    Ref.set(storeRef, new Map()).pipe(Effect.zipRight(persistCurrent()))
+    Ref.set(storeRef, HashMap.empty()).pipe(Effect.zipRight(persistCurrent()))
 
   const totalSavedTokens = (): Effect.Effect<number> =>
     Ref.get(storeRef).pipe(
       Effect.map((current) =>
-        Array.from(current.values()).reduce(
-          (sum, entry) => sum + entry.tokenCount,
+        Chunk.reduce(
+          Chunk.fromIterable(HashMap.values(current)),
           0,
+          (sum, entry) => sum + entry.tokenCount,
         ),
       ),
     )
@@ -109,7 +104,7 @@ const noPersist: PersistSnapshot = () => Effect.void
 export const ContextCacheLive = Layer.effect(
   ContextCache,
   Effect.gen(function* () {
-    const storeRef = yield* Ref.make<CacheStore>(new Map())
+    const storeRef = yield* Ref.make<CacheStore>(HashMap.empty())
     return makeService(storeRef, noPersist)
   }),
 )
@@ -144,13 +139,16 @@ export const makePersistentContextCacheLive = (
             Effect.flatMap((raw) => decodePersistedState(storagePath, raw)),
             Effect.map((state) =>
               boundStore(
-                new Map(
-                  state.entries.map((record) => [record.key, record.entry]),
+                HashMap.fromIterable(
+                  Chunk.map(Chunk.fromIterable(state.entries), (record) => [
+                    record.key,
+                    record.entry,
+                  ]),
                 ),
               ),
             ),
           )
-        : new Map<string, CacheEntry>()
+        : HashMap.empty<string, CacheEntry>()
 
       const storeRef = yield* Ref.make<CacheStore>(initialStore)
       const persist: PersistSnapshot = (store) =>

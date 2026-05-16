@@ -1,7 +1,7 @@
 /**
  * @Owl.Tokens.Cache.Persistence - ContextCache validation and persistence helpers
  */
-import { Effect, Schema } from "effect"
+import { Chunk, Data, Effect, HashMap, Schema } from "effect"
 import { CACHE_CONSTANTS } from "../../core/constants/index.js"
 import {
   CachePersistenceError,
@@ -15,10 +15,21 @@ import {
 } from "./schema.js"
 
 export type CacheFailure = CacheValidationError | CachePersistenceError
-export type CacheStore = Map<string, CacheEntry>
+export type CacheStore = HashMap.HashMap<string, CacheEntry>
 export type PersistSnapshot = (
   store: CacheStore,
 ) => Effect.Effect<void, CacheFailure>
+type CacheStoreEntry = readonly [string, CacheEntry]
+
+const compareCacheStoreEntries = (
+  [, left]: CacheStoreEntry,
+  [, right]: CacheStoreEntry,
+): -1 | 0 | 1 => {
+  const delta = (right.createdAt ?? 0) - (left.createdAt ?? 0)
+  if (delta < 0) return -1
+  if (delta > 0) return 1
+  return 0
+}
 
 export const decodeCacheEntry = (
   key: string,
@@ -56,25 +67,34 @@ export const decodeCacheEntry = (
           }),
         )
       }
-      return Effect.succeed({
-        ...decoded,
-        createdAt: decoded.createdAt ?? Date.now(),
-      })
+      return Effect.succeed(
+        Data.struct({
+          ...decoded,
+          createdAt: decoded.createdAt ?? Date.now(),
+        }),
+      )
     }),
   )
 
 export const boundStore = (store: CacheStore): CacheStore => {
-  const entries = Array.from(store.entries())
-    .sort(
-      ([, left], [, right]) => (right.createdAt ?? 0) - (left.createdAt ?? 0),
-    )
-    .slice(0, CACHE_CONSTANTS.MAX_ENTRIES)
-  return new Map(entries)
+  const allEntries = Chunk.map(
+    Chunk.fromIterable(HashMap.entries(store)),
+    ([key, entry]): CacheStoreEntry => [key, entry],
+  )
+  const entries = Chunk.take(
+    Chunk.sort(allEntries, compareCacheStoreEntries),
+    CACHE_CONSTANTS.MAX_ENTRIES,
+  )
+  return HashMap.fromIterable(entries)
 }
 
 export const toPersistedState = (store: CacheStore): PersistedCacheState => ({
   version: CACHE_CONSTANTS.PERSISTENCE_SCHEMA_VERSION,
-  entries: Array.from(store.entries()).map(([key, entry]) => ({ key, entry })),
+  entries: Chunk.toReadonlyArray(
+    Chunk.map(Chunk.fromIterable(HashMap.entries(store)), ([key, entry]) =>
+      Data.struct({ key, entry }),
+    ),
+  ),
 })
 
 export const decodePersistedState = (
