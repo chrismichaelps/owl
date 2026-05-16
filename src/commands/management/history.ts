@@ -95,33 +95,38 @@ export function makeHistoryCommand(
 
         const limit = parseLimit(args[0], turns.length, turns.length)
 
-        const recent = turns.slice(-limit)
+        const turnChunk = Chunk.fromIterable(turns)
+        const recent = Chunk.takeRight(turnChunk, limit)
 
-        const lines: string[] = [
+        const header = Chunk.make(
           `Session history — ${String(turns.length)} turn${turns.length === 1 ? "" : "s"}`,
           "",
-        ]
-
-        recent.forEach((turn, i) => {
-          const num = turns.length - recent.length + i + 1
-          const tokens = `${String(turn.tokensUsed)}tok`
+        )
+        const startingIndex = turns.length - Chunk.size(recent)
+        const indexedRecent = Chunk.zip(
+          recent,
+          Chunk.range(startingIndex + 1, turns.length),
+        )
+        const body = Chunk.flatMap(indexedRecent, ([turn, num]) => {
+          const tokens = String(turn.tokensUsed) + "tok"
           const cost =
             turn.estimatedCostUsd != null
-              ? ` ${formatEstimatedCostUsd(turn.estimatedCostUsd)}`
+              ? " " + formatEstimatedCostUsd(turn.estimatedCostUsd)
               : ""
-          const provider = turn.provider != null ? ` · ${turn.provider}` : ""
+          const provider = turn.provider != null ? " · " + turn.provider : ""
 
-          lines.push(`#${String(num)}${provider} · ${tokens}${cost}`)
-          lines.push(
-            `  ❯ ${truncate(turn.prompt, COMMAND_CONSTANTS.MEMORY_PREVIEW_LENGTH)}`,
+          return Chunk.make(
+            "#" + String(num) + provider + " · " + tokens + cost,
+            "  ❯ " +
+              truncate(turn.prompt, COMMAND_CONSTANTS.MEMORY_PREVIEW_LENGTH),
+            "  ✦ " +
+              truncate(turn.response, COMMAND_CONSTANTS.MEMORY_PREVIEW_LENGTH),
+            "",
           )
-          lines.push(
-            `  ✦ ${truncate(turn.response, COMMAND_CONSTANTS.MEMORY_PREVIEW_LENGTH)}`,
-          )
-          lines.push("")
         })
+        const lines = Chunk.appendAll(header, body)
 
-        return { output: lines.join("\n").trimEnd() }
+        return { output: Chunk.toReadonlyArray(lines).join("\n").trimEnd() }
       }),
   }
 }
