@@ -20,93 +20,25 @@
  * # In Owl:
  * OLLAMA_BASE_URL=http://localhost:11434 owl "my task"
  */
-import { Chunk, Context, Data, Effect, Layer, Schema } from "effect"
-import * as Stream from "effect/Stream"
-import { ProviderError, ProviderStreamError } from "../../core/errors/index.js"
+import { Context, Data, Effect, Layer } from "effect"
 import { OWL_CONFIG } from "../../core/config/index.js"
-import {
-  OLLAMA_MODELS,
-  PROVIDER_CONSTANTS,
-} from "../../core/constants/index.js"
 import { estimateModelCostUsd } from "../cost.js"
-import type {
-  LLMProviderService,
-  ProviderCapability,
-  StreamChunk,
-} from "../types.js"
+import type { ProviderError } from "../../core/errors/index.js"
+import type { LLMProviderService } from "../types.js"
 import type {
   InferenceRequest,
   InferenceResponse,
 } from "../../core/schema/index.js"
 import {
-  OllamaGenerateResponseSchema,
-  OllamaStreamResponseSchema,
-} from "./schema.js"
-import type { OllamaStreamResponse } from "./schema.js"
-
-/**
- * @Owl.Providers.Ollama.Capabilities - Local model specifications
- */
-const OLLAMA_CAPABILITIES: readonly ProviderCapability[] = [
-  Data.struct({
-    providerId: "ollama",
-    modelId: OLLAMA_MODELS.LLAMA_3_2,
-    contextWindow: 128_000,
-    maxOutputTokens: 4_096,
-    inputCostPer1k: 0,
-    outputCostPer1k: 0,
-    supportsStreaming: true,
-    reasoningDepth: "medium",
-    supportsFunctionCalling: false,
-    supportsVision: false,
-  }),
-  Data.struct({
-    providerId: "ollama",
-    modelId: OLLAMA_MODELS.CODE_LLAMA,
-    contextWindow: 16_000,
-    maxOutputTokens: 4_096,
-    inputCostPer1k: 0,
-    outputCostPer1k: 0,
-    supportsStreaming: true,
-    reasoningDepth: "medium",
-    supportsFunctionCalling: false,
-    supportsVision: false,
-  }),
-]
-
-const decodeGenerateResponse = Schema.decodeUnknownSync(
-  OllamaGenerateResponseSchema,
-)
-
-const decodeStreamResponse = Schema.decodeUnknownSync(
-  OllamaStreamResponseSchema,
-)
-
-const estimateTextTokens = (text: string): number =>
-  Math.ceil(text.length / PROVIDER_CONSTANTS.TOKEN_ESTIMATION_CHARS_PER_TOKEN)
-
-const buildPrompt = (request: InferenceRequest): string =>
-  Chunk.toReadonlyArray(
-    Chunk.map(
-      Chunk.fromIterable(request.messages),
-      (message) => message.content,
-    ),
-  ).join("\n")
-
-const parseStreamLine = (line: string): OllamaStreamResponse =>
-  decodeStreamResponse(JSON.parse(line) as unknown)
-
-const ollamaGenerateUrl = (baseUrl: string): string =>
-  baseUrl + PROVIDER_CONSTANTS.OLLAMA_GENERATE_PATH
-
-const ollamaTagsUrl = (baseUrl: string): string =>
-  baseUrl + PROVIDER_CONSTANTS.OLLAMA_TAGS_PATH
-
-const providerError = (message: string): ProviderError =>
-  new ProviderError({ provider: "ollama", message })
-
-const providerStreamError = (cause: unknown): ProviderStreamError =>
-  new ProviderStreamError({ provider: "ollama", cause })
+  buildPrompt,
+  decodeGenerateResponse,
+  estimateTextTokens,
+  ollamaGenerateUrl,
+  ollamaTagsUrl,
+  OLLAMA_CAPABILITIES,
+  providerError,
+} from "./runtime.js"
+import { makeOllamaStream } from "./stream.js"
 
 /** @Owl.Providers.Ollama.Adapter - Effect-TS service definition */
 export class OllamaAdapter extends Context.Tag("OllamaAdapter")<
@@ -184,101 +116,7 @@ export const OllamaAdapterLive = Layer.effect(
         } satisfies InferenceResponse
       })
 
-    const stream = (request: InferenceRequest) =>
-      Stream.async<StreamChunk, ProviderStreamError>((emit) => {
-        const run = async () => {
-          try {
-            const prompt = buildPrompt(request)
-            const response = await fetch(ollamaGenerateUrl(baseUrl), {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                model: request.model,
-                prompt,
-                stream: true,
-              }),
-            })
-            if (!response.ok) {
-              await emit.fail(
-                providerStreamError(
-                  "Ollama stream error: " + response.statusText,
-                ),
-              )
-              return
-            }
-            if (response.body === null) {
-              await emit.fail(
-                providerStreamError(
-                  PROVIDER_CONSTANTS.OLLAMA_EMPTY_STREAM_BODY_MESSAGE,
-                ),
-              )
-              return
-            }
-
-            const reader = response.body.getReader()
-            const decoder = new TextDecoder()
-            let chunks = Chunk.empty<string>()
-            let buffer = ""
-            let index = 0
-
-            const emitLine = async (line: string): Promise<void> => {
-              const trimmed = line.trim()
-              if (trimmed.length === 0) return
-
-              const event = parseStreamLine(trimmed)
-              if (event.response !== undefined && event.response.length > 0) {
-                chunks = Chunk.append(chunks, event.response)
-                await emit.single({
-                  type: "text",
-                  content: event.response,
-                  index: index++,
-                })
-              }
-            }
-
-            let streamDone = false
-            while (!streamDone) {
-              const read = await reader.read()
-              streamDone = read.done
-              buffer += decoder.decode(read.value, { stream: !read.done })
-              const lines = buffer.split(
-                PROVIDER_CONSTANTS.OLLAMA_STREAM_DELIMITER,
-              )
-              buffer = lines.at(-1) ?? ""
-              const completedLines = lines.slice(0, -1)
-
-              for (const line of completedLines) {
-                await emitLine(line)
-              }
-            }
-
-            await emitLine(buffer)
-            const content = Chunk.toReadonlyArray(chunks).join("")
-            const inputTokens = estimateTextTokens(prompt)
-            const outputTokens = estimateTextTokens(content)
-            await emit.single({
-              type: "usage",
-              index,
-              usage: Data.struct({
-                inputTokens,
-                outputTokens,
-                cacheReadTokens: 0,
-                cacheWriteTokens: 0,
-                estimatedCostUsd: estimateModelCostUsd(
-                  OLLAMA_CAPABILITIES,
-                  request.model,
-                  inputTokens,
-                  outputTokens,
-                ),
-              }),
-            })
-            await emit.end()
-          } catch (cause) {
-            await emit.fail(providerStreamError(cause))
-          }
-        }
-        void run()
-      })
+    const stream = makeOllamaStream(baseUrl)
 
     const healthCheck = (): Effect.Effect<boolean, ProviderError> =>
       Effect.tryPromise({
