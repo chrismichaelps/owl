@@ -348,6 +348,19 @@ export const TUI_ANIMATION = {
   FMCF_ROLE_FLOW: ["Architect", "DNA Engineer", "Shadow", "Forensic Guardian"],
 } as const
 
+/** @Owl.Core.Constants.TUIPipeline - Pipeline visual states */
+export const PIPELINE_STATE_CONSTANTS = {
+  COMPLETE: "complete",
+  ACTIVE: "active",
+  PENDING: "pending",
+} as const
+
+/** @Owl.Core.Constants.TUITurn - Turn kind identifiers */
+export const TURN_KIND_CONSTANTS = {
+  COMMAND: "command",
+  INFERENCE: "inference",
+} as const
+
 /** @Owl.Core.Constants.TUIWelcome - Welcome workbench layout text */
 export const TUI_WELCOME = {
   MIN_WIDTH: 80,

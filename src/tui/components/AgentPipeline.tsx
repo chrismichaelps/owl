@@ -1,7 +1,10 @@
 /** @Owl.TUI.Components.AgentPipeline - Animated FMCF role pipeline */
 import React, { memo } from "react"
 import { Box, Text } from "ink"
-import { TUI_ANIMATION } from "../../core/constants/index.js"
+import {
+  TUI_ANIMATION,
+  PIPELINE_STATE_CONSTANTS,
+} from "../../core/constants/index.js"
 import {
   getFrame,
   useTerminalAnimation,
@@ -9,7 +12,8 @@ import {
 import type { ActiveRole } from "../state.js"
 
 type PipelineRole = (typeof TUI_ANIMATION.FMCF_ROLE_FLOW)[number]
-type PipelineState = "complete" | "active" | "pending"
+type PipelineState =
+  (typeof PIPELINE_STATE_CONSTANTS)[keyof typeof PIPELINE_STATE_CONSTANTS]
 
 const ROLE_LABEL: Record<PipelineRole, string> = {
   Architect: "ARC",
@@ -30,18 +34,22 @@ export const getPipelineState = (
   role: PipelineRole,
   activeRole: ActiveRole,
 ): PipelineState => {
-  if (activeRole === null) return "pending"
+  if (activeRole === null) return PIPELINE_STATE_CONSTANTS.PENDING
 
   const activeIndex = TUI_ANIMATION.FMCF_ROLE_FLOW.indexOf(activeRole)
   const roleIndex = TUI_ANIMATION.FMCF_ROLE_FLOW.indexOf(role)
 
-  if (roleIndex < activeIndex) return "complete"
-  return roleIndex === activeIndex ? "active" : "pending"
+  if (roleIndex < activeIndex) return PIPELINE_STATE_CONSTANTS.COMPLETE
+  return roleIndex === activeIndex
+    ? PIPELINE_STATE_CONSTANTS.ACTIVE
+    : PIPELINE_STATE_CONSTANTS.PENDING
 }
 
 const getGlyph = (state: PipelineState, frame: number): string => {
-  if (state === "complete") return TUI_ANIMATION.PIPELINE_COMPLETE_GLYPH
-  if (state === "pending") return TUI_ANIMATION.PIPELINE_PENDING_GLYPH
+  if (state === PIPELINE_STATE_CONSTANTS.COMPLETE)
+    return TUI_ANIMATION.PIPELINE_COMPLETE_GLYPH
+  if (state === PIPELINE_STATE_CONSTANTS.PENDING)
+    return TUI_ANIMATION.PIPELINE_PENDING_GLYPH
   return getFrame(
     TUI_ANIMATION.PIPELINE_ACTIVE_FRAMES,
     frame,
@@ -58,13 +66,14 @@ const Step = memo(function Step({
   readonly state: PipelineState
   readonly frame: number
 }): React.ReactElement {
-  const color = state === "pending" ? "gray" : ROLE_COLOR[role]
+  const color =
+    state === PIPELINE_STATE_CONSTANTS.PENDING ? "gray" : ROLE_COLOR[role]
   return (
     <Box gap={1}>
-      <Text color={color} bold={state === "active"}>
+      <Text color={color} bold={state === PIPELINE_STATE_CONSTANTS.ACTIVE}>
         {getGlyph(state, frame)}
       </Text>
-      <Text color={color} dimColor={state === "pending"}>
+      <Text color={color} dimColor={state === PIPELINE_STATE_CONSTANTS.PENDING}>
         {ROLE_LABEL[role]}
       </Text>
     </Box>

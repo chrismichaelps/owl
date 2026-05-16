@@ -3,6 +3,7 @@ import React, { memo } from "react"
 import { Box, Text } from "ink"
 import { formatEstimatedCostUsd } from "../../core/cost.js"
 import { MarkdownText } from "./MarkdownText.js"
+import { TURN_KIND_CONSTANTS } from "../../core/constants/index.js"
 import type { ConversationTurn } from "../state.js"
 
 interface ConversationThreadProps {
@@ -71,7 +72,7 @@ const TurnRow = memo(function TurnRow({
 }: {
   readonly turn: ConversationTurn
 }): React.ReactElement {
-  return turn.kind === "command" ? (
+  return turn.kind === TURN_KIND_CONSTANTS.COMMAND ? (
     <CommandTurnRow turn={turn} />
   ) : (
     <InferenceTurnRow turn={turn} />
