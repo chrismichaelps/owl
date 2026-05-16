@@ -57,6 +57,7 @@ import { makeCreateCommand } from "./editing/create.js"
 import { makeDiffCommand } from "./editing/diff.js"
 import { makeEditCommand } from "./editing/edit.js"
 import { makeInjectCommand } from "./editing/inject.js"
+import { makeRejectCommand } from "./editing/reject.js"
 import { makeRefactorCommand } from "./editing/refactor.js"
 import { makeUndoCommand } from "./editing/undo.js"
 import { makeAuditCommand } from "./management/audit.js"
@@ -273,6 +274,7 @@ export const makeCommandRegistryLive = (
         makeRefactorCommand(orchestrator),
         makeDiffCommand(rollback, pendingMutations),
         makeApplyCommand(pipeline, pendingMutations, projectRoot),
+        makeRejectCommand(pendingMutations),
         makeUndoCommand(rollback, projectRoot),
         // Management
         makeRoleCommand(roleCtx),

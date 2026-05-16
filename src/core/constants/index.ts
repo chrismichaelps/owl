@@ -557,6 +557,7 @@ export const COMMAND_CONSTANTS = {
   PALETTE_VISIBLE_COUNT: 8,
   EDIT_PREVIEW_FLAG: "--preview",
   APPLY_ALL_FLAG: "--all",
+  REJECT_ALL_FLAG: "--all",
   HISTORY_PROMPTS_SUBCOMMAND: "prompts",
   PENDING_MUTATION_LIMIT: 100,
 } as const
