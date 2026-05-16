@@ -165,8 +165,5 @@ export function selectBestProvider(
   capabilities: readonly ProviderCapability[],
   ctx: RoutingContext,
 ): ProviderCapability | null {
-  return (
-    Chunk.toReadonlyArray(Chunk.take(rankCapabilities(capabilities, ctx), 1))[0]
-      ?.capability ?? null
-  )
+  return rankProviders(capabilities, ctx)[0] ?? null
 }

@@ -89,6 +89,14 @@ describe("provider scoring", () => {
     expect(best?.modelId).toBe("claude-haiku-4-5")
   })
 
+  it("selectBestProvider respects preferred provider overrides", () => {
+    const best = selectBestProvider([ANTHROPIC_HAIKU, OLLAMA_LLAMA], {
+      ...ECONOMY_CTX,
+      preferredProvider: "ollama",
+    })
+    expect(best?.providerId).toBe("ollama")
+  })
+
   it("selectBestProvider returns null for empty capabilities", () => {
     const best = selectBestProvider([], ECONOMY_CTX)
     expect(best).toBeNull()
