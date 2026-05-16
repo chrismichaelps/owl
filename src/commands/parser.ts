@@ -16,19 +16,26 @@
  * // → { name: "edit", args: ["src/foo.ts", "old", "new"], raw: "..." }
  */
 import { Effect } from "effect"
+import { PARSER_CHARS, TUI_TRIGGERS } from "../core/constants/index.js"
 import { CommandParseError } from "../core/errors/index.js"
 import type { ParsedCommand } from "./types.js"
 
 interface TokenizeResult {
   readonly tokens: readonly string[]
-  readonly unterminatedQuote: '"' | "'" | null
+  readonly unterminatedQuote:
+    | typeof PARSER_CHARS.DOUBLE_QUOTE
+    | typeof PARSER_CHARS.SINGLE_QUOTE
+    | null
 }
 
 /** Tokenize input respecting single/double-quoted spans */
 function tokenize(input: string): TokenizeResult {
   const tokens: string[] = []
   let current = ""
-  let inQuote: '"' | "'" | null = null
+  let inQuote:
+    | typeof PARSER_CHARS.DOUBLE_QUOTE
+    | typeof PARSER_CHARS.SINGLE_QUOTE
+    | null = null
 
   for (const ch of input) {
     if (inQuote !== null) {
@@ -37,9 +44,12 @@ function tokenize(input: string): TokenizeResult {
       } else {
         current += ch
       }
-    } else if (ch === '"' || ch === "'") {
+    } else if (
+      ch === PARSER_CHARS.DOUBLE_QUOTE ||
+      ch === PARSER_CHARS.SINGLE_QUOTE
+    ) {
       inQuote = ch
-    } else if (ch === " " || ch === "\t") {
+    } else if (ch === PARSER_CHARS.SPACE || ch === PARSER_CHARS.TAB) {
       if (current.length > 0) {
         tokens.push(current)
         current = ""
@@ -64,7 +74,7 @@ export function parseCommand(
 ): Effect.Effect<ParsedCommand, CommandParseError> {
   const trimmed = raw.trim()
 
-  if (!trimmed.startsWith("/")) {
+  if (!trimmed.startsWith(TUI_TRIGGERS.PALETTE)) {
     return Effect.fail(
       new CommandParseError({
         input: raw,

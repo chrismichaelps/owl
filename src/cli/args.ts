@@ -16,15 +16,10 @@
  * parseArgs([]) // { mode: "standard", prompt: null }
  */
 import type { Mode } from "../core/schema/index.js"
+import { CLI_FLAGS, MODES } from "../core/constants/index.js"
 
 /** @Owl.CLI.Args.ValidModes - Supported operating modes */
-export const VALID_MODES: readonly string[] = [
-  "standard",
-  "quick",
-  "deep",
-  "economy",
-  "god",
-]
+export const VALID_MODES: readonly string[] = Object.values(MODES)
 
 /**
  * @Owl.CLI.Args.Parsed - Output of parseArgs
@@ -54,19 +49,19 @@ export function parseArgs(argv: readonly string[]): ParsedArgs {
   let version = false
 
   for (const arg of argv) {
-    if (arg.startsWith("--mode=")) {
-      const val = arg.slice("--mode=".length)
+    if (arg.startsWith(CLI_FLAGS.MODE_PREFIX)) {
+      const val = arg.slice(CLI_FLAGS.MODE_PREFIX.length)
       if (VALID_MODES.includes(val)) mode = val as Mode
-    } else if (arg === "--help" || arg === "-h") {
+    } else if (CLI_FLAGS.HELP.includes(arg as any)) {
       help = true
-    } else if (arg === "--version" || arg === "-v") {
+    } else if (CLI_FLAGS.VERSION.includes(arg as any)) {
       version = true
-    } else if (arg === "--quick" || arg === "-q") {
-      mode = "quick"
-    } else if (arg === "--deep" || arg === "-d") {
-      mode = "deep"
-    } else if (arg === "--economy" || arg === "-e") {
-      mode = "economy"
+    } else if (CLI_FLAGS.QUICK.includes(arg as any)) {
+      mode = MODES.QUICK as Mode
+    } else if (CLI_FLAGS.DEEP.includes(arg as any)) {
+      mode = MODES.DEEP as Mode
+    } else if (CLI_FLAGS.ECONOMY.includes(arg as any)) {
+      mode = MODES.ECONOMY as Mode
     } else if (!arg.startsWith("-")) {
       prompt ??= arg
     }
