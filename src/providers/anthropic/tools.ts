@@ -3,6 +3,7 @@ import type Anthropic from "@anthropic-ai/sdk"
 import { Chunk, Effect } from "effect"
 import { ProviderError } from "../../core/errors/index.js"
 import { parseImageBlocks } from "../image.js"
+import { applyAnthropicToolResultBudget } from "./toolResult.js"
 import type { Message } from "../../core/schema/index.js"
 import type { McpManagerService } from "../../mcp/index.js"
 import type { BuiltInToolsService } from "../../tools/index.js"
@@ -53,6 +54,7 @@ export const executeAnthropicTool = (
 ): Effect.Effect<string, ProviderError> => {
   if (builtInTools?.hasTool(toolName)) {
     return builtInTools.callTool(toolName, input).pipe(
+      Effect.map(applyAnthropicToolResultBudget),
       Effect.mapError(
         (error) =>
           new ProviderError({
@@ -64,7 +66,9 @@ export const executeAnthropicTool = (
   }
 
   if (mcpManager !== null) {
-    return mcpManager.callTool(toolName, input)
+    return mcpManager
+      .callTool(toolName, input)
+      .pipe(Effect.map(applyAnthropicToolResultBudget))
   }
 
   return Effect.succeed(`Tool ${toolName} not found`)
