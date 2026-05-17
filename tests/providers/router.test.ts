@@ -406,6 +406,60 @@ describe("ProviderRouter", () => {
     expect(decision.selectedProvider).toBe("openai")
   })
 
+  it("lists provider reliability observations deterministically", async () => {
+    const first = makeFailingProvider("anthropic")
+    const fallback = makeStubProvider("openai")
+
+    const program = Effect.gen(function* () {
+      const router = yield* ProviderRouter
+      yield* registerProvider(router, first)
+      yield* registerProvider(router, fallback)
+      yield* router.complete(
+        {
+          taskId: "t-reliability-snapshot",
+          mode: "standard",
+          estimatedInputTokens: 1000,
+          requiresReasoning: false,
+          requiresVision: false,
+          latencyBudgetMs: 30000,
+        },
+        {
+          taskId: "t-reliability-snapshot",
+          messages: [
+            {
+              role: "user",
+              content: "hello",
+              timestamp: new Date().toISOString(),
+            },
+          ],
+          maxTokens: 1024,
+          stream: false,
+        },
+      )
+      return yield* router.listReliability()
+    })
+
+    const reliability = await Effect.runPromise(
+      program.pipe(Effect.provide(ProviderRouterLive)),
+    )
+    expect(reliability).toEqual([
+      {
+        provider: "anthropic",
+        successes: 0,
+        failures: 1,
+        consecutiveFailures: 1,
+        score: 0.2,
+      },
+      {
+        provider: "openai",
+        successes: 1,
+        failures: 0,
+        consecutiveFailures: 0,
+        score: 1,
+      },
+    ])
+  })
+
   it("does not fall back to cloud providers when localOnly is true", async () => {
     const local = makeFailingProvider("ollama")
     const cloud = makeStubProvider("anthropic")

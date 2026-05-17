@@ -113,6 +113,7 @@ const TestProviderRouterLive = Layer.succeed(ProviderRouter, {
     }),
   listProviders: () => Effect.succeed(["anthropic"]),
   listCapabilities: () => Effect.succeed([]),
+  listReliability: () => Effect.succeed([]),
   checkHealth: () =>
     Effect.succeed([{ provider: "anthropic", healthy: true, message: null }]),
 } satisfies ProviderRouterService)

@@ -5,6 +5,7 @@ import {
   makeProvidersCommand,
   formatProviderCapability,
   formatProviderHealth,
+  formatProviderReliability,
 } from "../../src/commands/management/providers.js"
 import {
   RoutingPreferences,
@@ -38,6 +39,7 @@ const makeRouter = (
   listProviders: () =>
     Effect.succeed(capabilities.map((capability) => capability.providerId)),
   listCapabilities: () => Effect.succeed(capabilities),
+  listReliability: () => Effect.succeed([]),
   checkHealth: () =>
     Effect.succeed(
       capabilities.map((capability) => ({
@@ -78,6 +80,20 @@ describe("formatProviderHealth", () => {
         message: "connection refused",
       }),
     ).toBe("- ollama: unhealthy — connection refused")
+  })
+})
+
+describe("formatProviderReliability", () => {
+  it("renders adaptive routing memory", () => {
+    expect(
+      formatProviderReliability({
+        provider: "anthropic",
+        successes: 3,
+        failures: 1,
+        consecutiveFailures: 1,
+        score: 0.55,
+      }),
+    ).toBe("- anthropic: score 0.55 · 3 ok / 1 fail · 1 consecutive")
   })
 })
 
@@ -128,5 +144,33 @@ describe("makeProvidersCommand", () => {
       }),
     )
     expect(output).toContain("No providers are registered.")
+  })
+
+  it("shows routing reliability when the router has attempt history", async () => {
+    const router = {
+      ...makeRouter([CAPABILITY]),
+      listReliability: () =>
+        Effect.succeed([
+          {
+            provider: "anthropic",
+            successes: 2,
+            failures: 1,
+            consecutiveFailures: 0,
+            score: 0.67,
+          },
+        ]),
+    } satisfies ProviderRouterService
+
+    const output = await run(
+      Effect.gen(function* () {
+        const preferences = yield* RoutingPreferences
+        const command = makeProvidersCommand(router, preferences)
+        const result = yield* command.execute([])
+        return result.output
+      }),
+    )
+
+    expect(output).toContain("Routing reliability:")
+    expect(output).toContain("- anthropic: score 0.67 · 2 ok / 1 fail")
   })
 })

@@ -1,5 +1,5 @@
 /** @Owl.Providers.Router.Reliability - Adaptive provider success tracking */
-import { Chunk, Data, Effect, HashMap, Option, Ref } from "effect"
+import { Chunk, Data, Effect, HashMap, Option, Order, Ref } from "effect"
 import {
   ROUTING_RELIABILITY,
   ROUTING_SCORE_DEFAULTS,
@@ -10,6 +10,15 @@ export interface ProviderReliabilityStats {
   readonly successes: number
   readonly failures: number
   readonly consecutiveFailures: number
+}
+
+/** @Owl.Providers.Router.ReliabilityStatus - Observable provider reliability */
+export interface ProviderReliabilityStatus {
+  readonly provider: string
+  readonly successes: number
+  readonly failures: number
+  readonly consecutiveFailures: number
+  readonly score: number
 }
 
 export type ProviderReliabilityRef = Ref.Ref<
@@ -90,6 +99,32 @@ export const providerReliabilityScores = (
         Chunk.map(
           Chunk.fromIterable(HashMap.entries(statsByProvider)),
           ([providerId, stats]) => [providerId, reliabilityScore(stats)],
+        ),
+      ),
+    ),
+  )
+
+/** @Owl.Providers.Router.ReliabilitySnapshot - Observable routing memory */
+export const providerReliabilitySnapshot = (
+  ref: ProviderReliabilityRef,
+): Effect.Effect<readonly ProviderReliabilityStatus[]> =>
+  Ref.get(ref).pipe(
+    Effect.map((statsByProvider) =>
+      Chunk.toReadonlyArray(
+        Chunk.sortWith(
+          Chunk.map(
+            Chunk.fromIterable(HashMap.entries(statsByProvider)),
+            ([provider, stats]) =>
+              Data.struct({
+                provider,
+                successes: stats.successes,
+                failures: stats.failures,
+                consecutiveFailures: stats.consecutiveFailures,
+                score: reliabilityScore(stats),
+              }),
+          ),
+          (status) => status.provider,
+          Order.string,
         ),
       ),
     ),

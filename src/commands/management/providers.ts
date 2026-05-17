@@ -5,6 +5,7 @@ import type { CommandParseError } from "../../core/errors/index.js"
 import type { RoutingPreferencesService } from "../../providers/preferences/index.js"
 import type {
   ProviderHealthStatus,
+  ProviderReliabilityStatus,
   ProviderRouterService,
 } from "../../providers/router/index.js"
 import type { ProviderCapability } from "../../providers/types.js"
@@ -43,6 +44,26 @@ export function formatProviderHealth(status: ProviderHealthStatus): string {
   )
 }
 
+/** @Owl.Commands.Management.Providers.Reliability - Human-readable routing memory row */
+export function formatProviderReliability(
+  status: ProviderReliabilityStatus,
+): string {
+  return [
+    "- ",
+    status.provider,
+    ": score ",
+    status.score.toFixed(2),
+    " · ",
+    String(status.successes),
+    " ok / ",
+    String(status.failures),
+    " fail",
+    status.consecutiveFailures > 0
+      ? " · " + String(status.consecutiveFailures) + " consecutive"
+      : "",
+  ].join("")
+}
+
 /** @Owl.Commands.Management.Providers.Factory - Create the /providers handler */
 export function makeProvidersCommand(
   router: ProviderRouterService,
@@ -56,6 +77,7 @@ export function makeProvidersCommand(
       Effect.gen(function* () {
         const preferences = yield* routingPreferences.snapshot()
         const health = Chunk.fromIterable(yield* router.checkHealth())
+        const reliability = Chunk.fromIterable(yield* router.listReliability())
         const capabilities = Chunk.fromIterable(
           yield* router.listCapabilities(),
         )
@@ -65,6 +87,12 @@ export function makeProvidersCommand(
             Chunk.toReadonlyArray(Chunk.map(health, formatProviderHealth)).join(
               "\n",
             )
+        const reliabilitySection = Chunk.isEmpty(reliability)
+          ? ""
+          : "\nRouting reliability:\n" +
+            Chunk.toReadonlyArray(
+              Chunk.map(reliability, formatProviderReliability),
+            ).join("\n")
 
         if (Chunk.isEmpty(capabilities)) {
           return {
@@ -72,7 +100,8 @@ export function makeProvidersCommand(
               "Active provider: " +
               (preferences.preferredProvider ?? "auto") +
               "\nNo providers are registered." +
-              healthSection,
+              healthSection +
+              reliabilitySection,
           }
         }
 
@@ -84,7 +113,8 @@ export function makeProvidersCommand(
             Chunk.toReadonlyArray(
               Chunk.map(capabilities, formatProviderCapability),
             ).join("\n") +
-            healthSection,
+            healthSection +
+            reliabilitySection,
         }
       }),
   }
