@@ -14,7 +14,10 @@
  * // Last turn: 2024-01-15T10:35:00Z
  */
 import { Chunk, Effect, Option } from "effect"
-import { METRICS_CONSTANTS } from "../../core/constants/index.js"
+import {
+  METRICS_CONSTANTS,
+  TUI_ROUTING_COPY,
+} from "../../core/constants/index.js"
 import { formatEstimatedCostUsd } from "../../core/cost.js"
 import type { CommandParseError } from "../../core/errors/index.js"
 import type {
@@ -67,6 +70,13 @@ const formatRecentInference = (metric: InferenceMetric): string =>
   ", " +
   String(metric.inputTokens + metric.outputTokens) +
   " tokens, " +
+  TUI_ROUTING_COPY.LABEL.toLowerCase() +
+  ":" +
+  metric.mode +
+  (metric.mode === metric.routingMode
+    ? ""
+    : TUI_ROUTING_COPY.MODE_SEPARATOR + metric.routingMode) +
+  ", " +
   String(metric.latencyMs) +
   "ms"
 

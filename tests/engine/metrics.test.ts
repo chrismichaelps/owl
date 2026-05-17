@@ -103,6 +103,50 @@ describe("UsageMetrics", () => {
     expect(snapshot.byModel[0]?.cacheReadTokens).toBe(1_600)
   })
 
+  it("records effective routing mode for adaptive inference", async () => {
+    const snapshot = await run(
+      Effect.gen(function* () {
+        const metrics = yield* UsageMetrics
+        yield* metrics.recordInference({
+          taskId: "task-route-1",
+          mode: "standard",
+          routingMode: "deep",
+          provider: "anthropic",
+          model: "claude-sonnet-4",
+          inputTokens: 100,
+          outputTokens: 50,
+          latencyMs: 100,
+          timestamp: "2026-05-14T21:24:30.000Z",
+        })
+        return yield* metrics.snapshot()
+      }),
+    )
+
+    expect(snapshot.recent[0]?.mode).toBe("standard")
+    expect(snapshot.recent[0]?.routingMode).toBe("deep")
+  })
+
+  it("defaults routing mode to submitted mode", async () => {
+    const snapshot = await run(
+      Effect.gen(function* () {
+        const metrics = yield* UsageMetrics
+        yield* metrics.recordInference({
+          taskId: "task-route-2",
+          mode: "quick",
+          provider: "ollama",
+          model: "llama3.1",
+          inputTokens: 10,
+          outputTokens: 5,
+          latencyMs: 40,
+          timestamp: "2026-05-14T21:24:45.000Z",
+        })
+        return yield* metrics.snapshot()
+      }),
+    )
+
+    expect(snapshot.recent[0]?.routingMode).toBe("quick")
+  })
+
   it("records and aggregates estimated USD cost", async () => {
     const snapshot = await run(
       Effect.gen(function* () {

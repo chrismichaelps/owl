@@ -183,7 +183,8 @@ export const makeResponseMetric = (
 ): RecordInferenceMetric =>
   Data.struct({
     taskId: task.id,
-    mode: task.mode,
+    mode: response.requestedMode ?? task.mode,
+    routingMode: response.routingMode ?? response.requestedMode ?? task.mode,
     provider: response.provider,
     model: response.model,
     inputTokens: response.usage.inputTokens,

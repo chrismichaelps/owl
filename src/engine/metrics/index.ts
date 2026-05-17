@@ -12,6 +12,7 @@ import type { Mode, ProviderId } from "../../core/schema/index.js"
 export interface InferenceMetric {
   readonly taskId: string
   readonly mode: Mode
+  readonly routingMode: Mode
   readonly provider: ProviderId
   readonly model: string
   readonly inputTokens: number
@@ -26,6 +27,7 @@ export interface InferenceMetric {
 export interface RecordInferenceMetric {
   readonly taskId: string
   readonly mode: Mode
+  readonly routingMode?: Mode
   readonly provider: ProviderId
   readonly model: string
   readonly inputTokens: number

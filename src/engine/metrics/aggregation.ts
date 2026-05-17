@@ -33,6 +33,7 @@ export const normalizeMetric = (
 ): InferenceMetric =>
   Data.struct({
     ...metric,
+    routingMode: metric.routingMode ?? metric.mode,
     cacheReadTokens: metric.cacheReadTokens ?? 0,
     cacheWriteTokens: metric.cacheWriteTokens ?? 0,
     estimatedCostUsd: metric.estimatedCostUsd ?? 0,

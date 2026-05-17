@@ -21,6 +21,7 @@ import { TokenBudgetLive } from "../../src/tokens/budget/index.js"
 import { RoutingPreferences } from "../../src/providers/preferences/index.js"
 import {
   UsageMetrics,
+  type InferenceMetric,
   type RecordInferenceMetric,
 } from "../../src/engine/metrics/index.js"
 
@@ -165,7 +166,7 @@ const TestUsageMetricsLive = Layer.succeed(UsageMetrics, {
       averageLatencyMs: 0,
       byProvider: [],
       byModel: [],
-      recent: observedInferenceMetrics,
+      recent: observedInferenceMetrics.map(normalizeObservedMetric),
     }),
   reset: () =>
     Effect.sync(() => {
@@ -508,4 +509,13 @@ describe("Orchestrator.runStream", () => {
       estimatedCostUsd: 0.002,
     })
   })
+})
+const normalizeObservedMetric = (
+  metric: RecordInferenceMetric,
+): InferenceMetric => ({
+  ...metric,
+  routingMode: metric.routingMode ?? metric.mode,
+  cacheReadTokens: metric.cacheReadTokens ?? 0,
+  cacheWriteTokens: metric.cacheWriteTokens ?? 0,
+  estimatedCostUsd: metric.estimatedCostUsd ?? 0,
 })

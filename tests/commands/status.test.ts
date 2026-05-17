@@ -53,6 +53,7 @@ describe("makeStatusCommand", () => {
         yield* metrics.recordInference({
           taskId: "task-1",
           mode: "standard",
+          routingMode: "deep",
           provider: "anthropic",
           model: "claude-sonnet-4",
           inputTokens: 100,
@@ -78,7 +79,7 @@ describe("makeStatusCommand", () => {
       "Model anthropic/claude-sonnet-4: 1 calls, 150 tokens, $0.0015",
     )
     expect(output).toContain(
-      "Recent task-1: anthropic/claude-sonnet-4, 150 tokens, 120ms",
+      "Recent task-1: anthropic/claude-sonnet-4, 150 tokens, route:standard → deep, 120ms",
     )
     expect(output).toContain("Last turn: 2026-05-14T21:24:00.000Z")
   })
