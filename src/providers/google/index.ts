@@ -13,113 +13,23 @@
  * // Not configured by default — set GOOGLE_API_KEY to enable
  */
 import { GoogleGenerativeAI } from "@google/generative-ai"
-import { Chunk, Context, Data, Effect, Layer } from "effect"
+import { Context, Effect, Layer } from "effect"
 import * as Stream from "effect/Stream"
 import { ProviderError, ProviderStreamError } from "../../core/errors/index.js"
 import { OWL_CONFIG } from "../../core/config/index.js"
-import {
-  GOOGLE_MODELS,
-  PROVIDER_CONSTANTS,
-} from "../../core/constants/index.js"
-import { estimateModelCostUsd } from "../cost.js"
-import type {
-  LLMProviderService,
-  ProviderCapability,
-  StreamChunk,
-} from "../types.js"
+import type { LLMProviderService } from "../types.js"
 import type {
   InferenceRequest,
   InferenceResponse,
 } from "../../core/schema/index.js"
-
-/**
- * @Owl.Providers.Google.Capabilities - Multimodal model specifications
- */
-const GOOGLE_CAPABILITIES: readonly ProviderCapability[] = [
-  Data.struct({
-    providerId: "google",
-    modelId: GOOGLE_MODELS.GEMINI_2_5_FLASH,
-    contextWindow: 1_048_576,
-    maxOutputTokens: 65_536,
-    inputCostPer1k: 0.00015,
-    outputCostPer1k: 0.0006,
-    supportsStreaming: true,
-    reasoningDepth: "medium",
-    supportsFunctionCalling: true,
-    supportsVision: true,
-  }),
-  Data.struct({
-    providerId: "google",
-    modelId: GOOGLE_MODELS.GEMINI_2_5_PRO,
-    contextWindow: 1_048_576,
-    maxOutputTokens: 65_536,
-    inputCostPer1k: 0.00125,
-    outputCostPer1k: 0.01,
-    supportsStreaming: true,
-    reasoningDepth: "high",
-    supportsFunctionCalling: true,
-    supportsVision: true,
-  }),
-]
-
-interface GoogleUsageMetadata {
-  readonly promptTokenCount?: number
-  readonly candidatesTokenCount?: number
-}
-
-interface GoogleResponseLike {
-  readonly text: () => string
-  readonly usageMetadata?: GoogleUsageMetadata
-}
-
-const estimateTextTokens = (text: string): number =>
-  Math.ceil(text.length / PROVIDER_CONSTANTS.TOKEN_ESTIMATION_CHARS_PER_TOKEN)
-
-const buildPrompt = (request: InferenceRequest): string =>
-  Chunk.toReadonlyArray(
-    Chunk.map(
-      Chunk.filter(
-        Chunk.fromIterable(request.messages),
-        (message) => message.role !== "system",
-      ),
-      (message) => message.content,
-    ),
-  ).join("\n")
-
-const makeModelParams = (request: InferenceRequest) => ({
-  model: request.model,
-  generationConfig: {
-    maxOutputTokens: request.maxTokens,
-  },
-  ...(request.systemPrompt !== undefined
-    ? { systemInstruction: request.systemPrompt }
-    : {}),
-})
-
-const usageFromResponse = (
-  request: InferenceRequest,
-  prompt: string,
-  content: string,
-  response: GoogleResponseLike,
-) => {
-  const inputTokens =
-    response.usageMetadata?.promptTokenCount ?? estimateTextTokens(prompt)
-  const outputTokens =
-    response.usageMetadata?.candidatesTokenCount ?? estimateTextTokens(content)
-
-  return Data.struct({
-    inputTokens,
-    outputTokens,
-    cacheReadTokens: 0,
-    cacheWriteTokens: 0,
-    estimatedCostUsd: estimateModelCostUsd(
-      GOOGLE_CAPABILITIES,
-      request.model,
-      inputTokens,
-      outputTokens,
-    ),
-  })
-}
+import {
+  buildPrompt,
+  estimateTextTokens,
+  GOOGLE_CAPABILITIES,
+  makeModelParams,
+  usageFromResponse,
+} from "./runtime.js"
+import { makeGoogleStream } from "./stream.js"
 
 /** @Owl.Providers.Google.Adapter - Effect-TS service definition */
 export class GoogleAdapter extends Context.Tag("GoogleAdapter")<
@@ -199,40 +109,7 @@ export const GoogleAdapterLive = Layer.effect(
           new ProviderError({ provider: "google", message: String(e) }),
       })
 
-    const stream = (request: InferenceRequest) =>
-      Stream.async<StreamChunk, ProviderStreamError>((emit) => {
-        const run = async () => {
-          try {
-            const model = genAI.getGenerativeModel(makeModelParams(request))
-            const prompt = buildPrompt(request)
-            const result = await model.generateContentStream(prompt)
-            let chunks = Chunk.empty<string>()
-            let index = 0
-
-            for await (const chunk of result.stream) {
-              const content = chunk.text()
-              if (content.length > 0) {
-                chunks = Chunk.append(chunks, content)
-                await emit.single({ type: "text", content, index: index++ })
-              }
-            }
-
-            const aggregated = await result.response
-            const content = Chunk.toReadonlyArray(chunks).join("")
-            await emit.single({
-              type: "usage",
-              index,
-              usage: usageFromResponse(request, prompt, content, aggregated),
-            })
-            await emit.end()
-          } catch (cause) {
-            await emit.fail(
-              new ProviderStreamError({ provider: "google", cause }),
-            )
-          }
-        }
-        void run()
-      })
+    const stream = makeGoogleStream(genAI)
 
     return {
       id: "google",
