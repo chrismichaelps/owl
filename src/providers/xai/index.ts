@@ -29,6 +29,7 @@ import {
   XAI_CAPABILITIES,
 } from "./runtime.js"
 import { makeXAIStream } from "./stream.js"
+import { decodeOpenAICompatibleChatCompletion } from "../openaiCompatible/schema.js"
 
 /** @Owl.Providers.xAI.Adapter - service definition */
 export class XAIAdapter extends Context.Tag("XAIAdapter")<
@@ -93,23 +94,24 @@ export const XAIAdapterLive = Layer.effect(
             max_tokens: request.maxTokens,
             messages: buildMessages(request),
           })
+          const decoded = decodeOpenAICompatibleChatCompletion(response)
           return {
             taskId: request.taskId,
-            content: response.choices[0]?.message.content ?? "",
+            content: decoded.choices[0]?.message.content ?? "",
             stopReason: "end_turn" as const,
             usage: Data.struct({
-              inputTokens: response.usage?.prompt_tokens ?? 0,
-              outputTokens: response.usage?.completion_tokens ?? 0,
+              inputTokens: decoded.usage?.prompt_tokens ?? 0,
+              outputTokens: decoded.usage?.completion_tokens ?? 0,
               cacheReadTokens: 0,
               cacheWriteTokens: 0,
               estimatedCostUsd: estimateModelCostUsd(
                 XAI_CAPABILITIES,
-                response.model,
-                response.usage?.prompt_tokens ?? 0,
-                response.usage?.completion_tokens ?? 0,
+                decoded.model,
+                decoded.usage?.prompt_tokens ?? 0,
+                decoded.usage?.completion_tokens ?? 0,
               ),
             }),
-            model: response.model,
+            model: decoded.model,
             provider: "xai" as const,
             latencyMs: Date.now() - startMs,
           } satisfies InferenceResponse

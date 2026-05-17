@@ -5,6 +5,7 @@ import { STREAM_CHUNK_TYPES } from "../../core/constants/index.js"
 import { ProviderStreamError } from "../../core/errors/index.js"
 import { estimateModelCostUsd } from "../cost.js"
 import { buildMessages, XAI_CAPABILITIES } from "./runtime.js"
+import { decodeOpenAICompatibleStreamChunk } from "../openaiCompatible/schema.js"
 import type OpenAI from "openai"
 import type { InferenceRequest } from "../../core/schema/index.js"
 import type { StreamChunk } from "../types.js"
@@ -27,7 +28,8 @@ export const makeXAIStream =
           })
           let index = 0
           for await (const chunk of chunks) {
-            const content = chunk.choices[0]?.delta.content
+            const decoded = decodeOpenAICompatibleStreamChunk(chunk)
+            const content = decoded.choices[0]?.delta.content
             if (content) {
               await emit.single({
                 type: STREAM_CHUNK_TYPES.TEXT,
@@ -35,9 +37,9 @@ export const makeXAIStream =
                 index: index++,
               })
             }
-            if (chunk.usage != null) {
-              const inputTokens = chunk.usage.prompt_tokens
-              const outputTokens = chunk.usage.completion_tokens
+            if (decoded.usage != null) {
+              const inputTokens = decoded.usage.prompt_tokens
+              const outputTokens = decoded.usage.completion_tokens
               await emit.single({
                 type: STREAM_CHUNK_TYPES.USAGE,
                 index,

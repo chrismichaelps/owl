@@ -31,6 +31,7 @@ import {
   OPENAI_CAPABILITIES,
 } from "./runtime.js"
 import { makeOpenAIStream } from "./stream.js"
+import { decodeOpenAICompatibleChatCompletion } from "../openaiCompatible/schema.js"
 
 /** @Owl.Providers.OpenAI.Adapter - service definition */
 export class OpenAIAdapter extends Context.Tag("OpenAIAdapter")<
@@ -99,8 +100,9 @@ export const OpenAIAdapterLive = Layer.effect(
             messages: buildMessages(request),
           })
 
-          const content = response.choices[0]?.message.content ?? ""
-          const usage = response.usage
+          const decoded = decodeOpenAICompatibleChatCompletion(response)
+          const content = decoded.choices[0]?.message.content ?? ""
+          const usage = decoded.usage
 
           return {
             taskId: request.taskId,
@@ -113,12 +115,12 @@ export const OpenAIAdapterLive = Layer.effect(
               cacheWriteTokens: 0,
               estimatedCostUsd: estimateModelCostUsd(
                 OPENAI_CAPABILITIES,
-                response.model,
+                decoded.model,
                 usage?.prompt_tokens ?? 0,
                 usage?.completion_tokens ?? 0,
               ),
             }),
-            model: response.model,
+            model: decoded.model,
             provider: "openai" as const,
             latencyMs: Date.now() - startMs,
           } satisfies InferenceResponse
