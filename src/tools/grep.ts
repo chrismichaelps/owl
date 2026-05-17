@@ -9,6 +9,7 @@ import { Chunk, Effect } from "effect"
 import { TOOL_NAMES, TOOL_CONSTANTS } from "../core/constants/index.js"
 import { ToolExecutionError } from "../core/errors/index.js"
 import { resolveToolPath } from "./path.js"
+import { decodeToolInput } from "./schema.js"
 import type { BuiltInTool } from "./types.js"
 
 const DESCRIPTION = `Search for a pattern in files using ripgrep (falls back to grep).
@@ -94,8 +95,12 @@ export const GrepTool: BuiltInTool = {
 
   execute: (input, cwd) =>
     Effect.gen(function* () {
-      const pattern = input.pattern
-      if (typeof pattern !== "string" || pattern.trim().length === 0) {
+      const decoded = decodeToolInput(TOOL_NAMES.GREP, input)
+      if (decoded instanceof ToolExecutionError) {
+        return yield* Effect.fail(decoded)
+      }
+
+      if (decoded.pattern.trim().length === 0) {
         return yield* Effect.fail(
           new ToolExecutionError({
             tool: TOOL_NAMES.GREP,
@@ -105,13 +110,13 @@ export const GrepTool: BuiltInTool = {
       }
 
       const searchPath =
-        typeof input.path === "string" && input.path.trim().length > 0
-          ? yield* resolveToolPath(cwd, input.path, TOOL_NAMES.GREP)
+        decoded.path !== undefined && decoded.path.trim().length > 0
+          ? yield* resolveToolPath(cwd, decoded.path, TOOL_NAMES.GREP)
           : cwd
 
       const include =
-        typeof input.include === "string" && input.include.trim().length > 0
-          ? input.include
+        decoded.include !== undefined && decoded.include.trim().length > 0
+          ? decoded.include
           : null
 
       const runCommand = (
@@ -163,7 +168,11 @@ export const GrepTool: BuiltInTool = {
           })
         })
 
-      const [rgBin, rgArgs] = buildGrepCommand(pattern, searchPath, include)
+      const [rgBin, rgArgs] = buildGrepCommand(
+        decoded.pattern,
+        searchPath,
+        include,
+      )
 
       // Try rg; if it's not installed (ENOENT), fall back to system grep
       return yield* runCommand(rgBin, rgArgs).pipe(
@@ -176,7 +185,7 @@ export const GrepTool: BuiltInTool = {
             (e.cause as { code: string }).code === "ENOENT",
           () => {
             const [grepBin, grepArgs] = buildFallbackCommand(
-              pattern,
+              decoded.pattern,
               searchPath,
               include,
             )

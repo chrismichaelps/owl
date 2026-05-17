@@ -10,6 +10,7 @@ import { Chunk, Effect } from "effect"
 import { TOOL_NAMES } from "../core/constants/index.js"
 import { ToolExecutionError } from "../core/errors/index.js"
 import { resolveToolPath } from "./path.js"
+import { decodeToolInput } from "./schema.js"
 import type { BuiltInTool } from "./types.js"
 
 const DESCRIPTION = `Perform an exact string replacement in an existing file.
@@ -50,12 +51,12 @@ export const EditTool: BuiltInTool = {
 
   execute: (input, cwd) =>
     Effect.gen(function* () {
-      const rawPath = input.file_path
-      const oldString = input.old_string
-      const newString = input.new_string
-      const replaceAll = input.replace_all === true
+      const decoded = decodeToolInput(TOOL_NAMES.EDIT, input)
+      if (decoded instanceof ToolExecutionError) {
+        return yield* Effect.fail(decoded)
+      }
 
-      if (typeof rawPath !== "string" || rawPath.trim().length === 0) {
+      if (decoded.file_path.trim().length === 0) {
         return yield* Effect.fail(
           new ToolExecutionError({
             tool: TOOL_NAMES.EDIT,
@@ -63,24 +64,13 @@ export const EditTool: BuiltInTool = {
           }),
         )
       }
-      if (typeof oldString !== "string") {
-        return yield* Effect.fail(
-          new ToolExecutionError({
-            tool: TOOL_NAMES.EDIT,
-            reason: "old_string must be a string",
-          }),
-        )
-      }
-      if (typeof newString !== "string") {
-        return yield* Effect.fail(
-          new ToolExecutionError({
-            tool: TOOL_NAMES.EDIT,
-            reason: "new_string must be a string",
-          }),
-        )
-      }
 
-      const absPath = yield* resolveToolPath(cwd, rawPath, TOOL_NAMES.EDIT)
+      const replaceAll = decoded.replace_all === true
+      const absPath = yield* resolveToolPath(
+        cwd,
+        decoded.file_path,
+        TOOL_NAMES.EDIT,
+      )
 
       const original = yield* Effect.tryPromise({
         try: () => readFile(absPath, "utf-8"),
@@ -93,7 +83,7 @@ export const EditTool: BuiltInTool = {
       })
 
       const occurrences =
-        Chunk.size(Chunk.fromIterable(original.split(oldString))) - 1
+        Chunk.size(Chunk.fromIterable(original.split(decoded.old_string))) - 1
 
       if (occurrences === 0) {
         return yield* Effect.fail(
@@ -114,8 +104,8 @@ export const EditTool: BuiltInTool = {
       }
 
       const updated = replaceAll
-        ? original.split(oldString).join(newString)
-        : original.replace(oldString, newString)
+        ? original.split(decoded.old_string).join(decoded.new_string)
+        : original.replace(decoded.old_string, decoded.new_string)
 
       yield* Effect.tryPromise({
         try: () => writeFile(absPath, updated, "utf-8"),

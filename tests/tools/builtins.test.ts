@@ -122,4 +122,30 @@ describe("BuiltInTools", () => {
       expect(result.left).toBeInstanceOf(ToolExecutionError)
     }
   })
+
+  it("validates tool input schemas before execution", async () => {
+    const readResult = await runToolEither(TOOL_NAMES.READ, {
+      file_path: 42,
+    })
+    const writeResult = await runToolEither(TOOL_NAMES.WRITE, {
+      file_path: "out.txt",
+      content: false,
+    })
+    const grepResult = await runToolEither(TOOL_NAMES.GREP, {
+      pattern: ["not", "a", "regex"],
+    })
+
+    expect(readResult._tag).toBe("Left")
+    expect(writeResult._tag).toBe("Left")
+    expect(grepResult._tag).toBe("Left")
+    if (readResult._tag === "Left") {
+      expect(readResult.left.reason).toContain("Invalid tool input")
+    }
+    if (writeResult._tag === "Left") {
+      expect(writeResult.left.reason).toContain("Invalid tool input")
+    }
+    if (grepResult._tag === "Left") {
+      expect(grepResult.left.reason).toContain("Invalid tool input")
+    }
+  })
 })

@@ -11,6 +11,7 @@ import { TOOL_NAMES, TOOL_CONSTANTS } from "../core/constants/index.js"
 import { ToolExecutionError } from "../core/errors/index.js"
 import { formatBytes } from "../core/utils/format.js"
 import { resolveToolPath } from "./path.js"
+import { decodeToolInput } from "./schema.js"
 import type { BuiltInTool } from "./types.js"
 
 const DESCRIPTION = `Write content to a file, creating parent directories if needed.
@@ -42,10 +43,12 @@ export const WriteTool: BuiltInTool = {
 
   execute: (input, cwd) =>
     Effect.gen(function* () {
-      const rawPath = input.file_path
-      const content = input.content
+      const decoded = decodeToolInput(TOOL_NAMES.WRITE, input)
+      if (decoded instanceof ToolExecutionError) {
+        return yield* Effect.fail(decoded)
+      }
 
-      if (typeof rawPath !== "string" || rawPath.trim().length === 0) {
+      if (decoded.file_path.trim().length === 0) {
         return yield* Effect.fail(
           new ToolExecutionError({
             tool: TOOL_NAMES.WRITE,
@@ -53,16 +56,8 @@ export const WriteTool: BuiltInTool = {
           }),
         )
       }
-      if (typeof content !== "string") {
-        return yield* Effect.fail(
-          new ToolExecutionError({
-            tool: TOOL_NAMES.WRITE,
-            reason: "content must be a string",
-          }),
-        )
-      }
 
-      const byteLength = Buffer.byteLength(content, "utf-8")
+      const byteLength = Buffer.byteLength(decoded.content, "utf-8")
       if (byteLength > TOOL_CONSTANTS.WRITE_MAX_BYTES) {
         return yield* Effect.fail(
           new ToolExecutionError({
@@ -72,7 +67,11 @@ export const WriteTool: BuiltInTool = {
         )
       }
 
-      const absPath = yield* resolveToolPath(cwd, rawPath, TOOL_NAMES.WRITE)
+      const absPath = yield* resolveToolPath(
+        cwd,
+        decoded.file_path,
+        TOOL_NAMES.WRITE,
+      )
 
       yield* Effect.tryPromise({
         try: () => mkdir(dirname(absPath), { recursive: true }),
@@ -85,7 +84,7 @@ export const WriteTool: BuiltInTool = {
       })
 
       yield* Effect.tryPromise({
-        try: () => writeFile(absPath, content, "utf-8"),
+        try: () => writeFile(absPath, decoded.content, "utf-8"),
         catch: (e) =>
           new ToolExecutionError({
             tool: TOOL_NAMES.WRITE,
@@ -94,7 +93,7 @@ export const WriteTool: BuiltInTool = {
           }),
       })
 
-      const lines = Chunk.size(Chunk.fromIterable(content.split("\n")))
+      const lines = Chunk.size(Chunk.fromIterable(decoded.content.split("\n")))
       return `Written ${String(lines)} line(s) to ${absPath}`
     }),
 }

@@ -10,6 +10,7 @@ import { Chunk, Data, Effect, Order } from "effect"
 import { TOOL_NAMES, TOOL_CONSTANTS } from "../core/constants/index.js"
 import { ToolExecutionError } from "../core/errors/index.js"
 import { resolveToolPath } from "./path.js"
+import { decodeToolInput } from "./schema.js"
 import type { BuiltInTool } from "./types.js"
 
 type GlobMatch = Readonly<{
@@ -56,8 +57,12 @@ export const GlobTool: BuiltInTool = {
 
   execute: (input, cwd) =>
     Effect.gen(function* () {
-      const pattern = input.pattern
-      if (typeof pattern !== "string" || pattern.trim().length === 0) {
+      const decoded = decodeToolInput(TOOL_NAMES.GLOB, input)
+      if (decoded instanceof ToolExecutionError) {
+        return yield* Effect.fail(decoded)
+      }
+
+      if (decoded.pattern.trim().length === 0) {
         return yield* Effect.fail(
           new ToolExecutionError({
             tool: TOOL_NAMES.GLOB,
@@ -67,13 +72,13 @@ export const GlobTool: BuiltInTool = {
       }
 
       const searchRoot =
-        typeof input.path === "string" && input.path.trim().length > 0
-          ? yield* resolveToolPath(cwd, input.path, TOOL_NAMES.GLOB)
+        decoded.path !== undefined && decoded.path.trim().length > 0
+          ? yield* resolveToolPath(cwd, decoded.path, TOOL_NAMES.GLOB)
           : cwd
 
       const matches = yield* Effect.tryPromise({
         try: () =>
-          fg(pattern, {
+          fg(decoded.pattern, {
             cwd: searchRoot,
             dot: true,
             followSymbolicLinks: false,
@@ -89,7 +94,7 @@ export const GlobTool: BuiltInTool = {
       })
 
       if (matches.length === 0) {
-        return `No files match pattern "${pattern}" in ${searchRoot}`
+        return `No files match pattern "${decoded.pattern}" in ${searchRoot}`
       }
 
       const candidateMatches = Chunk.take(

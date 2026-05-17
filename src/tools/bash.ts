@@ -14,6 +14,7 @@ import { execFile } from "node:child_process"
 import { Effect } from "effect"
 import { TOOL_NAMES, TOOL_CONSTANTS } from "../core/constants/index.js"
 import { ToolExecutionError } from "../core/errors/index.js"
+import { decodeToolInput } from "./schema.js"
 import type { BuiltInTool } from "./types.js"
 
 const DESCRIPTION = `Execute a shell command in the working directory and return its output.
@@ -63,8 +64,12 @@ export const BashTool: BuiltInTool = {
   },
 
   execute: (input, cwd) => {
-    const command = input.command
-    if (typeof command !== "string" || command.trim().length === 0) {
+    const decoded = decodeToolInput(TOOL_NAMES.BASH, input)
+    if (decoded instanceof ToolExecutionError) {
+      return Effect.fail(decoded)
+    }
+
+    if (decoded.command.trim().length === 0) {
       return Effect.fail(
         new ToolExecutionError({
           tool: TOOL_NAMES.BASH,
@@ -73,8 +78,7 @@ export const BashTool: BuiltInTool = {
       )
     }
 
-    const rawTimeout =
-      typeof input.timeout_ms === "number" ? input.timeout_ms : null
+    const rawTimeout = decoded.timeout_ms ?? null
     const timeoutMs =
       rawTimeout !== null
         ? clamp(
@@ -87,7 +91,7 @@ export const BashTool: BuiltInTool = {
     return Effect.async<string, ToolExecutionError>((resume) => {
       const child = execFile(
         TOOL_CONSTANTS.BASH_SHELL,
-        [TOOL_CONSTANTS.BASH_COMMAND_FLAG, command],
+        [TOOL_CONSTANTS.BASH_COMMAND_FLAG, decoded.command],
         {
           cwd,
           timeout: timeoutMs,

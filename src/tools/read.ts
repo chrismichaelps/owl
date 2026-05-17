@@ -11,6 +11,7 @@ import { TOOL_NAMES, TOOL_CONSTANTS } from "../core/constants/index.js"
 import { ToolExecutionError } from "../core/errors/index.js"
 import { formatBytes } from "../core/utils/format.js"
 import { resolveToolPath } from "./path.js"
+import { decodeToolInput } from "./schema.js"
 import type { BuiltInTool } from "./types.js"
 
 const DESCRIPTION = `Read a file from the filesystem and return its contents with line numbers.
@@ -57,8 +58,12 @@ export const ReadTool: BuiltInTool = {
 
   execute: (input, cwd) =>
     Effect.gen(function* () {
-      const rawPath = input.file_path
-      if (typeof rawPath !== "string" || rawPath.trim().length === 0) {
+      const decoded = decodeToolInput(TOOL_NAMES.READ, input)
+      if (decoded instanceof ToolExecutionError) {
+        return yield* Effect.fail(decoded)
+      }
+
+      if (decoded.file_path.trim().length === 0) {
         return yield* Effect.fail(
           new ToolExecutionError({
             tool: TOOL_NAMES.READ,
@@ -67,7 +72,11 @@ export const ReadTool: BuiltInTool = {
         )
       }
 
-      const absPath = yield* resolveToolPath(cwd, rawPath, TOOL_NAMES.READ)
+      const absPath = yield* resolveToolPath(
+        cwd,
+        decoded.file_path,
+        TOOL_NAMES.READ,
+      )
 
       const content = yield* Effect.tryPromise({
         try: () => readFile(absPath, "utf-8"),
@@ -91,13 +100,13 @@ export const ReadTool: BuiltInTool = {
       const allLines = Chunk.fromIterable(content.split("\n"))
 
       const offset =
-        typeof input.offset === "number"
-          ? Math.max(1, Math.floor(input.offset))
+        decoded.offset !== undefined
+          ? Math.max(1, Math.floor(decoded.offset))
           : 1
       const limit =
-        typeof input.limit === "number"
+        decoded.limit !== undefined
           ? Math.min(
-              Math.max(1, Math.floor(input.limit)),
+              Math.max(1, Math.floor(decoded.limit)),
               TOOL_CONSTANTS.READ_MAX_LINES,
             )
           : TOOL_CONSTANTS.READ_MAX_LINES
