@@ -1,4 +1,4 @@
-import { HashMap } from "effect"
+import { HashMap, HashSet } from "effect"
 
 /** @Owl.Core.Constants.Routing - Weights for provider selection scoring */
 export const ROUTING_WEIGHTS = {
@@ -53,3 +53,26 @@ export const ROUTING_RELIABILITY = {
   MIN_SCORE: 0.2,
   CONSECUTIVE_FAILURE_PENALTY: 0.2,
 } as const
+
+/** @Owl.Core.Constants.AdaptiveEscalation - Deterministic routing escalation bounds */
+export const ADAPTIVE_ESCALATION = {
+  STANDARD_TO_DEEP_TOKEN_THRESHOLD: 24_000,
+} as const
+
+/** @Owl.Core.Constants.AdaptiveKeywords - Prompt terms requiring deeper routing */
+export const ADAPTIVE_ESCALATION_KEYWORDS: HashSet.HashSet<string> =
+  HashSet.fromIterable([
+    "architecture",
+    "concurrency",
+    "debug",
+    "governance",
+    "investigate",
+    "migration",
+    "multi-file",
+    "orchestrator",
+    "provider",
+    "refactor",
+    "regression",
+    "rollback",
+    "streaming",
+  ])

@@ -4,6 +4,11 @@ import {
   Orchestrator,
   OrchestratorLive,
 } from "../../src/engine/orchestrator/index.js"
+import {
+  makeInferenceRequest,
+  makeRoutingContext,
+  resolveAdaptiveRoutingMode,
+} from "../../src/engine/orchestrator/runtime.js"
 import { ContextManagerLive } from "../../src/engine/context/index.js"
 import { SessionMemoryLive } from "../../src/engine/memory/index.js"
 import {
@@ -179,6 +184,53 @@ const testLayer = OrchestratorLive.pipe(
 
 const run = <A, E>(eff: Effect.Effect<A, E, Orchestrator>) =>
   Effect.runPromise(eff.pipe(Effect.provide(testLayer)) as Effect.Effect<A>)
+
+describe("orchestrator adaptive routing", () => {
+  it("escalates standard prompts with complex routing signals to deep", () => {
+    const task = makeTask({
+      prompt: "Investigate the provider streaming architecture regression",
+    })
+
+    expect(resolveAdaptiveRoutingMode(task, 1000)).toBe("deep")
+  })
+
+  it("keeps explicit modes deterministic", () => {
+    const task = makeTask({
+      mode: "economy",
+      prompt: "Investigate the provider streaming architecture regression",
+    })
+
+    expect(resolveAdaptiveRoutingMode(task, 1000)).toBe("economy")
+  })
+
+  it("routes escalated standard work as reasoning while preserving cost budget", () => {
+    const task = makeTask({
+      prompt: "Refactor the orchestration rollback pipeline",
+    })
+
+    const routingContext = makeRoutingContext(task, 1000, undefined, false)
+
+    expect(routingContext.mode).toBe("deep")
+    expect(routingContext.requiresReasoning).toBe(true)
+    expect(routingContext.costBudgetUsd).toBe(0.25)
+  })
+
+  it("adds a thinking budget when standard work escalates", () => {
+    const task = makeTask({
+      prompt: "Debug the multi-file governance migration",
+    })
+    const routingContext = makeRoutingContext(task, 1000, undefined, false)
+    const request = makeInferenceRequest(
+      task,
+      [],
+      undefined,
+      false,
+      routingContext.mode,
+    )
+
+    expect(request.thinkingBudget).toBe(10_000)
+  })
+})
 
 describe("Orchestrator.run", () => {
   it("fails before provider execution when estimated input exceeds mode budget", async () => {

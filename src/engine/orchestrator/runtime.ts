@@ -1,5 +1,5 @@
 /** @Owl.Engine.Orchestrator.Runtime - Shared inference runtime constructors */
-import { Data, Effect, HashSet } from "effect"
+import { Chunk, Data, Effect, HashSet } from "effect"
 import type { SessionTurn } from "../memory/index.js"
 import type { ContextManagerService } from "../context/index.js"
 import type { RecordInferenceMetric } from "../metrics/index.js"
@@ -14,10 +14,13 @@ import type {
   InferenceRequest,
   InferenceResponse,
   Message,
+  Mode,
   Task,
 } from "../../core/schema/index.js"
 import { estimateConversationTokens } from "../../tokens/pruning/index.js"
 import {
+  ADAPTIVE_ESCALATION,
+  ADAPTIVE_ESCALATION_KEYWORDS,
   PROVIDER_TIMEOUTS,
   THINKING_MODES,
   TOKEN_LIMITS,
@@ -58,18 +61,40 @@ export const makeAssistantMessage = (content: string): Message =>
     timestamp: new Date().toISOString(),
   })
 
+/** @Owl.Engine.Orchestrator.Runtime.Escalation - Resolve effective routing depth */
+export const resolveAdaptiveRoutingMode = (
+  task: Task,
+  estimatedInputTokens: number,
+): Mode => {
+  if (task.mode !== "standard") return task.mode
+
+  if (
+    estimatedInputTokens >= ADAPTIVE_ESCALATION.STANDARD_TO_DEEP_TOKEN_THRESHOLD
+  ) {
+    return "deep"
+  }
+
+  const normalizedPrompt = task.prompt.toLocaleLowerCase()
+  return Chunk.some(Chunk.fromIterable(ADAPTIVE_ESCALATION_KEYWORDS), (term) =>
+    normalizedPrompt.includes(term),
+  )
+    ? "deep"
+    : task.mode
+}
+
 export const makeRoutingContext = (
   task: Task,
   estimatedInputTokens: number,
   preferredProvider: string | undefined,
   privacyMode: boolean,
 ): RoutingContext => {
+  const routingMode = resolveAdaptiveRoutingMode(task, estimatedInputTokens)
   const costBudgetUsd = resolveModeCostBudget(task.mode)
   return Data.struct({
     taskId: task.id,
-    mode: task.mode,
+    mode: routingMode,
     estimatedInputTokens,
-    requiresReasoning: HashSet.has(THINKING_MODES, task.mode),
+    requiresReasoning: HashSet.has(THINKING_MODES, routingMode),
     requiresVision: false,
     latencyBudgetMs: PROVIDER_TIMEOUTS.DEFAULT_MS,
     ...(costBudgetUsd !== undefined ? { costBudgetUsd } : {}),
@@ -83,8 +108,9 @@ export const makeInferenceRequest = (
   messages: readonly Message[],
   systemPrompt: string | undefined,
   stream: boolean,
+  routingMode: Mode = task.mode,
 ): RuntimeRequest => {
-  const thinkingBudget = resolveModeThinkingBudget(task.mode)
+  const thinkingBudget = resolveModeThinkingBudget(routingMode)
   return Data.struct({
     taskId: task.id,
     messages,
@@ -114,6 +140,7 @@ export const prepareTaskRuntime = (
     const preferredProvider =
       yield* services.routingPreferences.getPreferredProvider()
     const privacyMode = yield* services.routingPreferences.getPrivacyMode()
+    const routingMode = resolveAdaptiveRoutingMode(task, estimatedInputTokens)
     const routingCtx = makeRoutingContext(
       task,
       estimatedInputTokens,
@@ -125,6 +152,7 @@ export const prepareTaskRuntime = (
       windowedMsgs,
       systemPrompt,
       stream,
+      routingMode,
     )
 
     return Data.struct({ routingCtx, request, estimatedInputTokens })

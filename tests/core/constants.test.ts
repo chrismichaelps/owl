@@ -1,11 +1,14 @@
 /** @Owl.Tests.Core.Constants - Core constants and budget tests */
 import { describe, it, expect } from "vitest"
+import { HashSet } from "effect"
 import {
   TOKEN_LIMITS,
   PROVIDER_TIMEOUTS,
   PROVIDER_CONSTANTS,
   RETRY_CONFIG,
   DEPTH_THRESHOLDS,
+  ADAPTIVE_ESCALATION,
+  ADAPTIVE_ESCALATION_KEYWORDS,
   MARKDOWN_CONSTANTS,
   TOOL_CONSTANTS,
   TUI_OUTPUT_PANEL,
@@ -80,5 +83,12 @@ describe("system constants", () => {
     )
     expect(resolveModeCostBudget("deep")).toBeUndefined()
     expect(resolveModeCostBudget("god")).toBeUndefined()
+  })
+
+  it("adaptive escalation constants centralize routing heuristics", () => {
+    expect(
+      ADAPTIVE_ESCALATION.STANDARD_TO_DEEP_TOKEN_THRESHOLD,
+    ).toBeGreaterThan(0)
+    expect(HashSet.has(ADAPTIVE_ESCALATION_KEYWORDS, "architecture")).toBe(true)
   })
 })
