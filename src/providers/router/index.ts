@@ -36,6 +36,7 @@ import {
   failLast,
   missingProvider,
   streamFromRankedProviders,
+  type ProviderAttemptRecorder,
 } from "./execution.js"
 import {
   attemptParallelComplete,
@@ -209,6 +210,12 @@ export const ProviderRouterLive = Layer.effect(
     /** @Owl.Providers.Router.Registry - In-memory provider registry */
     const registryRef = yield* makeProviderRegistryRef()
     const reliabilityRef = yield* makeProviderReliabilityRef()
+    const attemptRecorder: ProviderAttemptRecorder = {
+      onSuccess: (providerId) =>
+        recordProviderSuccess(reliabilityRef, providerId),
+      onFailure: (providerId) =>
+        recordProviderFailure(reliabilityRef, providerId),
+    }
 
     const route = (
       ctx: RoutingContext,
@@ -261,12 +268,7 @@ export const ProviderRouterLive = Layer.effect(
           registry,
           request,
           ctx,
-          {
-            onSuccess: (providerId) =>
-              recordProviderSuccess(reliabilityRef, providerId),
-            onFailure: (providerId) =>
-              recordProviderFailure(reliabilityRef, providerId),
-          },
+          attemptRecorder,
         )
       })
 
@@ -292,6 +294,7 @@ export const ProviderRouterLive = Layer.effect(
               capability,
               request,
               missingProvider,
+              attemptRecorder,
             ),
           { concurrency: providerLimit },
         )
@@ -323,12 +326,7 @@ export const ProviderRouterLive = Layer.effect(
           ctx,
           onChunk,
           onLog,
-          {
-            onSuccess: (providerId) =>
-              recordProviderSuccess(reliabilityRef, providerId),
-            onFailure: (providerId) =>
-              recordProviderFailure(reliabilityRef, providerId),
-          },
+          attemptRecorder,
         )
       })
 

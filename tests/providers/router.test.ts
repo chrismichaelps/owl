@@ -360,6 +360,52 @@ describe("ProviderRouter", () => {
     expect(result.map((response) => response.provider)).toEqual(["openai"])
   })
 
+  it("routes around providers with recent parallel failures", async () => {
+    const first = makeFailingProvider("anthropic")
+    const fallback = makeStubProvider("openai")
+
+    const program = Effect.gen(function* () {
+      const router = yield* ProviderRouter
+      yield* registerProvider(router, first)
+      yield* registerProvider(router, fallback)
+      yield* router.completeParallel(
+        {
+          taskId: "t-parallel-reliability-first",
+          mode: "standard",
+          estimatedInputTokens: 1000,
+          requiresReasoning: false,
+          requiresVision: false,
+          latencyBudgetMs: 30000,
+        },
+        {
+          taskId: "t-parallel-reliability-first",
+          messages: [
+            {
+              role: "user",
+              content: "hello",
+              timestamp: new Date().toISOString(),
+            },
+          ],
+          maxTokens: 1024,
+          stream: false,
+        },
+      )
+      return yield* router.route({
+        taskId: "t-parallel-reliability-second",
+        mode: "standard",
+        estimatedInputTokens: 1000,
+        requiresReasoning: false,
+        requiresVision: false,
+        latencyBudgetMs: 30000,
+      })
+    })
+
+    const decision = await Effect.runPromise(
+      program.pipe(Effect.provide(ProviderRouterLive)),
+    )
+    expect(decision.selectedProvider).toBe("openai")
+  })
+
   it("does not fall back to cloud providers when localOnly is true", async () => {
     const local = makeFailingProvider("ollama")
     const cloud = makeStubProvider("anthropic")

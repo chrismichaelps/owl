@@ -11,6 +11,7 @@ import type {
   LLMProviderService,
   ProviderCapability,
 } from "../types.js"
+import type { ProviderAttemptRecorder } from "./execution.js"
 
 export type ParallelAttempt = Either.Either<
   InferenceResponse,
@@ -30,13 +31,17 @@ export const attemptParallelComplete = (
   capability: ProviderCapability,
   request: Omit<InferenceRequest, "model">,
   missingProvider: (providerId: string) => ProviderUnavailableError,
+  recorder?: ProviderAttemptRecorder,
 ): Effect.Effect<ParallelAttempt> => {
   const provider = Option.getOrUndefined(
     HashMap.get(registry, capability.providerId),
   )
 
   if (provider === undefined) {
-    return Effect.succeed(Either.left(missingProvider(capability.providerId)))
+    const error = missingProvider(capability.providerId)
+    return (recorder?.onFailure(capability.providerId) ?? Effect.void).pipe(
+      Effect.as(Either.left(error)),
+    )
   }
 
   return provider.complete({ ...request, model: capability.modelId }).pipe(
@@ -52,6 +57,11 @@ export const attemptParallelComplete = (
       },
     })),
     Effect.either,
+    Effect.tap((result) =>
+      Either.isRight(result)
+        ? (recorder?.onSuccess(capability.providerId) ?? Effect.void)
+        : (recorder?.onFailure(capability.providerId) ?? Effect.void),
+    ),
   )
 }
 
