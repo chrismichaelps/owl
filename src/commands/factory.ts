@@ -110,7 +110,7 @@ export const makeCommandHandlers = (
     makeClearCommand(deps.contextManager),
     makeCompactCommand(deps.orchestrator, deps.contextManager),
     makeHistoryCommand(deps.sessionMemory, projectRoot),
-    makeInitCommand(projectRoot),
+    makeInitCommand(deps.fs, projectRoot),
     makeExportCommand(deps.sessionMemory, projectRoot),
     makeMcpCommand(deps.mcpManager),
     makeToolsCommand(deps.builtInTools),

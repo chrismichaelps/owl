@@ -15,10 +15,11 @@
  * // ✓ Created CLAUDE.md (812 bytes)
  * //   Edit it to add project-specific instructions for Owl.
  */
-import { writeFile, stat, readFile } from "node:fs/promises"
-import { join } from "node:path"
-import { Effect } from "effect"
-import type { CommandParseError } from "../../core/errors/index.js"
+import { Chunk, Effect } from "effect"
+import type { FileSystem } from "@effect/platform"
+import { PROJECT_CONTEXT_CONSTANTS } from "../../core/constants/index.js"
+import { resolveProjectPath } from "../../core/path/index.js"
+import { CommandParseError } from "../../core/errors/index.js"
 import type { CommandHandler, CommandResult } from "../types.js"
 
 const CLAUDE_MD_TEMPLATE = `# CLAUDE.md — Project Instructions
@@ -62,36 +63,91 @@ const CLAUDE_MD_TEMPLATE = `# CLAUDE.md — Project Instructions
 /**
  * @Owl.Commands.Management.Init.Factory - Create the /init command handler
  */
-export function makeInitCommand(projectRoot: string): CommandHandler {
+export function makeInitCommand(
+  fs: FileSystem.FileSystem,
+  projectRoot: string,
+): CommandHandler {
   return {
     name: "init",
     description: "Scaffold a CLAUDE.md in the project root: /init",
     execute: (_args): Effect.Effect<CommandResult, CommandParseError> =>
-      Effect.promise(async (): Promise<CommandResult> => {
-        const targetPath = join(projectRoot, "CLAUDE.md")
+      Effect.gen(function* () {
+        const fileName = PROJECT_CONTEXT_CONSTANTS.INSTRUCTIONS_FILE
+        const targetPath = yield* resolveProjectPath(
+          projectRoot,
+          fileName,
+          "init",
+        ).pipe(
+          Effect.mapError(
+            (err) =>
+              new CommandParseError({
+                input: "/init",
+                reason: String(err),
+              }),
+          ),
+        )
 
-        // Check if CLAUDE.md already exists
-        try {
-          const existing = await stat(targetPath)
-          const content = await readFile(targetPath, "utf-8")
-          const lines = content.split("\n").length
+        const exists = yield* fs.exists(targetPath).pipe(
+          Effect.mapError(
+            () =>
+              new CommandParseError({
+                input: "/init",
+                reason: "Unable to inspect project instructions file",
+              }),
+          ),
+        )
+
+        if (exists) {
+          const existing = yield* fs.stat(targetPath).pipe(
+            Effect.mapError(
+              () =>
+                new CommandParseError({
+                  input: "/init",
+                  reason: "Unable to stat project instructions file",
+                }),
+            ),
+          )
+          const content = yield* fs.readFileString(targetPath).pipe(
+            Effect.mapError(
+              () =>
+                new CommandParseError({
+                  input: "/init",
+                  reason: "Unable to read project instructions file",
+                }),
+            ),
+          )
+          const lines = Chunk.size(Chunk.fromIterable(content.split("\n")))
           return {
             output:
-              `CLAUDE.md already exists at ${targetPath}\n` +
+              `${fileName} already exists\n` +
               `  Size: ${String(existing.size)} bytes · ${String(lines)} lines\n` +
               `  Edit it directly to update project instructions.`,
           }
-        } catch {
-          // File doesn't exist — create it
         }
 
-        await writeFile(targetPath, CLAUDE_MD_TEMPLATE, { encoding: "utf-8" })
-        const created = await stat(targetPath)
+        yield* fs.writeFileString(targetPath, CLAUDE_MD_TEMPLATE).pipe(
+          Effect.mapError(
+            () =>
+              new CommandParseError({
+                input: "/init",
+                reason: "Unable to write project instructions file",
+              }),
+          ),
+        )
+        const created = yield* fs.stat(targetPath).pipe(
+          Effect.mapError(
+            () =>
+              new CommandParseError({
+                input: "/init",
+                reason: "Unable to stat created project instructions file",
+              }),
+          ),
+        )
 
         return {
           output:
-            `✓ Created CLAUDE.md (${String(created.size)} bytes)\n` +
-            `  Path: ${targetPath}\n` +
+            `✓ Created ${fileName} (${String(created.size)} bytes)\n` +
+            `  Path: ${fileName}\n` +
             `  Edit it to add project-specific instructions for Owl.\n` +
             `  It will be injected into the system prompt at the next session start.`,
         }
