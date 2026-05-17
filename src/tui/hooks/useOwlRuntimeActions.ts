@@ -11,6 +11,7 @@ import {
   EFFECT_TAGS,
   JS_TYPES,
   TUI_CONSTANTS,
+  TUI_RUNTIME_COPY,
 } from "../../core/constants/index.js"
 import type { Mode } from "../../core/schema/index.js"
 import type { OwlRuntime } from "../../cli/runtime.js"
@@ -113,7 +114,7 @@ export function useOwlRuntimeActions(
         )
 
         dispatch({ type: "SET_ROLE", role: "Forensic Guardian" })
-        dispatch({ type: "ADD_LOG", msg: "✓ Registry sync complete" })
+        dispatch({ type: "ADD_LOG", msg: TUI_RUNTIME_COPY.RESPONSE_RECORDED })
         dispatch({ type: "SET_RESPONSE", response })
         dispatch({
           type: "ADD_TURN",

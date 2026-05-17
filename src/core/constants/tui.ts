@@ -90,6 +90,11 @@ export const TUI_CONSTANTS = {
   ERROR_LOG_PREVIEW_CHARS: 55,
 } as const
 
+/** @Owl.Core.Constants.TUIRuntimeCopy - Runtime log messages */
+export const TUI_RUNTIME_COPY = {
+  RESPONSE_RECORDED: "✓ Response recorded",
+} as const
+
 /** @Owl.Core.Constants.TUIHistory - Prompt history storage and retention */
 export const TUI_HISTORY_CONSTANTS = {
   STORAGE_DIR: ".owl",

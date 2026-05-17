@@ -12,6 +12,7 @@ import {
   MARKDOWN_CONSTANTS,
   TOOL_CONSTANTS,
   TUI_OUTPUT_PANEL,
+  TUI_RUNTIME_COPY,
   resolveModeThinkingBudget,
   resolveModeCostBudget,
   resolveModeTokenBudget,
@@ -51,6 +52,10 @@ describe("system constants", () => {
   it("TUI_OUTPUT_PANEL centralizes viewport estimates", () => {
     expect(TUI_OUTPUT_PANEL.RESERVED_ROWS).toBeGreaterThan(0)
     expect(TUI_OUTPUT_PANEL.ROWS_PER_TURN).toBeGreaterThan(0)
+  })
+
+  it("TUI runtime copy avoids false registry sync claims", () => {
+    expect(TUI_RUNTIME_COPY.RESPONSE_RECORDED).toBe("✓ Response recorded")
   })
 
   it("RETRY_CONFIG has exponential backoff settings", () => {
