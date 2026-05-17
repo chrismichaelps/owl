@@ -1,6 +1,7 @@
 /** @Owl.Tests.Providers.Anthropic - Anthropic adapter specific tests */
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { Effect, Layer, ConfigProvider } from "effect"
+import * as Stream from "effect/Stream"
 import {
   AnthropicAdapter,
   AnthropicAdapterLive,
@@ -8,8 +9,10 @@ import {
 import { OWLConfigLive } from "../../src/core/config/index.js"
 import { TOOL_NAMES } from "../../src/core/constants/index.js"
 import { makeBuiltInToolsLive } from "../../src/tools/index.js"
+import type { StreamChunk } from "../../src/providers/types.js"
 
 const mockCreate = vi.fn()
+const mockStream = vi.fn()
 
 interface AnthropicSystemBlock {
   readonly type: string
@@ -31,9 +34,42 @@ const getCreateCallArg = (index: number): AnthropicCreateParams =>
 
 vi.mock("@anthropic-ai/sdk", () => ({
   default: vi.fn().mockImplementation(() => ({
-    messages: { create: mockCreate },
+    messages: { create: mockCreate, stream: mockStream },
   })),
 }))
+
+interface AnthropicStreamEvent {
+  readonly type: "content_block_delta"
+  readonly delta: {
+    readonly type: "text_delta"
+    readonly text: string
+  }
+}
+
+interface AnthropicFinalMessage {
+  readonly content: readonly unknown[]
+  readonly stop_reason: string
+  readonly usage: {
+    readonly input_tokens: number
+    readonly output_tokens: number
+    readonly cache_creation_input_tokens?: number
+    readonly cache_read_input_tokens?: number
+  }
+  readonly model: string
+}
+
+const makeStreamResult = (
+  events: readonly AnthropicStreamEvent[],
+  finalMessage: AnthropicFinalMessage,
+) => ({
+  async *[Symbol.asyncIterator]() {
+    for (const event of events) {
+      await Promise.resolve()
+      yield event
+    }
+  },
+  finalMessage: () => Promise.resolve(finalMessage),
+})
 
 /** @Owl.Tests.Providers.Anthropic.Behavior - Specialized adapter logic verification */
 describe("AnthropicAdapter", () => {
@@ -84,6 +120,7 @@ describe("AnthropicAdapter", () => {
 describe("AnthropicAdapter — prompt caching", () => {
   beforeEach(() => {
     mockCreate.mockReset()
+    mockStream.mockReset()
   })
 
   const makeTestLayer = () => {
@@ -257,5 +294,71 @@ describe("AnthropicAdapter — prompt caching", () => {
     expect(callArg.tools?.map((tool) => tool.name)).not.toContain(
       TOOL_NAMES.BASH,
     )
+  })
+
+  it("stream() emits final usage after streamed text chunks", async () => {
+    mockStream.mockReturnValueOnce(
+      makeStreamResult(
+        [
+          {
+            type: "content_block_delta",
+            delta: { type: "text_delta", text: "hello" },
+          },
+        ],
+        {
+          content: [{ type: "text", text: "hello" }],
+          stop_reason: "end_turn",
+          usage: {
+            input_tokens: 20,
+            output_tokens: 5,
+            cache_creation_input_tokens: 2,
+            cache_read_input_tokens: 10,
+          },
+          model: "claude-sonnet-4-6",
+        },
+      ),
+    )
+
+    const chunks = await Effect.runPromise(
+      Effect.gen(function* () {
+        const adapter = yield* AnthropicAdapter
+        const emitted: StreamChunk[] = []
+        yield* Stream.runForEach(
+          adapter.stream({
+            taskId: "t-stream",
+            messages: [
+              {
+                role: "user",
+                content: "hello",
+                timestamp: new Date().toISOString(),
+              },
+            ],
+            maxTokens: 256,
+            stream: true,
+            model: "claude-sonnet-4-6",
+          }),
+          (chunk) =>
+            Effect.sync(() => {
+              emitted.push(chunk)
+            }),
+        )
+        return emitted
+      }).pipe(Effect.provide(makeTestLayer())),
+    )
+
+    expect(chunks).toEqual([
+      { type: "text", content: "hello", index: 0 },
+      {
+        type: "usage",
+        index: 1,
+        usage: {
+          inputTokens: 20,
+          outputTokens: 5,
+          cacheReadTokens: 10,
+          cacheWriteTokens: 2,
+          estimatedCostUsd: 0.000135,
+        },
+      },
+    ])
   })
 })

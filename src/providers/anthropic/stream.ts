@@ -186,7 +186,7 @@ export const makeAnthropicStream =
 
           await emit.single({
             type: STREAM_CHUNK_TYPES.USAGE,
-            index: 0,
+            index,
             usage: {
               inputTokens: usageTotals.inputTokens,
               outputTokens: usageTotals.outputTokens,
