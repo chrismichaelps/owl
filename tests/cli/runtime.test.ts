@@ -1,8 +1,8 @@
 /** @Owl.Tests.CLI.Runtime - Runtime startup command regression coverage */
-import { mkdtemp } from "node:fs/promises"
+import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { Effect } from "effect"
+import { Chunk, Effect } from "effect"
 import { describe, expect, it } from "vitest"
 import { makeOwlRuntime } from "../../src/cli/runtime.js"
 import { CommandRegistry } from "../../src/commands/registry.js"
@@ -22,26 +22,62 @@ const withoutAnthropicKey = async <A>(run: () => Promise<A>): Promise<A> => {
   }
 }
 
+const dispatchRuntimeCommand = async (
+  projectRoot: string,
+  rawCommand: string,
+): Promise<string> => {
+  const runtime = makeOwlRuntime(projectRoot)
+  try {
+    return await runtime.runPromise(
+      Effect.gen(function* () {
+        const registry = yield* CommandRegistry
+        const parsed = yield* parseCommand(rawCommand)
+        const result = yield* registry.dispatch(parsed)
+        return result.output
+      }),
+    )
+  } finally {
+    await runtime.dispose()
+  }
+}
+
 describe("makeOwlRuntime", () => {
   it("/models works when ANTHROPIC_API_KEY is absent", async () => {
     await withoutAnthropicKey(async () => {
       const projectRoot = await mkdtemp(join(tmpdir(), "owl-runtime-"))
-      const runtime = makeOwlRuntime(projectRoot)
       try {
-        const output = await runtime.runPromise(
-          Effect.gen(function* () {
-            const registry = yield* CommandRegistry
-            const parsed = yield* parseCommand("/models")
-            const result = yield* registry.dispatch(parsed)
-            return result.output
-          }),
-        )
+        const output = await dispatchRuntimeCommand(projectRoot, "/models")
 
         expect(output).toContain("Registered models:")
         expect(output).toContain("ollama")
         expect(output).not.toContain("ANTHROPIC_API_KEY")
       } finally {
-        await runtime.dispose()
+        await rm(projectRoot, { recursive: true, force: true })
+      }
+    })
+  })
+
+  it("non-inference commands do not require ANTHROPIC_API_KEY", async () => {
+    await withoutAnthropicKey(async () => {
+      const projectRoot = await mkdtemp(join(tmpdir(), "owl-runtime-"))
+      const commands = Chunk.make(
+        "/help",
+        "/providers",
+        "/tools",
+        "/status",
+        "/mcp",
+        "/privacy",
+        "/history",
+        "/init",
+      )
+      try {
+        for (const command of commands) {
+          const output = await dispatchRuntimeCommand(projectRoot, command)
+          expect(output).not.toContain("ANTHROPIC_API_KEY")
+          expect(output.length).toBeGreaterThan(0)
+        }
+      } finally {
+        await rm(projectRoot, { recursive: true, force: true })
       }
     })
   })
