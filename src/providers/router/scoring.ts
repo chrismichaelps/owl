@@ -61,6 +61,11 @@ export function scoreProvider(
     ctx.estimatedInputTokens,
     0,
   )
+
+  if (ctx.costBudgetUsd !== undefined && estimatedCost > ctx.costBudgetUsd) {
+    return -Infinity
+  }
+
   const costScore = Math.max(
     ROUTING_SCORE_DEFAULTS.MIN_COST_SCORE,
     ROUTING_SCORE_DEFAULTS.MAX_COST_SCORE -

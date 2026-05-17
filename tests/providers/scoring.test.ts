@@ -130,6 +130,24 @@ describe("provider scoring", () => {
     expect(ranked.map((cap) => cap.providerId)).toEqual(["ollama"])
   })
 
+  it("rankProviders filters providers above the cost budget", () => {
+    const ranked = rankProviders([ANTHROPIC_OPUS, ANTHROPIC_HAIKU], {
+      ...ECONOMY_CTX,
+      costBudgetUsd: 0.003,
+    })
+
+    expect(ranked.map((cap) => cap.modelId)).toEqual(["claude-haiku-4-5"])
+  })
+
+  it("selectBestProvider returns null when all providers exceed budget", () => {
+    const best = selectBestProvider([ANTHROPIC_OPUS, ANTHROPIC_HAIKU], {
+      ...ECONOMY_CTX,
+      costBudgetUsd: 0.001,
+    })
+
+    expect(best).toBeNull()
+  })
+
   it("selectBestProvider returns null in localOnly mode without local providers", () => {
     const best = selectBestProvider([ANTHROPIC_OPUS, ANTHROPIC_HAIKU], {
       ...ECONOMY_CTX,
