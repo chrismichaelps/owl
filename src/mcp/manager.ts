@@ -52,7 +52,7 @@ export interface McpServerStatus {
 
 export interface McpManagerService {
   /** Return all tools from all connected servers */
-  readonly getTools: () => Effect.Effect<readonly McpTool[]>
+  readonly getTools: () => Effect.Effect<Chunk.Chunk<McpTool>>
   /** Execute a namespaced tool call — e.g. "filesystem__read_file" */
   readonly callTool: (
     name: string,
@@ -224,13 +224,11 @@ export const makeMcpManagerLayer = (
         }
       }
 
-      const getTools = (): Effect.Effect<readonly McpTool[]> =>
+      const getTools = (): Effect.Effect<Chunk.Chunk<McpTool>> =>
         Effect.succeed(
-          Chunk.toReadonlyArray(
-            Chunk.flatMap(
-              Chunk.fromIterable(HashMap.values(servers)),
-              (server) => server.tools,
-            ),
+          Chunk.flatMap(
+            Chunk.fromIterable(HashMap.values(servers)),
+            (server) => server.tools,
           ),
         )
 

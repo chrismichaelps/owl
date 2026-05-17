@@ -3,7 +3,7 @@ import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
 import { join } from "node:path"
 import { tmpdir } from "node:os"
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
-import { Effect } from "effect"
+import { Chunk, Effect } from "effect"
 import { TOOL_CONSTANTS, TOOL_NAMES } from "../../src/core/constants/index.js"
 import { ToolExecutionError } from "../../src/core/errors/index.js"
 import { makeBuiltInToolsLive, BuiltInTools } from "../../src/tools/index.js"
@@ -42,7 +42,9 @@ describe("BuiltInTools", () => {
     const names = await Effect.runPromise(
       Effect.gen(function* () {
         const tools = yield* BuiltInTools
-        return tools.getTools().map((tool) => tool.name)
+        return Chunk.toReadonlyArray(
+          Chunk.map(tools.getTools(), (tool) => tool.name),
+        )
       }).pipe(Effect.provide(makeBuiltInToolsLive(projectRoot))),
     )
 

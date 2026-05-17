@@ -68,13 +68,11 @@ export function makeMcpCommand(manager: McpManagerService): CommandHandler {
         }
 
         let lines = Chunk.make("MCP Servers", "")
-        const toolChunk = Chunk.fromIterable(tools)
-
         for (const srv of statuses) {
           lines = Chunk.appendAll(
             lines,
             srv.connected
-              ? formatConnectedServer(srv, toolChunk)
+              ? formatConnectedServer(srv, tools)
               : Chunk.make(formatDisconnectedServer(srv)),
           )
           lines = Chunk.append(lines, "")

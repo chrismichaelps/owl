@@ -35,13 +35,17 @@ export const loadAnthropicTools = (
 ): Effect.Effect<Chunk.Chunk<Anthropic.Tool>> =>
   Effect.gen(function* () {
     const builtInToolDescriptors =
-      builtInTools !== null ? builtInTools.getTools() : []
-    const mcpTools = mcpManager !== null ? yield* mcpManager.getTools() : []
+      builtInTools !== null
+        ? builtInTools.getTools()
+        : Chunk.empty<{
+            readonly name: string
+            readonly description: string
+            readonly input_schema: unknown
+          }>()
+    const mcpTools =
+      mcpManager !== null ? yield* mcpManager.getTools() : Chunk.empty()
     return Chunk.map(
-      Chunk.appendAll(
-        Chunk.fromIterable(builtInToolDescriptors),
-        Chunk.fromIterable(mcpTools),
-      ),
+      Chunk.appendAll(builtInToolDescriptors, mcpTools),
       toAnthropicTool,
     )
   })

@@ -1,6 +1,6 @@
 /** @Owl.Tests.Commands.Mcp - MCP status command tests */
 import { describe, expect, it } from "vitest"
-import { Effect } from "effect"
+import { Chunk, Effect } from "effect"
 import { makeMcpCommand } from "../../src/commands/management/mcp.js"
 import type { McpManagerService } from "../../src/mcp/index.js"
 
@@ -8,7 +8,7 @@ const makeManager = (
   service: Partial<McpManagerService>,
 ): McpManagerService => ({
   getServers: () => Effect.succeed([]),
-  getTools: () => Effect.succeed([]),
+  getTools: () => Effect.succeed(Chunk.empty()),
   callTool: () => Effect.succeed(""),
   ...service,
 })
@@ -29,13 +29,13 @@ describe("makeMcpCommand", () => {
             { name: "filesystem", connected: true, toolCount: 1 },
           ]),
         getTools: () =>
-          Effect.succeed([
-            {
+          Effect.succeed(
+            Chunk.make({
               name: "filesystem__read_file",
               description: "Read a file",
               input_schema: { type: "object", properties: {}, required: [] },
-            },
-          ]),
+            }),
+          ),
       }),
     )
 

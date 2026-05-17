@@ -27,7 +27,7 @@ export interface BuiltInToolsService {
     readonly description: string
     readonly modelVisible: boolean
   }>
-  readonly getTools: () => readonly McpTool[]
+  readonly getTools: () => Chunk.Chunk<McpTool>
   readonly callTool: (
     name: string,
     input: Record<string, unknown>,

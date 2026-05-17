@@ -72,7 +72,7 @@ export const makeBuiltInToolsLive = (cwd: string): Layer.Layer<BuiltInTools> =>
         }),
       ),
 
-    getTools: () => Chunk.toReadonlyArray(TOOL_DESCRIPTORS),
+    getTools: () => TOOL_DESCRIPTORS,
 
     callTool: (name, input) => {
       const toolOpt = HashMap.get(TOOL_MAP, name)
