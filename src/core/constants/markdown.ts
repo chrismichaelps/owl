@@ -4,6 +4,7 @@ export const MARKDOWN_BLOCK_TYPES = {
   CODE: "code",
   BULLET: "bullet",
   NUMBERED: "numbered",
+  QUOTE: "quote",
   HEADER: "header",
   DIVIDER: "divider",
   IMAGE: "image",

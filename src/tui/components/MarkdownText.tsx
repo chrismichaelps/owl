@@ -203,6 +203,15 @@ function BlockRenderer({
         </Box>
       )
 
+    case MARKDOWN_BLOCK_TYPES.QUOTE:
+      return (
+        <Box borderStyle="single" borderColor="gray" paddingLeft={1}>
+          <Text color="gray" wrap="wrap" dimColor={dimColor ?? false}>
+            <InlineText text={block.content} dimColor={dimColor ?? false} />
+          </Text>
+        </Box>
+      )
+
     case "blank":
       return null
 

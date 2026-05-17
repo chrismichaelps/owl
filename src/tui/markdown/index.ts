@@ -150,6 +150,23 @@ export function parseMarkdownBlocks(raw: string): Chunk.Chunk<MarkdownBlock> {
       continue
     }
 
+    const quoteMatch = /^>\s?(.*)/.exec(line)
+    if (quoteMatch != null) {
+      let quoteLines = Chunk.make(quoteMatch[1] ?? "")
+      i++
+      while (i < lines.length) {
+        const nextQuoteMatch = /^>\s?(.*)/.exec(lines[i] ?? "")
+        if (nextQuoteMatch == null) break
+        quoteLines = Chunk.append(quoteLines, nextQuoteMatch[1] ?? "")
+        i++
+      }
+      blocks = appendBlock(blocks, {
+        type: MARKDOWN_BLOCK_TYPES.QUOTE,
+        content: Chunk.toReadonlyArray(quoteLines).join("\n"),
+      })
+      continue
+    }
+
     if (line.trim().length === 0) {
       blocks = appendBlock(blocks, { type: "blank", content: "" })
       i++
@@ -161,7 +178,7 @@ export function parseMarkdownBlocks(raw: string): Chunk.Chunk<MarkdownBlock> {
     while (
       i < lines.length &&
       lines[i]?.trim().length !== 0 &&
-      !/^```|^~~~|^#{1,3}\s|^[-*+]\s|^\d+\.\s|^[-*_]{3,}\s*$/.test(
+      !/^```|^~~~|^#{1,3}\s|^[-*+]\s|^\d+\.\s|^>\s?|^[-*_]{3,}\s*$/.test(
         lines[i] ?? "",
       )
     ) {

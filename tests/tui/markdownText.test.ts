@@ -4,6 +4,9 @@ import {
   resolveCodeLineColor,
   resolveSideBySideDiffSegments,
 } from "../../src/tui/components/MarkdownText.js"
+import { Chunk } from "effect"
+import { MARKDOWN_BLOCK_TYPES } from "../../src/core/constants/index.js"
+import { parseMarkdownBlocks } from "../../src/tui/markdown/index.js"
 
 describe("resolveCodeLineColor", () => {
   it("renders normal code blocks in green", () => {
@@ -45,5 +48,19 @@ describe("resolveSideBySideDiffSegments", () => {
 
   it("returns null for regular code lines", () => {
     expect(resolveSideBySideDiffSegments("const value = 1")).toBeNull()
+  })
+})
+
+describe("parseMarkdownBlocks", () => {
+  it("parses consecutive blockquote lines as one quote block", () => {
+    const blocks = Chunk.toReadonlyArray(
+      parseMarkdownBlocks("> first\n> second\n\nplain"),
+    )
+
+    expect(blocks[0]).toEqual({
+      type: MARKDOWN_BLOCK_TYPES.QUOTE,
+      content: "first\nsecond",
+    })
+    expect(blocks[2]?.type).toBe(MARKDOWN_BLOCK_TYPES.TEXT)
   })
 })
