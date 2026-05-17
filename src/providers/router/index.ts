@@ -50,6 +50,12 @@ import {
   makeProviderRegistryRef,
   registerProviderInRef,
 } from "./registry.js"
+import {
+  makeProviderReliabilityRef,
+  providerReliabilityScores,
+  recordProviderFailure,
+  recordProviderSuccess,
+} from "./reliability.js"
 import { checkProviderHealth, type ProviderHealthStatus } from "./health.js"
 import type { ProviderUnavailableError } from "../../core/errors/index.js"
 import type {
@@ -202,6 +208,7 @@ export const ProviderRouterLive = Layer.effect(
   Effect.gen(function* () {
     /** @Owl.Providers.Router.Registry - In-memory provider registry */
     const registryRef = yield* makeProviderRegistryRef()
+    const reliabilityRef = yield* makeProviderReliabilityRef()
 
     const route = (
       ctx: RoutingContext,
@@ -217,25 +224,27 @@ export const ProviderRouterLive = Layer.effect(
       Chunk.Chunk<ProviderCapability>,
       ProviderUnavailableError
     > =>
-      Ref.get(registryRef).pipe(
-        Effect.flatMap((registry) => {
-          const ranked = Chunk.fromIterable(
-            rankProviders(
-              Chunk.toReadonlyArray(providerCapabilities(registry)),
-              ctx,
-            ),
-          )
+      Effect.gen(function* () {
+        const registry = yield* Ref.get(registryRef)
+        const reliabilityScores =
+          yield* providerReliabilityScores(reliabilityRef)
+        const ranked = Chunk.fromIterable(
+          rankProviders(
+            Chunk.toReadonlyArray(providerCapabilities(registry)),
+            ctx,
+            reliabilityScores,
+          ),
+        )
 
-          return !Chunk.isEmpty(ranked)
-            ? Effect.succeed(ranked)
-            : Effect.fail(
-                makeNoProviderError(
-                  ctx,
-                  "No providers registered or none match context",
-                ),
-              )
-        }),
-      )
+        return !Chunk.isEmpty(ranked)
+          ? ranked
+          : yield* Effect.fail(
+              makeNoProviderError(
+                ctx,
+                "No providers registered or none match context",
+              ),
+            )
+      })
 
     const complete = (
       ctx: RoutingContext,
@@ -252,6 +261,12 @@ export const ProviderRouterLive = Layer.effect(
           registry,
           request,
           ctx,
+          {
+            onSuccess: (providerId) =>
+              recordProviderSuccess(reliabilityRef, providerId),
+            onFailure: (providerId) =>
+              recordProviderFailure(reliabilityRef, providerId),
+          },
         )
       })
 
@@ -308,6 +323,12 @@ export const ProviderRouterLive = Layer.effect(
           ctx,
           onChunk,
           onLog,
+          {
+            onSuccess: (providerId) =>
+              recordProviderSuccess(reliabilityRef, providerId),
+            onFailure: (providerId) =>
+              recordProviderFailure(reliabilityRef, providerId),
+          },
         )
       })
 

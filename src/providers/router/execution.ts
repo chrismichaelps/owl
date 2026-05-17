@@ -19,6 +19,11 @@ import { makeNoProviderError } from "./selection.js"
 
 export type ProviderRegistry = HashMap.HashMap<string, LLMProviderService>
 
+export interface ProviderAttemptRecorder {
+  readonly onSuccess: (providerId: string) => Effect.Effect<void>
+  readonly onFailure: (providerId: string) => Effect.Effect<void>
+}
+
 export const missingProvider = (providerId: string): ProviderUnavailableError =>
   new ProviderUnavailableError({
     provider: providerId,
@@ -55,6 +60,7 @@ export const completeFromRankedProviders = (
   registry: ProviderRegistry,
   request: Omit<InferenceRequest, "model">,
   ctx: RoutingContext,
+  recorder?: ProviderAttemptRecorder,
 ): Effect.Effect<
   InferenceResponse,
   AnyProviderError | ProviderUnavailableError
@@ -70,6 +76,9 @@ export const completeFromRankedProviders = (
 
       if (provider === undefined) {
         lastError = missingProvider(capability.providerId)
+        if (recorder !== undefined) {
+          yield* recorder.onFailure(capability.providerId)
+        }
         continue
       }
 
@@ -81,10 +90,16 @@ export const completeFromRankedProviders = (
         .pipe(Effect.either)
 
       if (Either.isRight(result)) {
+        if (recorder !== undefined) {
+          yield* recorder.onSuccess(capability.providerId)
+        }
         return withEstimatedCost(capability, result.right)
       }
 
       lastError = result.left
+      if (recorder !== undefined) {
+        yield* recorder.onFailure(capability.providerId)
+      }
     }
 
     return yield* failLast(lastError, ctx)
@@ -97,6 +112,7 @@ export const streamFromRankedProviders = (
   ctx: RoutingContext,
   onChunk: (text: string) => void,
   onLog?: (msg: string) => void,
+  recorder?: ProviderAttemptRecorder,
 ): Effect.Effect<
   StreamingCallbackResult,
   AnyProviderError | ProviderUnavailableError
@@ -113,6 +129,9 @@ export const streamFromRankedProviders = (
 
       if (provider === undefined) {
         lastError = missingProvider(capability.providerId)
+        if (recorder !== undefined) {
+          yield* recorder.onFailure(capability.providerId)
+        }
         continue
       }
 
@@ -139,6 +158,9 @@ export const streamFromRankedProviders = (
         )
 
       if (Either.isRight(result)) {
+        if (recorder !== undefined) {
+          yield* recorder.onSuccess(capability.providerId)
+        }
         const accumulator = yield* Ref.get(accumulatorRef)
         const content = Chunk.toReadonlyArray(accumulator.contentChunks).join(
           "",
@@ -161,6 +183,9 @@ export const streamFromRankedProviders = (
       }
 
       lastError = result.left
+      if (recorder !== undefined) {
+        yield* recorder.onFailure(capability.providerId)
+      }
       const failedAccumulator = yield* Ref.get(accumulatorRef)
       if (failedAccumulator.emittedChunkCount > 0) {
         return yield* Effect.fail(result.left)

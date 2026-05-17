@@ -1,5 +1,6 @@
 /** @Owl.Tests.Providers.Scoring - Provider scoring algorithm tests */
 import { describe, it, expect } from "vitest"
+import { HashMap } from "effect"
 import { estimateCapabilityCostUsd } from "../../src/providers/cost.js"
 import {
   rankProviders,
@@ -81,6 +82,21 @@ describe("provider scoring", () => {
     const opusScore = scoreProvider(ANTHROPIC_OPUS, DEEP_CTX)
     const haikuScore = scoreProvider(ANTHROPIC_HAIKU, DEEP_CTX)
     expect(opusScore).toBeGreaterThan(haikuScore)
+  })
+
+  it("scoreProvider uses adaptive reliability scores", () => {
+    const healthyScore = scoreProvider(
+      ANTHROPIC_HAIKU,
+      ECONOMY_CTX,
+      HashMap.fromIterable([["anthropic", 1]]),
+    )
+    const failingScore = scoreProvider(
+      ANTHROPIC_HAIKU,
+      ECONOMY_CTX,
+      HashMap.fromIterable([["anthropic", 0.2]]),
+    )
+
+    expect(healthyScore).toBeGreaterThan(failingScore)
   })
 
   it("selectBestProvider returns the highest-scoring model", () => {

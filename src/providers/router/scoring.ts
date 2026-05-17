@@ -53,6 +53,7 @@ const rankedOrder = Order.make<RankedCapability>((left, right) => {
 export function scoreProvider(
   cap: ProviderCapability,
   ctx: RoutingContext,
+  reliabilityScores: HashMap.HashMap<string, number> = HashMap.empty(),
 ): number {
   if (ctx.estimatedInputTokens > cap.contextWindow) return -Infinity
 
@@ -96,12 +97,17 @@ export function scoreProvider(
       ? ROUTING_SCORE_DEFAULTS.UNSUPPORTED_VISION_PENALTY
       : ROUTING_SCORE_DEFAULTS.NO_VISION_PENALTY
 
+  const reliabilityScore = getScore(
+    reliabilityScores,
+    cap.providerId,
+    ROUTING_SCORE_DEFAULTS.BASE_RELIABILITY_SCORE,
+  )
+
   return (
     ROUTING_WEIGHTS.COST * costScore +
     ROUTING_WEIGHTS.COMPLEXITY * reasoningScore +
     ROUTING_WEIGHTS.LATENCY * latencyScore +
-    ROUTING_WEIGHTS.RELIABILITY *
-      ROUTING_SCORE_DEFAULTS.BASE_RELIABILITY_SCORE +
+    ROUTING_WEIGHTS.RELIABILITY * reliabilityScore +
     visionPenalty
   )
 }
@@ -109,6 +115,7 @@ export function scoreProvider(
 const rankCapabilities = (
   capabilities: readonly ProviderCapability[],
   ctx: RoutingContext,
+  reliabilityScores: HashMap.HashMap<string, number>,
 ): Chunk.Chunk<RankedCapability> =>
   Chunk.sort(
     Chunk.filter(
@@ -122,7 +129,7 @@ const rankCapabilities = (
         (capability) =>
           Data.struct({
             capability,
-            score: scoreProvider(capability, ctx),
+            score: scoreProvider(capability, ctx, reliabilityScores),
           }),
       ),
       (entry) => Number.isFinite(entry.score),
@@ -141,8 +148,9 @@ const toCapabilities = (
 export function rankProviders(
   capabilities: readonly ProviderCapability[],
   ctx: RoutingContext,
+  reliabilityScores: HashMap.HashMap<string, number> = HashMap.empty(),
 ): readonly ProviderCapability[] {
-  const ranked = rankCapabilities(capabilities, ctx)
+  const ranked = rankCapabilities(capabilities, ctx, reliabilityScores)
 
   if (ctx.preferredProvider === undefined) {
     return toCapabilities(ranked)
@@ -169,6 +177,7 @@ export function rankProviders(
 export function selectBestProvider(
   capabilities: readonly ProviderCapability[],
   ctx: RoutingContext,
+  reliabilityScores: HashMap.HashMap<string, number> = HashMap.empty(),
 ): ProviderCapability | null {
-  return rankProviders(capabilities, ctx)[0] ?? null
+  return rankProviders(capabilities, ctx, reliabilityScores)[0] ?? null
 }

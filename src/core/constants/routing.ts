@@ -47,3 +47,9 @@ export const ROUTING_SCORE_DEFAULTS = {
   NO_VISION_PENALTY: 0.0,
   BASE_RELIABILITY_SCORE: 0.8,
 } as const
+
+/** @Owl.Core.Constants.RoutingReliability - Adaptive provider health scoring */
+export const ROUTING_RELIABILITY = {
+  MIN_SCORE: 0.2,
+  CONSECUTIVE_FAILURE_PENALTY: 0.2,
+} as const
