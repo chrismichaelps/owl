@@ -26,6 +26,8 @@ function makeResponse(
     outputTokens: number
     estimatedCostUsd: number
     content: string
+    requestedMode: "standard" | "deep" | "quick" | "economy" | "god"
+    routingMode: "standard" | "deep" | "quick" | "economy" | "god"
   }> = {},
 ) {
   return {
@@ -42,6 +44,12 @@ function makeResponse(
     model: overrides.model ?? "claude-opus-4-5",
     provider: overrides.provider ?? "anthropic",
     latencyMs: overrides.latencyMs ?? 812,
+    ...(overrides.requestedMode !== undefined
+      ? { requestedMode: overrides.requestedMode }
+      : {}),
+    ...(overrides.routingMode !== undefined
+      ? { routingMode: overrides.routingMode }
+      : {}),
   }
 }
 
@@ -69,11 +77,13 @@ describe("INITIAL_STATE shape", () => {
     expect(INITIAL_STATE.logs).toHaveLength(0)
   })
 
-  it("has null response, error, provider, model, override, latencyMs", () => {
+  it("has null response, error, provider, model, routing, override, latencyMs", () => {
     expect(INITIAL_STATE.response).toBeNull()
     expect(INITIAL_STATE.error).toBeNull()
     expect(INITIAL_STATE.provider).toBeNull()
     expect(INITIAL_STATE.model).toBeNull()
+    expect(INITIAL_STATE.requestedMode).toBeNull()
+    expect(INITIAL_STATE.routingMode).toBeNull()
     expect(INITIAL_STATE.providerOverride).toBeNull()
     expect(INITIAL_STATE.latencyMs).toBeNull()
   })
@@ -266,6 +276,18 @@ describe("SET_RESPONSE action", () => {
       response: makeResponse({ latencyMs: 1200 }),
     })
     expect(next.latencyMs).toBe(1200)
+  })
+
+  it("records adaptive routing metadata", () => {
+    const next = reduce(INITIAL_STATE, {
+      type: "SET_RESPONSE",
+      response: makeResponse({
+        requestedMode: "standard",
+        routingMode: "deep",
+      }),
+    })
+    expect(next.requestedMode).toBe("standard")
+    expect(next.routingMode).toBe("deep")
   })
 
   it("increments turnCount on each response", () => {

@@ -13,6 +13,8 @@ const TURN = {
   response: "The schema has 3 modules.",
   provider: "anthropic" as const,
   model: "claude-opus-4-5",
+  requestedMode: "standard" as const,
+  routingMode: "standard" as const,
   latencyMs: 820,
   inputTokens: 100,
   outputTokens: 50,

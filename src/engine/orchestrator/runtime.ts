@@ -42,6 +42,7 @@ export interface PreparedTaskRuntime {
   readonly routingCtx: RoutingContext
   readonly request: RuntimeRequest
   readonly estimatedInputTokens: number
+  readonly routingMode: Mode
 }
 
 export const resolveTaskBudget = (task: Task): number =>
@@ -156,7 +157,24 @@ export const prepareTaskRuntime = (
       routingMode,
     )
 
-    return Data.struct({ routingCtx, request, estimatedInputTokens })
+    return Data.struct({
+      routingCtx,
+      request,
+      estimatedInputTokens,
+      routingMode,
+    })
+  })
+
+/** @Owl.Engine.Orchestrator.Runtime.ResponseRoute - Annotates routing metadata */
+export const annotateResponseRouting = (
+  task: Task,
+  response: InferenceResponse,
+  routingMode: Mode,
+): InferenceResponse =>
+  Data.struct({
+    ...response,
+    requestedMode: task.mode,
+    routingMode,
   })
 
 export const makeResponseMetric = (
@@ -219,6 +237,7 @@ export const makeStreamingResponse = (
   result: StreamingCallbackResult,
   inputTokens: number,
   outputTokens: number,
+  routingMode: Mode = task.mode,
 ): InferenceResponse =>
   Data.struct({
     taskId: task.id,
@@ -234,4 +253,6 @@ export const makeStreamingResponse = (
     model: result.model,
     provider: result.provider as ProviderId,
     latencyMs: result.latencyMs,
+    requestedMode: task.mode,
+    routingMode,
   })

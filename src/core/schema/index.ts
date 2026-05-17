@@ -123,6 +123,10 @@ export const InferenceResponseSchema = Schema.Struct({
   model: Schema.String,
   provider: ProviderIdSchema,
   latencyMs: Schema.Number,
+  /** Submitted user mode before adaptive routing decisions */
+  requestedMode: Schema.optional(ModeSchema),
+  /** Effective mode used for provider routing */
+  routingMode: Schema.optional(ModeSchema),
 })
 export type InferenceResponse = Schema.Schema.Type<
   typeof InferenceResponseSchema

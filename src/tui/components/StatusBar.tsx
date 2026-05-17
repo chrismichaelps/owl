@@ -6,10 +6,11 @@ import { formatEstimatedCostUsd } from "../../core/cost.js"
 import {
   THINKING_MODES,
   AGENT_STATUS,
+  TUI_ROUTING_COPY,
   resolveModeCostBudget,
 } from "../../core/constants/index.js"
 import type { AgentStatus } from "../state.js"
-import type { ProviderId } from "../../core/schema/index.js"
+import type { Mode, ProviderId } from "../../core/schema/index.js"
 
 interface StatusBarProps {
   readonly status: AgentStatus
@@ -20,6 +21,7 @@ interface StatusBarProps {
   readonly providerOverride: ProviderId | null
   readonly privacyMode: boolean
   readonly model: string | null
+  readonly routingMode: Mode | null
 }
 
 const STATUS_COLOR: Record<AgentStatus, string> = {
@@ -47,6 +49,7 @@ export const StatusBar: React.FC<StatusBarProps> = memo(
     providerOverride,
     privacyMode,
     model,
+    routingMode,
   }) => (
     <Box
       borderStyle="single"
@@ -60,7 +63,14 @@ export const StatusBar: React.FC<StatusBarProps> = memo(
           Owl v0.1.0
         </Text>
         <Text color="magenta">[{mode.toUpperCase()}]</Text>
-        {HashSet.has(THINKING_MODES, mode) ? (
+        {routingMode !== null && routingMode !== mode ? (
+          <Text color="blueBright">
+            {TUI_ROUTING_COPY.LABEL.toLowerCase()}:{mode}
+            {TUI_ROUTING_COPY.MODE_SEPARATOR}
+            {routingMode}
+          </Text>
+        ) : null}
+        {HashSet.has(THINKING_MODES, routingMode ?? mode) ? (
           <Text color="blueBright" dimColor>
             ◌ thinking
           </Text>

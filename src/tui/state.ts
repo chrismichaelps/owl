@@ -13,7 +13,7 @@
  * - Turns: Full conversation history
  * - Streaming: In-progress response text
  */
-import type { TokenUsage, ProviderId } from "../core/schema/index.js"
+import type { TokenUsage, ProviderId, Mode } from "../core/schema/index.js"
 import { AGENT_STATUS, TUI_MAX_LOG_LINES } from "../core/constants/index.js"
 
 export type AgentStatus = (typeof AGENT_STATUS)[keyof typeof AGENT_STATUS]
@@ -34,6 +34,8 @@ export interface InferenceConversationTurn {
   readonly response: string
   readonly provider: ProviderId
   readonly model: string
+  readonly requestedMode: Mode
+  readonly routingMode: Mode
   readonly latencyMs: number
   readonly inputTokens: number
   readonly outputTokens: number
@@ -65,6 +67,8 @@ export interface ResponseSnapshot {
   readonly provider: ProviderId
   readonly latencyMs: number
   readonly usage: TokenUsage
+  readonly requestedMode?: Mode | undefined
+  readonly routingMode?: Mode | undefined
 }
 
 /** @Owl.TUI.State.App - Full application state shape */
@@ -79,6 +83,8 @@ export interface OwlAppState {
   readonly totalEstimatedCostUsd: number
   readonly provider: ProviderId | null
   readonly model: string | null
+  readonly requestedMode: Mode | null
+  readonly routingMode: Mode | null
   readonly providerOverride: ProviderId | null
   readonly privacyMode: boolean
   readonly latencyMs: number | null
@@ -116,6 +122,8 @@ export const INITIAL_STATE: OwlAppState = {
   totalEstimatedCostUsd: 0,
   provider: null,
   model: null,
+  requestedMode: null,
+  routingMode: null,
   providerOverride: null,
   privacyMode: false,
   latencyMs: null,
@@ -165,6 +173,8 @@ export function owlReducer(state: OwlAppState, action: OwlAction): OwlAppState {
           state.totalEstimatedCostUsd + action.response.usage.estimatedCostUsd,
         provider: action.response.provider,
         model: action.response.model,
+        requestedMode: action.response.requestedMode ?? null,
+        routingMode: action.response.routingMode ?? null,
         latencyMs: action.response.latencyMs,
         turnCount: state.turnCount + 1,
       }

@@ -12,6 +12,7 @@ import {
   MARKDOWN_CONSTANTS,
   TOOL_CONSTANTS,
   TUI_OUTPUT_PANEL,
+  TUI_ROUTING_COPY,
   TUI_RUNTIME_COPY,
   resolveModeThinkingBudget,
   resolveModeCostBudget,
@@ -56,6 +57,11 @@ describe("system constants", () => {
 
   it("TUI runtime copy avoids false registry sync claims", () => {
     expect(TUI_RUNTIME_COPY.RESPONSE_RECORDED).toBe("✓ Response recorded")
+  })
+
+  it("TUI routing copy centralizes adaptive route display", () => {
+    expect(TUI_ROUTING_COPY.LABEL).toBe("Route")
+    expect(TUI_ROUTING_COPY.MODE_SEPARATOR).toBe(" → ")
   })
 
   it("RETRY_CONFIG has exponential backoff settings", () => {

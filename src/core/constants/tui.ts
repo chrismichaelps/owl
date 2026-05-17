@@ -93,6 +93,14 @@ export const TUI_CONSTANTS = {
 /** @Owl.Core.Constants.TUIRuntimeCopy - Runtime log messages */
 export const TUI_RUNTIME_COPY = {
   RESPONSE_RECORDED: "✓ Response recorded",
+  ADAPTIVE_ROUTE_PREFIX: "↗ Route escalated",
+} as const
+
+/** @Owl.Core.Constants.TUIRoutingCopy - Routing mode display labels */
+export const TUI_ROUTING_COPY = {
+  LABEL: "Route",
+  AUTO_SUFFIX: "adaptive",
+  MODE_SEPARATOR: " → ",
 } as const
 
 /** @Owl.Core.Constants.TUIHistory - Prompt history storage and retention */

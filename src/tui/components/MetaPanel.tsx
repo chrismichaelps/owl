@@ -2,6 +2,7 @@
 import React, { memo } from "react"
 import { Box, Text } from "ink"
 import { formatEstimatedCostUsd } from "../../core/cost.js"
+import { TUI_ROUTING_COPY } from "../../core/constants/index.js"
 import type { OwlAppState } from "../state.js"
 
 interface MetaPanelProps {
@@ -48,6 +49,25 @@ export const MetaPanel: React.FC<MetaPanelProps> = memo(({ state }) => (
         valueColor="cyan"
       />
       <MetricRow label="Model" value={state.model ?? "—"} valueColor="cyan" />
+      <MetricRow
+        label={TUI_ROUTING_COPY.LABEL}
+        value={
+          state.requestedMode !== null && state.routingMode !== null
+            ? state.requestedMode === state.routingMode
+              ? state.routingMode
+              : state.requestedMode +
+                TUI_ROUTING_COPY.MODE_SEPARATOR +
+                state.routingMode
+            : "—"
+        }
+        valueColor={
+          state.requestedMode !== null &&
+          state.routingMode !== null &&
+          state.requestedMode !== state.routingMode
+            ? "blueBright"
+            : "white"
+        }
+      />
       <MetricRow
         label="Override"
         value={state.providerOverride ?? "auto"}

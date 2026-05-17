@@ -193,6 +193,7 @@ export const App: React.FC<AppProps> = ({
         providerOverride={state.providerOverride}
         privacyMode={state.privacyMode}
         model={state.model}
+        routingMode={state.routingMode}
       />
     </Box>
   )

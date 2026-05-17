@@ -279,6 +279,23 @@ describe("Orchestrator.run", () => {
     expect(response.taskId).toBe("task-xyz")
   })
 
+  it("annotates responses with requested and effective routing modes", async () => {
+    const response = await run(
+      Effect.gen(function* () {
+        const orch = yield* Orchestrator
+        return yield* orch.run(
+          makeTask({
+            id: "adaptive-route",
+            prompt:
+              "Investigate the provider streaming architecture regression",
+          }),
+        )
+      }),
+    )
+    expect(response.requestedMode).toBe("standard")
+    expect(response.routingMode).toBe("deep")
+  })
+
   it("passes active RoutingPreference to ProviderRouter", async () => {
     observedRoutingContexts.length = 0
     testPrivacyMode = false
@@ -393,6 +410,25 @@ describe("Orchestrator.runParallel", () => {
       "openai",
     ])
   })
+
+  it("annotates parallel responses with effective routing modes", async () => {
+    const responses = await run(
+      Effect.gen(function* () {
+        const orch = yield* Orchestrator
+        return yield* orch.runParallel(
+          makeTask({
+            id: "parallel-adaptive",
+            prompt: "Refactor the orchestration rollback pipeline",
+          }),
+        )
+      }),
+    )
+
+    expect(responses.map((response) => response.routingMode)).toEqual([
+      "deep",
+      "deep",
+    ])
+  })
 })
 
 describe("Orchestrator.runStream", () => {
@@ -410,6 +446,8 @@ describe("Orchestrator.runStream", () => {
     expect(response.content).toBe("Hello world")
     expect(response.provider).toBe("anthropic")
     expect(response.stopReason).toBe("end_turn")
+    expect(response.requestedMode).toBe("standard")
+    expect(response.routingMode).toBe("standard")
   })
 
   it("records the turn in session memory after streaming", async () => {

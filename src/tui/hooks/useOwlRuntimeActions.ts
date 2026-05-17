@@ -11,6 +11,7 @@ import {
   EFFECT_TAGS,
   JS_TYPES,
   TUI_CONSTANTS,
+  TUI_ROUTING_COPY,
   TUI_RUNTIME_COPY,
 } from "../../core/constants/index.js"
 import type { Mode } from "../../core/schema/index.js"
@@ -114,6 +115,21 @@ export function useOwlRuntimeActions(
         )
 
         dispatch({ type: "SET_ROLE", role: "Forensic Guardian" })
+        if (
+          response.requestedMode !== undefined &&
+          response.routingMode !== undefined &&
+          response.requestedMode !== response.routingMode
+        ) {
+          dispatch({
+            type: "ADD_LOG",
+            msg:
+              TUI_RUNTIME_COPY.ADAPTIVE_ROUTE_PREFIX +
+              ": " +
+              response.requestedMode +
+              TUI_ROUTING_COPY.MODE_SEPARATOR +
+              response.routingMode,
+          })
+        }
         dispatch({ type: "ADD_LOG", msg: TUI_RUNTIME_COPY.RESPONSE_RECORDED })
         dispatch({ type: "SET_RESPONSE", response })
         dispatch({
@@ -125,6 +141,8 @@ export function useOwlRuntimeActions(
             response: response.content,
             provider: response.provider,
             model: response.model,
+            requestedMode: response.requestedMode ?? submittedMode,
+            routingMode: response.routingMode ?? submittedMode,
             latencyMs: response.latencyMs,
             inputTokens: response.usage.inputTokens,
             outputTokens: response.usage.outputTokens,

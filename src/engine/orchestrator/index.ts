@@ -37,6 +37,7 @@ import {
   sumParallelOutputTokens,
 } from "./parallel.js"
 import {
+  annotateResponseRouting,
   makeAssistantMessage,
   makeParallelSessionTurn,
   makeResponseMetric,
@@ -177,9 +178,14 @@ export const makeOrchestratorLive = (projectRoot: string) =>
             false,
           )
 
-          const response = yield* router.complete(
+          const providerResponse = yield* router.complete(
             prepared.routingCtx,
             prepared.request,
+          )
+          const response = annotateResponseRouting(
+            task,
+            providerResponse,
+            prepared.routingMode,
           )
           yield* budgetService.consume(task.id, response.usage.outputTokens)
           yield* usageMetrics.recordInference(
@@ -212,8 +218,13 @@ export const makeOrchestratorLive = (projectRoot: string) =>
             prepared.routingCtx,
             prepared.request,
           )
-          const responseChunk = Chunk.fromIterable(responses)
-          const outputTokens = sumParallelOutputTokens(responses)
+          const responseChunk = Chunk.map(
+            Chunk.fromIterable(responses),
+            (response) =>
+              annotateResponseRouting(task, response, prepared.routingMode),
+          )
+          const annotatedResponses = Chunk.toReadonlyArray(responseChunk)
+          const outputTokens = sumParallelOutputTokens(annotatedResponses)
           yield* budgetService.consume(task.id, outputTokens)
 
           yield* Effect.forEach(
@@ -223,11 +234,13 @@ export const makeOrchestratorLive = (projectRoot: string) =>
             { discard: true },
           )
 
-          const combinedContent = formatParallelContent(responses)
+          const combinedContent = formatParallelContent(annotatedResponses)
 
           yield* ctx.addMessage(makeAssistantMessage(combinedContent))
 
-          const first = Option.getOrThrow(firstParallelResponse(responses))
+          const first = Option.getOrThrow(
+            firstParallelResponse(annotatedResponses),
+          )
           yield* mem.recordTurn(
             makeParallelSessionTurn(
               task,
@@ -235,12 +248,12 @@ export const makeOrchestratorLive = (projectRoot: string) =>
               prepared.estimatedInputTokens,
               outputTokens,
               first.provider,
-              sumParallelCostUsd(responses),
-              maxParallelLatencyMs(responses),
+              sumParallelCostUsd(annotatedResponses),
+              maxParallelLatencyMs(annotatedResponses),
             ),
           )
 
-          return responses
+          return annotatedResponses
         })
 
       const runStream = (
@@ -286,6 +299,7 @@ export const makeOrchestratorLive = (projectRoot: string) =>
             result,
             inputTokens,
             outputTokens,
+            prepared.routingMode,
           )
           yield* usageMetrics.recordInference(
             makeResponseMetric(task, response),

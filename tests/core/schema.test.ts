@@ -6,6 +6,7 @@ import {
   MessageSchema,
   TaskSchema,
   TokenUsageSchema,
+  InferenceResponseSchema,
   type Mode,
 } from "../../src/core/schema/index.js"
 
@@ -67,6 +68,28 @@ describe("core schemas", () => {
     })
     expect(usage.inputTokens).toBe(1200)
     expect(usage.estimatedCostUsd).toBe(0.004)
+  })
+
+  it("InferenceResponseSchema validates routing metadata", () => {
+    const decoded = Schema.decodeUnknownSync(InferenceResponseSchema)({
+      taskId: "task-1",
+      content: "ok",
+      stopReason: "end_turn",
+      usage: {
+        inputTokens: 1,
+        outputTokens: 2,
+        cacheReadTokens: 0,
+        cacheWriteTokens: 0,
+        estimatedCostUsd: 0,
+      },
+      model: "model",
+      provider: "anthropic",
+      latencyMs: 10,
+      requestedMode: "standard",
+      routingMode: "deep",
+    })
+
+    expect(decoded.routingMode).toBe("deep")
   })
 
   it("types derive from schemas", () => {

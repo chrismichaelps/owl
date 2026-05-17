@@ -3,7 +3,10 @@ import React, { memo } from "react"
 import { Box, Text } from "ink"
 import { formatEstimatedCostUsd } from "../../core/cost.js"
 import { MarkdownText } from "./MarkdownText.js"
-import { TURN_KIND_CONSTANTS } from "../../core/constants/index.js"
+import {
+  TUI_ROUTING_COPY,
+  TURN_KIND_CONSTANTS,
+} from "../../core/constants/index.js"
 import type { ConversationTurn } from "../state.js"
 
 interface ConversationThreadProps {
@@ -35,6 +38,13 @@ const InferenceTurnRow = memo(function InferenceTurnRow({
           {String(turn.inputTokens)}↑ {String(turn.outputTokens)}↓ ·{" "}
           {formatEstimatedCostUsd(turn.estimatedCostUsd)}
         </Text>
+        {turn.requestedMode !== turn.routingMode ? (
+          <Text color="blueBright" dimColor>
+            {TUI_ROUTING_COPY.LABEL}: {turn.requestedMode}
+            {TUI_ROUTING_COPY.MODE_SEPARATOR}
+            {turn.routingMode} ({TUI_ROUTING_COPY.AUTO_SUFFIX})
+          </Text>
+        ) : null}
       </Box>
     </Box>
   )
