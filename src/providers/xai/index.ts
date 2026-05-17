@@ -12,63 +12,23 @@
  * yield* registerProvider(router, XAIAdapterLive)
  */
 import OpenAI from "openai"
-import { Chunk, Context, Data, Effect, Layer } from "effect"
+import { Context, Data, Effect, Layer } from "effect"
 import * as Stream from "effect/Stream"
 import { ProviderError, ProviderStreamError } from "../../core/errors/index.js"
 import { OWL_CONFIG } from "../../core/config/index.js"
-import { PROVIDER_CONSTANTS, XAI_MODELS } from "../../core/constants/index.js"
+import { PROVIDER_CONSTANTS } from "../../core/constants/index.js"
 import { estimateModelCostUsd } from "../cost.js"
-import type {
-  LLMProviderService,
-  ProviderCapability,
-  StreamChunk,
-} from "../types.js"
+import type { LLMProviderService } from "../types.js"
 import type {
   InferenceRequest,
   InferenceResponse,
 } from "../../core/schema/index.js"
-
-/**
- * @Owl.Providers.xAI.Capabilities - Grok model specifications
- */
-const XAI_CAPABILITIES: readonly ProviderCapability[] = [
-  Data.struct({
-    providerId: "xai",
-    modelId: XAI_MODELS.GROK_3,
-    contextWindow: 131_072,
-    maxOutputTokens: 8_192,
-    inputCostPer1k: 0.003,
-    outputCostPer1k: 0.015,
-    supportsStreaming: true,
-    reasoningDepth: "high",
-    supportsFunctionCalling: true,
-    supportsVision: true,
-  }),
-]
-
-const estimateTextTokens = (text: string): number =>
-  Math.ceil(text.length / PROVIDER_CONSTANTS.TOKEN_ESTIMATION_CHARS_PER_TOKEN)
-
-const buildMessages = (request: InferenceRequest) => {
-  const messages = Chunk.map(Chunk.fromIterable(request.messages), (message) =>
-    Data.struct({
-      role: message.role as "user" | "assistant",
-      content: message.content,
-    }),
-  )
-
-  return Chunk.toArray(
-    request.systemPrompt !== undefined
-      ? Chunk.prepend(
-          messages,
-          Data.struct({
-            role: "system" as const,
-            content: request.systemPrompt,
-          }),
-        )
-      : messages,
-  )
-}
+import {
+  buildMessages,
+  estimateTextTokens,
+  XAI_CAPABILITIES,
+} from "./runtime.js"
+import { makeXAIStream } from "./stream.js"
 
 /** @Owl.Providers.xAI.Adapter - service definition */
 export class XAIAdapter extends Context.Tag("XAIAdapter")<
@@ -158,51 +118,7 @@ export const XAIAdapterLive = Layer.effect(
           new ProviderError({ provider: "xai", message: String(e) }),
       })
 
-    const stream = (request: InferenceRequest) =>
-      Stream.async<StreamChunk, ProviderStreamError>((emit) => {
-        const run = async () => {
-          try {
-            const chunks = await client.chat.completions.create({
-              model: request.model,
-              max_tokens: request.maxTokens,
-              messages: buildMessages(request),
-              stream: true,
-              stream_options: { include_usage: true },
-            })
-            let index = 0
-            for await (const chunk of chunks) {
-              const content = chunk.choices[0]?.delta.content
-              if (content) {
-                await emit.single({ type: "text", content, index: index++ })
-              }
-              if (chunk.usage != null) {
-                const inputTokens = chunk.usage.prompt_tokens
-                const outputTokens = chunk.usage.completion_tokens
-                await emit.single({
-                  type: "usage",
-                  index,
-                  usage: Data.struct({
-                    inputTokens,
-                    outputTokens,
-                    cacheReadTokens: 0,
-                    cacheWriteTokens: 0,
-                    estimatedCostUsd: estimateModelCostUsd(
-                      XAI_CAPABILITIES,
-                      request.model,
-                      inputTokens,
-                      outputTokens,
-                    ),
-                  }),
-                })
-              }
-            }
-            await emit.end()
-          } catch (cause) {
-            await emit.fail(new ProviderStreamError({ provider: "xai", cause }))
-          }
-        }
-        void run()
-      })
+    const stream = makeXAIStream(client)
 
     return {
       id: "xai",
