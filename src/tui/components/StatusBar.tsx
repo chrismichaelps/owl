@@ -3,7 +3,11 @@ import React, { memo } from "react"
 import { HashSet } from "effect"
 import { Box, Text } from "ink"
 import { formatEstimatedCostUsd } from "../../core/cost.js"
-import { THINKING_MODES, AGENT_STATUS } from "../../core/constants/index.js"
+import {
+  THINKING_MODES,
+  AGENT_STATUS,
+  resolveModeCostBudget,
+} from "../../core/constants/index.js"
 import type { AgentStatus } from "../state.js"
 import type { ProviderId } from "../../core/schema/index.js"
 
@@ -24,6 +28,12 @@ const STATUS_COLOR: Record<AgentStatus, string> = {
   inferring: "cyan",
   complete: "green",
   error: "red",
+}
+
+/** @Owl.TUI.Components.StatusBar.CostBudget - Render active routing ceiling */
+export const formatModeCostBudget = (mode: string): string => {
+  const budget = resolveModeCostBudget(mode)
+  return budget === undefined ? "open" : formatEstimatedCostUsd(budget)
 }
 
 /** @Owl.TUI.Components.StatusBar.Component - Bottom status bar */
@@ -82,6 +92,12 @@ export const StatusBar: React.FC<StatusBarProps> = memo(
           <Text color="green">
             {formatEstimatedCostUsd(totalEstimatedCostUsd)}
           </Text>
+        </Box>
+        <Box gap={1}>
+          <Text color="gray" dimColor>
+            budget:
+          </Text>
+          <Text color="green">{formatModeCostBudget(mode)}</Text>
         </Box>
       </Box>
 
