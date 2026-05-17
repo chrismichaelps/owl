@@ -33,6 +33,9 @@ describe("system constants", () => {
   it("PROVIDER_CONSTANTS centralize provider runtime bounds", () => {
     expect(PROVIDER_CONSTANTS.TOKEN_ESTIMATION_CHARS_PER_TOKEN).toBe(4)
     expect(PROVIDER_CONSTANTS.ANTHROPIC_MAX_TOOL_ITERATIONS).toBe(10)
+    expect(PROVIDER_CONSTANTS.ANTHROPIC_TOOL_ITERATION_LIMIT_MESSAGE).toContain(
+      "limit",
+    )
   })
 
   it("TOOL_CONSTANTS centralize command buffer bounds", () => {

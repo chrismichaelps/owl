@@ -191,6 +191,21 @@ export const AnthropicAdapterLive = Layer.effect(
           iterations++
         }
 
+        if (
+          response.stop_reason ===
+            ANTHROPIC_INTERNAL_CONSTANTS.STOP_REASON_TOOL_USE &&
+          (mcpManager !== null || builtInTools !== null) &&
+          iterations >= PROVIDER_CONSTANTS.ANTHROPIC_MAX_TOOL_ITERATIONS
+        ) {
+          return yield* Effect.fail(
+            new ProviderError({
+              provider: "anthropic",
+              message:
+                PROVIDER_CONSTANTS.ANTHROPIC_TOOL_ITERATION_LIMIT_MESSAGE,
+            }),
+          )
+        }
+
         // Collect final text content
         for (const block of response.content) {
           if (block.type === ANTHROPIC_INTERNAL_CONSTANTS.BLOCK_TYPE_TEXT) {

@@ -7,7 +7,10 @@ import {
   AnthropicAdapterLive,
 } from "../../src/providers/anthropic/index.js"
 import { OWLConfigLive } from "../../src/core/config/index.js"
-import { TOOL_NAMES } from "../../src/core/constants/index.js"
+import {
+  PROVIDER_CONSTANTS,
+  TOOL_NAMES,
+} from "../../src/core/constants/index.js"
 import { makeBuiltInToolsLive } from "../../src/tools/index.js"
 import type { StreamChunk } from "../../src/providers/types.js"
 
@@ -72,6 +75,25 @@ const makeStreamResult = (
     }
   },
   finalMessage: () => Promise.resolve(finalMessage),
+})
+
+const toolUseFinalMessage = (): AnthropicFinalMessage => ({
+  content: [
+    {
+      type: "tool_use",
+      id: "toolu_1",
+      name: TOOL_NAMES.READ,
+      input: { file_path: "package.json" },
+    },
+  ],
+  stop_reason: "tool_use",
+  usage: {
+    input_tokens: 10,
+    output_tokens: 1,
+    cache_creation_input_tokens: 0,
+    cache_read_input_tokens: 0,
+  },
+  model: "claude-sonnet-4-6",
 })
 
 /** @Owl.Tests.Providers.Anthropic.Behavior - Specialized adapter logic verification */
@@ -299,6 +321,41 @@ describe("AnthropicAdapter — prompt caching", () => {
     )
   })
 
+  it("complete() fails when the tool loop hits the safety cap", async () => {
+    mockCreate.mockResolvedValue(toolUseFinalMessage())
+
+    const result = await Effect.runPromise(
+      Effect.gen(function* () {
+        const adapter = yield* AnthropicAdapter
+        return yield* adapter
+          .complete({
+            taskId: "t-tool-limit",
+            messages: [
+              {
+                role: "user",
+                content: "read repeatedly",
+                timestamp: new Date().toISOString(),
+              },
+            ],
+            maxTokens: 256,
+            stream: false,
+            model: "claude-sonnet-4-6",
+          })
+          .pipe(Effect.either)
+      }).pipe(Effect.provide(makeToolLayer())),
+    )
+
+    expect(result._tag).toBe("Left")
+    if (result._tag === "Left") {
+      expect(result.left.message).toBe(
+        PROVIDER_CONSTANTS.ANTHROPIC_TOOL_ITERATION_LIMIT_MESSAGE,
+      )
+    }
+    expect(mockCreate).toHaveBeenCalledTimes(
+      PROVIDER_CONSTANTS.ANTHROPIC_MAX_TOOL_ITERATIONS + 1,
+    )
+  })
+
   it("stream() emits final usage after streamed text chunks", async () => {
     mockStream.mockReturnValueOnce(
       makeStreamResult(
@@ -415,6 +472,41 @@ describe("AnthropicAdapter — prompt caching", () => {
     )
     expect(callArg.tools?.map((tool) => tool.name)).not.toContain(
       TOOL_NAMES.BASH,
+    )
+  })
+
+  it("stream() fails when the tool loop hits the safety cap", async () => {
+    mockStream.mockReturnValue(makeStreamResult([], toolUseFinalMessage()))
+
+    const result = await Effect.runPromise(
+      Effect.gen(function* () {
+        const adapter = yield* AnthropicAdapter
+        return yield* Stream.runDrain(
+          adapter.stream({
+            taskId: "t-stream-tool-limit",
+            messages: [
+              {
+                role: "user",
+                content: "read repeatedly",
+                timestamp: new Date().toISOString(),
+              },
+            ],
+            maxTokens: 256,
+            stream: true,
+            model: "claude-sonnet-4-6",
+          }),
+        ).pipe(Effect.either)
+      }).pipe(Effect.provide(makeToolLayer())),
+    )
+
+    expect(result._tag).toBe("Left")
+    if (result._tag === "Left") {
+      expect(result.left.cause).toBe(
+        PROVIDER_CONSTANTS.ANTHROPIC_TOOL_ITERATION_LIMIT_MESSAGE,
+      )
+    }
+    expect(mockStream).toHaveBeenCalledTimes(
+      PROVIDER_CONSTANTS.ANTHROPIC_MAX_TOOL_ITERATIONS,
     )
   })
 })

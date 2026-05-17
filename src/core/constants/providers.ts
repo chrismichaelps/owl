@@ -110,6 +110,8 @@ export const THINKING_MODES: HashSet.HashSet<string> = HashSet.fromIterable([
 export const PROVIDER_CONSTANTS = {
   TOKEN_ESTIMATION_CHARS_PER_TOKEN: 4,
   ANTHROPIC_MAX_TOOL_ITERATIONS: 10,
+  ANTHROPIC_TOOL_ITERATION_LIMIT_MESSAGE:
+    "Anthropic tool iteration limit exceeded",
   OLLAMA_GENERATE_PATH: "/api/generate",
   OLLAMA_TAGS_PATH: "/api/tags",
   OLLAMA_STREAM_DELIMITER: "\n",

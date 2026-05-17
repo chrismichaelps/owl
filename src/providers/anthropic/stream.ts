@@ -87,6 +87,7 @@ export const makeAnthropicStream =
           let iterations = 0
           let usageTotals = emptyUsage()
           let lastModel = request.model
+          let lastStopReason: string | null = null
 
           while (
             iterations < PROVIDER_CONSTANTS.ANTHROPIC_MAX_TOOL_ITERATIONS
@@ -135,6 +136,7 @@ export const makeAnthropicStream =
 
             const finalMsg = await stream.finalMessage()
             lastModel = finalMsg.model
+            lastStopReason = finalMsg.stop_reason
             usageTotals = addUsage(usageTotals, finalMsg.usage)
 
             if (
@@ -182,6 +184,22 @@ export const makeAnthropicStream =
               content: Chunk.toArray(toolResults),
             })
             iterations++
+          }
+
+          if (
+            lastStopReason ===
+              ANTHROPIC_INTERNAL_CONSTANTS.STOP_REASON_TOOL_USE &&
+            (mcpManager !== null || builtInTools !== null) &&
+            iterations >= PROVIDER_CONSTANTS.ANTHROPIC_MAX_TOOL_ITERATIONS
+          ) {
+            await emit.fail(
+              new ProviderStreamError({
+                provider: "anthropic",
+                cause:
+                  PROVIDER_CONSTANTS.ANTHROPIC_TOOL_ITERATION_LIMIT_MESSAGE,
+              }),
+            )
+            return
           }
 
           await emit.single({
