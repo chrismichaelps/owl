@@ -128,6 +128,17 @@ const makeObservableProvider = (id: ProviderId): LLMProviderService => ({
     ),
 })
 
+const makeUnhealthyProvider = (id: ProviderId): LLMProviderService => ({
+  ...makeStubProvider(id),
+  healthCheck: () =>
+    Effect.fail(
+      new ProviderError({
+        provider: id,
+        message: `${id} health failed`,
+      }),
+    ),
+})
+
 const makeChunkedProvider = (id: ProviderId): LLMProviderService => ({
   ...makeStubProvider(id),
   stream: () =>
@@ -530,6 +541,30 @@ describe("ProviderRouter", () => {
       program.pipe(Effect.provide(ProviderRouterLive)),
     )
     expect(providers).toEqual(["anthropic", "openai"])
+  })
+
+  it("checks registered provider health deterministically", async () => {
+    const first = makeUnhealthyProvider("openai")
+    const second = makeStubProvider("anthropic")
+
+    const program = Effect.gen(function* () {
+      const router = yield* ProviderRouter
+      yield* registerProvider(router, first)
+      yield* registerProvider(router, second)
+      return yield* router.checkHealth()
+    })
+
+    const health = await Effect.runPromise(
+      program.pipe(Effect.provide(ProviderRouterLive)),
+    )
+    expect(health).toEqual([
+      { provider: "anthropic", healthy: true, message: null },
+      {
+        provider: "openai",
+        healthy: false,
+        message: "openai health failed",
+      },
+    ])
   })
 })
 

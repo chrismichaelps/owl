@@ -50,6 +50,7 @@ import {
   makeProviderRegistryRef,
   registerProviderInRef,
 } from "./registry.js"
+import { checkProviderHealth, type ProviderHealthStatus } from "./health.js"
 import type { ProviderUnavailableError } from "../../core/errors/index.js"
 import type {
   LLMProviderService,
@@ -65,6 +66,7 @@ import type {
 import type { AnyProviderError } from "../types.js"
 
 export { formatStreamEventLog } from "./streaming.js"
+export type { ProviderHealthStatus } from "./health.js"
 
 /**
  * @Owl.Providers.Router.Service - Coordinator interface for multi-provider strategies
@@ -154,6 +156,14 @@ export interface ProviderRouterService {
    * @returns Sorted array of ProviderCapability records
    */
   readonly listCapabilities: () => Effect.Effect<readonly ProviderCapability[]>
+
+  /**
+   * Run health checks for all registered providers
+   *
+   * @returns Sorted provider health statuses. Provider failures are captured
+   * as data so observability commands can render partial system health.
+   */
+  readonly checkHealth: () => Effect.Effect<readonly ProviderHealthStatus[]>
 }
 
 /** @Owl.Providers.Router.Adapter - Effect-TS service definition */
@@ -310,6 +320,7 @@ export const ProviderRouterLive = Layer.effect(
       completeWithCallback,
       listProviders: () => listProviderIds(registryRef),
       listCapabilities: () => listProviderCapabilities(registryRef),
+      checkHealth: () => checkProviderHealth(registryRef),
       _register: (provider) => {
         registerProviderInRef(registryRef, provider)
       },

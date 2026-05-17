@@ -4,6 +4,7 @@ import { Effect } from "effect"
 import {
   makeProvidersCommand,
   formatProviderCapability,
+  formatProviderHealth,
 } from "../../src/commands/management/providers.js"
 import {
   RoutingPreferences,
@@ -37,6 +38,14 @@ const makeRouter = (
   listProviders: () =>
     Effect.succeed(capabilities.map((capability) => capability.providerId)),
   listCapabilities: () => Effect.succeed(capabilities),
+  checkHealth: () =>
+    Effect.succeed(
+      capabilities.map((capability) => ({
+        provider: capability.providerId,
+        healthy: true,
+        message: null,
+      })),
+    ),
 })
 
 const run = <A, E>(eff: Effect.Effect<A, E, RoutingPreferences>) =>
@@ -49,6 +58,26 @@ describe("formatProviderCapability", () => {
     expect(output).toContain("high reasoning")
     expect(output).toContain("200000 ctx")
     expect(output).toContain("per 1K")
+  })
+})
+
+describe("formatProviderHealth", () => {
+  it("renders healthy and unhealthy providers", () => {
+    expect(
+      formatProviderHealth({
+        provider: "anthropic",
+        healthy: true,
+        message: null,
+      }),
+    ).toBe("- anthropic: healthy")
+
+    expect(
+      formatProviderHealth({
+        provider: "ollama",
+        healthy: false,
+        message: "connection refused",
+      }),
+    ).toBe("- ollama: unhealthy — connection refused")
   })
 })
 
@@ -68,6 +97,8 @@ describe("makeProvidersCommand", () => {
     expect(output).toContain("Active provider: auto")
     expect(output).toContain("Registered models:")
     expect(output).toContain("claude-opus-4-5")
+    expect(output).toContain("Provider health:")
+    expect(output).toContain("- anthropic: healthy")
   })
 
   it("supports models as a command alias", async () => {

@@ -3,7 +3,10 @@ import { Chunk, Effect } from "effect"
 import { formatEstimatedCostUsd } from "../../core/cost.js"
 import type { CommandParseError } from "../../core/errors/index.js"
 import type { RoutingPreferencesService } from "../../providers/preferences/index.js"
-import type { ProviderRouterService } from "../../providers/router/index.js"
+import type {
+  ProviderHealthStatus,
+  ProviderRouterService,
+} from "../../providers/router/index.js"
 import type { ProviderCapability } from "../../providers/types.js"
 import type { CommandHandler, CommandResult } from "../types.js"
 
@@ -28,6 +31,18 @@ export function formatProviderCapability(
   ].join("")
 }
 
+/** @Owl.Commands.Management.Providers.Health - Human-readable health row */
+export function formatProviderHealth(status: ProviderHealthStatus): string {
+  const suffix = status.message === null ? "" : " — " + status.message
+  return (
+    "- " +
+    status.provider +
+    ": " +
+    (status.healthy ? "healthy" : "unhealthy") +
+    suffix
+  )
+}
+
 /** @Owl.Commands.Management.Providers.Factory - Create the /providers handler */
 export function makeProvidersCommand(
   router: ProviderRouterService,
@@ -40,16 +55,24 @@ export function makeProvidersCommand(
     execute: (): Effect.Effect<CommandResult, CommandParseError> =>
       Effect.gen(function* () {
         const preferences = yield* routingPreferences.snapshot()
+        const health = Chunk.fromIterable(yield* router.checkHealth())
         const capabilities = Chunk.fromIterable(
           yield* router.listCapabilities(),
         )
+        const healthSection = Chunk.isEmpty(health)
+          ? ""
+          : "\nProvider health:\n" +
+            Chunk.toReadonlyArray(Chunk.map(health, formatProviderHealth)).join(
+              "\n",
+            )
 
         if (Chunk.isEmpty(capabilities)) {
           return {
             output:
               "Active provider: " +
               (preferences.preferredProvider ?? "auto") +
-              "\nNo providers are registered.",
+              "\nNo providers are registered." +
+              healthSection,
           }
         }
 
@@ -60,7 +83,8 @@ export function makeProvidersCommand(
             "\nRegistered models:\n" +
             Chunk.toReadonlyArray(
               Chunk.map(capabilities, formatProviderCapability),
-            ).join("\n"),
+            ).join("\n") +
+            healthSection,
         }
       }),
   }

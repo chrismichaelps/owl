@@ -19,6 +19,7 @@ const makeRouter = (
     Effect.die("completeWithCallback not used in model command"),
   listProviders: () => Effect.succeed(providers),
   listCapabilities: () => Effect.succeed([]),
+  checkHealth: () => Effect.succeed([]),
 })
 
 const run = <A, E>(eff: Effect.Effect<A, E, RoutingPreferences>) =>
