@@ -22,6 +22,7 @@ import {
   THINKING_MODES,
   TOKEN_LIMITS,
   resolveModeThinkingBudget,
+  resolveModeCostBudget,
   resolveModeTokenBudget,
 } from "../../core/constants/index.js"
 
@@ -62,17 +63,20 @@ export const makeRoutingContext = (
   estimatedInputTokens: number,
   preferredProvider: string | undefined,
   privacyMode: boolean,
-): RoutingContext =>
-  Data.struct({
+): RoutingContext => {
+  const costBudgetUsd = resolveModeCostBudget(task.mode)
+  return Data.struct({
     taskId: task.id,
     mode: task.mode,
     estimatedInputTokens,
     requiresReasoning: HashSet.has(THINKING_MODES, task.mode),
     requiresVision: false,
     latencyBudgetMs: PROVIDER_TIMEOUTS.DEFAULT_MS,
+    ...(costBudgetUsd !== undefined ? { costBudgetUsd } : {}),
     ...(privacyMode ? { localOnly: true } : {}),
     ...(preferredProvider !== undefined ? { preferredProvider } : {}),
   })
+}
 
 export const makeInferenceRequest = (
   task: Task,

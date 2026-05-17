@@ -10,6 +10,7 @@ import {
   TOOL_CONSTANTS,
   TUI_OUTPUT_PANEL,
   resolveModeThinkingBudget,
+  resolveModeCostBudget,
   resolveModeTokenBudget,
 } from "../../src/core/constants/index.js"
 
@@ -71,5 +72,13 @@ describe("system constants", () => {
     )
     expect(resolveModeThinkingBudget("deep")).toBe(10000)
     expect(resolveModeThinkingBudget("quick")).toBeUndefined()
+  })
+
+  it("mode cost budgets constrain cheaper modes only", () => {
+    expect(resolveModeCostBudget("economy")).toBeLessThan(
+      resolveModeCostBudget("standard") ?? Number.POSITIVE_INFINITY,
+    )
+    expect(resolveModeCostBudget("deep")).toBeUndefined()
+    expect(resolveModeCostBudget("god")).toBeUndefined()
   })
 })

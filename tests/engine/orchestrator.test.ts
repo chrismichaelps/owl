@@ -246,6 +246,22 @@ describe("Orchestrator.run", () => {
     testPrivacyMode = false
   })
 
+  it("passes economy cost budget to ProviderRouter", async () => {
+    observedRoutingContexts.length = 0
+    testPrivacyMode = false
+    testPreferredProvider = undefined
+    const response = await run(
+      Effect.gen(function* () {
+        const orch = yield* Orchestrator
+        return yield* orch.run(
+          makeTask({ id: "economy-cost-budget", mode: "economy" }),
+        )
+      }),
+    )
+    expect(response.taskId).toBe("economy-cost-budget")
+    expect(observedRoutingContexts.at(-1)?.costBudgetUsd).toBe(0.005)
+  })
+
   it("records UsageMetrics after a successful run", async () => {
     observedInferenceMetrics.length = 0
     const response = await run(

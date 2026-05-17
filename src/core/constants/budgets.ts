@@ -28,6 +28,18 @@ export const resolveModeTokenBudget = (mode: string): number =>
     () => TOKEN_LIMITS.DEFAULT_SESSION_BUDGET,
   )
 
+/** @Owl.Core.Constants.ModeCostBudget - Mode-specific estimated USD ceilings */
+export const MODE_COST_BUDGETS: HashMap.HashMap<string, number> =
+  HashMap.fromIterable([
+    ["economy", 0.005],
+    ["quick", 0.02],
+    ["standard", 0.25],
+  ])
+
+/** @Owl.Core.Constants.CostBudget.Resolve - Optional estimated cost ceiling */
+export const resolveModeCostBudget = (mode: string): number | undefined =>
+  Option.getOrUndefined(HashMap.get(MODE_COST_BUDGETS, mode))
+
 /** @Owl.Core.Constants.Thinking - Extended thinking token budgets per mode */
 export const MODE_THINKING_BUDGETS: HashMap.HashMap<string, number> =
   HashMap.fromIterable([
