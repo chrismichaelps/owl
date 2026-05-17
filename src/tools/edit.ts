@@ -9,7 +9,7 @@ import { readFile, writeFile } from "node:fs/promises"
 import { Chunk, Effect } from "effect"
 import { TOOL_NAMES } from "../core/constants/index.js"
 import { ToolExecutionError } from "../core/errors/index.js"
-import { resolveToolPath } from "./path.js"
+import { formatToolPath, resolveToolPath } from "./path.js"
 import { decodeToolInput } from "./schema.js"
 import type { BuiltInTool } from "./types.js"
 
@@ -71,13 +71,14 @@ export const EditTool: BuiltInTool = {
         decoded.file_path,
         TOOL_NAMES.EDIT,
       )
+      const displayPath = formatToolPath(cwd, absPath)
 
       const original = yield* Effect.tryPromise({
         try: () => readFile(absPath, "utf-8"),
         catch: (e) =>
           new ToolExecutionError({
             tool: TOOL_NAMES.EDIT,
-            reason: `Cannot read file: ${absPath}`,
+            reason: `Cannot read file: ${displayPath}`,
             cause: e,
           }),
       })
@@ -89,7 +90,7 @@ export const EditTool: BuiltInTool = {
         return yield* Effect.fail(
           new ToolExecutionError({
             tool: TOOL_NAMES.EDIT,
-            reason: `old_string not found in ${absPath}. Re-read the file to get the exact current content.`,
+            reason: `old_string not found in ${displayPath}. Re-read the file to get the exact current content.`,
           }),
         )
       }
@@ -98,7 +99,7 @@ export const EditTool: BuiltInTool = {
         return yield* Effect.fail(
           new ToolExecutionError({
             tool: TOOL_NAMES.EDIT,
-            reason: `old_string appears ${String(occurrences)} times in ${absPath}. Add more surrounding context to make it unique, or set replace_all: true.`,
+            reason: `old_string appears ${String(occurrences)} times in ${displayPath}. Add more surrounding context to make it unique, or set replace_all: true.`,
           }),
         )
       }
@@ -112,12 +113,12 @@ export const EditTool: BuiltInTool = {
         catch: (e) =>
           new ToolExecutionError({
             tool: TOOL_NAMES.EDIT,
-            reason: `Cannot write file: ${absPath}`,
+            reason: `Cannot write file: ${displayPath}`,
             cause: e,
           }),
       })
 
       const replaced = replaceAll ? occurrences : 1
-      return `Replaced ${String(replaced)} occurrence(s) in ${absPath}`
+      return `Replaced ${String(replaced)} occurrence(s) in ${displayPath}`
     }),
 }

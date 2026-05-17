@@ -10,7 +10,7 @@ import { Chunk, Effect } from "effect"
 import { TOOL_NAMES, TOOL_CONSTANTS } from "../core/constants/index.js"
 import { ToolExecutionError } from "../core/errors/index.js"
 import { formatBytes } from "../core/utils/format.js"
-import { resolveToolPath } from "./path.js"
+import { formatToolPath, resolveToolPath } from "./path.js"
 import { decodeToolInput } from "./schema.js"
 import type { BuiltInTool } from "./types.js"
 
@@ -72,13 +72,14 @@ export const WriteTool: BuiltInTool = {
         decoded.file_path,
         TOOL_NAMES.WRITE,
       )
+      const displayPath = formatToolPath(cwd, absPath)
 
       yield* Effect.tryPromise({
         try: () => mkdir(dirname(absPath), { recursive: true }),
         catch: (e) =>
           new ToolExecutionError({
             tool: TOOL_NAMES.WRITE,
-            reason: `Cannot create directory for: ${absPath}`,
+            reason: `Cannot create directory for: ${displayPath}`,
             cause: e,
           }),
       })
@@ -88,12 +89,12 @@ export const WriteTool: BuiltInTool = {
         catch: (e) =>
           new ToolExecutionError({
             tool: TOOL_NAMES.WRITE,
-            reason: `Cannot write file: ${absPath}`,
+            reason: `Cannot write file: ${displayPath}`,
             cause: e,
           }),
       })
 
       const lines = Chunk.size(Chunk.fromIterable(decoded.content.split("\n")))
-      return `Written ${String(lines)} line(s) to ${absPath}`
+      return `Written ${String(lines)} line(s) to ${displayPath}`
     }),
 }

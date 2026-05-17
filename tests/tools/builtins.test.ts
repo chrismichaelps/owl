@@ -55,10 +55,12 @@ describe("BuiltInTools", () => {
   })
 
   it("writes, reads, and edits files inside the project root", async () => {
-    await runTool(TOOL_NAMES.WRITE, {
+    const writeOutput = await runTool(TOOL_NAMES.WRITE, {
       file_path: "src/example.txt",
       content: "one\ntwo\n",
     })
+    expect(writeOutput).toContain("src/example.txt")
+    expect(writeOutput).not.toContain(projectRoot)
 
     const readOutput = await runTool(TOOL_NAMES.READ, {
       file_path: "src/example.txt",
@@ -66,11 +68,13 @@ describe("BuiltInTools", () => {
     expect(readOutput).toContain("1\tone")
     expect(readOutput).toContain("2\ttwo")
 
-    await runTool(TOOL_NAMES.EDIT, {
+    const editOutput = await runTool(TOOL_NAMES.EDIT, {
       file_path: "src/example.txt",
       old_string: "two",
       new_string: "three",
     })
+    expect(editOutput).toContain("src/example.txt")
+    expect(editOutput).not.toContain(projectRoot)
 
     await expect(
       readFile(join(projectRoot, "src/example.txt"), "utf8"),
@@ -95,12 +99,14 @@ describe("BuiltInTools", () => {
     const globOutput = await runTool(TOOL_NAMES.GLOB, { pattern: "*.ts" })
     expect(globOutput).toContain("alpha.ts")
     expect(globOutput).toContain("beta.ts")
+    expect(globOutput).not.toContain(projectRoot)
 
     const grepOutput = await runTool(TOOL_NAMES.GREP, {
       pattern: "alpha",
       include: "*.ts",
     })
     expect(grepOutput).toContain("alpha.ts")
+    expect(grepOutput).not.toContain(projectRoot)
   })
 
   it("clamps Bash timeouts to the configured minimum", async () => {

@@ -10,7 +10,7 @@ import { Chunk, Effect } from "effect"
 import { TOOL_NAMES, TOOL_CONSTANTS } from "../core/constants/index.js"
 import { ToolExecutionError } from "../core/errors/index.js"
 import { formatBytes } from "../core/utils/format.js"
-import { resolveToolPath } from "./path.js"
+import { formatToolPath, resolveToolPath } from "./path.js"
 import { decodeToolInput } from "./schema.js"
 import type { BuiltInTool } from "./types.js"
 
@@ -77,13 +77,14 @@ export const ReadTool: BuiltInTool = {
         decoded.file_path,
         TOOL_NAMES.READ,
       )
+      const displayPath = formatToolPath(cwd, absPath)
 
       const content = yield* Effect.tryPromise({
         try: () => readFile(absPath, "utf-8"),
         catch: (e) =>
           new ToolExecutionError({
             tool: TOOL_NAMES.READ,
-            reason: `Cannot read file: ${absPath}`,
+            reason: `Cannot read file: ${displayPath}`,
             cause: e,
           }),
       })

@@ -9,7 +9,7 @@ import fg from "fast-glob"
 import { Chunk, Data, Effect, Order } from "effect"
 import { TOOL_NAMES, TOOL_CONSTANTS } from "../core/constants/index.js"
 import { ToolExecutionError } from "../core/errors/index.js"
-import { resolveToolPath } from "./path.js"
+import { formatToolPath, resolveToolPath } from "./path.js"
 import { decodeToolInput } from "./schema.js"
 import type { BuiltInTool } from "./types.js"
 
@@ -75,6 +75,7 @@ export const GlobTool: BuiltInTool = {
         decoded.path !== undefined && decoded.path.trim().length > 0
           ? yield* resolveToolPath(cwd, decoded.path, TOOL_NAMES.GLOB)
           : cwd
+      const displayRoot = formatToolPath(cwd, searchRoot)
 
       const matches = yield* Effect.tryPromise({
         try: () =>
@@ -94,7 +95,7 @@ export const GlobTool: BuiltInTool = {
       })
 
       if (matches.length === 0) {
-        return `No files match pattern "${decoded.pattern}" in ${searchRoot}`
+        return `No files match pattern "${decoded.pattern}" in ${displayRoot}`
       }
 
       const candidateMatches = Chunk.take(
@@ -121,7 +122,9 @@ export const GlobTool: BuiltInTool = {
 
       const sorted = Chunk.sort(Chunk.fromIterable(withMtime), newestFirst)
       const bounded = Chunk.take(sorted, TOOL_CONSTANTS.GLOB_MAX_RESULTS)
-      const paths = Chunk.toArray(Chunk.map(bounded, (e) => e.path))
+      const paths = Chunk.toArray(
+        Chunk.map(bounded, (e) => formatToolPath(cwd, e.path)),
+      )
 
       const truncNote =
         matches.length > TOOL_CONSTANTS.GLOB_MAX_RESULTS

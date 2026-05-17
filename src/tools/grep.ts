@@ -8,7 +8,7 @@ import { execFile } from "node:child_process"
 import { Chunk, Effect } from "effect"
 import { TOOL_NAMES, TOOL_CONSTANTS } from "../core/constants/index.js"
 import { ToolExecutionError } from "../core/errors/index.js"
-import { resolveToolPath } from "./path.js"
+import { formatToolSearchOutput, resolveToolPath } from "./path.js"
 import { decodeToolInput } from "./schema.js"
 import type { BuiltInTool } from "./types.js"
 
@@ -153,7 +153,7 @@ export const GrepTool: BuiltInTool = {
                 return
               }
               const output = truncate(
-                stdout,
+                formatToolSearchOutput(cwd, stdout),
                 TOOL_CONSTANTS.GREP_MAX_OUTPUT_CHARS,
               )
               resume(
