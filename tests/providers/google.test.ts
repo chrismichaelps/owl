@@ -123,6 +123,28 @@ describe("GoogleAdapter", () => {
     expect(response.usage.estimatedCostUsd).toBe(0.00003)
   })
 
+  it("complete() falls back to deterministic token estimates for malformed usage metadata", async () => {
+    mockGenerateContent.mockResolvedValueOnce({
+      response: {
+        text: () => "ok",
+        usageMetadata: {
+          promptTokenCount: "not-a-number",
+          candidatesTokenCount: 25,
+        },
+      },
+    })
+
+    const response = await Effect.runPromise(
+      Effect.gen(function* () {
+        const adapter = yield* GoogleAdapter
+        return yield* adapter.complete(makeRequest())
+      }).pipe(Effect.provide(makeLayer())),
+    )
+
+    expect(response.usage.inputTokens).toBe(2)
+    expect(response.usage.outputTokens).toBe(1)
+  })
+
   it("stream() emits text chunks and final usage", async () => {
     mockGenerateContentStream.mockResolvedValueOnce({
       stream: makeStream([{ text: () => "Gemini " }, { text: () => "stream" }]),

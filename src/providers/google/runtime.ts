@@ -5,6 +5,7 @@ import {
   PROVIDER_CONSTANTS,
 } from "../../core/constants/index.js"
 import { estimateModelCostUsd } from "../cost.js"
+import { decodeGoogleUsageMetadata } from "./schema.js"
 import type { InferenceRequest } from "../../core/schema/index.js"
 import type { ProviderCapability } from "../types.js"
 
@@ -36,14 +37,9 @@ export const GOOGLE_CAPABILITIES: readonly ProviderCapability[] = [
   }),
 ]
 
-export interface GoogleUsageMetadata {
-  readonly promptTokenCount?: number
-  readonly candidatesTokenCount?: number
-}
-
 export interface GoogleResponseLike {
   readonly text: () => string
-  readonly usageMetadata?: GoogleUsageMetadata
+  readonly usageMetadata?: unknown
 }
 
 export const estimateTextTokens = (text: string): number =>
@@ -76,10 +72,10 @@ export const usageFromResponse = (
   content: string,
   response: GoogleResponseLike,
 ) => {
-  const inputTokens =
-    response.usageMetadata?.promptTokenCount ?? estimateTextTokens(prompt)
+  const metadata = decodeGoogleUsageMetadata(response.usageMetadata)
+  const inputTokens = metadata?.promptTokenCount ?? estimateTextTokens(prompt)
   const outputTokens =
-    response.usageMetadata?.candidatesTokenCount ?? estimateTextTokens(content)
+    metadata?.candidatesTokenCount ?? estimateTextTokens(content)
 
   return Data.struct({
     inputTokens,
