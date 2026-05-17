@@ -47,6 +47,7 @@ import type { PaletteCommand } from "./commands/fuzzy.js"
 /** @Owl.TUI.App.Props - Component props */
 interface AppProps {
   readonly runtime: OwlRuntime
+  readonly projectRoot?: string
   readonly initialMode?: Mode
   readonly initialPrompt?: string | null
 }
@@ -54,13 +55,13 @@ interface AppProps {
 /** @Owl.TUI.App.Root - Main app component */
 export const App: React.FC<AppProps> = ({
   runtime,
+  projectRoot = process.cwd(),
   initialMode = "standard",
   initialPrompt,
 }) => {
   useApp() // access to exit()
   const [state, dispatch] = useReducer(owlReducer, INITIAL_STATE)
   const didSubmitInitialPromptRef = useRef(false)
-  const projectRoot = process.cwd()
   const [mode, setMode] = useState<Mode>(initialMode)
   const [paletteState, setPaletteState] = useState({
     open: false,

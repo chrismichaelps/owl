@@ -1,4 +1,5 @@
 /** @Owl.Tests.CLI.Runner - CLI runner error formatting tests */
+import type { ReactElement } from "react"
 import { describe, expect, it } from "vitest"
 import { formatCliHelp, formatCliVersion } from "../../src/cli/help.js"
 import { formatFatalError, runCli } from "../../src/cli/run.js"
@@ -38,5 +39,21 @@ describe("runCli metadata flags", () => {
     })
 
     expect(writes).toEqual([formatCliVersion()])
+  })
+
+  it("passes the caller project root into the TUI app", async () => {
+    const projectRoot = "/tmp/owl-runner-project"
+    let rendered: ReactElement<{ readonly projectRoot?: string }> | undefined
+
+    await runCli([], projectRoot, undefined, {
+      render: (element) => {
+        rendered = element as ReactElement<{ readonly projectRoot?: string }>
+        return {
+          waitUntilExit: () => Promise.resolve(),
+        }
+      },
+    })
+
+    expect(rendered?.props.projectRoot).toBe(projectRoot)
   })
 })

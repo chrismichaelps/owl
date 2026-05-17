@@ -6,6 +6,7 @@
  */
 import React from "react"
 import { render } from "ink"
+import type { ReactElement } from "react"
 import { App } from "../tui/app.js"
 import { makeOwlRuntime } from "./runtime.js"
 import { parseArgs } from "./args.js"
@@ -16,9 +17,25 @@ export interface CliOutput {
   readonly stdout: (text: string) => void
 }
 
+/** @Owl.CLI.Runner.Renderer - Testable Ink render port */
+export interface CliRenderer {
+  readonly render: (element: ReactElement) => {
+    readonly waitUntilExit: () => Promise<void>
+  }
+}
+
 const DEFAULT_OUTPUT: CliOutput = {
   stdout: (text) => {
     process.stdout.write(text)
+  },
+}
+
+const DEFAULT_RENDERER: CliRenderer = {
+  render: (element) => {
+    const instance = render(element)
+    return {
+      waitUntilExit: () => instance.waitUntilExit().then(() => undefined),
+    }
   },
 }
 
@@ -33,6 +50,7 @@ export async function runCli(
   argv: readonly string[],
   projectRoot: string,
   output: CliOutput = DEFAULT_OUTPUT,
+  renderer: CliRenderer = DEFAULT_RENDERER,
 ): Promise<void> {
   const { mode, prompt, help, version } = parseArgs(argv)
 
@@ -49,9 +67,10 @@ export async function runCli(
   const runtime = makeOwlRuntime(projectRoot)
 
   try {
-    const { waitUntilExit } = render(
+    const { waitUntilExit } = renderer.render(
       React.createElement(App, {
         runtime,
+        projectRoot,
         initialMode: mode,
         initialPrompt: prompt,
       }),
