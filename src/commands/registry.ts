@@ -71,10 +71,10 @@ export interface CommandRegistryService {
   /**
    * List all registered commands
    *
-   * @returns Array of { name, description }
+   * @returns Chunk of { name, description }
    */
   readonly list: () => Effect.Effect<
-    readonly { readonly name: string; readonly description: string }[]
+    Chunk.Chunk<{ readonly name: string; readonly description: string }>
   >
   /**
    * Dispatch a parsed command to its handler
@@ -120,21 +120,19 @@ export const buildRegistryService = (
     )
 
   const list = (): Effect.Effect<
-    readonly { readonly name: string; readonly description: string }[]
+    Chunk.Chunk<{ readonly name: string; readonly description: string }>
   > =>
     Ref.get(mapRef).pipe(
       Effect.map((map) =>
-        Chunk.toReadonlyArray(
-          Chunk.sortWith(
-            Chunk.map(Chunk.fromIterable(HashMap.values(map)), (handler) =>
-              Data.struct({
-                name: handler.name,
-                description: handler.description,
-              }),
-            ),
-            (command) => command.name,
-            Order.string,
+        Chunk.sortWith(
+          Chunk.map(Chunk.fromIterable(HashMap.values(map)), (handler) =>
+            Data.struct({
+              name: handler.name,
+              description: handler.description,
+            }),
           ),
+          (command) => command.name,
+          Order.string,
         ),
       ),
     )

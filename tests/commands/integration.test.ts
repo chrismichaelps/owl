@@ -1,6 +1,6 @@
 /** @Owl.Tests.Commands.Integration - Parse-to-dispatch pipeline integration tests */
 import { describe, expect, it } from "vitest"
-import { Effect } from "effect"
+import { Chunk, Effect } from "effect"
 import {
   CommandRegistry,
   CommandRegistryLive,
@@ -95,6 +95,8 @@ describe("Commands integration: parse → dispatch", () => {
         return yield* registry.list()
       }),
     )
-    expect(result.map((c) => c.name).sort()).toEqual(["deep", "plan", "task"])
+    expect(
+      Chunk.toReadonlyArray(Chunk.map(result, (command) => command.name)),
+    ).toEqual(["deep", "plan", "task"])
   })
 })

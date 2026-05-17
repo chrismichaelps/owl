@@ -24,10 +24,7 @@ export function makeHelpCommand(
       registry.list().pipe(
         Effect.map((commands) => {
           const output = Chunk.toReadonlyArray(
-            Chunk.map(
-              Chunk.sort(Chunk.fromIterable(commands), commandOrder),
-              formatCommand,
-            ),
+            Chunk.map(Chunk.sort(commands, commandOrder), formatCommand),
           ).join("\n")
           return {
             output: output.length > 0 ? output : "No commands registered",

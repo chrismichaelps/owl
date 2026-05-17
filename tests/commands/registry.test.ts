@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import { Effect, Exit, Cause } from "effect"
+import { Chunk, Effect, Exit, Cause } from "effect"
 import {
   CommandRegistry,
   CommandRegistryLive,
@@ -56,7 +56,7 @@ describe("CommandRegistry", () => {
         return yield* registry.list()
       }).pipe(Effect.provide(CommandRegistryLive)),
     )
-    const names = result.map((r) => r.name)
+    const names = Chunk.toReadonlyArray(Chunk.map(result, (r) => r.name))
     expect(names).toEqual(["alpha", "bar", "foo"])
   })
 

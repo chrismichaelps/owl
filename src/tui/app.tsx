@@ -27,7 +27,7 @@ import React, {
   useState,
 } from "react"
 import { Box, useApp, useInput } from "ink"
-import { Effect } from "effect"
+import { Chunk, Effect } from "effect"
 import { LogPanel } from "./components/LogPanel.js"
 import { OutputPanel } from "./components/OutputPanel.js"
 import { MetaPanel } from "./components/MetaPanel.js"
@@ -119,7 +119,9 @@ export const App: React.FC<AppProps> = ({
     })
     void runtime
       .runPromise(effect)
-      .then(setCommands)
+      .then((listedCommands) => {
+        setCommands(Chunk.toReadonlyArray(listedCommands))
+      })
       .catch(() => {
         setCommands([])
       })
