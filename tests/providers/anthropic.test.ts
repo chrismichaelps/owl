@@ -32,6 +32,9 @@ interface AnthropicCreateParams {
 const getCreateCallArg = (index: number): AnthropicCreateParams =>
   mockCreate.mock.calls[index]?.[0] as AnthropicCreateParams
 
+const getStreamCallArg = (index: number): AnthropicCreateParams =>
+  mockStream.mock.calls[index]?.[0] as AnthropicCreateParams
+
 vi.mock("@anthropic-ai/sdk", () => ({
   default: vi.fn().mockImplementation(() => ({
     messages: { create: mockCreate, stream: mockStream },
@@ -360,5 +363,58 @@ describe("AnthropicAdapter — prompt caching", () => {
         },
       },
     ])
+  })
+
+  it("stream() sends cached system prompt and built-in tool descriptors", async () => {
+    mockStream.mockReturnValueOnce(
+      makeStreamResult([], {
+        content: [{ type: "text", text: "ok" }],
+        stop_reason: "end_turn",
+        usage: {
+          input_tokens: 10,
+          output_tokens: 3,
+          cache_creation_input_tokens: 0,
+          cache_read_input_tokens: 0,
+        },
+        model: "claude-sonnet-4-6",
+      }),
+    )
+
+    await Effect.runPromise(
+      Effect.gen(function* () {
+        const adapter = yield* AnthropicAdapter
+        yield* Stream.runDrain(
+          adapter.stream({
+            taskId: "t-stream-tools",
+            messages: [
+              {
+                role: "user",
+                content: "hello",
+                timestamp: new Date().toISOString(),
+              },
+            ],
+            maxTokens: 256,
+            systemPrompt: "You are Owl.",
+            stream: true,
+            model: "claude-sonnet-4-6",
+          }),
+        )
+      }).pipe(Effect.provide(makeToolLayer())),
+    )
+
+    const callArg = getStreamCallArg(mockStream.mock.calls.length - 1)
+    expect(callArg.system?.[0]).toMatchObject({
+      type: "text",
+      text: "You are Owl.",
+      cache_control: { type: "ephemeral" },
+    })
+    expect(callArg.tools?.map((tool) => tool.name)).toContain(TOOL_NAMES.READ)
+    expect(callArg.tools?.map((tool) => tool.name)).toContain(TOOL_NAMES.GREP)
+    expect(callArg.tools?.map((tool) => tool.name)).not.toContain(
+      TOOL_NAMES.EDIT,
+    )
+    expect(callArg.tools?.map((tool) => tool.name)).not.toContain(
+      TOOL_NAMES.BASH,
+    )
   })
 })
