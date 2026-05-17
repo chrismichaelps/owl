@@ -203,6 +203,15 @@ describe("orchestrator adaptive routing", () => {
     expect(resolveAdaptiveRoutingMode(task, 1000)).toBe("economy")
   })
 
+  it("honors task-level adaptive routing opt-out", () => {
+    const task = makeTask({
+      adaptiveRouting: false,
+      prompt: "Investigate the provider streaming architecture regression",
+    })
+
+    expect(resolveAdaptiveRoutingMode(task, 1000)).toBe("standard")
+  })
+
   it("routes escalated standard work as reasoning while preserving cost budget", () => {
     const task = makeTask({
       prompt: "Refactor the orchestration rollback pipeline",

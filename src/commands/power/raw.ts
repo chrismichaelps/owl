@@ -34,6 +34,7 @@ export function makeRawCommand(
             id: makeCommandTaskId("raw", prompt),
             prompt,
             mode: "standard",
+            adaptiveRouting: false,
             createdAt: new Date().toISOString(),
           }),
         ),

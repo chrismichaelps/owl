@@ -50,6 +50,7 @@ export const TaskSchema = Schema.Struct({
   mode: ModeSchema,
   createdAt: Schema.String,
   files: Schema.optional(Schema.Array(Schema.String)),
+  adaptiveRouting: Schema.optional(Schema.Boolean),
 })
 export type Task = Schema.Schema.Type<typeof TaskSchema>
 

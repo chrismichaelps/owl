@@ -46,6 +46,17 @@ describe("core schemas", () => {
     expect(task.mode).toBe("standard")
   })
 
+  it("TaskSchema validates adaptive routing overrides", () => {
+    const task = Schema.decodeUnknownSync(TaskSchema)({
+      id: "task-raw",
+      prompt: "Investigate architecture",
+      mode: "standard",
+      adaptiveRouting: false,
+      createdAt: "2026-05-12T00:00:00Z",
+    })
+    expect(task.adaptiveRouting).toBe(false)
+  })
+
   it("TokenUsageSchema validates usage", () => {
     const usage = Schema.decodeUnknownSync(TokenUsageSchema)({
       inputTokens: 1200,

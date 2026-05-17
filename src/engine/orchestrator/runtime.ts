@@ -66,6 +66,7 @@ export const resolveAdaptiveRoutingMode = (
   task: Task,
   estimatedInputTokens: number,
 ): Mode => {
+  if (task.adaptiveRouting === false) return task.mode
   if (task.mode !== "standard") return task.mode
 
   if (
