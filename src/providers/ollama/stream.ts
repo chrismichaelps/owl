@@ -1,7 +1,10 @@
 /** @Owl.Providers.Ollama.Stream - Local streaming response reader */
 import { Chunk, Data } from "effect"
 import * as Stream from "effect/Stream"
-import { PROVIDER_CONSTANTS, STREAM_CHUNK_TYPES } from "../../core/constants/index.js"
+import {
+  PROVIDER_CONSTANTS,
+  STREAM_CHUNK_TYPES,
+} from "../../core/constants/index.js"
 import { estimateModelCostUsd } from "../cost.js"
 import {
   buildPrompt,
@@ -31,7 +34,9 @@ const makeStreamRequest = (
 /** @Owl.Providers.Ollama.StreamFactory - Create stream from local Ollama */
 export const makeOllamaStream =
   (baseUrl: string) =>
-  (request: InferenceRequest): Stream.Stream<StreamChunk, ProviderStreamError> =>
+  (
+    request: InferenceRequest,
+  ): Stream.Stream<StreamChunk, ProviderStreamError> =>
     Stream.async<StreamChunk, ProviderStreamError>((emit) => {
       const run = async () => {
         try {
@@ -42,7 +47,9 @@ export const makeOllamaStream =
           )
           if (!response.ok) {
             await emit.fail(
-              providerStreamError("Ollama stream error: " + response.statusText),
+              providerStreamError(
+                "Ollama stream error: " + response.statusText,
+              ),
             )
             return
           }

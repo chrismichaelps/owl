@@ -1,6 +1,9 @@
 /** @Owl.Providers.Ollama.Runtime - Local model helpers and contracts */
 import { Chunk, Data, Schema } from "effect"
-import { OLLAMA_MODELS, PROVIDER_CONSTANTS } from "../../core/constants/index.js"
+import {
+  OLLAMA_MODELS,
+  PROVIDER_CONSTANTS,
+} from "../../core/constants/index.js"
 import { ProviderError, ProviderStreamError } from "../../core/errors/index.js"
 import type { InferenceRequest } from "../../core/schema/index.js"
 import type { ProviderCapability } from "../types.js"
