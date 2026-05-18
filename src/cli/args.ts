@@ -9,6 +9,7 @@
  * - Mode flags: owl --deep "prompt", owl -d "prompt"
  * - Mode option: owl --mode=deep "prompt", owl --mode deep "prompt"
  * - Provider option: owl --model=anthropic, owl --model ollama
+ * - Privacy option: owl --privacy, owl --privacy-mode off
  * - Permission option: owl --permission-mode=plan, owl --dangerously-skip-permissions
  * - Metadata: owl --help, owl --version
  *
@@ -42,6 +43,13 @@ export const isValidMode = (value: string): value is Mode =>
 export const isValidProvider = (value: string): value is ProviderId =>
   HashSet.has(PROVIDER_ID_SET, value)
 
+/** @Owl.CLI.Args.PrivacyMode - Parse startup Privacy mode */
+export const parsePrivacyMode = (value: string): Option.Option<boolean> => {
+  if (value === "on" || value === "true") return Option.some(true)
+  if (value === "off" || value === "false") return Option.some(false)
+  return Option.none()
+}
+
 /**
  * @Owl.CLI.Args.Parsed - Output of parseArgs
  */
@@ -54,6 +62,8 @@ export interface ParsedArgs {
   readonly permissionMode: ToolPermissionMode
   /** Initial Provider override (null when automatic routing is active) */
   readonly providerOverride: ProviderId | null
+  /** Initial local-only Provider routing mode */
+  readonly privacyMode: boolean
   /** Print help and exit before runtime boot */
   readonly help: boolean
   /** Print version and exit before runtime boot */
@@ -72,6 +82,7 @@ export function parseArgs(argv: readonly string[]): ParsedArgs {
   let prompt: string | null = null
   let permissionMode: ToolPermissionMode = TOOL_PERMISSION_MODES.DEFAULT
   let providerOverride: ProviderId | null = null
+  let privacyMode = false
   let help = false
   let version = false
 
@@ -85,6 +96,10 @@ export function parseArgs(argv: readonly string[]): ParsedArgs {
     } else if (arg.startsWith(CLI_FLAGS.MODEL_PREFIX)) {
       const val = arg.slice(CLI_FLAGS.MODEL_PREFIX.length)
       if (isValidProvider(val)) providerOverride = val
+    } else if (arg.startsWith(CLI_FLAGS.PRIVACY_MODE_PREFIX)) {
+      const val = arg.slice(CLI_FLAGS.PRIVACY_MODE_PREFIX.length)
+      const parsed = parsePrivacyMode(val)
+      if (Option.isSome(parsed)) privacyMode = parsed.value
     } else if (arg === CLI_FLAGS.MODE) {
       const val = argv[index + 1]
       if (val !== undefined && isValidMode(val)) {
@@ -96,6 +111,17 @@ export function parseArgs(argv: readonly string[]): ParsedArgs {
       if (val !== undefined && isValidProvider(val)) {
         providerOverride = val
         index++
+      }
+    } else if (arg === CLI_FLAGS.PRIVACY) {
+      privacyMode = true
+    } else if (arg === CLI_FLAGS.PRIVACY_MODE) {
+      const val = argv[index + 1]
+      if (val !== undefined) {
+        const parsed = parsePrivacyMode(val)
+        if (Option.isSome(parsed)) {
+          privacyMode = parsed.value
+          index++
+        }
       }
     } else if (arg === CLI_FLAGS.DANGEROUSLY_SKIP_PERMISSIONS) {
       permissionMode = TOOL_PERMISSION_MODES.BYPASS_PERMISSIONS
@@ -127,5 +153,13 @@ export function parseArgs(argv: readonly string[]): ParsedArgs {
     }
   }
 
-  return { mode, prompt, permissionMode, providerOverride, help, version }
+  return {
+    mode,
+    prompt,
+    permissionMode,
+    providerOverride,
+    privacyMode,
+    help,
+    version,
+  }
 }

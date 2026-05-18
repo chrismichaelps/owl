@@ -97,4 +97,23 @@ describe("runCli metadata flags", () => {
 
     expect(rendered?.props.initialProviderOverride).toBe("ollama")
   })
+
+  it("passes initial Privacy mode into the TUI app", async () => {
+    let rendered:
+      | ReactElement<{ readonly initialPrivacyMode?: boolean }>
+      | undefined
+
+    await runCli(["--privacy"], process.cwd(), undefined, {
+      render: (element) => {
+        rendered = element as ReactElement<{
+          readonly initialPrivacyMode?: boolean
+        }>
+        return {
+          waitUntilExit: () => Promise.resolve(),
+        }
+      },
+    })
+
+    expect(rendered?.props.initialPrivacyMode).toBe(true)
+  })
 })

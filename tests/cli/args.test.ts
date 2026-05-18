@@ -7,10 +7,12 @@ import { describe, it, expect } from "vitest"
 import {
   isValidMode,
   isValidProvider,
+  parsePrivacyMode,
   parseArgs,
   VALID_MODES,
 } from "../../src/cli/args.js"
 import { TOOL_PERMISSION_MODES } from "../../src/core/constants/index.js"
+import { Option } from "effect"
 
 describe("VALID_MODES", () => {
   it("includes standard", () => {
@@ -50,6 +52,22 @@ describe("isValidProvider", () => {
   })
 })
 
+describe("parsePrivacyMode", () => {
+  it("parses enabled values", () => {
+    expect(Option.getOrThrow(parsePrivacyMode("on"))).toBe(true)
+    expect(Option.getOrThrow(parsePrivacyMode("true"))).toBe(true)
+  })
+
+  it("parses disabled values", () => {
+    expect(Option.getOrThrow(parsePrivacyMode("off"))).toBe(false)
+    expect(Option.getOrThrow(parsePrivacyMode("false"))).toBe(false)
+  })
+
+  it("rejects unknown values", () => {
+    expect(Option.isNone(parsePrivacyMode("maybe"))).toBe(true)
+  })
+})
+
 describe("parseArgs with no arguments", () => {
   it("defaults mode to standard", () => {
     const { mode } = parseArgs([])
@@ -74,6 +92,10 @@ describe("parseArgs with no arguments", () => {
   it("defaults permission mode to default", () => {
     const { permissionMode } = parseArgs([])
     expect(permissionMode).toBe(TOOL_PERMISSION_MODES.DEFAULT)
+  })
+
+  it("defaults privacy mode to false", () => {
+    expect(parseArgs([]).privacyMode).toBe(false)
   })
 })
 
@@ -226,6 +248,34 @@ describe("--model flag", () => {
   })
 })
 
+describe("--privacy flag", () => {
+  it("enables startup privacy mode", () => {
+    expect(parseArgs(["--privacy"]).privacyMode).toBe(true)
+  })
+
+  it("parses privacy mode with equals syntax", () => {
+    expect(parseArgs(["--privacy-mode=on"]).privacyMode).toBe(true)
+    expect(parseArgs(["--privacy-mode=off"]).privacyMode).toBe(false)
+  })
+
+  it("parses separated privacy mode values", () => {
+    expect(parseArgs(["--privacy-mode", "true"]).privacyMode).toBe(true)
+    expect(parseArgs(["--privacy-mode", "false"]).privacyMode).toBe(false)
+  })
+
+  it("does not treat separated privacy mode values as the prompt", () => {
+    const parsed = parseArgs(["--privacy-mode", "on", "actual prompt"])
+    expect(parsed.privacyMode).toBe(true)
+    expect(parsed.prompt).toBe("actual prompt")
+  })
+
+  it("leaves unknown separated privacy mode values available as prompt text", () => {
+    const parsed = parseArgs(["--privacy-mode", "maybe"])
+    expect(parsed.privacyMode).toBe(false)
+    expect(parsed.prompt).toBe("maybe")
+  })
+})
+
 describe("short flag aliases", () => {
   it("--quick sets mode to quick", () => {
     expect(parseArgs(["--quick"]).mode).toBe("quick")
@@ -314,6 +364,7 @@ describe("edge cases", () => {
       prompt: null,
       permissionMode: TOOL_PERMISSION_MODES.DEFAULT,
       providerOverride: null,
+      privacyMode: false,
       help: false,
       version: false,
     })

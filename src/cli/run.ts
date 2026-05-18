@@ -52,8 +52,15 @@ export async function runCli(
   output: CliOutput = DEFAULT_OUTPUT,
   renderer: CliRenderer = DEFAULT_RENDERER,
 ): Promise<void> {
-  const { mode, prompt, permissionMode, providerOverride, help, version } =
-    parseArgs(argv)
+  const {
+    mode,
+    prompt,
+    permissionMode,
+    providerOverride,
+    privacyMode,
+    help,
+    version,
+  } = parseArgs(argv)
 
   if (help) {
     output.stdout(formatCliHelp())
@@ -74,6 +81,7 @@ export async function runCli(
         projectRoot,
         initialMode: mode,
         initialPermissionMode: permissionMode,
+        initialPrivacyMode: privacyMode,
         initialProviderOverride: providerOverride,
         initialPrompt: prompt,
       }),

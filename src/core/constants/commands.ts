@@ -13,6 +13,9 @@ export const CLI_FLAGS = {
   MODEL_PREFIX: "--model=",
   PERMISSION_MODE: "--permission-mode",
   PERMISSION_MODE_PREFIX: "--permission-mode=",
+  PRIVACY: "--privacy",
+  PRIVACY_MODE: "--privacy-mode",
+  PRIVACY_MODE_PREFIX: "--privacy-mode=",
   DANGEROUSLY_SKIP_PERMISSIONS: "--dangerously-skip-permissions",
 } as const
 
@@ -88,6 +91,8 @@ export const CLI_CONSTANTS = {
     ["--version, -v", "Show the Owl CLI version"],
     ["--mode=<mode>", "Set mode: standard, quick, deep, economy, god"],
     ["--model=<provider>", "Set startup provider override"],
+    ["--privacy", "Start in local-only provider routing mode"],
+    ["--privacy-mode=<on|off>", "Set startup privacy mode"],
     [
       "--permission-mode=<mode>",
       "Set tool permissions: default, acceptEdits, bypassPermissions, plan, dontAsk",

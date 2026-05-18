@@ -1,6 +1,6 @@
-State_ID: BigInt(0x18d73d8a3b22bcab)
-Git_SHA: 28016da38e6a87f9459ea519185c945fd6d89187
-Source_SHA256: 18d73d8a3b22bcabbe85c66559513ed698e59b8ff8c47a8525db89e12d7ee5d5
+State_ID: BigInt(0xc6ea54b48d67ec04)
+Git_SHA: 290d9fe3c5c3311e78b1ee35bc6206ea32ffe2b5
+Source_SHA256: c6ea54b48d67ec04ae4b8adcb4d7442585a84a582f068bfc6fc423b147bac082
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
 Fidelity: ACTIVE
 
@@ -19,7 +19,7 @@ Fidelity: ACTIVE
 - depth_score: 0.85 — DEEP (pure functional argument parsing)
 - seam_capacity: INTERNAL (cli utility)
 - leverage: HIGH (handles all cli flags and positional logic)
-- SIG_ID: SIG-cli-args-18d73d8a
+- SIG_ID: SIG-cli-args-c6ea54b4
 
 ### [Linkage]
 
@@ -30,5 +30,5 @@ Fidelity: ACTIVE
 ### [Architecture]
 
 - Pure argument parser with no side-effects
-- Supports --mode=value, --mode value, --model=value, --model value, --permission-mode=value, --permission-mode value, permission bypass alias, short flags (-q, -d), and positional prompts
+- Supports --mode=value, --mode value, --model=value, --model value, --privacy, --privacy-mode=value, --privacy-mode value, --permission-mode=value, --permission-mode value, permission bypass alias, short flags (-q, -d), and positional prompts
 - Fallback logic for invalid modes to 'standard'

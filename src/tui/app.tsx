@@ -57,6 +57,7 @@ interface AppProps {
   readonly projectRoot?: string
   readonly initialMode?: Mode
   readonly initialPermissionMode?: ToolPermissionMode
+  readonly initialPrivacyMode?: boolean
   readonly initialProviderOverride?: ProviderId | null
   readonly initialPrompt?: string | null
 }
@@ -67,6 +68,7 @@ export const App: React.FC<AppProps> = ({
   projectRoot = process.cwd(),
   initialMode = "standard",
   initialPermissionMode = TOOL_PERMISSION_MODES.DEFAULT,
+  initialPrivacyMode = false,
   initialProviderOverride = null,
   initialPrompt,
 }) => {
@@ -141,30 +143,55 @@ export const App: React.FC<AppProps> = ({
     const effect = Effect.gen(function* () {
       const permissionState = yield* ToolPermissionState
       yield* permissionState.setMode(initialPermissionMode)
-      if (initialProviderOverride === null) return null
 
       const registry = yield* CommandRegistry
-      return yield* registry
-        .dispatch({
-          name: "model",
-          args: [initialProviderOverride],
-          raw: "/model " + initialProviderOverride,
-        })
-        .pipe(
-          Effect.match({
-            onFailure: (error) => "Provider override ignored: " + String(error),
-            onSuccess: (result) => result.output,
-          }),
-        )
+      const privacyLog = initialPrivacyMode
+        ? yield* registry
+            .dispatch({
+              name: "privacy",
+              args: ["on"],
+              raw: "/privacy on",
+            })
+            .pipe(
+              Effect.match({
+                onFailure: (error) => "Privacy mode ignored: " + String(error),
+                onSuccess: (result) => result.output,
+              }),
+            )
+        : null
+
+      const providerLog =
+        initialProviderOverride === null
+          ? null
+          : yield* registry
+              .dispatch({
+                name: "model",
+                args: [initialProviderOverride],
+                raw: "/model " + initialProviderOverride,
+              })
+              .pipe(
+                Effect.match({
+                  onFailure: (error) =>
+                    "Provider override ignored: " + String(error),
+                  onSuccess: (result) => result.output,
+                }),
+              )
+
+      return Chunk.filter(
+        Chunk.make(privacyLog, providerLog),
+        (log): log is string => log !== null,
+      )
     })
 
-    void runtime.runPromise(effect).then((startupProviderLog) => {
+    void runtime.runPromise(effect).then((startupLogs) => {
       dispatch({
         type: "SET_PERMISSION_MODE",
         mode: initialPermissionMode,
       })
-      if (startupProviderLog !== null) {
-        dispatch({ type: "ADD_LOG", msg: startupProviderLog })
+      Chunk.forEach(startupLogs, (msg) => {
+        dispatch({ type: "ADD_LOG", msg })
+      })
+      if (!Chunk.isEmpty(startupLogs)) {
         void syncRoutingPreferences().catch(() => undefined)
       }
       if (initialPrompt != null && initialPrompt.trim().length > 0) {
@@ -176,6 +203,7 @@ export const App: React.FC<AppProps> = ({
     initialMode,
     initialPermissionMode,
     initialPrompt,
+    initialPrivacyMode,
     initialProviderOverride,
     runtime,
     syncRoutingPreferences,

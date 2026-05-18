@@ -11,23 +11,26 @@
 
 ## Algorithm
 
-1. **Initialize** — Set default mode, prompt, Permission mode, Provider override, help, and version values.
+1. **Initialize** — Set default mode, prompt, Permission mode, Privacy mode, Provider override, help, and version values.
 2. **Process** — Iterate argv by index so separated flag values can be consumed deterministically.
 3. **Route Mode Flags** — Resolve `--mode=value`, `--mode value`, and short mode flags through the canonical Mode set.
 4. **Route Provider Flags** — Resolve `--model=value` and `--model value` through the canonical Provider set.
-5. **Route Permission Flags** — Resolve `--permission-mode=value`, `--permission-mode value`, and bypass aliases through the canonical Permission mode set.
-6. **Capture Prompt** — Store only the first non-flag positional token not consumed by a valid separated flag.
-7. **Complete** — Return a plain immutable ParsedArgs object.
+5. **Route Privacy Flags** — Resolve `--privacy`, `--privacy-mode=value`, and `--privacy-mode value` through the canonical boolean parser.
+6. **Route Permission Flags** — Resolve `--permission-mode=value`, `--permission-mode value`, and bypass aliases through the canonical Permission mode set.
+7. **Capture Prompt** — Store only the first non-flag positional token not consumed by a valid separated flag.
+8. **Complete** — Return a plain immutable ParsedArgs object.
 
 ## Negative Logic (PROHIBITED PATHS)
 
 - MUST NOT: Treat a valid separated flag value as the prompt.
 - MUST NOT: Accept Provider overrides outside the canonical Provider set.
 - MUST NOT: Turn startup Provider override into direct adapter selection.
+- MUST NOT: Treat Privacy mode as a Provider override; it only constrains routing.
 
 ## Edge Cases
 
 - **Invalid separated Provider value**: leave it available as positional prompt text.
+- **Invalid separated Privacy value**: leave it available as positional prompt text.
 - **Unknown flag**: ignore it deterministically.
 - **Repeated flags**: later valid flags win.
 

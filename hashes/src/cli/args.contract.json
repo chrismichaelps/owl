@@ -4,22 +4,25 @@
   "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
   "depth_score": "0.85 \u2014 DEEP (pure functional argument parsing)",
   "seam_capacity": "INTERNAL (cli utility)",
-  "sig_id": "SIG-cli-args-18d73d8a",
+  "sig_id": "SIG-cli-args-c6ea54b4",
   "interface": {
     "signatures": [
       "VALID_MODES: readonly string[]",
       "parseArgs(argv: readonly string[]) => ParsedArgs",
       "parseArgs([\"--mode\", value]) consumes value as Mode",
       "parseArgs([\"--model\", provider]) consumes provider as startup Provider override",
+      "parseArgs([\"--privacy\"]) enables startup Privacy mode",
+      "parseArgs([\"--privacy-mode\", value]) consumes boolean-like Privacy mode values",
       "parseArgs([\"--permission-mode\", value]) consumes value as Permission mode",
       "parseArgs([\"--dangerously-skip-permissions\"]) maps to bypassPermissions",
-      "ParsedArgs: { mode: Mode; prompt: string | null; permissionMode: ToolPermissionMode; providerOverride: ProviderId | null }"
+      "ParsedArgs: { mode: Mode; prompt: string | null; permissionMode: ToolPermissionMode; providerOverride: ProviderId | null; privacyMode: boolean }"
     ],
     "error_modes": [],
     "invariants": [
       "Permission mode MUST default to default",
       "Separated Mode values MUST NOT become positional prompts",
       "Separated Provider override values MUST NOT become positional prompts",
+      "Separated Privacy mode values MUST NOT become positional prompts",
       "Separated Permission mode values MUST NOT become positional prompts",
       "Permission bypass aliases MUST map through ToolPermissionMode rather than bypassing governance",
       "Unknown Permission mode flags MUST be ignored deterministically"
