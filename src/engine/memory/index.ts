@@ -55,8 +55,17 @@ export interface SessionMemoryService {
   ) => Effect.Effect<void, SessionMemoryFailure>
   readonly getTurns: () => Effect.Effect<Chunk.Chunk<SessionTurn>>
   readonly listSessions: () => Effect.Effect<Chunk.Chunk<string>>
+  readonly listSessionSummaries: () => Effect.Effect<
+    Chunk.Chunk<SessionSummary>
+  >
   readonly summarize: () => Effect.Effect<string>
 }
+
+/** @Owl.Engine.Memory.SessionSummary - Per-Session observability snapshot */
+export type SessionSummary = Readonly<{
+  readonly sessionId: string
+  readonly turnCount: number
+}>
 
 /** @Owl.Engine.Memory.Tag - Service tag for session memory */
 export class SessionMemory extends Context.Tag("SessionMemory")<
@@ -253,6 +262,18 @@ const makeService = (
   const listSessions = (): Effect.Effect<Chunk.Chunk<string>> =>
     Ref.get(stateRef).pipe(Effect.map(sortedSessionIds))
 
+  const listSessionSummaries = (): Effect.Effect<Chunk.Chunk<SessionSummary>> =>
+    Ref.get(stateRef).pipe(
+      Effect.map((state) =>
+        Chunk.map(sortedSessionIds(state), (sessionId) =>
+          Data.struct({
+            sessionId,
+            turnCount: Chunk.size(getSessionTurns(state, sessionId)),
+          }),
+        ),
+      ),
+    )
+
   const summarize = (): Effect.Effect<string> =>
     Ref.get(stateRef).pipe(
       Effect.map((state) => {
@@ -275,6 +296,7 @@ const makeService = (
     recordTurn,
     getTurns,
     listSessions,
+    listSessionSummaries,
     summarize,
   }
 }

@@ -241,6 +241,26 @@ describe("SessionMemory.listSessions", () => {
   })
 })
 
+describe("SessionMemory.listSessionSummaries", () => {
+  it("lists deterministic Session turn counts", async () => {
+    const summaries = await run(
+      Effect.gen(function* () {
+        const mem = yield* SessionMemory
+        yield* mem.startSession("sess-b")
+        yield* mem.recordTurn(makeTurn(1))
+        yield* mem.startSession("sess-a")
+        return yield* mem.listSessionSummaries()
+      }),
+    )
+
+    expect(Chunk.toReadonlyArray(summaries)).toEqual([
+      { sessionId: "sess-000000", turnCount: 0 },
+      { sessionId: "sess-a", turnCount: 0 },
+      { sessionId: "sess-b", turnCount: 1 },
+    ])
+  })
+})
+
 describe("PersistentSessionMemory", () => {
   it("persists turns across layer re-creation", async () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), "owl-session-"))

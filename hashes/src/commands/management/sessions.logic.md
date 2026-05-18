@@ -21,3 +21,7 @@ State_ID: BigInt(0x942d273e22f64518)
 
 - Empty list is not expected because SessionMemory always has an active Session.
 - Active Session not present in list: render the active Session as the only fallback row.
+
+## Session Summary Display
+
+- /sessions reads listSessionSummaries and formats each Session with active marker plus singular/plural turn count.

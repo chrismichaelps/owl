@@ -19,8 +19,10 @@
     "invariants": [
       "Sessions command MUST read from SessionMemory only",
       "Active Session MUST be marked deterministically",
-      "Session ids MUST render in SessionMemory list order"
-    ]
+      "Session ids MUST render in SessionMemory list order",
+      "/sessions MUST derive turn counts from SessionMemory summaries without mutating active Session state."
+    ],
+    "signatures": ["/sessions renders active marker and turn count per Session"]
   },
   "architecture": {
     "depth_score": 0.62,
@@ -34,5 +36,6 @@
     "locality_impact": "Keeps Session observability behind the SessionMemory Interface."
   },
   "dependencies": ["@root/hashes/src/engine/memory/index.contract.json"],
-  "variants": []
+  "variants": [],
+  "sig_id": "SIG-commands-management-sessions-e09e658e"
 }

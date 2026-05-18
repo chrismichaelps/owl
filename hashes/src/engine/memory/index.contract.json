@@ -4,7 +4,7 @@
   "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
   "depth_score": "0.68 — MEDIUM (in-memory only, no persistence)",
   "seam_capacity": "INTERNAL",
-  "sig_id": "SIG-engine-memory-b1447ab0",
+  "sig_id": "SIG-engine-memory-4aa7252d",
   "interface": {
     "signatures": [
       "SessionMemory: Context.Tag<SessionMemory, SessionMemoryService>",
@@ -15,14 +15,16 @@
       "listSessions() => Effect<Chunk<string>>",
       "summarize() => Effect<string>",
       "makePersistentSessionMemoryLive(storagePath) persists all known Sessions",
-      "Generated Session ids continue after hydrated generated Session ids"
+      "Generated Session ids continue after hydrated generated Session ids",
+      "listSessionSummaries() => Effect<Chunk<SessionSummary>>"
     ],
     "error_modes": [],
     "invariants": [
       "listSessions MUST return deterministic sorted Session ids",
       "Session lifecycle state MUST remain inside SessionMemory",
       "Persistent SessionMemory MUST not drop inactive Sessions during active Session writes.",
-      "resumeSession for an unknown Session id MUST create an empty Session, not clone active turns."
+      "resumeSession for an unknown Session id MUST create an empty Session, not clone active turns.",
+      "listSessionSummaries MUST return deterministic sorted Session summaries."
     ]
   },
   "responsibilities": [

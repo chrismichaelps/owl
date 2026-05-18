@@ -1,9 +1,9 @@
-State_ID: BigInt(0xb1447ab03a939922)
-Git_SHA: b6ce7584f4fbf0625faa2c5993c2a623affadc17
-Source_SHA256: b1447ab03a939922c761836989f0fb53797fe8af7f99f84c022719b7ca6b5988
+State_ID: BigInt(0x4aa7252d2e6290cc)
+Git_SHA: a1dda9dfdf74a634867fb73d2a0ff5d22f9afb87
+Source_SHA256: 4aa7252d2e6290ccf409c50ff90a2f8f968144fff0cadb0293a7266a51561abf
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
 Fidelity: ACTIVE
-Registry_Sync: 2026-05-18T15:18:19Z
+Registry_Sync: 2026-05-18T15:23:42Z
 
 ---
 
@@ -24,7 +24,7 @@ Registry_Sync: 2026-05-18T15:18:19Z
 - depth_score: 0.68 — MEDIUM (in-memory only, no persistence)
 - seam_capacity: INTERNAL
 - leverage: MEDIUM (used by Orchestrator for session tracking)
-- SIG_ID: SIG-engine-memory-b1447ab0
+- SIG_ID: SIG-engine-memory-4aa7252d
 
 ### [Linkage]
 
@@ -41,3 +41,4 @@ Registry_Sync: 2026-05-18T15:18:19Z
 - For MVP: session memory is in-memory only (no persistence)
 - Persists all known Sessions and advances generated Session counters after hydration.
 - Unknown Session resume creates an empty Session instead of copying active Session turns.
+- Exposes listSessionSummaries for deterministic per-Session turn-count observability.

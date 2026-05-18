@@ -1,8 +1,8 @@
 {
   "shard_id": "@root/src",
-  "state_anchor": "BigInt(0xb1447ab03a939922)",
+  "state_anchor": "BigInt(0x4aa7252d2e6290cc)",
   "parent_bridge": "@root/hashes/local.map.json",
-  "git_anchor": "b6ce7584f4fbf0625faa2c5993c2a623affadc17",
+  "git_anchor": "a1dda9dfdf74a634867fb73d2a0ff5d22f9afb87",
   "cache_integrity": "VERIFIED",
   "nodes": {
     "cli/args": {
@@ -697,7 +697,7 @@
       "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
       "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-engine-memory-b1447ab0"
+      "sig_id": "SIG-engine-memory-4aa7252d"
     },
     "engine/memory/persistence": {
       "file_path": "@root/src/engine/memory/persistence.ts",
@@ -1608,7 +1608,7 @@
       "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
       "dependencies": ["@root/hashes/src/engine/memory/index.contract.json"],
       "fidelity_level": "Active",
-      "sig_id": "SIG-commands-management-sessions-942d273e"
+      "sig_id": "SIG-commands-management-sessions-e09e658e"
     }
   }
 }

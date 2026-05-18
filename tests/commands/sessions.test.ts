@@ -16,6 +16,13 @@ describe("makeSessionsCommand", () => {
       Effect.gen(function* () {
         const memory = yield* SessionMemory
         yield* memory.startSession("sess-b")
+        yield* memory.recordTurn({
+          taskId: "task-1",
+          prompt: "hello",
+          response: "world",
+          tokensUsed: 2,
+          timestamp: "2026-05-18T00:00:00.000Z",
+        })
         yield* memory.startSession("sess-a")
         const command = makeSessionsCommand(memory)
         const result = yield* command.execute([])
@@ -23,6 +30,8 @@ describe("makeSessionsCommand", () => {
       }),
     )
 
-    expect(output).toBe("Sessions:\n  sess-000000\n* sess-a\n  sess-b")
+    expect(output).toBe(
+      "Sessions:\n  sess-000000 — 0 turns\n* sess-a — 0 turns\n  sess-b — 1 turn",
+    )
   })
 })
