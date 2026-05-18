@@ -144,13 +144,11 @@ export const EditingPipelineLive = Layer.effect(
         // Validate invariants at the seam-editor-governance boundary.
         if (input.subsystemId !== undefined && input.invariants !== undefined) {
           for (const invariant of input.invariants) {
-            yield* governance
-              .validateImportInvariant(
-                input.subsystemId,
-                input.invariants,
-                invariant,
-              )
-              .pipe(Effect.catchAll(() => Effect.void))
+            yield* governance.validateImportInvariant(
+              input.subsystemId,
+              input.invariants,
+              invariant,
+            )
           }
         }
 

@@ -3,7 +3,7 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
 import os from "node:os"
 import path from "node:path"
 import { describe, expect, it } from "vitest"
-import { Effect, Layer } from "effect"
+import { Cause, Effect, Exit, Layer } from "effect"
 import {
   EditingPipeline,
   EditingPipelineLive,
@@ -32,6 +32,48 @@ const makeProjectRoot = (): Promise<string> =>
   mkdtemp(path.join(os.tmpdir(), "owl-editor-pipeline-"))
 
 describe("EditingPipeline rollback retention", () => {
+  it("fails during analysis when a subsystem invariant is violated", async () => {
+    const projectRoot = await makeProjectRoot()
+    const relativeFile = "src/example.ts"
+    const absoluteFile = path.join(projectRoot, relativeFile)
+
+    try {
+      await mkdir(path.dirname(absoluteFile), { recursive: true })
+      await writeFile(absoluteFile, "const value = 1\n", "utf8")
+
+      const exit = await Effect.runPromiseExit(
+        Effect.gen(function* () {
+          const pipeline = yield* EditingPipeline
+          return yield* pipeline.execute({
+            mutationId: "mutation-governance-1",
+            targets: [
+              {
+                file: relativeFile,
+                oldString: "const value = 1",
+                newString: "const value = 2",
+              },
+            ],
+            projectRoot,
+            autoApprove: false,
+            subsystemId: "subsystem-editor",
+            invariants: ["MUST NOT: import from subsystem-providers"],
+          })
+        }).pipe(Effect.provide(testLayer)),
+      )
+
+      expect(Exit.isFailure(exit)).toBe(true)
+      if (Exit.isFailure(exit)) {
+        const failure = Cause.failureOption(exit.cause)
+        expect(failure._tag).toBe("Some")
+        if (failure._tag === "Some") {
+          expect(failure.value._tag).toBe("GovernanceViolationError")
+        }
+      }
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true })
+    }
+  })
+
   it("returns preview diffs without writing when autoApprove is false", async () => {
     const projectRoot = await makeProjectRoot()
     const relativeFile = "src/example.ts"
