@@ -11,6 +11,13 @@ export const TOKEN_LIMITS = {
   SUMMARY_TARGET_TOKENS: 500,
 } as const
 
+/** @Owl.Core.Constants.TokenPressure - Context pressure warning thresholds */
+export const TOKEN_PRESSURE_THRESHOLDS = {
+  WARNING_RATIO: 0.75,
+  CRITICAL_RATIO: 0.9,
+  PERCENT_SCALE: 100,
+} as const
+
 /** @Owl.Core.Constants.Modes - Mode-specific token budgets */
 export const MODE_TOKEN_BUDGETS: HashMap.HashMap<string, number> =
   HashMap.fromIterable([

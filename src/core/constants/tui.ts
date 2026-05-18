@@ -117,6 +117,13 @@ export const TUI_ROUTING_COPY = {
   MODE_SEPARATOR: " → ",
 } as const
 
+/** @Owl.Core.Constants.TUITokenPressure - Context pressure display copy */
+export const TUI_TOKEN_PRESSURE_COPY = {
+  ACTION: "/compact",
+  PREFIX: "context",
+  REMAINING_SUFFIX: "% left",
+} as const
+
 /** @Owl.Core.Constants.TUIHistory - Prompt history storage and retention */
 export const TUI_HISTORY_CONSTANTS = {
   STORAGE_DIR: ".owl",

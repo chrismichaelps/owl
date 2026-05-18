@@ -1,21 +1,21 @@
-State_ID: BigInt(0x75f7cd203b57ac13)
+State_ID: BigInt(0x90b537a5cb8364c0)
 Git_SHA: 5b4a396d5f1d6c2c5459c8ad48ffd1e459516082
-Source_SHA256: 75f7cd203b57ac1387a402f91d88981b6e6852f7712eedd600dde015a451c4ee
+Source_SHA256: 90b537a5cb8364c057158cc1e4b472cd08b5d192f18fefc2e4b09383174b12eb
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
 Fidelity: ACTIVE
-Registry_Sync: 2026-05-18T01:02:15.287Z
+Registry_Sync: 2026-05-18T01:06:43.182Z
 ---
 
-## @root/src/core/constants/tui.ts
+## @root/src/tui/status/tokenPressure.ts
 
 ### [Signatures]
-- Source module mirrored from `src/core/constants/tui.ts`.
+- Source module mirrored from `src/tui/status/tokenPressure.ts`.
 
 ### [Governance]
 - depth_score: 0.50
 - depth_status: MEDIUM
 - seam_capacity: INTERNAL
-- SIG_ID: SIG-core-constants-tui-d9c7e4a8
+- SIG_ID: SIG-tui-status-tokenPressure-90b537a5
 
 ### [Linkage]
 - Grammar: `@root/hashes/grammar/effect/effect.hash.md`

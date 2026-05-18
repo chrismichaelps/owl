@@ -1,8 +1,8 @@
 {
   "shard_id": "@root/src",
-  "state_anchor": "BigInt(0x3ac4cb7d33fe9922)",
+  "state_anchor": "BigInt(0xa1131ba251866c99)",
   "parent_bridge": "@root/hashes/local.map.json",
-  "git_anchor": "394e2dc49d8e980117dfaf68a4f26f18687d41c2",
+  "git_anchor": "5b4a396d5f1d6c2c5459c8ad48ffd1e459516082",
   "cache_integrity": "VERIFIED",
   "nodes": {
     "cli/args": {
@@ -435,7 +435,7 @@
       "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
       "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-core-constants-budgets-7695978b"
+      "sig_id": "SIG-core-constants-budgets-f3bf5621"
     },
     "core/constants/commands": {
       "file_path": "@root/src/core/constants/commands.ts",
@@ -523,7 +523,7 @@
       "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
       "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-core-constants-tui-d9c7e4a8"
+      "sig_id": "SIG-core-constants-tui-75f7cd20"
     },
     "core/cost": {
       "file_path": "@root/src/core/cost.ts",
@@ -1379,7 +1379,7 @@
       "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
       "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-tui-components-StatusBar-15640c3e"
+      "sig_id": "SIG-tui-components-StatusBar-3b04c9ce"
     },
     "tui/components/WelcomePanel": {
       "file_path": "@root/src/tui/components/WelcomePanel.tsx",
@@ -1492,6 +1492,14 @@
       "dependencies": [],
       "fidelity_level": "Active",
       "sig_id": "SIG-tui-status-visuals-e4a26808"
+    },
+    "tui/status/tokenPressure": {
+      "file_path": "@root/src/tui/status/tokenPressure.ts",
+      "hash_reference": "@root/hashes/src/tui/status/tokenPressure.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tui-status-tokenPressure-90b537a5"
     }
   }
 }
