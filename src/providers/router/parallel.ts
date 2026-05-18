@@ -67,18 +67,18 @@ export const attemptParallelComplete = (
 
 /** @Owl.Providers.Router.ParallelSuccesses - Keep successful attempts */
 export const collectParallelSuccesses = (
-  results: readonly ParallelAttempt[],
+  results: Chunk.Chunk<ParallelAttempt>,
 ): Chunk.Chunk<InferenceResponse> =>
-  Chunk.filterMap(Chunk.fromIterable(results), (result) =>
+  Chunk.filterMap(results, (result) =>
     Either.isRight(result) ? Option.some(result.right) : Option.none(),
   )
 
 /** @Owl.Providers.Router.ParallelError - Extract final failed attempt */
 export const lastParallelError = (
-  results: readonly ParallelAttempt[],
+  results: Chunk.Chunk<ParallelAttempt>,
 ): AnyProviderError | ProviderUnavailableError | undefined =>
   Chunk.reduce(
-    Chunk.fromIterable(results),
+    results,
     undefined as AnyProviderError | ProviderUnavailableError | undefined,
     (_current, result) => (Either.isLeft(result) ? result.left : undefined),
   )

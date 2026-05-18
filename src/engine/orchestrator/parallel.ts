@@ -5,11 +5,11 @@ import type { Option } from "effect"
 
 /** @Owl.Engine.Orchestrator.ParallelContent - Format comparison context */
 export const formatParallelContent = (
-  responses: readonly InferenceResponse[],
+  responses: Chunk.Chunk<InferenceResponse>,
 ): string =>
   Chunk.toReadonlyArray(
     Chunk.map(
-      Chunk.fromIterable(responses),
+      responses,
       (response) =>
         "[" +
         response.provider +
@@ -22,33 +22,33 @@ export const formatParallelContent = (
 
 /** @Owl.Engine.Orchestrator.ParallelTokens - Sum output token usage */
 export const sumParallelOutputTokens = (
-  responses: readonly InferenceResponse[],
+  responses: Chunk.Chunk<InferenceResponse>,
 ): number =>
   Chunk.reduce(
-    Chunk.fromIterable(responses),
+    responses,
     0,
     (total, response) => total + response.usage.outputTokens,
   )
 
 /** @Owl.Engine.Orchestrator.ParallelCost - Sum estimated provider costs */
 export const sumParallelCostUsd = (
-  responses: readonly InferenceResponse[],
+  responses: Chunk.Chunk<InferenceResponse>,
 ): number =>
   Chunk.reduce(
-    Chunk.fromIterable(responses),
+    responses,
     0,
     (total, response) => total + response.usage.estimatedCostUsd,
   )
 
 /** @Owl.Engine.Orchestrator.ParallelLatency - Max parallel latency */
 export const maxParallelLatencyMs = (
-  responses: readonly InferenceResponse[],
+  responses: Chunk.Chunk<InferenceResponse>,
 ): number =>
-  Chunk.reduce(Chunk.fromIterable(responses), 0, (maxLatency, response) =>
+  Chunk.reduce(responses, 0, (maxLatency, response) =>
     Math.max(maxLatency, response.latencyMs),
   )
 
 /** @Owl.Engine.Orchestrator.ParallelFirst - First ranked response */
 export const firstParallelResponse = (
-  responses: readonly InferenceResponse[],
-): Option.Option<InferenceResponse> => Chunk.head(Chunk.fromIterable(responses))
+  responses: Chunk.Chunk<InferenceResponse>,
+): Option.Option<InferenceResponse> => Chunk.head(responses)

@@ -85,7 +85,7 @@ export interface OrchestratorService {
   readonly runParallel: (
     task: Task,
   ) => Effect.Effect<
-    readonly InferenceResponse[],
+    Chunk.Chunk<InferenceResponse>,
     | AnyProviderError
     | ProviderUnavailableError
     | TokenBudgetExceededError
@@ -201,7 +201,7 @@ export const makeOrchestratorLive = (projectRoot: string) =>
       const runParallel = (
         task: Task,
       ): Effect.Effect<
-        readonly InferenceResponse[],
+        Chunk.Chunk<InferenceResponse>,
         | AnyProviderError
         | ProviderUnavailableError
         | TokenBudgetExceededError
@@ -218,13 +218,10 @@ export const makeOrchestratorLive = (projectRoot: string) =>
             prepared.routingCtx,
             prepared.request,
           )
-          const responseChunk = Chunk.map(
-            Chunk.fromIterable(responses),
-            (response) =>
-              annotateResponseRouting(task, response, prepared.routingMode),
+          const responseChunk = Chunk.map(responses, (response) =>
+            annotateResponseRouting(task, response, prepared.routingMode),
           )
-          const annotatedResponses = Chunk.toReadonlyArray(responseChunk)
-          const outputTokens = sumParallelOutputTokens(annotatedResponses)
+          const outputTokens = sumParallelOutputTokens(responseChunk)
           yield* budgetService.consume(task.id, outputTokens)
 
           yield* Effect.forEach(
@@ -234,13 +231,11 @@ export const makeOrchestratorLive = (projectRoot: string) =>
             { discard: true },
           )
 
-          const combinedContent = formatParallelContent(annotatedResponses)
+          const combinedContent = formatParallelContent(responseChunk)
 
           yield* ctx.addMessage(makeAssistantMessage(combinedContent))
 
-          const first = Option.getOrThrow(
-            firstParallelResponse(annotatedResponses),
-          )
+          const first = Option.getOrThrow(firstParallelResponse(responseChunk))
           yield* mem.recordTurn(
             makeParallelSessionTurn(
               task,
@@ -248,12 +243,12 @@ export const makeOrchestratorLive = (projectRoot: string) =>
               prepared.estimatedInputTokens,
               outputTokens,
               first.provider,
-              sumParallelCostUsd(annotatedResponses),
-              maxParallelLatencyMs(annotatedResponses),
+              sumParallelCostUsd(responseChunk),
+              maxParallelLatencyMs(responseChunk),
             ),
           )
 
-          return annotatedResponses
+          return responseChunk
         })
 
       const runStream = (

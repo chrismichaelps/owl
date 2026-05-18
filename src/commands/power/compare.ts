@@ -15,11 +15,11 @@ import { requireCommandText } from "../utils/prompt.js"
 
 /** @Owl.Commands.Power.Compare.Format - Render parallel responses */
 export function formatCompareOutput(
-  responses: readonly InferenceResponse[],
+  responses: Chunk.Chunk<InferenceResponse>,
 ): string {
   return Chunk.toReadonlyArray(
     Chunk.map(
-      Chunk.fromIterable(responses),
+      responses,
       (response) =>
         "## " +
         response.provider +

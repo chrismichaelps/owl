@@ -313,13 +313,14 @@ describe("ProviderRouter", () => {
     const result = await Effect.runPromise(
       program.pipe(Effect.provide(ProviderRouterLive)),
     )
-    expect(result.map((response) => response.provider)).toEqual([
-      "anthropic",
-      "openai",
-    ])
-    expect(result.map((response) => response.usage.estimatedCostUsd)).toEqual([
-      0.00025, 0.00025,
-    ])
+    expect(
+      Chunk.toReadonlyArray(Chunk.map(result, (response) => response.provider)),
+    ).toEqual(["anthropic", "openai"])
+    expect(
+      Chunk.toReadonlyArray(
+        Chunk.map(result, (response) => response.usage.estimatedCostUsd),
+      ),
+    ).toEqual([0.00025, 0.00025])
   })
 
   it("completeParallel isolates failed providers and returns successes", async () => {
@@ -357,7 +358,9 @@ describe("ProviderRouter", () => {
     const result = await Effect.runPromise(
       program.pipe(Effect.provide(ProviderRouterLive)),
     )
-    expect(result.map((response) => response.provider)).toEqual(["openai"])
+    expect(
+      Chunk.toReadonlyArray(Chunk.map(result, (response) => response.provider)),
+    ).toEqual(["openai"])
   })
 
   it("routes around providers with recent parallel failures", async () => {

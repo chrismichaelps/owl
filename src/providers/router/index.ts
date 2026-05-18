@@ -126,7 +126,7 @@ export interface ProviderRouterService {
     request: Omit<InferenceRequest, "model">,
     maxProviders?: number,
   ) => Effect.Effect<
-    readonly InferenceResponse[],
+    Chunk.Chunk<InferenceResponse>,
     AnyProviderError | ProviderUnavailableError
   >
 
@@ -291,7 +291,7 @@ export const ProviderRouterLive = Layer.effect(
       request: Omit<InferenceRequest, "model">,
       maxProviders: number = ROUTING_LIMITS.PARALLEL_PROVIDER_LIMIT,
     ): Effect.Effect<
-      readonly InferenceResponse[],
+      Chunk.Chunk<InferenceResponse>,
       AnyProviderError | ProviderUnavailableError
     > =>
       Effect.gen(function* () {
@@ -312,13 +312,14 @@ export const ProviderRouterLive = Layer.effect(
             ),
           { concurrency: providerLimit },
         )
-        const successes = collectParallelSuccesses(results)
+        const resultChunk = Chunk.fromIterable(results)
+        const successes = collectParallelSuccesses(resultChunk)
 
         if (!Chunk.isEmpty(successes)) {
-          return Chunk.toReadonlyArray(successes)
+          return successes
         }
 
-        return yield* failLast(lastParallelError(results), ctx)
+        return yield* failLast(lastParallelError(resultChunk), ctx)
       })
 
     const completeWithCallback = (

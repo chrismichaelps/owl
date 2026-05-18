@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest"
-import { Effect, Layer } from "effect"
+import { Chunk, Effect, Layer } from "effect"
 import {
   Orchestrator,
   OrchestratorLive,
@@ -81,7 +81,7 @@ const TestProviderRouterLive = Layer.succeed(ProviderRouter, {
   ) =>
     Effect.sync(() => {
       observedRoutingContexts.push(ctx)
-      return [
+      return Chunk.make(
         { ...stubResponse, taskId: req.taskId },
         {
           ...stubResponse,
@@ -95,7 +95,7 @@ const TestProviderRouterLive = Layer.succeed(ProviderRouter, {
           },
           latencyMs: 180,
         },
-      ]
+      )
     }),
   completeWithCallback: (
     ctx: RoutingContext,
@@ -117,11 +117,13 @@ const TestProviderRouterLive = Layer.succeed(ProviderRouter, {
         estimatedCostUsd: 0.002,
       }
     }),
-  listProviders: () => Effect.succeed(["anthropic"]),
-  listCapabilities: () => Effect.succeed([]),
-  listReliability: () => Effect.succeed([]),
+  listProviders: () => Effect.succeed(Chunk.make("anthropic")),
+  listCapabilities: () => Effect.succeed(Chunk.empty()),
+  listReliability: () => Effect.succeed(Chunk.empty()),
   checkHealth: () =>
-    Effect.succeed([{ provider: "anthropic", healthy: true, message: null }]),
+    Effect.succeed(
+      Chunk.make({ provider: "anthropic", healthy: true, message: null }),
+    ),
 } satisfies ProviderRouterService)
 
 const TestRoutingPreferencesLive = Layer.succeed(RoutingPreferences, {
@@ -402,10 +404,11 @@ describe("Orchestrator.runParallel", () => {
       }),
     )
 
-    expect(responses.map((response) => response.provider)).toEqual([
-      "anthropic",
-      "openai",
-    ])
+    expect(
+      Chunk.toReadonlyArray(
+        Chunk.map(responses, (response) => response.provider),
+      ),
+    ).toEqual(["anthropic", "openai"])
     expect(observedInferenceMetrics.map((metric) => metric.provider)).toEqual([
       "anthropic",
       "openai",
@@ -425,10 +428,11 @@ describe("Orchestrator.runParallel", () => {
       }),
     )
 
-    expect(responses.map((response) => response.routingMode)).toEqual([
-      "deep",
-      "deep",
-    ])
+    expect(
+      Chunk.toReadonlyArray(
+        Chunk.map(responses, (response) => response.routingMode),
+      ),
+    ).toEqual(["deep", "deep"])
   })
 })
 

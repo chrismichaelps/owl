@@ -1,6 +1,6 @@
 /** @Owl.Tests.Commands.Compare - Parallel inference command tests */
 import { describe, expect, it } from "vitest"
-import { Effect } from "effect"
+import { Chunk, Effect } from "effect"
 import {
   formatCompareOutput,
   makeCompareCommand,
@@ -31,10 +31,12 @@ const makeResponse = (
 const makeOrchestrator = (): OrchestratorService => ({
   run: () => Effect.die("run not used in compare command"),
   runParallel: () =>
-    Effect.succeed([
-      makeResponse("anthropic", "claude-opus-4", "Anthropic answer"),
-      makeResponse("openai", "gpt-5", "OpenAI answer"),
-    ]),
+    Effect.succeed(
+      Chunk.make(
+        makeResponse("anthropic", "claude-opus-4", "Anthropic answer"),
+        makeResponse("openai", "gpt-5", "OpenAI answer"),
+      ),
+    ),
   runStream: () => Effect.die("runStream not used in compare command"),
   getSessionSummary: () =>
     Effect.die("getSessionSummary not used in compare command"),
@@ -42,10 +44,12 @@ const makeOrchestrator = (): OrchestratorService => ({
 
 describe("formatCompareOutput", () => {
   it("renders provider/model sections in response order", () => {
-    const output = formatCompareOutput([
-      makeResponse("anthropic", "claude-opus-4", "A"),
-      makeResponse("openai", "gpt-5", "B"),
-    ])
+    const output = formatCompareOutput(
+      Chunk.make(
+        makeResponse("anthropic", "claude-opus-4", "A"),
+        makeResponse("openai", "gpt-5", "B"),
+      ),
+    )
 
     expect(output).toContain("## anthropic/claude-opus-4")
     expect(output).toContain("## openai/gpt-5")
