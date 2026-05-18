@@ -200,6 +200,7 @@ export const App: React.FC<AppProps> = ({
         privacyMode={state.privacyMode}
         model={state.model}
         routingMode={state.routingMode}
+        pendingMutationCount={Chunk.size(state.pendingMutations)}
       />
     </Box>
   )

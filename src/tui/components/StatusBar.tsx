@@ -22,6 +22,7 @@ interface StatusBarProps {
   readonly privacyMode: boolean
   readonly model: string | null
   readonly routingMode: Mode | null
+  readonly pendingMutationCount: number
 }
 
 const STATUS_COLOR: Record<AgentStatus, string> = {
@@ -50,6 +51,7 @@ export const StatusBar: React.FC<StatusBarProps> = memo(
     privacyMode,
     model,
     routingMode,
+    pendingMutationCount,
   }) => (
     <Box
       borderStyle="single"
@@ -78,6 +80,9 @@ export const StatusBar: React.FC<StatusBarProps> = memo(
         <Text color={STATUS_COLOR[status]}>{status.toUpperCase()}</Text>
         <Text color="cyan">route:{providerOverride ?? "auto"}</Text>
         {privacyMode ? <Text color="yellow">privacy:local</Text> : null}
+        {pendingMutationCount > 0 ? (
+          <Text color="yellow">pending:{String(pendingMutationCount)}</Text>
+        ) : null}
         {model !== null ? (
           <Text color="gray" dimColor>
             {model.replace("claude-", "").replace(/-\d{8}$/, "")}
