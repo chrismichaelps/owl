@@ -1,12 +1,17 @@
 {
   "module": "@root/src/tui/hooks/useOwlRuntimeActions.ts",
-  "state_id": "BigInt(0x54197da55bd98a5f)",
+  "state_id": "BigInt(0x6c3c6aa9c1ff00d8)",
   "interface": {
     "inputs": [
       {
         "name": "ToolPermissionState",
         "type": "EffectService",
         "invariants": "must be the same runtime service used by command dispatch and built-in tools"
+      },
+      {
+        "name": "SessionMemory",
+        "type": "EffectService",
+        "invariants": "must be the same runtime service used by Session lifecycle commands"
       }
     ],
     "outputs": [
@@ -14,6 +19,11 @@
         "name": "OwlAction.SET_PERMISSION_MODE",
         "type": "TUI action",
         "complexity": "O(1)"
+      },
+      {
+        "name": "OwlAction.SET_TURNS",
+        "type": "TUI action",
+        "complexity": "O(n)"
       }
     ],
     "error_modes": []
@@ -29,6 +39,10 @@
     "leverage_delta": "+0.00",
     "locality_impact": "Registry mirror created from live source topology."
   },
-  "dependencies": ["@root/hashes/src/tools/permissionState.contract.json"],
+  "dependencies": [
+    "@root/hashes/src/tools/permissionState.contract.json",
+    "@root/hashes/src/engine/memory/index.contract.json",
+    "@root/hashes/src/tui/session/sync.contract.json"
+  ],
   "variants": []
 }

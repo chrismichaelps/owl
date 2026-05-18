@@ -341,6 +341,37 @@ describe("SET_ERROR action", () => {
   })
 })
 
+describe("SET_TURNS action", () => {
+  it("replaces visible conversation turns", () => {
+    const withOldTurn = reduce(INITIAL_STATE, {
+      type: "ADD_TURN",
+      turn: {
+        id: "cmd-old",
+        kind: "command",
+        command: "/status",
+        output: "old",
+        timestamp: "2026-05-18T00:00:00.000Z",
+      },
+    })
+
+    const next = reduce(withOldTurn, {
+      type: "SET_TURNS",
+      turns: [
+        {
+          id: "cmd-new",
+          kind: "command",
+          command: "/new",
+          output: "new",
+          timestamp: "2026-05-18T00:01:00.000Z",
+        },
+      ],
+    })
+
+    expect(next.turns).toHaveLength(1)
+    expect(next.turns[0]?.id).toBe("cmd-new")
+  })
+})
+
 describe("SET_PROVIDER_OVERRIDE action", () => {
   it("records a provider override", () => {
     const next = reduce(INITIAL_STATE, {

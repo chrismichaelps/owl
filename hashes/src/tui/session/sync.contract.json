@@ -1,0 +1,42 @@
+{
+  "module": "@root/src/tui/session/sync.ts",
+  "state_id": "BigInt(0x080090e3eb526868)",
+  "interface": {
+    "inputs": [
+      {
+        "name": "turns",
+        "type": "Chunk<SessionTurn>",
+        "invariants": "Session turns are already schema-validated by SessionMemory"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "ConversationTurn[]",
+        "type": "readonly ConversationTurn[]",
+        "complexity": "O(n)"
+      }
+    ],
+    "error_modes": [],
+    "invariants": [
+      "Mapping MUST preserve Session turn order",
+      "Mapping MUST NOT mutate SessionMemory state",
+      "Missing Provider metadata MUST render as local Session metadata rather than failing"
+    ]
+  },
+  "architecture": {
+    "depth_score": 0.7,
+    "depth_status": "DEEP",
+    "leverage": "HIGH",
+    "locality": "HIGH",
+    "seam_capacity": "INTERNAL",
+    "coupling_complexity": 0.2,
+    "interface_stability": 1,
+    "leverage_delta": "+0.00",
+    "locality_impact": "Centralizes SessionMemory-to-TUI projection for lifecycle commands."
+  },
+  "dependencies": [
+    "@root/hashes/src/engine/memory/index.contract.json",
+    "@root/hashes/src/tui/state.contract.json"
+  ],
+  "variants": []
+}

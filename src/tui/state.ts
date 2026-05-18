@@ -41,7 +41,7 @@ export interface InferenceConversationTurn {
   readonly id: string
   readonly prompt: string
   readonly response: string
-  readonly provider: ProviderId
+  readonly provider: string
   readonly model: string
   readonly requestedMode: Mode
   readonly routingMode: Mode
@@ -121,6 +121,7 @@ export type OwlAction =
   | { readonly type: "SET_RESPONSE"; readonly response: ResponseSnapshot }
   | { readonly type: "SET_ERROR"; readonly error: string }
   | { readonly type: "ADD_TURN"; readonly turn: ConversationTurn }
+  | { readonly type: "SET_TURNS"; readonly turns: readonly ConversationTurn[] }
   | {
       readonly type: "SET_PROVIDER_OVERRIDE"
       readonly provider: ProviderId | null
@@ -215,6 +216,10 @@ export function owlReducer(state: OwlAppState, action: OwlAction): OwlAppState {
     /** @Owl.TUI.State.Reducer.ADD_TURN — Appends completed turn to history */
     case "ADD_TURN":
       return { ...state, turns: [...state.turns, action.turn] }
+
+    /** @Owl.TUI.State.Reducer.SET_TURNS — Replaces visible turn history */
+    case "SET_TURNS":
+      return { ...state, turns: action.turns }
 
     /** @Owl.TUI.State.Reducer.SET_PROVIDER_OVERRIDE — Tracks routing override */
     case "SET_PROVIDER_OVERRIDE":

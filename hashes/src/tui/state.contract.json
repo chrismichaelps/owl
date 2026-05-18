@@ -2,25 +2,28 @@
   "contract_id": "CTR-tui-state-00000001",
   "module": "@Owl.TUI.State src/tui/state.ts",
   "grammar_lock": "@root/hashes/grammar/react/react.hash.md",
-  "depth_score": "0.80 \u2014 DEEP (pure state transition logic)",
+  "depth_score": "0.80 — DEEP (pure state transition logic)",
   "seam_capacity": "INTERNAL (tui state)",
-  "sig_id": "SIG-tui-state-00000001",
+  "sig_id": "SIG-tui-state-44d58707",
   "interface": {
     "signatures": [
       "owlReducer(state: OwlAppState, action: OwlAction) => OwlAppState",
       "INITIAL_STATE: OwlAppState",
       "ResponseSnapshot: Interface",
+      "OwlAction.SET_TURNS replaces visible conversation turns from SessionMemory",
       "OwlAppState.permissionMode: ToolPermissionMode",
       "OwlAction.SET_PERMISSION_MODE updates session Permission visibility"
     ],
     "error_modes": [],
     "invariants": [
       "Permission mode MUST default to default",
-      "Permission mode MUST mirror ToolPermissionState snapshots from the runtime"
+      "Permission mode MUST mirror ToolPermissionState snapshots from the runtime",
+      "SET_TURNS MUST replace visible conversation turns without altering Provider routing state"
     ]
   },
   "responsibilities": [
-    "Track the visible Permission mode for the active TUI Session"
+    "Track the visible Permission mode for the active TUI Session",
+    "Replace visible conversation turns after Session lifecycle commands"
   ],
   "prohibited": [],
   "created_at": "2026-05-14T15:55:47.198187Z"

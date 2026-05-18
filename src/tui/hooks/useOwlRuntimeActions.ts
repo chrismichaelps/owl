@@ -3,6 +3,7 @@ import { useCallback, useRef } from "react"
 import type { Dispatch } from "react"
 import { Chunk, Data, Effect, Fiber } from "effect"
 import { Orchestrator } from "../../engine/orchestrator/index.js"
+import { SessionMemory } from "../../engine/memory/index.js"
 import { CommandRegistry } from "../../commands/registry.js"
 import { parseCommand } from "../../commands/parser.js"
 import { RoutingPreferences } from "../../providers/preferences/index.js"
@@ -20,6 +21,7 @@ import type { Mode } from "../../core/schema/index.js"
 import type { OwlRuntime } from "../../cli/runtime.js"
 import type { OwlAction } from "../state.js"
 import { expandMentions } from "../mentions/index.js"
+import { sessionTurnsToConversationTurns } from "../session/sync.js"
 
 export interface RuntimeActions {
   readonly handleSubmit: (prompt: string, submittedMode: Mode) => void
@@ -49,6 +51,9 @@ const readPendingMutationSummaries = Effect.gen(function* () {
     }),
   )
 })
+
+const shouldSyncVisibleSession = (commandName: string): boolean =>
+  commandName === "new" || commandName === "resume"
 
 export function useOwlRuntimeActions(
   runtime: OwlRuntime,
@@ -211,6 +216,7 @@ export function useOwlRuntimeActions(
     (raw: string) => {
       const effect = Effect.gen(function* () {
         const registry = yield* CommandRegistry
+        const sessionMemory = yield* SessionMemory
         const routingPreferences = yield* RoutingPreferences
         const toolPermissionState = yield* ToolPermissionState
         const parsed = yield* parseCommand(raw)
@@ -218,6 +224,11 @@ export function useOwlRuntimeActions(
         const preferenceSnapshot = yield* routingPreferences.snapshot()
         const permissionSnapshot = yield* toolPermissionState.snapshot()
         const pendingMutations = yield* readPendingMutationSummaries
+        const visibleSessionTurns = shouldSyncVisibleSession(parsed.name)
+          ? yield* sessionMemory
+              .getTurns()
+              .pipe(Effect.map(sessionTurnsToConversationTurns))
+          : null
         commandCounterRef.current += 1
         dispatch({
           type: "SET_PROVIDER_OVERRIDE",
@@ -235,6 +246,9 @@ export function useOwlRuntimeActions(
           type: "SET_PENDING_MUTATIONS",
           pendingMutations,
         })
+        if (visibleSessionTurns !== null) {
+          dispatch({ type: "SET_TURNS", turns: visibleSessionTurns })
+        }
         dispatch({
           type: "ADD_LOG",
           msg:

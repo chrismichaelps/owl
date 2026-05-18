@@ -1,19 +1,22 @@
 ---
 Module: @root/src/tui/hooks/useOwlRuntimeActions.ts
-State_ID: BigInt(0x54197da55bd98a5f)
+State_ID: BigInt(0x6c3c6aa9c1ff00d8)
 ---
 
 ## Algorithm
 
 1. Load the module through its public imports.
-2. Execute only the behavior exposed by the module interface.
-3. Propagate typed results and tagged errors according to the grammar lock.
+2. Dispatch slash commands through CommandRegistry.
+3. When the command changes the active Session, read SessionMemory turns and project them through the TUI Session sync helper.
+4. Dispatch SET_TURNS before appending the lifecycle command result.
+5. Propagate typed results and tagged errors according to the grammar lock.
 
 ## Negative Logic (PROHIBITED PATHS)
 
 - MUST NOT: Bypass the registered module interface.
 - MUST NOT: Introduce untyped runtime boundaries.
 - MUST NOT: Depend on OS-absolute project paths.
+- MUST NOT: project SessionMemory turns inline; use the TUI Session sync helper.
 
 ## Edge Cases
 
