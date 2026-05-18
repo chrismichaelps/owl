@@ -10,6 +10,7 @@
  * - Mode option: owl --mode=deep "prompt", owl --mode deep "prompt"
  * - Provider option: owl --model=anthropic, owl --model ollama
  * - Privacy option: owl --privacy, owl --privacy-mode off
+ * - Session option: owl --resume=sess-0001, owl --resume sess-0001
  * - Permission option: owl --permission-mode=plan, owl --dangerously-skip-permissions
  * - Metadata: owl --help, owl --version
  *
@@ -64,6 +65,8 @@ export interface ParsedArgs {
   readonly providerOverride: ProviderId | null
   /** Initial local-only Provider routing mode */
   readonly privacyMode: boolean
+  /** Initial Session id to resume (null means current persisted Session) */
+  readonly resumeSessionId: string | null
   /** Print help and exit before runtime boot */
   readonly help: boolean
   /** Print version and exit before runtime boot */
@@ -83,6 +86,7 @@ export function parseArgs(argv: readonly string[]): ParsedArgs {
   let permissionMode: ToolPermissionMode = TOOL_PERMISSION_MODES.DEFAULT
   let providerOverride: ProviderId | null = null
   let privacyMode = false
+  let resumeSessionId: string | null = null
   let help = false
   let version = false
 
@@ -100,6 +104,9 @@ export function parseArgs(argv: readonly string[]): ParsedArgs {
       const val = arg.slice(CLI_FLAGS.PRIVACY_MODE_PREFIX.length)
       const parsed = parsePrivacyMode(val)
       if (Option.isSome(parsed)) privacyMode = parsed.value
+    } else if (arg.startsWith(CLI_FLAGS.RESUME_PREFIX)) {
+      const val = arg.slice(CLI_FLAGS.RESUME_PREFIX.length)
+      if (val.length > 0) resumeSessionId = val
     } else if (arg === CLI_FLAGS.MODE) {
       const val = argv[index + 1]
       if (val !== undefined && isValidMode(val)) {
@@ -122,6 +129,12 @@ export function parseArgs(argv: readonly string[]): ParsedArgs {
           privacyMode = parsed.value
           index++
         }
+      }
+    } else if (arg === CLI_FLAGS.RESUME) {
+      const val = argv[index + 1]
+      if (val !== undefined && !val.startsWith("-")) {
+        resumeSessionId = val
+        index++
       }
     } else if (arg === CLI_FLAGS.DANGEROUSLY_SKIP_PERMISSIONS) {
       permissionMode = TOOL_PERMISSION_MODES.BYPASS_PERMISSIONS
@@ -159,6 +172,7 @@ export function parseArgs(argv: readonly string[]): ParsedArgs {
     permissionMode,
     providerOverride,
     privacyMode,
+    resumeSessionId,
     help,
     version,
   }

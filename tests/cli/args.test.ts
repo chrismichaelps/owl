@@ -97,6 +97,10 @@ describe("parseArgs with no arguments", () => {
   it("defaults privacy mode to false", () => {
     expect(parseArgs([]).privacyMode).toBe(false)
   })
+
+  it("defaults resume Session id to null", () => {
+    expect(parseArgs([]).resumeSessionId).toBeNull()
+  })
 })
 
 describe("metadata flags", () => {
@@ -276,6 +280,35 @@ describe("--privacy flag", () => {
   })
 })
 
+describe("--resume flag", () => {
+  it("parses resume Session id with equals syntax", () => {
+    expect(parseArgs(["--resume=sess-0001"]).resumeSessionId).toBe("sess-0001")
+  })
+
+  it("parses separated resume Session id values", () => {
+    expect(parseArgs(["--resume", "sess-0002"]).resumeSessionId).toBe(
+      "sess-0002",
+    )
+  })
+
+  it("does not treat separated resume Session id values as the prompt", () => {
+    const parsed = parseArgs(["--resume", "sess-0003", "actual prompt"])
+    expect(parsed.resumeSessionId).toBe("sess-0003")
+    expect(parsed.prompt).toBe("actual prompt")
+  })
+
+  it("does not consume the next flag as a resume Session id", () => {
+    const parsed = parseArgs(["--resume", "--privacy", "actual prompt"])
+    expect(parsed.resumeSessionId).toBeNull()
+    expect(parsed.privacyMode).toBe(true)
+    expect(parsed.prompt).toBe("actual prompt")
+  })
+
+  it("ignores empty resume Session id values with equals syntax", () => {
+    expect(parseArgs(["--resume="]).resumeSessionId).toBeNull()
+  })
+})
+
 describe("short flag aliases", () => {
   it("--quick sets mode to quick", () => {
     expect(parseArgs(["--quick"]).mode).toBe("quick")
@@ -365,6 +398,7 @@ describe("edge cases", () => {
       permissionMode: TOOL_PERMISSION_MODES.DEFAULT,
       providerOverride: null,
       privacyMode: false,
+      resumeSessionId: null,
       help: false,
       version: false,
     })

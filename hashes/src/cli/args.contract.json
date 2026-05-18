@@ -2,9 +2,9 @@
   "contract_id": "CTR-cli-args-00000001",
   "module": "@Owl.CLI.Args src/cli/args.ts",
   "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
-  "depth_score": "0.85 \u2014 DEEP (pure functional argument parsing)",
+  "depth_score": "0.85 — DEEP (pure functional argument parsing)",
   "seam_capacity": "INTERNAL (cli utility)",
-  "sig_id": "SIG-cli-args-c6ea54b4",
+  "sig_id": "SIG-cli-args-18290091",
   "interface": {
     "signatures": [
       "VALID_MODES: readonly string[]",
@@ -13,9 +13,10 @@
       "parseArgs([\"--model\", provider]) consumes provider as startup Provider override",
       "parseArgs([\"--privacy\"]) enables startup Privacy mode",
       "parseArgs([\"--privacy-mode\", value]) consumes boolean-like Privacy mode values",
+      "parseArgs([\"--resume\", sessionId]) consumes a startup Session id",
       "parseArgs([\"--permission-mode\", value]) consumes value as Permission mode",
       "parseArgs([\"--dangerously-skip-permissions\"]) maps to bypassPermissions",
-      "ParsedArgs: { mode: Mode; prompt: string | null; permissionMode: ToolPermissionMode; providerOverride: ProviderId | null; privacyMode: boolean }"
+      "ParsedArgs: { mode: Mode; prompt: string | null; permissionMode: ToolPermissionMode; providerOverride: ProviderId | null; privacyMode: boolean; resumeSessionId: string | null }"
     ],
     "error_modes": [],
     "invariants": [
@@ -23,6 +24,7 @@
       "Separated Mode values MUST NOT become positional prompts",
       "Separated Provider override values MUST NOT become positional prompts",
       "Separated Privacy mode values MUST NOT become positional prompts",
+      "Separated Resume Session id values MUST NOT become positional prompts",
       "Separated Permission mode values MUST NOT become positional prompts",
       "Permission bypass aliases MUST map through ToolPermissionMode rather than bypassing governance",
       "Unknown Permission mode flags MUST be ignored deterministically"

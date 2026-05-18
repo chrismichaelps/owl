@@ -4,21 +4,20 @@
   "grammar_lock": "@root/hashes/grammar/typescript/typescript.hash.md",
   "depth_score": "0.58",
   "seam_capacity": "CRITICAL",
-  "sig_id": "SIG-cli-run-bffbf92c",
+  "sig_id": "SIG-cli-run-dcff6c7a",
   "interface": {
     "signatures": [
       "runCli(argv, projectRoot) => Promise<void>",
       "bootCli(argv?, projectRoot?) => void"
     ],
-    "error_modes": [
-      "ProcessFatalError \u2014 unhandled promise rejection at boot"
-    ],
+    "error_modes": ["ProcessFatalError — unhandled promise rejection at boot"],
     "invariants": [
       "argv must be string[]",
       "projectRoot must be absolute",
       "initial Permission mode MUST be passed to App before initial prompt execution",
       "initial Privacy mode MUST be passed to App before initial prompt execution",
-      "initial Provider override MUST be passed to App before initial prompt execution"
+      "initial Provider override MUST be passed to App before initial prompt execution",
+      "initial Resume Session id MUST be passed to App before initial prompt execution"
     ]
   },
   "responsibilities": [
@@ -26,6 +25,7 @@
     "Pass startup Permission mode into the TUI App",
     "Pass startup Privacy mode into the TUI App",
     "Pass startup Provider override into the TUI App",
+    "Pass startup Resume Session id into the TUI App",
     "Mount TUI",
     "Handle process exit"
   ],

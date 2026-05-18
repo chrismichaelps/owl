@@ -11,14 +11,15 @@
 
 ## Algorithm
 
-1. **Initialize** — Set default mode, prompt, Permission mode, Privacy mode, Provider override, help, and version values.
+1. **Initialize** — Set default mode, prompt, Permission mode, Privacy mode, Provider override, Resume Session id, help, and version values.
 2. **Process** — Iterate argv by index so separated flag values can be consumed deterministically.
 3. **Route Mode Flags** — Resolve `--mode=value`, `--mode value`, and short mode flags through the canonical Mode set.
 4. **Route Provider Flags** — Resolve `--model=value` and `--model value` through the canonical Provider set.
 5. **Route Privacy Flags** — Resolve `--privacy`, `--privacy-mode=value`, and `--privacy-mode value` through the canonical boolean parser.
-6. **Route Permission Flags** — Resolve `--permission-mode=value`, `--permission-mode value`, and bypass aliases through the canonical Permission mode set.
-7. **Capture Prompt** — Store only the first non-flag positional token not consumed by a valid separated flag.
-8. **Complete** — Return a plain immutable ParsedArgs object.
+6. **Route Resume Flags** — Resolve `--resume=value` and `--resume value` into a startup Session id.
+7. **Route Permission Flags** — Resolve `--permission-mode=value`, `--permission-mode value`, and bypass aliases through the canonical Permission mode set.
+8. **Capture Prompt** — Store only the first non-flag positional token not consumed by a valid separated flag.
+9. **Complete** — Return a plain immutable ParsedArgs object.
 
 ## Negative Logic (PROHIBITED PATHS)
 
@@ -26,11 +27,13 @@
 - MUST NOT: Accept Provider overrides outside the canonical Provider set.
 - MUST NOT: Turn startup Provider override into direct adapter selection.
 - MUST NOT: Treat Privacy mode as a Provider override; it only constrains routing.
+- MUST NOT: Treat a separated Resume Session id as the prompt.
 
 ## Edge Cases
 
 - **Invalid separated Provider value**: leave it available as positional prompt text.
 - **Invalid separated Privacy value**: leave it available as positional prompt text.
+- **Missing separated Resume Session id**: leave resumeSessionId as null and continue parsing later flags.
 - **Unknown flag**: ignore it deterministically.
 - **Repeated flags**: later valid flags win.
 

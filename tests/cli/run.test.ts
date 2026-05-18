@@ -116,4 +116,23 @@ describe("runCli metadata flags", () => {
 
     expect(rendered?.props.initialPrivacyMode).toBe(true)
   })
+
+  it("passes initial Resume Session id into the TUI app", async () => {
+    let rendered:
+      | ReactElement<{ readonly initialResumeSessionId?: string | null }>
+      | undefined
+
+    await runCli(["--resume=sess-0007"], process.cwd(), undefined, {
+      render: (element) => {
+        rendered = element as ReactElement<{
+          readonly initialResumeSessionId?: string | null
+        }>
+        return {
+          waitUntilExit: () => Promise.resolve(),
+        }
+      },
+    })
+
+    expect(rendered?.props.initialResumeSessionId).toBe("sess-0007")
+  })
 })

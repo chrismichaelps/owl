@@ -42,6 +42,7 @@ import { moveFocusPanel } from "./focus/index.js"
 import type { Mode, ProviderId } from "../core/schema/index.js"
 import type { OwlRuntime } from "../cli/runtime.js"
 import { CommandRegistry } from "../commands/registry.js"
+import { SessionMemory } from "../engine/memory/index.js"
 import { ToolPermissionState } from "../tools/index.js"
 import {
   AGENT_STATUS,
@@ -58,6 +59,7 @@ interface AppProps {
   readonly initialMode?: Mode
   readonly initialPermissionMode?: ToolPermissionMode
   readonly initialPrivacyMode?: boolean
+  readonly initialResumeSessionId?: string | null
   readonly initialProviderOverride?: ProviderId | null
   readonly initialPrompt?: string | null
 }
@@ -69,6 +71,7 @@ export const App: React.FC<AppProps> = ({
   initialMode = "standard",
   initialPermissionMode = TOOL_PERMISSION_MODES.DEFAULT,
   initialPrivacyMode = false,
+  initialResumeSessionId = null,
   initialProviderOverride = null,
   initialPrompt,
 }) => {
@@ -144,6 +147,18 @@ export const App: React.FC<AppProps> = ({
       const permissionState = yield* ToolPermissionState
       yield* permissionState.setMode(initialPermissionMode)
 
+      const memory = yield* SessionMemory
+      const resumeLog =
+        initialResumeSessionId === null
+          ? null
+          : yield* memory.resumeSession(initialResumeSessionId).pipe(
+              Effect.match({
+                onFailure: (error) =>
+                  "Session resume ignored: " + String(error),
+                onSuccess: (sessionId) => "Session resumed: " + sessionId,
+              }),
+            )
+
       const registry = yield* CommandRegistry
       const privacyLog = initialPrivacyMode
         ? yield* registry
@@ -178,7 +193,7 @@ export const App: React.FC<AppProps> = ({
               )
 
       return Chunk.filter(
-        Chunk.make(privacyLog, providerLog),
+        Chunk.make(resumeLog, privacyLog, providerLog),
         (log): log is string => log !== null,
       )
     })
@@ -204,6 +219,7 @@ export const App: React.FC<AppProps> = ({
     initialPermissionMode,
     initialPrompt,
     initialPrivacyMode,
+    initialResumeSessionId,
     initialProviderOverride,
     runtime,
     syncRoutingPreferences,

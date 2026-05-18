@@ -1,6 +1,6 @@
 {
   "module": "@root/src/core/constants/commands.ts",
-  "state_id": "BigInt(0xe2961a5445eb8624)",
+  "state_id": "BigInt(0xc0e0e139805fdc44)",
   "interface": {
     "inputs": [],
     "outputs": [
@@ -31,6 +31,16 @@
       },
       {
         "name": "CLI_FLAGS.PRIVACY_MODE",
+        "type": "string",
+        "complexity": "O(1)"
+      },
+      {
+        "name": "CLI_FLAGS.RESUME",
+        "type": "string",
+        "complexity": "O(1)"
+      },
+      {
+        "name": "CLI_FLAGS.RESUME_PREFIX",
         "type": "string",
         "complexity": "O(1)"
       },

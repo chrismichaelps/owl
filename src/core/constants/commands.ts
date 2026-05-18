@@ -16,6 +16,8 @@ export const CLI_FLAGS = {
   PRIVACY: "--privacy",
   PRIVACY_MODE: "--privacy-mode",
   PRIVACY_MODE_PREFIX: "--privacy-mode=",
+  RESUME: "--resume",
+  RESUME_PREFIX: "--resume=",
   DANGEROUSLY_SKIP_PERMISSIONS: "--dangerously-skip-permissions",
 } as const
 
@@ -93,6 +95,7 @@ export const CLI_CONSTANTS = {
     ["--model=<provider>", "Set startup provider override"],
     ["--privacy", "Start in local-only provider routing mode"],
     ["--privacy-mode=<on|off>", "Set startup privacy mode"],
+    ["--resume=<sessionId>", "Resume a specific session before startup prompt"],
     [
       "--permission-mode=<mode>",
       "Set tool permissions: default, acceptEdits, bypassPermissions, plan, dontAsk",

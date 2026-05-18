@@ -73,6 +73,7 @@ import { makeCommandRegistryLive } from "../commands/registry.js"
 import { TokenBudgetLive } from "../tokens/budget/index.js"
 import { makePersistentContextCacheLive } from "../tokens/cache/index.js"
 import type { CommandRegistry } from "../commands/registry.js"
+import type { SessionMemory } from "../engine/memory/index.js"
 import type { RoutingPreferences } from "../providers/preferences/index.js"
 import type { PendingMutationStore } from "../editor/pending/index.js"
 import type { ContextCache } from "../tokens/cache/index.js"
@@ -95,6 +96,7 @@ import type {
 export type OwlRuntime = ManagedRuntime.ManagedRuntime<
   | Orchestrator
   | CommandRegistry
+  | SessionMemory
   | RoutingPreferences
   | PendingMutationStore
   | ContextCache

@@ -16,16 +16,18 @@
 
 1. **Mount** — Initialize reducer state, mode state, palette state, and shortcut state.
 2. **Apply Startup Permission Mode** — Write initial Permission mode into ToolPermissionState and visible TUI state.
-3. **Apply Startup Privacy Mode** — If enabled, dispatch the registered `/privacy on` command before Provider override validation.
-4. **Apply Startup Provider Override** — If provided, dispatch the registered `/model` command before any initial prompt.
-5. **Sync Runtime Preferences** — Refresh visible Privacy mode and Provider override state from RoutingPreferences.
-6. **Submit Initial Prompt** — Submit only after startup Permission mode, Privacy mode, and Provider override setup completes.
-7. **Process User Input** — Route prompts to Orchestrator and slash commands to CommandRegistry.
-8. **Render** — Display welcome shell, conversation, panels, palette, and shortcuts overlay.
+3. **Apply Startup Resume Session** — If provided, resume SessionMemory before any startup command or prompt.
+4. **Apply Startup Privacy Mode** — If enabled, dispatch the registered `/privacy on` command before Provider override validation.
+5. **Apply Startup Provider Override** — If provided, dispatch the registered `/model` command before any initial prompt.
+6. **Sync Runtime Preferences** — Refresh visible Privacy mode and Provider override state from RoutingPreferences.
+7. **Submit Initial Prompt** — Submit only after startup Permission mode, Session resume, Privacy mode, and Provider override setup completes.
+8. **Process User Input** — Route prompts to Orchestrator and slash commands to CommandRegistry.
+9. **Render** — Display welcome shell, conversation, panels, palette, and shortcuts overlay.
 
 ## Negative Logic (PROHIBITED PATHS)
 
 - MUST NOT: Submit the initial prompt before startup Permission mode is applied.
+- MUST NOT: Submit the initial prompt before startup Session resume is attempted.
 - MUST NOT: Submit the initial prompt before startup Privacy mode is attempted.
 - MUST NOT: Submit the initial prompt before startup Provider override is attempted.
 - MUST NOT: Duplicate `/privacy` validation logic in App; use CommandRegistry dispatch.
@@ -36,6 +38,7 @@
 - **Privacy mode enabled with cloud Provider override**: apply Privacy mode first so `/model` rejects cloud providers consistently.
 - **Provider override rejected**: log the rejection and continue startup in auto routing.
 - **No initial prompt**: initialize runtime preferences without submitting.
+- **Resume rejected**: log the rejection and continue startup without discarding current Session state.
 - **Command registry unavailable**: preserve TUI startup and surface the failure as a log line.
 
 ## Dependencies

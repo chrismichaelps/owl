@@ -2,13 +2,13 @@
   "contract_id": "CTR-cli-runtime-00000001",
   "module": "@Owl.CLI.Runtime src/cli/runtime.ts",
   "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
-  "depth_score": "0.92 \u2014 DEEP (composition root and Provider bootstrap coordinator)",
+  "depth_score": "0.92 — DEEP (composition root and Provider bootstrap coordinator)",
   "seam_capacity": "BACKBONE (managed runtime lifecycle)",
-  "sig_id": "SIG-cli-runtime-00000001",
+  "sig_id": "SIG-cli-runtime-4fdaf6cb",
   "interface": {
     "signatures": [
-      "makeOwlRuntime(projectRoot: string) => ManagedRuntime<Orchestrator | CommandRegistry | ToolPermissionState, ConfigError>",
-      "OwlRuntime: ManagedRuntime<Orchestrator | CommandRegistry | ToolPermissionState, ConfigError>"
+      "makeOwlRuntime(projectRoot: string) => ManagedRuntime<Orchestrator | CommandRegistry | ToolPermissionState | SessionMemory, ConfigError>",
+      "OwlRuntime: ManagedRuntime<Orchestrator | CommandRegistry | ToolPermissionState | SessionMemory, ConfigError>"
     ],
     "error_modes": [
       "ConfigError when required Provider configuration is missing"
@@ -19,6 +19,7 @@
       "UsageMetricsLive MUST be shared between Orchestrator and CommandRegistry",
       "RoutingPreferencesLive MUST be shared between Orchestrator and CommandRegistry",
       "ToolPermissionState MUST be shared between /permissions, /tools, and built-in tool execution",
+      "SessionMemory MUST be exposed so startup resume can run before initial prompt execution",
       "CommandRegistry MUST receive the same Orchestrator and EditingPipeline Layers as the TUI runtime",
       "Runtime callers MUST only access Orchestrator and CommandRegistry services"
     ]
@@ -38,6 +39,7 @@
     "Share RoutingPreferences between /model Command and Orchestrator Inference",
     "Share ToolPermissionState between /permissions, /tools, and built-in tool execution",
     "Expose ToolPermissionState to the TUI runtime so session chrome can display Permission mode",
+    "Expose SessionMemory to the TUI runtime so startup resume can target a Session id",
     "Share UsageMetrics between Orchestrator recording and /status display",
     "Expose only Orchestrator and CommandRegistry to the TUI"
   ],

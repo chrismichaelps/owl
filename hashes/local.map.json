@@ -1,8 +1,8 @@
 {
   "shard_id": "@root/src",
-  "state_anchor": "BigInt(0x5a19bc70180cd653)",
+  "state_anchor": "BigInt(0xa0d0b8e82a0cbdc8)",
   "parent_bridge": "@root/hashes/local.map.json",
-  "git_anchor": "f47cd6855f93081e4222c7b3c31dc9b4151717f5",
+  "git_anchor": "f1b13413fd4d8ec3343ed363319d201316149bc6",
   "cache_integrity": "VERIFIED",
   "nodes": {
     "cli/args": {
@@ -11,7 +11,7 @@
       "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
       "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-cli-args-c6ea54b4"
+      "sig_id": "SIG-cli-args-18290091"
     },
     "cli/help": {
       "file_path": "@root/src/cli/help.ts",
@@ -35,7 +35,7 @@
       "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
       "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-cli-run-bffbf92c"
+      "sig_id": "SIG-cli-run-dcff6c7a"
     },
     "cli/runtime": {
       "file_path": "@root/src/cli/runtime.ts",
@@ -43,7 +43,7 @@
       "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
       "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-cli-runtime-f53e76af"
+      "sig_id": "SIG-cli-runtime-4fdaf6cb"
     },
     "commands/analysis/analyze": {
       "file_path": "@root/src/commands/analysis/analyze.ts",
@@ -454,7 +454,7 @@
       "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
       "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-core-constants-commands-e2961a54"
+      "sig_id": "SIG-core-constants-commands-c0e0e139"
     },
     "core/constants/editor": {
       "file_path": "@root/src/core/constants/editor.ts",
@@ -1310,7 +1310,7 @@
       "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
       "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-tui-app-905b3697"
+      "sig_id": "SIG-tui-app-a0d0b8e8"
     },
     "tui/commands/fuzzy": {
       "file_path": "@root/src/tui/commands/fuzzy.ts",

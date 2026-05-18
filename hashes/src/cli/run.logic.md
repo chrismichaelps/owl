@@ -11,10 +11,10 @@
 
 ## Algorithm
 
-1. **Parse Args** — Convert argv into typed Mode, Permission mode, Privacy mode, Provider override, prompt, and metadata flags.
+1. **Parse Args** — Convert argv into typed Mode, Permission mode, Privacy mode, Resume Session id, Provider override, prompt, and metadata flags.
 2. **Handle Metadata** — Print help or version without booting runtime.
 3. **Create Runtime** — Build the managed Owl runtime for the provided project root.
-4. **Mount App** — Pass startup Mode, Permission mode, Privacy mode, Provider override, project root, and prompt into the TUI App.
+4. **Mount App** — Pass startup Mode, Permission mode, Privacy mode, Resume Session id, Provider override, project root, and prompt into the TUI App.
 5. **Wait For Exit** — Await Ink shutdown.
 6. **Dispose Runtime** — Always dispose the managed runtime in `finally`.
 
@@ -23,6 +23,7 @@
 - MUST NOT: Boot runtime for help or version output.
 - MUST NOT: Apply startup Provider override in the CLI runner; App owns runtime initialization order.
 - MUST NOT: Apply startup Privacy mode in the CLI runner; App owns runtime initialization order.
+- MUST NOT: Resume SessionMemory in the CLI runner; App owns runtime initialization order.
 - MUST NOT: Skip runtime disposal after render failure.
 
 ## Edge Cases

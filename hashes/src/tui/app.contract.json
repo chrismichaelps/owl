@@ -2,19 +2,21 @@
   "contract_id": "CTR-tui-app-00000001",
   "module": "@Owl.TUI.App src/tui/app.tsx",
   "grammar_lock": "@root/hashes/grammar/react/react.hash.md",
-  "depth_score": "0.82 \u2014 DEEP (main layout shell)",
+  "depth_score": "0.82 — DEEP (main layout shell)",
   "seam_capacity": "BACKBONE (connects all TUI components)",
-  "sig_id": "SIG-tui-app-905b3697",
+  "sig_id": "SIG-tui-app-a0d0b8e8",
   "interface": {
     "signatures": [
       "OwlApp(props: OwlAppProps) => ReactElement",
       "AppProps.initialPermissionMode?: ToolPermissionMode",
       "AppProps.initialPrivacyMode?: boolean",
+      "AppProps.initialResumeSessionId?: string | null",
       "AppProps.initialProviderOverride?: ProviderId | null"
     ],
     "error_modes": [],
     "invariants": [
       "Startup Permission mode MUST be applied before optional initial prompt execution",
+      "Startup Resume Session id MUST be applied before optional initial prompt execution",
       "Startup Privacy mode MUST be applied before startup Provider override",
       "Startup Provider override MUST be applied before optional initial prompt execution",
       "Startup Provider override MUST route through CommandRegistry /model dispatch"
@@ -23,6 +25,7 @@
   "responsibilities": [
     "Route Metrics-panel pending Mutation shortcuts through CommandRegistry dispatch",
     "Initialize visible and runtime Permission mode from CLI startup args",
+    "Initialize SessionMemory from CLI startup Resume Session id",
     "Initialize visible and runtime Privacy mode from CLI startup args",
     "Initialize visible and runtime Provider override from CLI startup args"
   ],

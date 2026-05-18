@@ -58,6 +58,7 @@ export async function runCli(
     permissionMode,
     providerOverride,
     privacyMode,
+    resumeSessionId,
     help,
     version,
   } = parseArgs(argv)
@@ -82,6 +83,7 @@ export async function runCli(
         initialMode: mode,
         initialPermissionMode: permissionMode,
         initialPrivacyMode: privacyMode,
+        initialResumeSessionId: resumeSessionId,
         initialProviderOverride: providerOverride,
         initialPrompt: prompt,
       }),
