@@ -1501,6 +1501,16 @@
       "fidelity_level": "Active",
       "sig_id": "SIG-tui-status-tokenPressure-90b537a5"
     },
+    "tui/pending/shortcuts": {
+      "file_path": "@root/src/tui/pending/shortcuts.ts",
+      "hash_reference": "@root/hashes/src/tui/pending/shortcuts.hash.md",
+      "grammar_ref": "@root/hashes/grammar/react/react.hash.md",
+      "dependencies": [
+        "@root/hashes/src/core/constants/tui.hash.md"
+      ],
+      "fidelity_level": "Signature",
+      "sig_id": "SIG-tui-pending-shortcuts-00000001"
+    },
     "commands/management/doctor": {
       "file_path": "@root/src/commands/management/doctor.ts",
       "hash_reference": "@root/hashes/src/commands/management/doctor.hash.md",

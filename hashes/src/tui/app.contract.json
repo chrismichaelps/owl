@@ -12,7 +12,11 @@
     "error_modes": [],
     "invariants": []
   },
-  "responsibilities": [],
-  "prohibited": [],
+  "responsibilities": [
+    "Route Metrics-panel pending Mutation shortcuts through CommandRegistry dispatch"
+  ],
+  "prohibited": [
+    "MUST NOT resolve pending Mutation approval shortcuts inline; use @root/src/tui/pending/shortcuts.ts"
+  ],
   "created_at": "2026-05-14T15:55:47.198530Z"
 }
