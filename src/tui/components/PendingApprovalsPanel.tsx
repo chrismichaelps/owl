@@ -10,16 +10,12 @@ interface PendingApprovalsPanelProps {
 }
 
 /** @Owl.TUI.Components.PendingApprovals.Files - Render compact file list */
-export function formatPendingApprovalFiles(
-  files: Chunk.Chunk<string>,
-): string {
+export function formatPendingApprovalFiles(files: Chunk.Chunk<string>): string {
   const visible = Chunk.take(files, TUI_PENDING_APPROVALS.FILE_PREVIEW_LIMIT)
   const hiddenCount = Chunk.size(files) - Chunk.size(visible)
   const names = Chunk.toReadonlyArray(visible).join(", ")
 
-  return hiddenCount > 0
-    ? names + " +" + String(hiddenCount) + " more"
-    : names
+  return hiddenCount > 0 ? names + " +" + String(hiddenCount) + " more" : names
 }
 
 /** @Owl.TUI.Components.PendingApprovals.Row - Single pending Mutation row */
@@ -44,10 +40,7 @@ const PendingApprovalRow = memo(function PendingApprovalRow({
 /** @Owl.TUI.Components.PendingApprovals.Component - Pending approval summary */
 export const PendingApprovalsPanel: React.FC<PendingApprovalsPanelProps> = memo(
   ({ mutations }) => {
-    const visible = Chunk.take(
-      mutations,
-      TUI_PENDING_APPROVALS.VISIBLE_ITEMS,
-    )
+    const visible = Chunk.take(mutations, TUI_PENDING_APPROVALS.VISIBLE_ITEMS)
     const hiddenCount = Chunk.size(mutations) - Chunk.size(visible)
 
     return (

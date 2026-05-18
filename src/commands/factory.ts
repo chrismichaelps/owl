@@ -113,7 +113,11 @@ export const makeCommandHandlers = (
     makeAuditCommand(deps.orchestrator),
     makeStatusCommand(deps.sessionMemory, deps.usageMetrics),
     makeClearCommand(deps.contextManager),
-    makeCompactCommand(deps.orchestrator, deps.contextManager, deps.contextCache),
+    makeCompactCommand(
+      deps.orchestrator,
+      deps.contextManager,
+      deps.contextCache,
+    ),
     makeCacheCommand(deps.contextCache),
     makeHistoryCommand(deps.sessionMemory, projectRoot),
     makeInitCommand(deps.fs, projectRoot),

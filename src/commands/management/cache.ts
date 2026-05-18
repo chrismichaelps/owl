@@ -5,7 +5,10 @@ import { CommandParseError } from "../../core/errors/index.js"
 import type { ContextCacheService } from "../../tokens/cache/index.js"
 import type { CommandHandler, CommandResult } from "../types.js"
 
-const toCommandParseError = (input: string, error: unknown): CommandParseError =>
+const toCommandParseError = (
+  input: string,
+  error: unknown,
+): CommandParseError =>
   new CommandParseError({
     input,
     reason: error instanceof Error ? error.message : String(error),
@@ -22,7 +25,9 @@ export function makeCacheCommand(cache: ContextCacheService): CommandHandler {
       if (subcommand === COMMAND_CONSTANTS.CACHE_CLEAR_SUBCOMMAND) {
         return cache.invalidateAll().pipe(
           Effect.map(() => ({ output: "Context cache cleared." })),
-          Effect.mapError((error) => toCommandParseError("/cache clear", error)),
+          Effect.mapError((error) =>
+            toCommandParseError("/cache clear", error),
+          ),
         )
       }
 

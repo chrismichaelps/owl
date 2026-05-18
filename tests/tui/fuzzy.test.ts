@@ -97,12 +97,7 @@ describe("getPaletteSuggestion", () => {
 
   it("suggests pending mutation IDs when approval argument is empty", () => {
     expect(
-      getPaletteSuggestion(
-        "/diff ",
-        COMMANDS,
-        0,
-        Chunk.make("edit-alpha"),
-      ),
+      getPaletteSuggestion("/diff ", COMMANDS, 0, Chunk.make("edit-alpha")),
     ).toBe("edit-alpha ")
   })
 })

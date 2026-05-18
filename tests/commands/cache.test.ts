@@ -1,10 +1,7 @@
 /** @Owl.Tests.Commands.Cache - ContextCache management command */
 import { Effect } from "effect"
 import { describe, expect, it } from "vitest"
-import {
-  ContextCache,
-  ContextCacheLive,
-} from "../../src/tokens/cache/index.js"
+import { ContextCache, ContextCacheLive } from "../../src/tokens/cache/index.js"
 import { makeCacheCommand } from "../../src/commands/management/cache.js"
 
 const run = <A>(effect: Effect.Effect<A, never, ContextCache>) =>

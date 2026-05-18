@@ -5,9 +5,7 @@ import type { PendingMutationStoreService } from "../../editor/pending/index.js"
 import type { CommandHandler, CommandResult } from "../types.js"
 
 /** @Owl.Commands.Editing.Pending.Format - Render approval inbox */
-export const formatPendingMutations = (
-  lines: Chunk.Chunk<string>,
-): string =>
+export const formatPendingMutations = (lines: Chunk.Chunk<string>): string =>
   Chunk.isEmpty(lines)
     ? "No pending mutations. Preview first with /edit --preview."
     : "Pending mutations:\n" +

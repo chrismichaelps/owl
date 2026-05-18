@@ -66,7 +66,10 @@ const scoreCommand = (command: PaletteCommand, rawQuery: string): number => {
   return score
 }
 
-const scorePendingMutationId = (mutationId: string, rawQuery: string): number => {
+const scorePendingMutationId = (
+  mutationId: string,
+  rawQuery: string,
+): number => {
   const query = normalize(rawQuery)
   const id = normalize(mutationId)
 
