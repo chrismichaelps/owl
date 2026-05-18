@@ -20,11 +20,16 @@ import { WriteTool } from "./write.js"
 import { EditTool } from "./edit.js"
 import { GlobTool } from "./glob.js"
 import { GrepTool } from "./grep.js"
-import { TOOL_RISK_LEVELS } from "../core/constants/index.js"
+import { TOOL_PERMISSION_BEHAVIORS } from "../core/constants/index.js"
 import { ToolExecutionError } from "../core/errors/index.js"
 import { resolveToolPermission, formatToolPermission } from "./permission.js"
+import {
+  makeToolPermissionStateService,
+  ToolPermissionState,
+} from "./permissionState.js"
 import { classifyToolRisk, formatToolRisk } from "./risk.js"
 import type { BuiltInTool, BuiltInToolsService } from "./types.js"
+import type { ToolPermissionStateService } from "./permissionState.js"
 import type { McpTool } from "../mcp/manager.js"
 
 /** All registered built-in tools in canonical order */
@@ -59,13 +64,12 @@ export class BuiltInTools extends Context.Tag("BuiltInTools")<
   BuiltInToolsService
 >() {}
 
-/**
- * @Owl.Tools.Live - Layer wiring the built-in tool registry
- *
- * @param cwd - Project working directory; passed to every tool execute()
- */
-export const makeBuiltInToolsLive = (cwd: string): Layer.Layer<BuiltInTools> =>
-  Layer.succeed(BuiltInTools, {
+/** @Owl.Tools.Service - Built-in tool service constructor */
+export const makeBuiltInToolsService = (
+  cwd: string,
+  permissionState: ToolPermissionStateService,
+): BuiltInToolsService =>
+  Data.struct({
     listAllTools: () =>
       Chunk.map(ALL_TOOLS, (tool) =>
         Data.struct({
@@ -83,30 +87,67 @@ export const makeBuiltInToolsLive = (cwd: string): Layer.Layer<BuiltInTools> =>
     assessToolPermission: (name, input, mode) =>
       resolveToolPermission(classifyToolRisk(name, input), mode),
 
-    callTool: (name, input) => {
-      const toolOpt = HashMap.get(TOOL_MAP, name)
-      if (Option.isNone(toolOpt)) {
-        return Effect.fail(
-          new ToolExecutionError({
-            tool: name,
-            reason: "Built-in tool not found",
-          }),
-        )
-      }
-      const risk = classifyToolRisk(name, input)
-      if (risk.level === TOOL_RISK_LEVELS.BLOCKED) {
-        return Effect.fail(
-          new ToolExecutionError({
-            tool: name,
-            reason: "Blocked ToolRisk: " + risk.reason,
-          }),
-        )
-      }
-      return toolOpt.value.execute(input, cwd)
-    },
+    callTool: (name, input) =>
+      Effect.gen(function* () {
+        const toolOpt = HashMap.get(TOOL_MAP, name)
+        if (Option.isNone(toolOpt)) {
+          return yield* Effect.fail(
+            new ToolExecutionError({
+              tool: name,
+              reason: "Built-in tool not found",
+            }),
+          )
+        }
+        const risk = classifyToolRisk(name, input)
+        const mode = yield* permissionState.getMode()
+        const permission = resolveToolPermission(risk, mode)
+        if (permission.behavior !== TOOL_PERMISSION_BEHAVIORS.ALLOW) {
+          const prefix =
+            permission.behavior === TOOL_PERMISSION_BEHAVIORS.ASK
+              ? "Permission required: "
+              : "Permission denied: "
+          return yield* Effect.fail(
+            new ToolExecutionError({
+              tool: name,
+              reason: prefix + permission.reason,
+            }),
+          )
+        }
+        return yield* toolOpt.value.execute(input, cwd)
+      }),
 
     hasTool: (name) => HashMap.has(TOOL_MAP, name),
-  } satisfies BuiltInToolsService)
+  })
+
+/**
+ * @Owl.Tools.Live - Layer wiring the built-in tool registry
+ *
+ * @param cwd - Project working directory; passed to every tool execute()
+ */
+export const makeBuiltInToolsLive = (
+  cwd: string,
+): Layer.Layer<BuiltInTools, never, ToolPermissionState> =>
+  Layer.effect(
+    BuiltInTools,
+    Effect.gen(function* () {
+      const permissionState = yield* ToolPermissionState
+      return makeBuiltInToolsService(cwd, permissionState)
+    }),
+  )
+
+/** @Owl.Tools.Runtime - Shared Permission state and built-in tools */
+export const makeBuiltInToolsRuntimeLive = (
+  cwd: string,
+): Layer.Layer<BuiltInTools | ToolPermissionState> =>
+  Layer.effectContext(
+    Effect.gen(function* () {
+      const permissionState = yield* makeToolPermissionStateService()
+      const tools = makeBuiltInToolsService(cwd, permissionState)
+      return Context.make(ToolPermissionState, permissionState).pipe(
+        Context.add(BuiltInTools, tools),
+      )
+    }),
+  )
 
 export type { BuiltInToolsService } from "./types.js"
 export { classifyToolRisk, formatToolRisk }

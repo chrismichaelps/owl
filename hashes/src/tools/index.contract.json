@@ -1,16 +1,42 @@
 {
   "module": "@root/src/tools/index.ts",
-  "state_id": "BigInt(0x194cb82be34f2faf)",
+  "state_id": "BigInt(0x2d2422c1cdcc9cc1)",
   "interface": {
-    "inputs": [],
-    "outputs": [],
+    "inputs": [
+      {
+        "name": "cwd",
+        "type": "ProjectRoot",
+        "invariants": "must be the active project root"
+      },
+      {
+        "name": "permissionState",
+        "type": "ToolPermissionStateService",
+        "invariants": "must be shared with the active CLI Session"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "BuiltInToolsService",
+        "type": "EffectService",
+        "complexity": "O(1) tool lookup through HashMap"
+      },
+      {
+        "name": "makeBuiltInToolsRuntimeLive",
+        "type": "Layer<BuiltInTools | ToolPermissionState>",
+        "complexity": "O(1) shared runtime construction"
+      }
+    ],
     "error_modes": [
-      "ToolExecutionError when ToolRisk is BLOCKED before execution"
+      "ToolExecutionError when ToolRisk is BLOCKED before execution",
+      "ToolExecutionError when Permission behavior is DENY",
+      "ToolExecutionError when Permission behavior is ASK and no interactive prompt is available"
     ],
     "invariants": [
       "BuiltInTools.callTool MUST classify ToolRisk before executing a tool",
       "BuiltInTools.callTool MUST deny BLOCKED ToolRisk invocations",
-      "BuiltInTools.callTool MUST preserve current behavior for LOW, MEDIUM, and HIGH risks until interactive Permission enforcement is implemented",
+      "BuiltInTools.callTool MUST read ToolPermissionState before executing non-blocked tools",
+      "BuiltInTools.callTool MUST execute only ALLOW Permission decisions",
+      "BuiltInTools.callTool MUST fail ASK Permission decisions until interactive Permission prompt UI exists",
       "BuiltInToolsService MUST expose deterministic Permission decisions for commands and TUI visibility"
     ]
   },

@@ -18,7 +18,7 @@
       "TokenBudgetLive MUST be available to OrchestratorLive",
       "UsageMetricsLive MUST be shared between Orchestrator and CommandRegistry",
       "RoutingPreferencesLive MUST be shared between Orchestrator and CommandRegistry",
-      "ToolPermissionStateLive MUST be shared between /permissions and /tools",
+      "ToolPermissionState MUST be shared between /permissions, /tools, and built-in tool execution",
       "CommandRegistry MUST receive the same Orchestrator and EditingPipeline Layers as the TUI runtime",
       "Runtime callers MUST only access Orchestrator and CommandRegistry services"
     ]
@@ -36,7 +36,7 @@
     "Compose production Effect Layers into a single CLI runtime",
     "Wire Provider adapters through ProviderBootstrap before Inference",
     "Share RoutingPreferences between /model Command and Orchestrator Inference",
-    "Share ToolPermissionState between /permissions and /tools",
+    "Share ToolPermissionState between /permissions, /tools, and built-in tool execution",
     "Share UsageMetrics between Orchestrator recording and /status display",
     "Expose only Orchestrator and CommandRegistry to the TUI"
   ],
@@ -46,7 +46,7 @@
     "MUST NOT expose Provider adapter services to TUI callers",
     "MUST NOT create separate UsageMetrics refs for commands and orchestration",
     "MUST NOT create separate RoutingPreferences refs for commands and orchestration",
-    "MUST NOT create separate ToolPermissionState refs for command handlers"
+    "MUST NOT create separate ToolPermissionState refs for command handlers or built-in tool execution"
   ],
   "created_at": "2026-05-14T15:55:47.204569Z"
 }

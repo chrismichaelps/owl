@@ -11,7 +11,10 @@ import {
   PROVIDER_CONSTANTS,
   TOOL_NAMES,
 } from "../../src/core/constants/index.js"
-import { makeBuiltInToolsLive } from "../../src/tools/index.js"
+import {
+  makeBuiltInToolsLive,
+  ToolPermissionStateLive,
+} from "../../src/tools/index.js"
 import type { StreamChunk } from "../../src/providers/types.js"
 
 const mockCreate = vi.fn()
@@ -159,7 +162,10 @@ describe("AnthropicAdapter — prompt caching", () => {
   }
 
   const makeToolLayer = () =>
-    makeTestLayer().pipe(Layer.provide(makeBuiltInToolsLive(process.cwd())))
+    makeTestLayer().pipe(
+      Layer.provide(makeBuiltInToolsLive(process.cwd())),
+      Layer.provide(ToolPermissionStateLive),
+    )
 
   it("complete() sends system as a content block array with cache_control when systemPrompt is set", async () => {
     mockCreate.mockResolvedValueOnce({

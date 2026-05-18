@@ -1,15 +1,16 @@
 {
-  "contract_id": "CTR-tools-permission-state-d67a0026",
+  "contract_id": "CTR-tools-permission-state-03c01ae9",
   "module": "@Owl.Tools.PermissionState src/tools/permissionState.ts",
   "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
   "depth_score": "0.72 — DEEP (small state interface over Ref-backed Permission mode)",
   "seam_capacity": "CRITICAL",
-  "sig_id": "SIG-tools-permission-state-d67a0026",
+  "sig_id": "SIG-tools-permission-state-03c01ae9",
   "interface": {
     "signatures": [
       "ToolPermissionState.getMode() => Effect<ToolPermissionMode>",
       "ToolPermissionState.setMode(mode: ToolPermissionMode) => Effect<void>",
       "ToolPermissionState.snapshot() => Effect<ToolPermissionSnapshot>",
+      "makeToolPermissionStateService() => Effect<ToolPermissionStateService>",
       "parseToolPermissionMode(value: string) => Option<ToolPermissionMode>"
     ],
     "error_modes": [],
@@ -22,6 +23,7 @@
   },
   "responsibilities": [
     "Store the active Permission mode for the current Session",
+    "Construct shared Permission state for composite runtime Layers",
     "Expose deterministic Permission mode parsing",
     "Provide runtime state for commands and TUI visibility"
   ],

@@ -1,17 +1,19 @@
 ---
 Module: @root/src/tools/permissionState.ts
-State_ID: BigInt(0xd67a0026e7ee24e8)
+State_ID: BigInt(0x03c01ae9dd701d38)
 ---
 
 # Logic Blueprint: @Owl.Tools.PermissionState src/tools/permissionState.ts
 
 ## Algorithm
 
-1. Initialize a Ref with Permission mode `default`.
-2. Expose `getMode` by reading the Ref.
-3. Expose `setMode` by replacing the Ref with a validated ToolPermissionMode value.
-4. Expose `snapshot` by returning Data.struct with current mode and ordered modes as Chunk.
-5. Expose `parseToolPermissionMode` by checking membership against the centralized HashSet.
+1. Construct Permission state through `makeToolPermissionStateService`.
+2. Initialize a Ref with Permission mode `default`.
+3. Expose `getMode` by reading the Ref.
+4. Expose `setMode` by replacing the Ref with a validated ToolPermissionMode value.
+5. Expose `snapshot` by returning Data.struct with current mode and ordered modes as Chunk.
+6. Expose `ToolPermissionStateLive` by wrapping the same constructor in a Layer.
+7. Expose `parseToolPermissionMode` by checking membership against the centralized HashSet.
 
 ## Negative Logic (PROHIBITED PATHS)
 

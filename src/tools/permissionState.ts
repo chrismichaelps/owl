@@ -35,33 +35,38 @@ export const parseToolPermissionMode = (
     : Option.none()
 }
 
+/** @Owl.Tools.PermissionState.Make - Construct Ref-backed Permission state */
+export const makeToolPermissionStateService =
+  (): Effect.Effect<ToolPermissionStateService> =>
+    Effect.gen(function* () {
+      const modeRef = yield* Ref.make<ToolPermissionMode>(
+        TOOL_PERMISSION_MODES.DEFAULT,
+      )
+
+      const getMode = (): Effect.Effect<ToolPermissionMode> => Ref.get(modeRef)
+
+      const setMode = (mode: ToolPermissionMode): Effect.Effect<void> =>
+        Ref.set(modeRef, mode)
+
+      const snapshot = (): Effect.Effect<ToolPermissionSnapshot> =>
+        Ref.get(modeRef).pipe(
+          Effect.map((mode) =>
+            Data.struct({
+              mode,
+              modes: TOOL_PERMISSION_MODE_ORDER,
+            }),
+          ),
+        )
+
+      return Data.struct({
+        getMode,
+        setMode,
+        snapshot,
+      })
+    })
+
 /** @Owl.Tools.PermissionState.Live - Ref-backed session Permission mode */
 export const ToolPermissionStateLive = Layer.effect(
   ToolPermissionState,
-  Effect.gen(function* () {
-    const modeRef = yield* Ref.make<ToolPermissionMode>(
-      TOOL_PERMISSION_MODES.DEFAULT,
-    )
-
-    const getMode = (): Effect.Effect<ToolPermissionMode> => Ref.get(modeRef)
-
-    const setMode = (mode: ToolPermissionMode): Effect.Effect<void> =>
-      Ref.set(modeRef, mode)
-
-    const snapshot = (): Effect.Effect<ToolPermissionSnapshot> =>
-      Ref.get(modeRef).pipe(
-        Effect.map((mode) =>
-          Data.struct({
-            mode,
-            modes: TOOL_PERMISSION_MODE_ORDER,
-          }),
-        ),
-      )
-
-    return Data.struct({
-      getMode,
-      setMode,
-      snapshot,
-    })
-  }),
+  makeToolPermissionStateService(),
 )

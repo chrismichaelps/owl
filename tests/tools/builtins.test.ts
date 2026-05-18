@@ -4,9 +4,19 @@ import { join } from "node:path"
 import { tmpdir } from "node:os"
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
 import { Chunk, Effect } from "effect"
-import { TOOL_CONSTANTS, TOOL_NAMES } from "../../src/core/constants/index.js"
+import {
+  TOOL_CONSTANTS,
+  TOOL_NAMES,
+  TOOL_PERMISSION_MODES,
+} from "../../src/core/constants/index.js"
 import { ToolExecutionError } from "../../src/core/errors/index.js"
-import { makeBuiltInToolsLive, BuiltInTools } from "../../src/tools/index.js"
+import {
+  makeBuiltInToolsLive,
+  makeBuiltInToolsRuntimeLive,
+  BuiltInTools,
+  ToolPermissionState,
+  ToolPermissionStateLive,
+} from "../../src/tools/index.js"
 
 let projectRoot = ""
 
@@ -18,7 +28,10 @@ const runTool = (
     Effect.gen(function* () {
       const tools = yield* BuiltInTools
       return yield* tools.callTool(name, input)
-    }).pipe(Effect.provide(makeBuiltInToolsLive(projectRoot))),
+    }).pipe(
+      Effect.provide(makeBuiltInToolsLive(projectRoot)),
+      Effect.provide(ToolPermissionStateLive),
+    ),
   )
 
 const runToolEither = (name: string, input: Record<string, unknown>) =>
@@ -26,7 +39,27 @@ const runToolEither = (name: string, input: Record<string, unknown>) =>
     Effect.gen(function* () {
       const tools = yield* BuiltInTools
       return yield* tools.callTool(name, input).pipe(Effect.either)
-    }).pipe(Effect.provide(makeBuiltInToolsLive(projectRoot))),
+    }).pipe(
+      Effect.provide(makeBuiltInToolsLive(projectRoot)),
+      Effect.provide(ToolPermissionStateLive),
+    ),
+  )
+
+const runToolWithMode = (
+  mode: typeof TOOL_PERMISSION_MODES.BYPASS_PERMISSIONS,
+  name: string,
+  input: Record<string, unknown>,
+): Promise<string> =>
+  Effect.runPromise(
+    Effect.gen(function* () {
+      const permissionState = yield* ToolPermissionState
+      yield* permissionState.setMode(mode)
+      const tools = yield* BuiltInTools
+      return yield* tools.callTool(name, input)
+    }).pipe(
+      Effect.provide(makeBuiltInToolsLive(projectRoot)),
+      Effect.provide(ToolPermissionStateLive),
+    ),
   )
 
 beforeEach(async () => {
@@ -45,7 +78,10 @@ describe("BuiltInTools", () => {
         return Chunk.toReadonlyArray(
           Chunk.map(tools.getTools(), (tool) => tool.name),
         )
-      }).pipe(Effect.provide(makeBuiltInToolsLive(projectRoot))),
+      }).pipe(
+        Effect.provide(makeBuiltInToolsLive(projectRoot)),
+        Effect.provide(ToolPermissionStateLive),
+      ),
     )
 
     expect(names).toContain(TOOL_NAMES.READ)
@@ -63,7 +99,10 @@ describe("BuiltInTools", () => {
         return tools.assessToolRisk(TOOL_NAMES.BASH, {
           command: "rm -rf dist",
         })
-      }).pipe(Effect.provide(makeBuiltInToolsLive(projectRoot))),
+      }).pipe(
+        Effect.provide(makeBuiltInToolsLive(projectRoot)),
+        Effect.provide(ToolPermissionStateLive),
+      ),
     )
 
     expect(risk.level).toBe("blocked")
@@ -76,11 +115,43 @@ describe("BuiltInTools", () => {
         return tools.assessToolPermission(TOOL_NAMES.BASH, {
           command: "node scripts/migrate.js",
         })
-      }).pipe(Effect.provide(makeBuiltInToolsLive(projectRoot))),
+      }).pipe(
+        Effect.provide(makeBuiltInToolsLive(projectRoot)),
+        Effect.provide(ToolPermissionStateLive),
+      ),
     )
 
     expect(permission.behavior).toBe("ask")
     expect(permission.risk.level).toBe("high")
+  })
+
+  it("requires permission for high-risk Bash invocations in default mode", async () => {
+    const result = await runToolEither(TOOL_NAMES.BASH, {
+      command: "sleep 1",
+      timeout_ms: TOOL_CONSTANTS.BASH_MIN_TIMEOUT_MS,
+    })
+
+    expect(result._tag).toBe("Left")
+    if (result._tag === "Left") {
+      expect(result.left).toBeInstanceOf(ToolExecutionError)
+      expect(result.left.reason).toContain("Permission required")
+    }
+  })
+
+  it("shares Permission mode state with built-in tool execution", async () => {
+    const output = await Effect.runPromise(
+      Effect.gen(function* () {
+        const permissionState = yield* ToolPermissionState
+        yield* permissionState.setMode(TOOL_PERMISSION_MODES.BYPASS_PERMISSIONS)
+        const tools = yield* BuiltInTools
+        return yield* tools.callTool(TOOL_NAMES.BASH, {
+          command: "pwd",
+          timeout_ms: TOOL_CONSTANTS.BASH_MIN_TIMEOUT_MS,
+        })
+      }).pipe(Effect.provide(makeBuiltInToolsRuntimeLive(projectRoot))),
+    )
+
+    expect(output).toContain(projectRoot)
   })
 
   it("denies blocked ToolRisk invocations before execution", async () => {
@@ -156,10 +227,14 @@ describe("BuiltInTools", () => {
   })
 
   it("clamps Bash timeouts to the configured minimum", async () => {
-    const output = await runTool(TOOL_NAMES.BASH, {
-      command: "sleep 2",
-      timeout_ms: 1,
-    })
+    const output = await runToolWithMode(
+      TOOL_PERMISSION_MODES.BYPASS_PERMISSIONS,
+      TOOL_NAMES.BASH,
+      {
+        command: "sleep 2",
+        timeout_ms: 1,
+      },
+    )
 
     expect(output).toContain(
       "[Timed out after " + String(TOOL_CONSTANTS.BASH_MIN_TIMEOUT_MS) + "ms]",

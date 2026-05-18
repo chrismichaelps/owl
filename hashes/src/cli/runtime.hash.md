@@ -1,6 +1,6 @@
-State_ID: BigInt(0x78001649fcae3b92)
-Git_SHA: d3c6a7c5049212a7869cdca8b4988e784a0a45b0
-Source_SHA256: 78001649fcae3b9292403db50caa632aa46b0eb4f3e709dbe13d32ad99bc9e6f
+State_ID: BigInt(0xa6d9d4743703d722)
+Git_SHA: 17c4050cfdac862684e6092f1faff2daa7394d47
+Source_SHA256: a6d9d4743703d722fdddf6057625b8e74a8b0488b92baaed8f1313870c6c45ce
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
 Fidelity: ACTIVE
 ---
@@ -19,7 +19,7 @@ Fidelity: ACTIVE
 - depth_score: 0.95 — DEEP (composition root plus Provider bootstrap, TokenBudget, UsageMetrics, and RoutingPreference enforcement)
 - seam_capacity: BACKBONE (managed runtime lifecycle)
 - leverage: CRITICAL (wires Orchestrator, Context, Memory, Router)
-- SIG_ID: SIG-cli-runtime-78001649
+- SIG_ID: SIG-cli-runtime-a6d9d474
 
 ### [Linkage]
 - Grammar: `@root/hashes/grammar/effect/effect.hash.md`
@@ -32,4 +32,4 @@ Fidelity: ACTIVE
 - ProviderBootstrap populates ProviderRouter before TUI or Command dispatch can execute Inference.
 - UsageMetrics is shared so Orchestrator recording appears in `/status`.
 - RoutingPreferences is shared so `/model` affects the next Orchestrator Inference.
-- ToolPermissionState is shared so `/permissions` affects `/tools` visibility.
+- ToolPermissionState is shared so `/permissions` affects `/tools` visibility and built-in tool execution.
