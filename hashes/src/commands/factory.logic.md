@@ -1,13 +1,13 @@
 ---
 Module: @root/src/commands/factory.ts
-State_ID: BigInt(0x182149fc0d9d2490)
+State_ID: BigInt(0xc4a8966f3827febd)
 ---
 
 ## Algorithm
 
 1. Load the module through its public imports.
 2. Build the full Chunk of Command handlers from injected service dependencies.
-3. Include Session lifecycle handlers such as `/resume` through the same SessionMemory dependency used by `/history` and `/memory`.
+3. Include Session lifecycle handlers such as `/new` and `/resume` through the same SessionMemory dependency used by `/history` and `/memory`.
 4. Include the RuntimeDiagnostic `/doctor` handler after its contract is implemented.
 5. Execute only the behavior exposed by the module interface.
 6. Propagate typed results and tagged errors according to the grammar lock.

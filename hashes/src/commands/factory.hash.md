@@ -1,9 +1,9 @@
-State_ID: BigInt(0x182149fc0d9d2490)
-Git_SHA: 2fcb8a42455d8bbc71b152f6c893a1d8706db7e6
-Source_SHA256: 182149fc0d9d2490907bbc983b9c2f477c7748e7ffe276b1af76c4ea725c998c
+State_ID: BigInt(0xc4a8966f3827febd)
+Git_SHA: a860618050fcbe430343a362dab18c79e4024667
+Source_SHA256: c4a8966f3827febdc8e1520170fa342d8d30a8abac9579604f349e97842d6d6d
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
 Fidelity: ACTIVE
-Registry_Sync: 2026-05-18T03:34:21Z
+Registry_Sync: 2026-05-18T03:36:53Z
 
 ---
 
@@ -18,7 +18,7 @@ Registry_Sync: 2026-05-18T03:34:21Z
 - depth_score: 0.50
 - depth_status: MEDIUM
 - seam_capacity: INTERNAL
-- SIG_ID: SIG-commands-factory-182149fc
+- SIG_ID: SIG-commands-factory-c4a8966f
 
 ### [Linkage]
 
@@ -27,4 +27,4 @@ Registry_Sync: 2026-05-18T03:34:21Z
 
 ### [Architecture]
 
-- Registry mirror injects SessionMemory into /resume, /history, /memory, and /status.
+- Registry mirror injects SessionMemory into /new, /resume, /history, /memory, and /status.

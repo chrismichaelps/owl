@@ -32,6 +32,7 @@ import { makeInitCommand } from "./management/init.js"
 import { makeMcpCommand } from "./management/mcp.js"
 import { makeMemoryCommand } from "./management/memory.js"
 import { makeModelCommand } from "./management/model.js"
+import { makeNewCommand } from "./management/new.js"
 import { makePermissionsCommand } from "./management/permissions.js"
 import { makePrivacyCommand } from "./management/privacy.js"
 import { makeProvidersCommand } from "./management/providers.js"
@@ -137,6 +138,7 @@ export const makeCommandHandlers = (
     makeInitCommand(deps.fs, projectRoot),
     makeExportCommand(deps.sessionMemory, projectRoot),
     makeMcpCommand(deps.mcpManager),
+    makeNewCommand(deps.sessionMemory),
     makeToolsCommand(deps.builtInTools, deps.toolPermissionState),
     makeMemoryCommand(deps.sessionMemory),
     makeModelCommand(deps.routingPreferences, deps.providerRouter),

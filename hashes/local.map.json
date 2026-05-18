@@ -1,8 +1,8 @@
 {
   "shard_id": "@root/src",
-  "state_anchor": "BigInt(0x182149fc0d9d2490)",
+  "state_anchor": "BigInt(0xc4a8966f3827febd)",
   "parent_bridge": "@root/hashes/local.map.json",
-  "git_anchor": "2fcb8a42455d8bbc71b152f6c893a1d8706db7e6",
+  "git_anchor": "a860618050fcbe430343a362dab18c79e4024667",
   "cache_integrity": "VERIFIED",
   "nodes": {
     "cli/args": {
@@ -211,7 +211,7 @@
       "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
       "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-commands-factory-182149fc"
+      "sig_id": "SIG-commands-factory-c4a8966f"
     },
     "commands/management/audit": {
       "file_path": "@root/src/commands/management/audit.ts",
@@ -1582,6 +1582,14 @@
       "dependencies": ["@root/hashes/src/engine/memory/index.contract.json"],
       "fidelity_level": "Active",
       "sig_id": "SIG-commands-management-resume-09e0c728"
+    },
+    "commands/management/new": {
+      "file_path": "@root/src/commands/management/new.ts",
+      "hash_reference": "@root/hashes/src/commands/management/new.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": ["@root/hashes/src/engine/memory/index.contract.json"],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-commands-management-new-a2126750"
     }
   }
 }
