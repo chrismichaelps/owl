@@ -9,6 +9,8 @@ export const CLI_FLAGS = {
   ECONOMY: ["--economy", "-e"],
   MODE: "--mode",
   MODE_PREFIX: "--mode=",
+  MODEL: "--model",
+  MODEL_PREFIX: "--model=",
   PERMISSION_MODE: "--permission-mode",
   PERMISSION_MODE_PREFIX: "--permission-mode=",
   DANGEROUSLY_SKIP_PERMISSIONS: "--dangerously-skip-permissions",
@@ -85,6 +87,7 @@ export const CLI_CONSTANTS = {
     ["--help, -h", "Show this help text"],
     ["--version, -v", "Show the Owl CLI version"],
     ["--mode=<mode>", "Set mode: standard, quick, deep, economy, god"],
+    ["--model=<provider>", "Set startup provider override"],
     [
       "--permission-mode=<mode>",
       "Set tool permissions: default, acceptEdits, bypassPermissions, plan, dontAsk",

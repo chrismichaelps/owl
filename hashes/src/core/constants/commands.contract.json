@@ -1,11 +1,21 @@
 {
   "module": "@root/src/core/constants/commands.ts",
-  "state_id": "BigInt(0x227d1885928290a2)",
+  "state_id": "BigInt(0xf7f785cb88c51aa3)",
   "interface": {
     "inputs": [],
     "outputs": [
       {
         "name": "CLI_FLAGS.MODE",
+        "type": "string",
+        "complexity": "O(1)"
+      },
+      {
+        "name": "CLI_FLAGS.MODEL",
+        "type": "string",
+        "complexity": "O(1)"
+      },
+      {
+        "name": "CLI_FLAGS.MODEL_PREFIX",
         "type": "string",
         "complexity": "O(1)"
       },

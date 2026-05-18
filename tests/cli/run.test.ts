@@ -78,4 +78,23 @@ describe("runCli metadata flags", () => {
       TOOL_PERMISSION_MODES.PLAN,
     )
   })
+
+  it("passes initial Provider override into the TUI app", async () => {
+    let rendered:
+      | ReactElement<{ readonly initialProviderOverride?: string | null }>
+      | undefined
+
+    await runCli(["--model=ollama"], process.cwd(), undefined, {
+      render: (element) => {
+        rendered = element as ReactElement<{
+          readonly initialProviderOverride?: string | null
+        }>
+        return {
+          waitUntilExit: () => Promise.resolve(),
+        }
+      },
+    })
+
+    expect(rendered?.props.initialProviderOverride).toBe("ollama")
+  })
 })

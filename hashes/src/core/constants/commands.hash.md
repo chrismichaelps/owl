@@ -1,9 +1,9 @@
-State_ID: BigInt(0x227d1885928290a2)
-Git_SHA: 84d512ddd2cd99db921d9545589d2f38f9617df9
-Source_SHA256: 227d1885928290a2105054bad4c8057958522c2c70d62e61793657cd84b6756a
+State_ID: BigInt(0xf7f785cb88c51aa3)
+Git_SHA: 28016da38e6a87f9459ea519185c945fd6d89187
+Source_SHA256: f7f785cb88c51aa36f99ad1f2fb95d376905c613ae0c41e54f837bc13465177d
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
 Fidelity: ACTIVE
-Registry_Sync: 2026-05-18T05:18:00Z
+Registry_Sync: 2026-05-18T05:30:00Z
 
 ---
 
@@ -18,7 +18,7 @@ Registry_Sync: 2026-05-18T05:18:00Z
 - depth_score: 0.50
 - depth_status: MEDIUM
 - seam_capacity: INTERNAL
-- SIG_ID: SIG-core-constants-commands-227d1885
+- SIG_ID: SIG-core-constants-commands-f7f785cb
 
 ### [Linkage]
 
@@ -27,4 +27,4 @@ Registry_Sync: 2026-05-18T05:18:00Z
 
 ### [Architecture]
 
-- Centralizes CLI flags, including startup Permission mode.
+- Centralizes CLI flags, including startup Permission mode and Provider override.

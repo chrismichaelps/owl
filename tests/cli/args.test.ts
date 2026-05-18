@@ -4,7 +4,12 @@
  * Zero I/O — passes synthetic argv arrays directly.
  */
 import { describe, it, expect } from "vitest"
-import { isValidMode, parseArgs, VALID_MODES } from "../../src/cli/args.js"
+import {
+  isValidMode,
+  isValidProvider,
+  parseArgs,
+  VALID_MODES,
+} from "../../src/cli/args.js"
 import { TOOL_PERMISSION_MODES } from "../../src/core/constants/index.js"
 
 describe("VALID_MODES", () => {
@@ -35,6 +40,13 @@ describe("VALID_MODES", () => {
   it("validates mode membership", () => {
     expect(isValidMode("deep")).toBe(true)
     expect(isValidMode("invalid")).toBe(false)
+  })
+})
+
+describe("isValidProvider", () => {
+  it("validates provider membership", () => {
+    expect(isValidProvider("anthropic")).toBe(true)
+    expect(isValidProvider("invalid")).toBe(false)
   })
 })
 
@@ -182,6 +194,38 @@ describe("--permission-mode= flag", () => {
   })
 })
 
+describe("--model flag", () => {
+  it("defaults providerOverride to null", () => {
+    expect(parseArgs([]).providerOverride).toBeNull()
+  })
+
+  it("parses provider override with equals syntax", () => {
+    expect(parseArgs(["--model=anthropic"]).providerOverride).toBe("anthropic")
+  })
+
+  it("parses separated provider override values", () => {
+    expect(parseArgs(["--model", "ollama"]).providerOverride).toBe("ollama")
+  })
+
+  it("does not treat separated provider values as the prompt", () => {
+    const parsed = parseArgs(["--model", "openai", "actual prompt"])
+    expect(parsed.providerOverride).toBe("openai")
+    expect(parsed.prompt).toBe("actual prompt")
+  })
+
+  it("leaves unknown separated provider values available as prompt text", () => {
+    const parsed = parseArgs(["--model", "invalid"])
+    expect(parsed.providerOverride).toBeNull()
+    expect(parsed.prompt).toBe("invalid")
+  })
+
+  it("ignores unknown provider values with equals syntax", () => {
+    const parsed = parseArgs(["--model=invalid"])
+    expect(parsed.providerOverride).toBeNull()
+    expect(parsed.prompt).toBeNull()
+  })
+})
+
 describe("short flag aliases", () => {
   it("--quick sets mode to quick", () => {
     expect(parseArgs(["--quick"]).mode).toBe("quick")
@@ -269,6 +313,7 @@ describe("edge cases", () => {
       mode: "standard",
       prompt: null,
       permissionMode: TOOL_PERMISSION_MODES.DEFAULT,
+      providerOverride: null,
       help: false,
       version: false,
     })

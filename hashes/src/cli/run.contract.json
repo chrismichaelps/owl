@@ -4,7 +4,7 @@
   "grammar_lock": "@root/hashes/grammar/typescript/typescript.hash.md",
   "depth_score": "0.58",
   "seam_capacity": "CRITICAL",
-  "sig_id": "SIG-cli-run-00000001",
+  "sig_id": "SIG-cli-run-e3b99f88",
   "interface": {
     "signatures": [
       "runCli(argv, projectRoot) => Promise<void>",
@@ -16,12 +16,14 @@
     "invariants": [
       "argv must be string[]",
       "projectRoot must be absolute",
-      "initial Permission mode MUST be passed to App before initial prompt execution"
+      "initial Permission mode MUST be passed to App before initial prompt execution",
+      "initial Provider override MUST be passed to App before initial prompt execution"
     ]
   },
   "responsibilities": [
     "Bootstrap runtime from args",
     "Pass startup Permission mode into the TUI App",
+    "Pass startup Provider override into the TUI App",
     "Mount TUI",
     "Handle process exit"
   ],

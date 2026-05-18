@@ -39,7 +39,7 @@ import { ShortcutsOverlay } from "./components/ShortcutsOverlay.js"
 import { useOwlRuntimeActions } from "./hooks/useOwlRuntimeActions.js"
 import { owlReducer, INITIAL_STATE } from "./state.js"
 import { moveFocusPanel } from "./focus/index.js"
-import type { Mode } from "../core/schema/index.js"
+import type { Mode, ProviderId } from "../core/schema/index.js"
 import type { OwlRuntime } from "../cli/runtime.js"
 import { CommandRegistry } from "../commands/registry.js"
 import { ToolPermissionState } from "../tools/index.js"
@@ -57,6 +57,7 @@ interface AppProps {
   readonly projectRoot?: string
   readonly initialMode?: Mode
   readonly initialPermissionMode?: ToolPermissionMode
+  readonly initialProviderOverride?: ProviderId | null
   readonly initialPrompt?: string | null
 }
 
@@ -66,6 +67,7 @@ export const App: React.FC<AppProps> = ({
   projectRoot = process.cwd(),
   initialMode = "standard",
   initialPermissionMode = TOOL_PERMISSION_MODES.DEFAULT,
+  initialProviderOverride = null,
   initialPrompt,
 }) => {
   useApp() // access to exit()
@@ -139,18 +141,45 @@ export const App: React.FC<AppProps> = ({
     const effect = Effect.gen(function* () {
       const permissionState = yield* ToolPermissionState
       yield* permissionState.setMode(initialPermissionMode)
+      if (initialProviderOverride === null) return null
+
+      const registry = yield* CommandRegistry
+      return yield* registry
+        .dispatch({
+          name: "model",
+          args: [initialProviderOverride],
+          raw: "/model " + initialProviderOverride,
+        })
+        .pipe(
+          Effect.match({
+            onFailure: (error) => "Provider override ignored: " + String(error),
+            onSuccess: (result) => result.output,
+          }),
+        )
     })
 
-    void runtime.runPromise(effect).then(() => {
+    void runtime.runPromise(effect).then((startupProviderLog) => {
       dispatch({
         type: "SET_PERMISSION_MODE",
         mode: initialPermissionMode,
       })
+      if (startupProviderLog !== null) {
+        dispatch({ type: "ADD_LOG", msg: startupProviderLog })
+        void syncRoutingPreferences().catch(() => undefined)
+      }
       if (initialPrompt != null && initialPrompt.trim().length > 0) {
         handleSubmit(initialPrompt.trim(), initialMode)
       }
     })
-  }, [handleSubmit, initialMode, initialPermissionMode, initialPrompt, runtime])
+  }, [
+    handleSubmit,
+    initialMode,
+    initialPermissionMode,
+    initialPrompt,
+    initialProviderOverride,
+    runtime,
+    syncRoutingPreferences,
+  ])
 
   useEffect(() => {
     const effect = Effect.gen(function* () {

@@ -1,6 +1,6 @@
-State_ID: BigInt(0x983da875375f20e3)
-Git_SHA: f47cd6855f93081e4222c7b3c31dc9b4151717f5
-Source_SHA256: 983da875375f20e30d03ea97ddca28a17a29f655d11bcca760b71d958b6f8358
+State_ID: BigInt(0xb17af0675b83f08b)
+Git_SHA: 28016da38e6a87f9459ea519185c945fd6d89187
+Source_SHA256: b17af0675b83f08bc966f11f9e8e900843e1078351c4db3b8a13356850c14ba8
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
 Fidelity: ACTIVE
 Drift_Fixed: 2026-05-16T16:06:00Z
@@ -19,7 +19,7 @@ Drift_Fixed: 2026-05-16T16:06:00Z
 - depth_score: 0.82 — DEEP (main layout shell)
 - seam_capacity: BACKBONE (connects all TUI components)
 - leverage: CRITICAL (renders entire UI)
-- SIG_ID: SIG-tui-app-983da875
+- SIG_ID: SIG-tui-app-b17af067
 
 ### [Linkage]
 
@@ -44,5 +44,5 @@ Drift_Fixed: 2026-05-16T16:06:00Z
 - Orchestrator streaming events dispatch to reducer via callback — no shared refs
 - Layout: WelcomePanel (top) / ConversationThread (scroll) / CommandPalette | FileMentionPalette (overlays) / PromptInput (bottom) / MetaPanel + StatusBar + LogPanel (fixed)
 - Passes Permission mode state into StatusBar and MetaPanel for session visibility
-- Applies startup Permission mode before optional initial prompt execution
+- Applies startup Permission mode and Provider override before optional initial prompt execution
 - Mounts McpManager from AppProps.mcpManager — optional (no MCP = servers=[])

@@ -8,6 +8,7 @@
  * - Position: owl "prompt" (mode defaults to standard)
  * - Mode flags: owl --deep "prompt", owl -d "prompt"
  * - Mode option: owl --mode=deep "prompt", owl --mode deep "prompt"
+ * - Provider option: owl --model=anthropic, owl --model ollama
  * - Permission option: owl --permission-mode=plan, owl --dangerously-skip-permissions
  * - Metadata: owl --help, owl --version
  *
@@ -16,7 +17,7 @@
  * parseArgs(["-q", "quick task"]) // { mode: "quick", prompt: "quick task" }
  * parseArgs([]) // { mode: "standard", prompt: null }
  */
-import type { Mode } from "../core/schema/index.js"
+import type { Mode, ProviderId } from "../core/schema/index.js"
 import { Chunk, HashSet, Option } from "effect"
 import {
   CLI_FLAGS,
@@ -24,6 +25,7 @@ import {
   MODE_IDS,
   MODE_ID_SET,
   MODES,
+  PROVIDER_ID_SET,
   TOOL_PERMISSION_MODES,
 } from "../core/constants/index.js"
 import { parseToolPermissionMode } from "../tools/index.js"
@@ -36,6 +38,10 @@ export const VALID_MODES: readonly string[] = Chunk.toReadonlyArray(MODE_IDS)
 export const isValidMode = (value: string): value is Mode =>
   HashSet.has(MODE_ID_SET, value)
 
+/** @Owl.CLI.Args.ProviderGuard - Validate Provider literals */
+export const isValidProvider = (value: string): value is ProviderId =>
+  HashSet.has(PROVIDER_ID_SET, value)
+
 /**
  * @Owl.CLI.Args.Parsed - Output of parseArgs
  */
@@ -46,6 +52,8 @@ export interface ParsedArgs {
   readonly prompt: string | null
   /** Initial tool Permission mode for this session */
   readonly permissionMode: ToolPermissionMode
+  /** Initial Provider override (null when automatic routing is active) */
+  readonly providerOverride: ProviderId | null
   /** Print help and exit before runtime boot */
   readonly help: boolean
   /** Print version and exit before runtime boot */
@@ -63,6 +71,7 @@ export function parseArgs(argv: readonly string[]): ParsedArgs {
   let mode: Mode = "standard"
   let prompt: string | null = null
   let permissionMode: ToolPermissionMode = TOOL_PERMISSION_MODES.DEFAULT
+  let providerOverride: ProviderId | null = null
   let help = false
   let version = false
 
@@ -73,10 +82,19 @@ export function parseArgs(argv: readonly string[]): ParsedArgs {
     if (arg.startsWith(CLI_FLAGS.MODE_PREFIX)) {
       const val = arg.slice(CLI_FLAGS.MODE_PREFIX.length)
       if (isValidMode(val)) mode = val
+    } else if (arg.startsWith(CLI_FLAGS.MODEL_PREFIX)) {
+      const val = arg.slice(CLI_FLAGS.MODEL_PREFIX.length)
+      if (isValidProvider(val)) providerOverride = val
     } else if (arg === CLI_FLAGS.MODE) {
       const val = argv[index + 1]
       if (val !== undefined && isValidMode(val)) {
         mode = val
+        index++
+      }
+    } else if (arg === CLI_FLAGS.MODEL) {
+      const val = argv[index + 1]
+      if (val !== undefined && isValidProvider(val)) {
+        providerOverride = val
         index++
       }
     } else if (arg === CLI_FLAGS.DANGEROUSLY_SKIP_PERMISSIONS) {
@@ -109,5 +127,5 @@ export function parseArgs(argv: readonly string[]): ParsedArgs {
     }
   }
 
-  return { mode, prompt, permissionMode, help, version }
+  return { mode, prompt, permissionMode, providerOverride, help, version }
 }
