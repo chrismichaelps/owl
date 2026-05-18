@@ -1,5 +1,6 @@
 /** @Owl.TUI.Hooks.SlashPalette - Slash command palette state machine */
 import { useCallback, useRef, useState } from "react"
+import type { Chunk } from "effect"
 import { TUI_TRIGGERS } from "../../core/constants/index.js"
 import {
   completePaletteCommand,
@@ -29,9 +30,12 @@ export interface SlashPaletteState {
 export const useSlashPalette = (
   commands: readonly PaletteCommand[],
   onPaletteChange: (state: PaletteChange) => void,
+  pendingMutationIds: Chunk.Chunk<string>,
 ): SlashPaletteState => {
   const commandsRef = useRef(commands)
   commandsRef.current = commands
+  const pendingMutationIdsRef = useRef(pendingMutationIds)
+  pendingMutationIdsRef.current = pendingMutationIds
 
   const selectedIndexRef = useRef(0)
   const [selectedIndex, setSelectedIndexState] = useState(0)
@@ -108,6 +112,7 @@ export const useSlashPalette = (
         value,
         commandsRef.current,
         selectedIndexRef.current,
+        pendingMutationIdsRef.current,
       ),
     [],
   )

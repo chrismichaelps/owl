@@ -3,6 +3,7 @@
 import { describe, it, expect, beforeAll, afterAll, vi } from "vitest"
 import { renderHook, act } from "@testing-library/react"
 import { JSDOM } from "jsdom"
+import { Chunk } from "effect"
 import { useSlashPalette } from "../../src/tui/hooks/useSlashPalette.js"
 import type { PaletteCommand } from "../../src/tui/commands/fuzzy.js"
 
@@ -37,7 +38,9 @@ const commands: readonly PaletteCommand[] = [
 describe("useSlashPalette", () => {
   it("reports palette state when the value starts with slash", () => {
     const onChange = vi.fn()
-    const { result } = renderHook(() => useSlashPalette(commands, onChange))
+    const { result } = renderHook(() =>
+      useSlashPalette(commands, onChange, Chunk.empty()),
+    )
 
     act(() => {
       result.current.updateForValue("/mo")
@@ -52,7 +55,9 @@ describe("useSlashPalette", () => {
 
   it("moves selection within ranked results", () => {
     const onChange = vi.fn()
-    const { result } = renderHook(() => useSlashPalette(commands, onChange))
+    const { result } = renderHook(() =>
+      useSlashPalette(commands, onChange, Chunk.empty()),
+    )
 
     act(() => {
       result.current.updateForValue("/m")
@@ -71,7 +76,9 @@ describe("useSlashPalette", () => {
 
   it("completes the selected command without dropping arguments", () => {
     const onChange = vi.fn()
-    const { result } = renderHook(() => useSlashPalette(commands, onChange))
+    const { result } = renderHook(() =>
+      useSlashPalette(commands, onChange, Chunk.empty()),
+    )
 
     let completed = ""
     act(() => {
@@ -84,7 +91,9 @@ describe("useSlashPalette", () => {
 
   it("closes the palette deterministically", () => {
     const onChange = vi.fn()
-    const { result } = renderHook(() => useSlashPalette(commands, onChange))
+    const { result } = renderHook(() =>
+      useSlashPalette(commands, onChange, Chunk.empty()),
+    )
 
     act(() => {
       result.current.updateForValue("/m")

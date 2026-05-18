@@ -1,5 +1,6 @@
 /** @Owl.TUI.Commands.Fuzzy - Deterministic command palette ranking */
-import { Chunk, Data, Order } from "effect"
+import { Chunk, Data, HashSet, Order } from "effect"
+import { TUI_PENDING_ARGUMENT_COMMANDS } from "../../core/constants/index.js"
 
 export interface PaletteCommand {
   readonly name: string
@@ -65,6 +66,17 @@ const scoreCommand = (command: PaletteCommand, rawQuery: string): number => {
   return score
 }
 
+const scorePendingMutationId = (mutationId: string, rawQuery: string): number => {
+  const query = normalize(rawQuery)
+  const id = normalize(mutationId)
+
+  if (query.length === 0) return 1
+  if (id === query) return 100
+  if (id.startsWith(query)) return 80
+  if (id.includes(query)) return 50 - id.indexOf(query)
+  return 0
+}
+
 const rankedOrder = Order.make<RankedPaletteCommand>((left, right) => {
   const scoreDelta = right.score - left.score
   if (scoreDelta < 0) return -1
@@ -96,15 +108,62 @@ export const rankPaletteCommands = (
     ),
   )
 
+/** @Owl.TUI.Commands.Fuzzy.PendingIds - Rank pending Mutation IDs by argument */
+export const rankPendingMutationIds = (
+  mutationIds: Chunk.Chunk<string>,
+  query: string,
+): Chunk.Chunk<string> =>
+  Chunk.map(
+    Chunk.sort(
+      Chunk.filter(
+        Chunk.map(mutationIds, (mutationId) =>
+          Data.struct({
+            mutationId,
+            score: scorePendingMutationId(mutationId, query),
+          }),
+        ),
+        (entry) => entry.score > 0,
+      ),
+      Order.make<{ readonly mutationId: string; readonly score: number }>(
+        (left, right) => {
+          const scoreDelta = right.score - left.score
+          if (scoreDelta < 0) return -1
+          if (scoreDelta > 0) return 1
+
+          const idDelta = left.mutationId.localeCompare(right.mutationId)
+          if (idDelta < 0) return -1
+          if (idDelta > 0) return 1
+          return 0
+        },
+      ),
+    ),
+    (entry) => entry.mutationId,
+  )
+
 /** @Owl.TUI.Commands.Fuzzy.Suggestion - Inline ghost completion suffix */
 export const getPaletteSuggestion = (
   value: string,
   commands: readonly PaletteCommand[],
   selectedIndex: number,
+  pendingMutationIds: Chunk.Chunk<string> = Chunk.empty(),
 ): string => {
   if (!value.startsWith("/")) return ""
 
   const { commandQuery, args } = parsePaletteInput(value)
+  if (
+    value.includes(" ") &&
+    HashSet.has(TUI_PENDING_ARGUMENT_COMMANDS, normalize(commandQuery))
+  ) {
+    const selectedMutationId = Chunk.get(
+      rankPendingMutationIds(pendingMutationIds, args),
+      0,
+    )
+    if (selectedMutationId._tag === "None") return ""
+
+    const completed = "/" + commandQuery + " " + selectedMutationId.value + " "
+    return completed.startsWith(value) ? completed.slice(value.length) : ""
+  }
+
   if (args.length > 0) return ""
 
   const selected = rankPaletteCommands(commands, commandQuery)[selectedIndex]

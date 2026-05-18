@@ -1,4 +1,4 @@
-import { HashMap } from "effect"
+import { HashMap, HashSet } from "effect"
 
 /** @Owl.Core.Constants.TUI - Terminal UI refresh and layout */
 export const TUI_REFRESH_INTERVAL_MS = 100
@@ -183,6 +183,10 @@ export const TUI_PENDING_APPROVALS = {
   EMPTY_LABEL: "No pending edits",
   TITLE: "Pending edits",
 } as const
+
+/** @Owl.Core.Constants.TUIPendingArguments - Commands accepting Mutation IDs */
+export const TUI_PENDING_ARGUMENT_COMMANDS: HashSet.HashSet<string> =
+  HashSet.fromIterable(["apply", "diff", "reject"])
 
 /** @Owl.Core.Constants.TUI - Panel width ratios (left/center/right) */
 export const TUI_PANEL_WIDTHS = {

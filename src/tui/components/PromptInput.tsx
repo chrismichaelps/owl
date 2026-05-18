@@ -1,6 +1,7 @@
 /** @Owl.TUI.Components.PromptInput - REPL prompt with mode prefix, history nav, slash dispatch */
 import React, { memo, useCallback, useRef, useState } from "react"
 import { Box, Text, useInput, useWindowSize } from "ink"
+import type { Chunk } from "effect"
 import {
   COMMAND_CONSTANTS,
   TUI_WELCOME,
@@ -28,6 +29,7 @@ interface PromptInputProps {
     readonly selectedIndex: number
   }) => void
   readonly commands: readonly PaletteCommand[]
+  readonly pendingMutationIds: Chunk.Chunk<string>
 }
 
 /** @Owl.TUI.Components.PromptInput.Component - Command entry with history */
@@ -42,6 +44,7 @@ export const PromptInput: React.FC<PromptInputProps> = memo(
     onShortcuts,
     onPaletteChange,
     commands,
+    pendingMutationIds,
   }) => {
     // Refs hold the authoritative current value — readable inside useInput without stale closures.
     // State is only used to trigger re-renders.
@@ -51,7 +54,11 @@ export const PromptInput: React.FC<PromptInputProps> = memo(
     const { columns } = useWindowSize()
 
     const mentions = useFileMentions(value, projectRoot)
-    const palette = useSlashPalette(commands, onPaletteChange)
+    const palette = useSlashPalette(
+      commands,
+      onPaletteChange,
+      pendingMutationIds,
+    )
 
     const setValue = useCallback((next: string) => {
       valueRef.current = next

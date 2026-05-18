@@ -183,6 +183,10 @@ export const App: React.FC<AppProps> = ({
         }}
         onPaletteChange={setPaletteState}
         commands={commands}
+        pendingMutationIds={Chunk.map(
+          state.pendingMutations,
+          (mutation) => mutation.mutationId,
+        )}
       />
 
       {/* Status bar */}

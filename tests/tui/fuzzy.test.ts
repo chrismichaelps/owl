@@ -1,9 +1,11 @@
 /** @Owl.Tests.TUI.Fuzzy - Command palette ranking tests */
 import { describe, expect, it } from "vitest"
+import { Chunk } from "effect"
 import {
   completePaletteCommand,
   getPaletteSuggestion,
   parsePaletteInput,
+  rankPendingMutationIds,
   rankPaletteCommands,
 } from "../../src/tui/commands/fuzzy.js"
 import {
@@ -80,6 +82,41 @@ describe("getPaletteSuggestion", () => {
 
   it("does not suggest after command arguments have started", () => {
     expect(getPaletteSuggestion("/model auto", COMMANDS, 0)).toBe("")
+  })
+
+  it("suggests pending mutation IDs for approval commands", () => {
+    expect(
+      getPaletteSuggestion(
+        "/apply edit-",
+        COMMANDS,
+        0,
+        Chunk.make("edit-alpha", "edit-beta"),
+      ),
+    ).toBe("alpha ")
+  })
+
+  it("suggests pending mutation IDs when approval argument is empty", () => {
+    expect(
+      getPaletteSuggestion(
+        "/diff ",
+        COMMANDS,
+        0,
+        Chunk.make("edit-alpha"),
+      ),
+    ).toBe("edit-alpha ")
+  })
+})
+
+describe("rankPendingMutationIds", () => {
+  it("ranks matching mutation IDs deterministically", () => {
+    expect(
+      Chunk.toReadonlyArray(
+        rankPendingMutationIds(
+          Chunk.make("inject-zed", "edit-beta", "edit-alpha"),
+          "edit",
+        ),
+      ),
+    ).toEqual(["edit-alpha", "edit-beta"])
   })
 })
 
