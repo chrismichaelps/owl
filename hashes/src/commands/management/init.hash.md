@@ -1,8 +1,8 @@
-State_ID: BigInt(0x0000000000000077)
-Git_SHA: 890abcdef1234567890abcdef123456789abcdef
-Source_SHA256: 890abcdef1234567890abcdef123456789abcdef01234567890abcdef1234567
-Grammar_Lock: "@root/hashes/grammar/typescript/typescript.hash.md"
-Fidelity: DECLARED
+State_ID: BigInt(0x585b5efd28467074)
+Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
+Source_SHA256: 585b5efd28467074258e87afef8dd6203fc5583915fe96148cc35f77d4f81237
+Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
+Fidelity: ACTIVE
 ---
 
 ## @Owl.Commands.Management.Init (src/commands/management/init.ts)

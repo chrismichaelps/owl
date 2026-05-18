@@ -1,8 +1,8 @@
-State_ID: BigInt(0x000000000000009a)
-Git_SHA: e7f6a5b4c3d2e1f0
-Source_SHA256: e7f6a5b4c3d2e1f0a9b8c7d6e5f4a3b2a1b0c9d8e7f6a5b4c3d2e1f0a9b8c7d6
-Grammar_Lock: "@root/hashes/grammar/typescript/typescript.hash.md"
-Fidelity: DECLARED
+State_ID: BigInt(0x4118cb3e20e880d6)
+Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
+Source_SHA256: 4118cb3e20e880d66f8f4e2859094ea748d535817353480f17ae606b2a1e99a5
+Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
+Fidelity: ACTIVE
 ---
 
 ## @Owl.TUI.Mentions (src/tui/mentions/index.ts)

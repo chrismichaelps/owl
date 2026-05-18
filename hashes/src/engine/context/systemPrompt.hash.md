@@ -1,8 +1,8 @@
-State_ID: BigInt(0x0000000000000057)
-Git_SHA: 695c5f2d1abff2c7b2db1bdd2f54e72b44c1839d
-Source_SHA256: 6e2ca2879456572da4d65d03d2f341593c0b466f2a7a079fec741a279a851879
-Grammar_Lock: "@root/hashes/grammar/typescript/typescript.hash.md"
-Fidelity: DECLARED
+State_ID: BigInt(0xb4d2ce92328a3f5b)
+Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
+Source_SHA256: b4d2ce92328a3f5b65b09e3ffbfc5bc7d7ff88ed2eeb6791b59e66cbf54dabb5
+Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
+Fidelity: ACTIVE
 ---
 
 ## @Owl.Engine.Context.SystemPrompt (src/engine/context/systemPrompt.ts)

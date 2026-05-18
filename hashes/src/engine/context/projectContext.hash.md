@@ -1,8 +1,8 @@
-State_ID: BigInt(0x0000000000000084)
-Git_SHA: ef1234567890abcdef1234567890abcdef123456
-Source_SHA256: ef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcd
+State_ID: BigInt(0x454233d144ad41e5)
+Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
+Source_SHA256: 454233d144ad41e5e5e2e4aa484129254ecce4433eaf8f7964023c520fed32d0
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
-Fidelity: DECLARED
+Fidelity: ACTIVE
 ---
 
 ## @Owl.Engine.Context.ProjectContext (src/engine/context/projectContext.ts)

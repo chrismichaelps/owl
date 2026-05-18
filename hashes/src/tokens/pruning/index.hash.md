@@ -1,8 +1,8 @@
-State_ID: BigInt(0x000000000000001D)
-Git_SHA: 294e356d4d34312c38c61285f5cd02bc78814018
-Source_SHA256: bb84b6ef22639c87a2f41be85751b19dc7787645cd0b4a77b0fe6494e06fd03b
-Grammar_Lock: "@root/hashes/grammar/typescript/typescript.hash.md"
-Fidelity: DECLARED
+State_ID: BigInt(0x08499f93c231a31f)
+Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
+Source_SHA256: 08499f93c231a31f9c7dcccb14d911d2c67dd9817eb8d6bf351e6a4c1a198715
+Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
+Fidelity: ACTIVE
 ---
 
 ## @Owl.Tokens.Pruning (src/tokens/pruning/index.ts)

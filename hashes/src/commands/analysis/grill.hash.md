@@ -1,8 +1,8 @@
-State_ID: BigInt(0x0000000000000054)
-Git_SHA: da56a6d328d9b1fae041e91050918aa0b6e21494
-Source_SHA256: 46210fbe739cee8d98d2e8a8e68a69082d697178aa81d58970358b5a2f73552c
+State_ID: BigInt(0x816eeca2cca4bdc0)
+Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
+Source_SHA256: 816eeca2cca4bdc0b394129fd8b7a9ce30785e117244dc929cf89a80ec7802ed
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
-Fidelity: DECLARED
+Fidelity: ACTIVE
 ---
 
 ## @Owl.Commands.Analysis.Grill (src/commands/analysis/grill.ts)

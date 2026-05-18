@@ -1,8 +1,8 @@
-State_ID: BigInt(0x0000000000000024)
-Git_SHA: ad091135d8d9083717a044f82e0307e4c2defb32
-Source_SHA256: a29f05e15cf808df5450113972f7991fb47680a8ba9459c4031119cef9be40ad
-Grammar_Lock: "@root/hashes/grammar/typescript/typescript.hash.md"
-Fidelity: DECLARED
+State_ID: BigInt(0x7be152408bedd597)
+Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
+Source_SHA256: 7be152408bedd597c230ed606f64552f88009f6acc792d5fb8955030eff07e88
+Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
+Fidelity: ACTIVE
 ---
 
 ## @Owl.Providers.Ollama (src/providers/ollama/index.ts)

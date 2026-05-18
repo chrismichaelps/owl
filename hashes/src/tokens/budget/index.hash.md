@@ -1,8 +1,8 @@
-State_ID: BigInt(0x000000000000001F)
-Git_SHA: 294e356d4d34312c38c61285f5cd02bc78814018
-Source_SHA256: 1198045ce8a026082d453d03376477474c0913e60e9f8e043f523558b60d6042
+State_ID: BigInt(0x70e5fd89573a3da7)
+Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
+Source_SHA256: 70e5fd89573a3da77a36a578fa86e16d835004828a494afed92ebb4604ea30dc
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
-Fidelity: DECLARED
+Fidelity: ACTIVE
 ---
 
 ## @Owl.Tokens.Budget (src/tokens/budget/index.ts)

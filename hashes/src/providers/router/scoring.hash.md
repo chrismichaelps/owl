@@ -1,8 +1,8 @@
-State_ID: BigInt(0x000000000000005d)
-Git_SHA: f62c2f2f8df5bb172147a5ae827784dac4718a11
-Source_SHA256: 9493d981415257e96a265593f9263acbefd822241582cdfcd271d5b9c3d21d87
-Grammar_Lock: "@root/hashes/grammar/typescript/typescript.hash.md"
-Fidelity: DECLARED
+State_ID: BigInt(0xa77f1027eb38e7cb)
+Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
+Source_SHA256: a77f1027eb38e7cb1599602796448b895ebc4c58862e2b31efa66bd8171dbf2a
+Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
+Fidelity: ACTIVE
 ---
 
 ## @Owl.Providers.Router.Scoring (src/providers/router/scoring.ts)

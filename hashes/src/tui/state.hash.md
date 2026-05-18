@@ -1,8 +1,8 @@
-State_ID: BigInt(0x00000000000000b1)
-Git_SHA: f516840da54d9d72a5141f0078265ba0b73828a4
-Source_SHA256: 58aaf3d62e629b4716034ed5c8aa81b5b9ccff0349ad9f400d026e9cd8780a6f
-Grammar_Lock: "@root/hashes/grammar/typescript/typescript.hash.md"
-Fidelity: DECLARED
+State_ID: BigInt(0xc39b75de66e36b75)
+Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
+Source_SHA256: c39b75de66e36b756187900be5137357f7f006d14ab5927d24ed7dea85783e27
+Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
+Fidelity: ACTIVE
 Drift_Fixed: 2026-05-16T16:05:00Z
 ---
 

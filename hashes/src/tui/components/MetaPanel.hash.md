@@ -1,8 +1,8 @@
-State_ID: BigInt(0x0000000000000027)
-Git_SHA: bcdd88c31523b2c371528d153c91214fb34715e3
-Source_SHA256: a1bd59bca374247409c9895eaeda05fe5c16082bb4a99a869079eb60f3f71719
-Grammar_Lock: "@root/hashes/grammar/react/react.hash.md"
-Fidelity: DECLARED
+State_ID: BigInt(0x422f67aaa9c1b97a)
+Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
+Source_SHA256: 422f67aaa9c1b97ab96d0071ae388086d57f798dc6577ef16ccf2fb6045e82c8
+Grammar_Lock: "@root/hashes/grammar/typescript/typescript.hash.md"
+Fidelity: ACTIVE
 ---
 
 ## @Owl.TUI.Components.MetaPanel (src/tui/components/MetaPanel.tsx)

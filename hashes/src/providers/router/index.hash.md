@@ -1,8 +1,8 @@
-State_ID: BigInt(0x0000000000000070)
-Git_SHA: b08b51254f38dd6138e55dbe56ad187ff73866f5
-Source_SHA256: 08a60452e74a9716f9400afdffc4a8a05bb378f9a9f04c4da0ebc3bbb966ee38
+State_ID: BigInt(0xb15059794218e887)
+Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
+Source_SHA256: b15059794218e887589e82f350adb191434dbb2a7d7a3fcd72b4abf89dca54ec
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
-Fidelity: DECLARED
+Fidelity: ACTIVE
 ---
 
 ## @Owl.Providers.Router (src/providers/router/index.ts)

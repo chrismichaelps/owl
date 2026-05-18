@@ -1,8 +1,8 @@
-State_ID: BigInt(0x0000000000000063)
-Git_SHA: 45c6800bcea148e9ab367104707f7e30b7d58ca3
-Source_SHA256: dd65c591bb32503f7bef8d91581972721ae68c2aabce3e0b5a3748842dcb5061
+State_ID: BigInt(0x1ac34c2c4d688013)
+Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
+Source_SHA256: 1ac34c2c4d688013ac356aab22d37e0d2d95660b4a364e06a293d33d8736d5f9
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
-Fidelity: DECLARED
+Fidelity: ACTIVE
 ---
 
 ## @Owl.Commands.Management.Memory (src/commands/management/memory.ts)

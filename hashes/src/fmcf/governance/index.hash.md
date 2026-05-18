@@ -1,8 +1,8 @@
-State_ID: BigInt(0x000000000000001C)
-Git_SHA: ad091135d8d9083717a044f82e0307e4c2defb32
-Source_SHA256: 90c8ed64ebdc0ed8b004102c729da317d4586d4ce33f65e869d148bcd59164d7
+State_ID: BigInt(0x2b2e225ca8777959)
+Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
+Source_SHA256: 2b2e225ca877795983d3a7c02f5ff0ab73536497454d4f111ee7c0002b18920e
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
-Fidelity: DECLARED
+Fidelity: ACTIVE
 ---
 
 ## @Owl.FMCF.Governance (src/fmcf/governance/index.ts)

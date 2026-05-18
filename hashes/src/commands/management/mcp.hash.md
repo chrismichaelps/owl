@@ -1,8 +1,8 @@
-State_ID: BigInt(0x0000000000000078)
-Git_SHA: 90abcdef1234567890abcdef123456789abcdef0
-Source_SHA256: 90abcdef1234567890abcdef123456789abcdef01234567890abcdef12345678
+State_ID: BigInt(0xe4028894a78c86fc)
+Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
+Source_SHA256: e4028894a78c86fc8ab45a58fb89a21c9f8b80dcdb2e817a203db2680105dbc0
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
-Fidelity: DECLARED
+Fidelity: ACTIVE
 ---
 
 ## @Owl.Commands.Management.MCP (src/commands/management/mcp.ts)

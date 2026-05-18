@@ -1,8 +1,8 @@
-State_ID: BigInt(0x00000000000000a2)
-Git_SHA: c2d3e4f5a6b7c8d9
-Source_SHA256: c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3
-Grammar_Lock: "@root/hashes/grammar/typescript/typescript.hash.md"
-Fidelity: DECLARED
+State_ID: BigInt(0xd9bcac778f2a5340)
+Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
+Source_SHA256: d9bcac778f2a5340642aefbb8ff613af35e578b3ebaca27ea9289b26218d1c95
+Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
+Fidelity: ACTIVE
 ---
 
 ## @Owl.TUI.Components.FileMentionPalette (src/tui/components/FileMentionPalette.tsx)

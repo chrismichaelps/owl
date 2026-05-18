@@ -1,8 +1,8 @@
-State_ID: BigInt(0x0000000000000018)
-Git_SHA: ad091135d8d9083717a044f82e0307e4c2defb32
+State_ID: BigInt(0xb05236f9138f2fbc)
+Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
 Source_SHA256: b05236f9138f2fbca2fc687826ec611c360323205fd9b0adf0fc7288ca825fa1
 Grammar_Lock: "@root/hashes/grammar/typescript/typescript.hash.md"
-Fidelity: DECLARED
+Fidelity: ACTIVE
 ---
 
 ## @Owl.FMCF.Roles.Shadow (src/fmcf/roles/shadow.ts)

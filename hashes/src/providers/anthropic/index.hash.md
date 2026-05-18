@@ -1,8 +1,8 @@
-State_ID: BigInt(0x000000000000006e)
-Git_SHA: b08b51254f38dd6138e55dbe56ad187ff73866f5
-Source_SHA256: 7db3b2b6d5a2141704240c7c43b65b6ba825ac5f3846acc13d84ab6b72415124
-Grammar_Lock: "@root/hashes/grammar/typescript/typescript.hash.md"
-Fidelity: DECLARED
+State_ID: BigInt(0x8d07f19bd1438d11)
+Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
+Source_SHA256: 8d07f19bd1438d111c88d1ba9fbe24ce39c9a691af8fe8b2e1ef7a5362ec96a5
+Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
+Fidelity: ACTIVE
 ---
 
 ## @Owl.Providers.Anthropic (src/providers/anthropic/index.ts)

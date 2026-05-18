@@ -1,8 +1,8 @@
-State_ID: BigInt(0x0000000000000028)
-Git_SHA: bcdd88c31523b2c371528d153c91214fb34715e3
-Source_SHA256: 7340870cf5393cb1f46d7d27333b8e34b06d35ba29bb95380a9fc058fd222b82
-Grammar_Lock: "@root/hashes/grammar/react/react.hash.md"
-Fidelity: DECLARED
+State_ID: BigInt(0x15640c3e7e942557)
+Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
+Source_SHA256: 15640c3e7e9425577e13d82b090d5c011047278dafa8eb3eb1509da656639872
+Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
+Fidelity: ACTIVE
 ---
 
 ## @Owl.TUI.Components.StatusBar (src/tui/components/StatusBar.tsx)

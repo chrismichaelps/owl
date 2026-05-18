@@ -1,8 +1,8 @@
-State_ID: BigInt(0x0000000000000097)
-Git_SHA: b2a1b0c9d8e7f6a5
-Source_SHA256: b2a1b0c9d8e7f6a5b4c3d2e1f0a9b8c7d6e5f4a3b2a1b0c9d8e7f6a5b4c3d2e1
+State_ID: BigInt(0x220ad3d69763e2db)
+Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
+Source_SHA256: 220ad3d69763e2db4a0fb81db6ef3e4069c402a99dfc2af13395c00b8e9aa0d7
 Grammar_Lock: "@root/hashes/grammar/typescript/typescript.hash.md"
-Fidelity: DECLARED
+Fidelity: ACTIVE
 ---
 
 ## @Owl.TUI.Hooks.ScrollableList (src/tui/hooks/useScrollableList.ts)

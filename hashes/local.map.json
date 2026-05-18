@@ -1,43 +1,465 @@
 {
   "shard_id": "@root/src",
-  "state_anchor": "BigInt:0x00000000000000a5",
+  "state_anchor": "BigInt(0x3ac4cb7d33fe9922)",
   "parent_bridge": "@root/hashes/local.map.json",
-  "git_anchor": "HEAD",
+  "git_anchor": "394e2dc49d8e980117dfaf68a4f26f18687d41c2",
   "cache_integrity": "VERIFIED",
   "nodes": {
-    "main": {
-      "file_path": "@root/src/main.ts",
-      "hash_reference": "@root/hashes/main.hash.md",
+    "cli/args": {
+      "file_path": "@root/src/cli/args.ts",
+      "hash_reference": "@root/hashes/src/cli/args.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-cli-args-d81c6282"
+    },
+    "cli/help": {
+      "file_path": "@root/src/cli/help.ts",
+      "hash_reference": "@root/hashes/src/cli/help.hash.md",
       "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
       "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-main-44a17ae7"
+      "sig_id": "SIG-cli-help-ca66ae0c"
     },
-    "core/errors": {
-      "file_path": "@root/src/core/errors/index.ts",
-      "hash_reference": "@root/hashes/src/core/errors/index.hash.md",
+    "cli/index": {
+      "file_path": "@root/src/cli/index.ts",
+      "hash_reference": "@root/hashes/src/cli/index.hash.md",
+      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-cli-index-318bc3bc"
+    },
+    "cli/run": {
+      "file_path": "@root/src/cli/run.ts",
+      "hash_reference": "@root/hashes/src/cli/run.hash.md",
+      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-cli-run-6a4d5894"
+    },
+    "cli/runtime": {
+      "file_path": "@root/src/cli/runtime.ts",
+      "hash_reference": "@root/hashes/src/cli/runtime.hash.md",
       "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
       "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-core-errors-00000001"
+      "sig_id": "SIG-cli-runtime-ce58b76c"
     },
-    "core/schema": {
-      "file_path": "@root/src/core/schema/index.ts",
-      "hash_reference": "@root/hashes/src/core/schema/index.hash.md",
+    "commands/analysis/analyze": {
+      "file_path": "@root/src/commands/analysis/analyze.ts",
+      "hash_reference": "@root/hashes/src/commands/analysis/analyze.hash.md",
       "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
       "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-core-schema-00000001"
+      "sig_id": "SIG-commands-analysis-analyze-0af7d926"
+    },
+    "commands/analysis/brain": {
+      "file_path": "@root/src/commands/analysis/brain.ts",
+      "hash_reference": "@root/hashes/src/commands/analysis/brain.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-commands-analysis-brain-619a9c68"
+    },
+    "commands/analysis/depth": {
+      "file_path": "@root/src/commands/analysis/depth.ts",
+      "hash_reference": "@root/hashes/src/commands/analysis/depth.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-commands-analysis-depth-6a369b3d"
+    },
+    "commands/analysis/friction": {
+      "file_path": "@root/src/commands/analysis/friction.ts",
+      "hash_reference": "@root/hashes/src/commands/analysis/friction.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-commands-analysis-friction-12536b63"
+    },
+    "commands/analysis/grill": {
+      "file_path": "@root/src/commands/analysis/grill.ts",
+      "hash_reference": "@root/hashes/src/commands/analysis/grill.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-commands-analysis-grill-816eeca2"
+    },
+    "commands/analysis/seams": {
+      "file_path": "@root/src/commands/analysis/seams.ts",
+      "hash_reference": "@root/hashes/src/commands/analysis/seams.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-commands-analysis-seams-22e06ca5"
+    },
+    "commands/core/deep": {
+      "file_path": "@root/src/commands/core/deep.ts",
+      "hash_reference": "@root/hashes/src/commands/core/deep.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-commands-core-deep-4b94cd40"
+    },
+    "commands/core/plan": {
+      "file_path": "@root/src/commands/core/plan.ts",
+      "hash_reference": "@root/hashes/src/commands/core/plan.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-commands-core-plan-65daff91"
+    },
+    "commands/core/quick": {
+      "file_path": "@root/src/commands/core/quick.ts",
+      "hash_reference": "@root/hashes/src/commands/core/quick.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-commands-core-quick-36d1c4d6"
+    },
+    "commands/core/task": {
+      "file_path": "@root/src/commands/core/task.ts",
+      "hash_reference": "@root/hashes/src/commands/core/task.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-commands-core-task-27c98bee"
+    },
+    "commands/editing/add": {
+      "file_path": "@root/src/commands/editing/add.ts",
+      "hash_reference": "@root/hashes/src/commands/editing/add.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-commands-editing-add-57b34253"
+    },
+    "commands/editing/apply": {
+      "file_path": "@root/src/commands/editing/apply.ts",
+      "hash_reference": "@root/hashes/src/commands/editing/apply.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-commands-editing-apply-4835e488"
+    },
+    "commands/editing/create": {
+      "file_path": "@root/src/commands/editing/create.ts",
+      "hash_reference": "@root/hashes/src/commands/editing/create.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-commands-editing-create-a6a2baed"
+    },
+    "commands/editing/diff": {
+      "file_path": "@root/src/commands/editing/diff.ts",
+      "hash_reference": "@root/hashes/src/commands/editing/diff.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-commands-editing-diff-15997ec9"
+    },
+    "commands/editing/edit": {
+      "file_path": "@root/src/commands/editing/edit.ts",
+      "hash_reference": "@root/hashes/src/commands/editing/edit.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-commands-editing-edit-d3db759b"
+    },
+    "commands/editing/inject": {
+      "file_path": "@root/src/commands/editing/inject.ts",
+      "hash_reference": "@root/hashes/src/commands/editing/inject.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-commands-editing-inject-5955f59b"
+    },
+    "commands/editing/pending": {
+      "file_path": "@root/src/commands/editing/pending.ts",
+      "hash_reference": "@root/hashes/src/commands/editing/pending.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-commands-editing-pending-c1339f49"
+    },
+    "commands/editing/refactor": {
+      "file_path": "@root/src/commands/editing/refactor.ts",
+      "hash_reference": "@root/hashes/src/commands/editing/refactor.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-commands-editing-refactor-8e9287c1"
+    },
+    "commands/editing/reject": {
+      "file_path": "@root/src/commands/editing/reject.ts",
+      "hash_reference": "@root/hashes/src/commands/editing/reject.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-commands-editing-reject-f2f8d4b6"
+    },
+    "commands/editing/undo": {
+      "file_path": "@root/src/commands/editing/undo.ts",
+      "hash_reference": "@root/hashes/src/commands/editing/undo.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-commands-editing-undo-b85b9079"
+    },
+    "commands/factory": {
+      "file_path": "@root/src/commands/factory.ts",
+      "hash_reference": "@root/hashes/src/commands/factory.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-commands-factory-7143a98a"
+    },
+    "commands/management/audit": {
+      "file_path": "@root/src/commands/management/audit.ts",
+      "hash_reference": "@root/hashes/src/commands/management/audit.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-commands-management-audit-38311efc"
+    },
+    "commands/management/cache": {
+      "file_path": "@root/src/commands/management/cache.ts",
+      "hash_reference": "@root/hashes/src/commands/management/cache.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-commands-management-cache-a9951f1d"
+    },
+    "commands/management/clear": {
+      "file_path": "@root/src/commands/management/clear.ts",
+      "hash_reference": "@root/hashes/src/commands/management/clear.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-commands-management-clear-b985d391"
+    },
+    "commands/management/compact": {
+      "file_path": "@root/src/commands/management/compact.ts",
+      "hash_reference": "@root/hashes/src/commands/management/compact.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-commands-management-compact-7b78a703"
+    },
+    "commands/management/export": {
+      "file_path": "@root/src/commands/management/export.ts",
+      "hash_reference": "@root/hashes/src/commands/management/export.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-commands-management-export-8adf9117"
+    },
+    "commands/management/help": {
+      "file_path": "@root/src/commands/management/help.ts",
+      "hash_reference": "@root/hashes/src/commands/management/help.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-commands-management-help-a84ce9c0"
+    },
+    "commands/management/history": {
+      "file_path": "@root/src/commands/management/history.ts",
+      "hash_reference": "@root/hashes/src/commands/management/history.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-commands-management-history-6ad89f06"
+    },
+    "commands/management/init": {
+      "file_path": "@root/src/commands/management/init.ts",
+      "hash_reference": "@root/hashes/src/commands/management/init.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-commands-management-init-585b5efd"
+    },
+    "commands/management/mcp": {
+      "file_path": "@root/src/commands/management/mcp.ts",
+      "hash_reference": "@root/hashes/src/commands/management/mcp.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-commands-management-mcp-e4028894"
+    },
+    "commands/management/memory": {
+      "file_path": "@root/src/commands/management/memory.ts",
+      "hash_reference": "@root/hashes/src/commands/management/memory.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-commands-management-memory-1ac34c2c"
+    },
+    "commands/management/model": {
+      "file_path": "@root/src/commands/management/model.ts",
+      "hash_reference": "@root/hashes/src/commands/management/model.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-commands-management-model-6a0d7838"
+    },
+    "commands/management/privacy": {
+      "file_path": "@root/src/commands/management/privacy.ts",
+      "hash_reference": "@root/hashes/src/commands/management/privacy.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-commands-management-privacy-6d292d78"
+    },
+    "commands/management/providers": {
+      "file_path": "@root/src/commands/management/providers.ts",
+      "hash_reference": "@root/hashes/src/commands/management/providers.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-commands-management-providers-679b628c"
+    },
+    "commands/management/registry": {
+      "file_path": "@root/src/commands/management/registry.ts",
+      "hash_reference": "@root/hashes/src/commands/management/registry.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-commands-management-registry-f702c3d9"
+    },
+    "commands/management/role": {
+      "file_path": "@root/src/commands/management/role.ts",
+      "hash_reference": "@root/hashes/src/commands/management/role.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-commands-management-role-277860af"
+    },
+    "commands/management/status": {
+      "file_path": "@root/src/commands/management/status.ts",
+      "hash_reference": "@root/hashes/src/commands/management/status.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-commands-management-status-4de1465a"
+    },
+    "commands/management/tools": {
+      "file_path": "@root/src/commands/management/tools.ts",
+      "hash_reference": "@root/hashes/src/commands/management/tools.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-commands-management-tools-41e59369"
+    },
+    "commands/parser": {
+      "file_path": "@root/src/commands/parser.ts",
+      "hash_reference": "@root/hashes/src/commands/parser.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-commands-parser-3a07b521"
+    },
+    "commands/power/compare": {
+      "file_path": "@root/src/commands/power/compare.ts",
+      "hash_reference": "@root/hashes/src/commands/power/compare.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-commands-power-compare-2cf284a0"
+    },
+    "commands/power/economy": {
+      "file_path": "@root/src/commands/power/economy.ts",
+      "hash_reference": "@root/hashes/src/commands/power/economy.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-commands-power-economy-5460814c"
+    },
+    "commands/power/god": {
+      "file_path": "@root/src/commands/power/god.ts",
+      "hash_reference": "@root/hashes/src/commands/power/god.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-commands-power-god-858e1f5a"
+    },
+    "commands/power/raw": {
+      "file_path": "@root/src/commands/power/raw.ts",
+      "hash_reference": "@root/hashes/src/commands/power/raw.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-commands-power-raw-a25c26ad"
+    },
+    "commands/registry": {
+      "file_path": "@root/src/commands/registry.ts",
+      "hash_reference": "@root/hashes/src/commands/registry.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-commands-registry-9910b9d4"
+    },
+    "commands/types": {
+      "file_path": "@root/src/commands/types.ts",
+      "hash_reference": "@root/hashes/src/commands/types.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-commands-types-7ebb9c0b"
+    },
+    "commands/utils/ids": {
+      "file_path": "@root/src/commands/utils/ids.ts",
+      "hash_reference": "@root/hashes/src/commands/utils/ids.hash.md",
+      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-commands-utils-ids-495e24ea"
+    },
+    "commands/utils/prompt": {
+      "file_path": "@root/src/commands/utils/prompt.ts",
+      "hash_reference": "@root/hashes/src/commands/utils/prompt.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-commands-utils-prompt-a1ac504f"
     },
     "core/config": {
       "file_path": "@root/src/core/config/index.ts",
       "hash_reference": "@root/hashes/src/core/config/index.hash.md",
       "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
-      "dependencies": [
-        "@root/hashes/src/core/schema/index.hash.md"
-      ],
+      "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-core-config-00000001"
+      "sig_id": "SIG-core-config-index-201fb97a"
+    },
+    "core/constants/budgets": {
+      "file_path": "@root/src/core/constants/budgets.ts",
+      "hash_reference": "@root/hashes/src/core/constants/budgets.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-core-constants-budgets-7695978b"
+    },
+    "core/constants/commands": {
+      "file_path": "@root/src/core/constants/commands.ts",
+      "hash_reference": "@root/hashes/src/core/constants/commands.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-core-constants-commands-4c675753"
+    },
+    "core/constants/editor": {
+      "file_path": "@root/src/core/constants/editor.ts",
+      "hash_reference": "@root/hashes/src/core/constants/editor.hash.md",
+      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-core-constants-editor-b35e422a"
+    },
+    "core/constants/fmcf": {
+      "file_path": "@root/src/core/constants/fmcf.ts",
+      "hash_reference": "@root/hashes/src/core/constants/fmcf.hash.md",
+      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-core-constants-fmcf-c42b8e63"
     },
     "core/constants": {
       "file_path": "@root/src/core/constants/index.ts",
@@ -45,7 +467,79 @@
       "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
       "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-core-constants-00000001"
+      "sig_id": "SIG-core-constants-index-ee067bb6"
+    },
+    "core/constants/markdown": {
+      "file_path": "@root/src/core/constants/markdown.ts",
+      "hash_reference": "@root/hashes/src/core/constants/markdown.hash.md",
+      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-core-constants-markdown-93654cb2"
+    },
+    "core/constants/project": {
+      "file_path": "@root/src/core/constants/project.ts",
+      "hash_reference": "@root/hashes/src/core/constants/project.hash.md",
+      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-core-constants-project-200e6079"
+    },
+    "core/constants/providers": {
+      "file_path": "@root/src/core/constants/providers.ts",
+      "hash_reference": "@root/hashes/src/core/constants/providers.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-core-constants-providers-f8cedc5c"
+    },
+    "core/constants/routing": {
+      "file_path": "@root/src/core/constants/routing.ts",
+      "hash_reference": "@root/hashes/src/core/constants/routing.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-core-constants-routing-4314381d"
+    },
+    "core/constants/system": {
+      "file_path": "@root/src/core/constants/system.ts",
+      "hash_reference": "@root/hashes/src/core/constants/system.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-core-constants-system-e94714f4"
+    },
+    "core/constants/tools": {
+      "file_path": "@root/src/core/constants/tools.ts",
+      "hash_reference": "@root/hashes/src/core/constants/tools.hash.md",
+      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-core-constants-tools-ebfac268"
+    },
+    "core/constants/tui": {
+      "file_path": "@root/src/core/constants/tui.ts",
+      "hash_reference": "@root/hashes/src/core/constants/tui.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-core-constants-tui-d9c7e4a8"
+    },
+    "core/cost": {
+      "file_path": "@root/src/core/cost.ts",
+      "hash_reference": "@root/hashes/src/core/cost.hash.md",
+      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-core-cost-c99e404e"
+    },
+    "core/errors": {
+      "file_path": "@root/src/core/errors/index.ts",
+      "hash_reference": "@root/hashes/src/core/errors/index.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-core-errors-index-5327ab14"
     },
     "core/logging": {
       "file_path": "@root/src/core/logging/index.ts",
@@ -53,331 +547,271 @@
       "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
       "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-core-logging-00000001"
-    },
-    "tokens/cache": {
-      "file_path": "@root/src/tokens/cache/index.ts",
-      "hash_reference": "@root/hashes/src/tokens/cache/index.hash.md",
-      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
-      "dependencies": [
-        "@root/hashes/src/tokens/cache/schema.hash.md",
-        "@root/hashes/src/tokens/cache/persistence.hash.md"
-      ],
-      "fidelity_level": "Active",
-      "sig_id": "SIG-tokens-cache-00000001"
-    },
-    "tokens/cache/schema": {
-      "file_path": "@root/src/tokens/cache/schema.ts",
-      "hash_reference": "@root/hashes/src/tokens/cache/schema.hash.md",
-      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
-      "dependencies": [],
-      "fidelity_level": "Active",
-      "sig_id": "SIG-tokens-cache-schema-00000001"
-    },
-    "tokens/cache/persistence": {
-      "file_path": "@root/src/tokens/cache/persistence.ts",
-      "hash_reference": "@root/hashes/src/tokens/cache/persistence.hash.md",
-      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
-      "dependencies": [
-        "@root/hashes/src/tokens/cache/schema.hash.md",
-        "@root/hashes/src/core/constants/index.hash.md",
-        "@root/hashes/src/core/errors/index.hash.md"
-      ],
-      "fidelity_level": "Active",
-      "sig_id": "SIG-tokens-cache-persistence-00000001"
-    },
-    "engine/metrics": {
-      "file_path": "@root/src/engine/metrics/index.ts",
-      "hash_reference": "@root/hashes/src/engine/metrics/index.hash.md",
-      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
-      "dependencies": [
-        "@root/hashes/src/core/constants/index.hash.md",
-        "@root/hashes/src/core/schema/index.hash.md"
-      ],
-      "fidelity_level": "Active",
-      "sig_id": "SIG-engine-metrics-00000001"
-    },
-    "providers/anthropic": {
-      "file_path": "@root/src/providers/anthropic/index.ts",
-      "hash_reference": "@root/hashes/src/providers/anthropic/index.hash.md",
-      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
-      "dependencies": [
-        "@root/hashes/src/core/config/index.hash.md",
-        "@root/hashes/src/core/constants/index.hash.md"
-      ],
-      "fidelity_level": "Active",
-      "sig_id": "SIG-providers-anthropic-00000001"
-    },
-    "providers/openai": {
-      "file_path": "@root/src/providers/openai/index.ts",
-      "hash_reference": "@root/hashes/src/providers/openai/index.hash.md",
-      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
-      "dependencies": [
-        "@root/hashes/src/core/config/index.hash.md",
-        "@root/hashes/src/core/constants/index.hash.md"
-      ],
-      "fidelity_level": "Active",
-      "sig_id": "SIG-providers-openai-00000001"
-    },
-    "providers/google": {
-      "file_path": "@root/src/providers/google/index.ts",
-      "hash_reference": "@root/hashes/src/providers/google/index.hash.md",
-      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
-      "dependencies": [
-        "@root/hashes/src/core/config/index.hash.md"
-      ],
-      "fidelity_level": "Active",
-      "sig_id": "SIG-providers-google-00000001"
-    },
-    "providers/xai": {
-      "file_path": "@root/src/providers/xai/index.ts",
-      "hash_reference": "@root/hashes/src/providers/xai/index.hash.md",
-      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
-      "dependencies": [
-        "@root/hashes/src/core/config/index.hash.md"
-      ],
-      "fidelity_level": "Active",
-      "sig_id": "SIG-providers-xai-00000001"
-    },
-    "providers/ollama": {
-      "file_path": "@root/src/providers/ollama/index.ts",
-      "hash_reference": "@root/hashes/src/providers/ollama/index.hash.md",
-      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
-      "dependencies": [
-        "@root/hashes/src/core/config/index.hash.md"
-      ],
-      "fidelity_level": "Active",
-      "sig_id": "SIG-providers-ollama-00000001"
-    },
-    "providers/bootstrap": {
-      "file_path": "@root/src/providers/bootstrap.ts",
-      "hash_reference": "@root/hashes/src/providers/bootstrap.hash.md",
-      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
-      "dependencies": [
-        "@root/hashes/src/core/config/index.hash.md",
-        "@root/hashes/src/providers/router/index.hash.md",
-        "@root/hashes/src/providers/anthropic/index.hash.md",
-        "@root/hashes/src/providers/openai/index.hash.md",
-        "@root/hashes/src/providers/google/index.hash.md",
-        "@root/hashes/src/providers/xai/index.hash.md",
-        "@root/hashes/src/providers/ollama/index.hash.md"
-      ],
-      "fidelity_level": "Active",
-      "sig_id": "SIG-providers-bootstrap-00000001"
-    },
-    "providers/preferences": {
-      "file_path": "@root/src/providers/preferences/index.ts",
-      "hash_reference": "@root/hashes/src/providers/preferences/index.hash.md",
-      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
-      "dependencies": [
-        "@root/hashes/src/core/schema/index.hash.md",
-        "@root/hashes/src/providers/router/index.hash.md"
-      ],
-      "fidelity_level": "Active",
-      "sig_id": "SIG-providers-preferences-00000001"
-    },
-    "cli/help": {
-      "file_path": "@root/src/cli/help.ts",
-      "hash_reference": "@root/hashes/src/cli/help.hash.md",
-      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
-      "dependencies": [
-        "@root/hashes/src/core/constants/index.hash.md"
-      ],
-      "fidelity_level": "Active",
-      "sig_id": "SIG-cli-help-00000001"
-    },
-    "cli/run": {
-      "file_path": "@root/src/cli/run.ts",
-      "hash_reference": "@root/hashes/src/cli/run.hash.md",
-      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
-      "dependencies": [
-        "@root/hashes/src/core/constants/index.hash.md",
-        "@root/hashes/src/mcp/config.hash.md",
-        "@root/hashes/src/mcp/manager.hash.md"
-      ],
-      "fidelity_level": "Active",
-      "sig_id": "SIG-cli-run-00000001"
-    },
-    "commands/editing/add": {
-      "file_path": "@root/src/commands/editing/add.ts",
-      "hash_reference": "@root/hashes/src/commands/editing/add.hash.md",
-      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
-      "dependencies": [
-        "@root/hashes/src/commands/utils/ids.hash.md",
-        "@root/hashes/src/commands/utils/prompt.hash.md",
-        "@root/hashes/src/editor/pipeline/index.hash.md",
-        "@root/hashes/src/engine/orchestrator/index.hash.md"
-      ],
-      "fidelity_level": "Active",
-      "sig_id": "SIG-cmd-editing-add-00000001"
-    },
-    "commands/management/compact": {
-      "file_path": "@root/src/commands/management/compact.ts",
-      "hash_reference": "@root/hashes/src/commands/management/compact.hash.md",
-      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
-      "dependencies": [
-        "@root/hashes/src/core/constants/index.hash.md",
-        "@root/hashes/src/engine/context/index.hash.md",
-        "@root/hashes/src/engine/orchestrator/index.hash.md",
-        "@root/hashes/src/tokens/pruning/index.hash.md"
-      ],
-      "fidelity_level": "Active",
-      "sig_id": "SIG-cmd-management-compact-00000001"
-    },
-    "commands/management/export": {
-      "file_path": "@root/src/commands/management/export.ts",
-      "hash_reference": "@root/hashes/src/commands/management/export.hash.md",
-      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
-      "dependencies": [
-        "@root/hashes/src/engine/memory/index.hash.md"
-      ],
-      "fidelity_level": "Active",
-      "sig_id": "SIG-cmd-management-export-00000001"
-    },
-    "commands/management/help": {
-      "file_path": "@root/src/commands/management/help.ts",
-      "hash_reference": "@root/hashes/src/commands/management/help.hash.md",
-      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
-      "dependencies": [
-        "@root/hashes/src/commands/registry.hash.md"
-      ],
-      "fidelity_level": "Active",
-      "sig_id": "SIG-cmd-management-help-00000001"
-    },
-    "commands/management/history": {
-      "file_path": "@root/src/commands/management/history.ts",
-      "hash_reference": "@root/hashes/src/commands/management/history.hash.md",
-      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
-      "dependencies": [
-        "@root/hashes/src/engine/memory/index.hash.md",
-        "@root/hashes/src/core/constants/index.hash.md"
-      ],
-      "fidelity_level": "Active",
-      "sig_id": "SIG-cmd-management-history-00000001"
-    },
-    "commands/management/init": {
-      "file_path": "@root/src/commands/management/init.ts",
-      "hash_reference": "@root/hashes/src/commands/management/init.hash.md",
-      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
-      "dependencies": [
-        "@root/hashes/src/core/constants/index.hash.md"
-      ],
-      "fidelity_level": "Active",
-      "sig_id": "SIG-cmd-management-init-00000001"
-    },
-    "commands/management/mcp": {
-      "file_path": "@root/src/commands/management/mcp.ts",
-      "hash_reference": "@root/hashes/src/commands/management/mcp.hash.md",
-      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
-      "dependencies": [
-        "@root/hashes/src/mcp/manager.hash.md"
-      ],
-      "fidelity_level": "Active",
-      "sig_id": "SIG-cmd-management-mcp-00000001"
-    },
-    "commands/management/providers": {
-      "file_path": "@root/src/commands/management/providers.ts",
-      "hash_reference": "@root/hashes/src/commands/management/providers.hash.md",
-      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
-      "dependencies": [
-        "@root/hashes/src/providers/router/index.hash.md",
-        "@root/hashes/src/providers/preferences/index.hash.md",
-        "@root/hashes/src/providers/types.hash.md",
-        "@root/hashes/src/core/cost.hash.md"
-      ],
-      "fidelity_level": "Active",
-      "sig_id": "SIG-cmd-management-providers-00000001"
-    },
-    "commands/utils/ids": {
-      "file_path": "@root/src/commands/utils/ids.ts",
-      "hash_reference": "@root/hashes/src/commands/utils/ids.hash.md",
-      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
-      "dependencies": [
-        "@root/hashes/src/core/constants/index.hash.md"
-      ],
-      "fidelity_level": "Active",
-      "sig_id": "SIG-cmd-utils-ids-00000001"
-    },
-    "commands/utils/prompt": {
-      "file_path": "@root/src/commands/utils/prompt.ts",
-      "hash_reference": "@root/hashes/src/commands/utils/prompt.hash.md",
-      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
-      "dependencies": [
-        "@root/hashes/src/core/constants/index.hash.md",
-        "@root/hashes/src/core/errors/index.hash.md"
-      ],
-      "fidelity_level": "Active",
-      "sig_id": "SIG-cmd-utils-prompt-00000001"
-    },
-    "core/cost": {
-      "file_path": "@root/src/core/cost.ts",
-      "hash_reference": "@root/hashes/src/core/cost.hash.md",
-      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
-      "dependencies": [
-        "@root/hashes/src/core/constants/index.hash.md"
-      ],
-      "fidelity_level": "Active",
-      "sig_id": "SIG-core-cost-00000001"
+      "sig_id": "SIG-core-logging-index-0a6ff3b1"
     },
     "core/path": {
       "file_path": "@root/src/core/path/index.ts",
       "hash_reference": "@root/hashes/src/core/path/index.hash.md",
       "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
-      "dependencies": [
-        "@root/hashes/src/core/errors/index.hash.md"
-      ],
+      "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-core-path-00000001"
+      "sig_id": "SIG-core-path-index-b48bb541"
+    },
+    "core/schema": {
+      "file_path": "@root/src/core/schema/index.ts",
+      "hash_reference": "@root/hashes/src/core/schema/index.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-core-schema-index-ca6839ff"
+    },
+    "core/utils/format": {
+      "file_path": "@root/src/core/utils/format.ts",
+      "hash_reference": "@root/hashes/src/core/utils/format.hash.md",
+      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-core-utils-format-0eef6fb4"
+    },
+    "editor/diff/impact": {
+      "file_path": "@root/src/editor/diff/impact.ts",
+      "hash_reference": "@root/hashes/src/editor/diff/impact.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-editor-diff-impact-2633cbed"
+    },
+    "editor/diff/index": {
+      "file_path": "@root/src/editor/diff/index.ts",
+      "hash_reference": "@root/hashes/src/editor/diff/index.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-editor-diff-index-ea4a746b"
+    },
+    "editor/pending/format": {
+      "file_path": "@root/src/editor/pending/format.ts",
+      "hash_reference": "@root/hashes/src/editor/pending/format.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-editor-pending-format-a6f5c387"
+    },
+    "editor/pending/index": {
+      "file_path": "@root/src/editor/pending/index.ts",
+      "hash_reference": "@root/hashes/src/editor/pending/index.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-editor-pending-index-d125c80e"
+    },
+    "editor/pending/selection": {
+      "file_path": "@root/src/editor/pending/selection.ts",
+      "hash_reference": "@root/hashes/src/editor/pending/selection.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-editor-pending-selection-e2db6198"
+    },
+    "editor/pipeline/index": {
+      "file_path": "@root/src/editor/pipeline/index.ts",
+      "hash_reference": "@root/hashes/src/editor/pipeline/index.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-editor-pipeline-index-a1d62dd9"
+    },
+    "editor/rollback/index": {
+      "file_path": "@root/src/editor/rollback/index.ts",
+      "hash_reference": "@root/hashes/src/editor/rollback/index.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-editor-rollback-index-57f3f6b7"
+    },
+    "editor/tli/index": {
+      "file_path": "@root/src/editor/tli/index.ts",
+      "hash_reference": "@root/hashes/src/editor/tli/index.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-editor-tli-index-1b3eaf1e"
+    },
+    "editor/utils/patch": {
+      "file_path": "@root/src/editor/utils/patch.ts",
+      "hash_reference": "@root/hashes/src/editor/utils/patch.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-editor-utils-patch-3d6d2678"
+    },
+    "editor/utils/strings": {
+      "file_path": "@root/src/editor/utils/strings.ts",
+      "hash_reference": "@root/hashes/src/editor/utils/strings.hash.md",
+      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-editor-utils-strings-ef538664"
+    },
+    "engine/context/index": {
+      "file_path": "@root/src/engine/context/index.ts",
+      "hash_reference": "@root/hashes/src/engine/context/index.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-engine-context-index-8226761f"
     },
     "engine/context/projectContext": {
       "file_path": "@root/src/engine/context/projectContext.ts",
       "hash_reference": "@root/hashes/src/engine/context/projectContext.hash.md",
       "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
-      "dependencies": [
-        "@root/hashes/src/core/errors/index.hash.md"
-      ],
+      "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-engine-ctx-projctx-00000001"
+      "sig_id": "SIG-engine-context-projectContext-454233d1"
     },
     "engine/context/systemPrompt": {
       "file_path": "@root/src/engine/context/systemPrompt.ts",
       "hash_reference": "@root/hashes/src/engine/context/systemPrompt.hash.md",
-      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
-      "dependencies": [
-        "@root/hashes/src/engine/orchestrator/index.hash.md"
-      ],
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-engine-sysprompt-00000001"
+      "sig_id": "SIG-engine-context-systemPrompt-b4d2ce92"
+    },
+    "engine/memory/index": {
+      "file_path": "@root/src/engine/memory/index.ts",
+      "hash_reference": "@root/hashes/src/engine/memory/index.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-engine-memory-index-faa2e198"
     },
     "engine/memory/persistence": {
       "file_path": "@root/src/engine/memory/persistence.ts",
       "hash_reference": "@root/hashes/src/engine/memory/persistence.hash.md",
       "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
-      "dependencies": [
-        "@root/hashes/src/engine/memory/schema.hash.md",
-        "@root/hashes/src/core/errors/index.hash.md",
-        "@root/hashes/src/core/constants/index.hash.md"
-      ],
+      "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-engine-memory-persist-00000001"
+      "sig_id": "SIG-engine-memory-persistence-a40b2495"
     },
     "engine/memory/schema": {
       "file_path": "@root/src/engine/memory/schema.ts",
       "hash_reference": "@root/hashes/src/engine/memory/schema.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-engine-memory-schema-9c93284d"
+    },
+    "engine/metrics/aggregation": {
+      "file_path": "@root/src/engine/metrics/aggregation.ts",
+      "hash_reference": "@root/hashes/src/engine/metrics/aggregation.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-engine-metrics-aggregation-05aa5da0"
+    },
+    "engine/metrics": {
+      "file_path": "@root/src/engine/metrics/index.ts",
+      "hash_reference": "@root/hashes/src/engine/metrics/index.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-engine-metrics-index-76713e38"
+    },
+    "engine/orchestrator/index": {
+      "file_path": "@root/src/engine/orchestrator/index.ts",
+      "hash_reference": "@root/hashes/src/engine/orchestrator/index.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-engine-orchestrator-index-57a3bbdc"
+    },
+    "engine/orchestrator/parallel": {
+      "file_path": "@root/src/engine/orchestrator/parallel.ts",
+      "hash_reference": "@root/hashes/src/engine/orchestrator/parallel.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-engine-orchestrator-parallel-ca7d2db5"
+    },
+    "engine/orchestrator/runtime": {
+      "file_path": "@root/src/engine/orchestrator/runtime.ts",
+      "hash_reference": "@root/hashes/src/engine/orchestrator/runtime.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-engine-orchestrator-runtime-b0ffb138"
+    },
+    "fmcf/governance/index": {
+      "file_path": "@root/src/fmcf/governance/index.ts",
+      "hash_reference": "@root/hashes/src/fmcf/governance/index.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-fmcf-governance-index-2b2e225c"
+    },
+    "fmcf/registry/index": {
+      "file_path": "@root/src/fmcf/registry/index.ts",
+      "hash_reference": "@root/hashes/src/fmcf/registry/index.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-fmcf-registry-index-94f1abd3"
+    },
+    "fmcf/roles/architect": {
+      "file_path": "@root/src/fmcf/roles/architect.ts",
+      "hash_reference": "@root/hashes/src/fmcf/roles/architect.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-fmcf-roles-architect-1a9d4b7e"
+    },
+    "fmcf/roles/dna-engineer": {
+      "file_path": "@root/src/fmcf/roles/dna-engineer.ts",
+      "hash_reference": "@root/hashes/src/fmcf/roles/dna-engineer.hash.md",
       "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
       "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-engine-memory-schema-00000001"
+      "sig_id": "SIG-fmcf-roles-dna-engineer-62a668c0"
+    },
+    "fmcf/roles/guardian": {
+      "file_path": "@root/src/fmcf/roles/guardian.ts",
+      "hash_reference": "@root/hashes/src/fmcf/roles/guardian.hash.md",
+      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-fmcf-roles-guardian-6734dc0d"
+    },
+    "fmcf/roles/shadow": {
+      "file_path": "@root/src/fmcf/roles/shadow.ts",
+      "hash_reference": "@root/hashes/src/fmcf/roles/shadow.hash.md",
+      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-fmcf-roles-shadow-b05236f9"
+    },
+    "fmcf/seam/index": {
+      "file_path": "@root/src/fmcf/seam/index.ts",
+      "hash_reference": "@root/hashes/src/fmcf/seam/index.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-fmcf-seam-index-0f427562"
+    },
+    "main": {
+      "file_path": "@root/src/main.ts",
+      "hash_reference": "@root/hashes/src/main.hash.md",
+      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-main-4b430752"
     },
     "mcp/config": {
       "file_path": "@root/src/mcp/config.ts",
       "hash_reference": "@root/hashes/src/mcp/config.hash.md",
-      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
-      "dependencies": [
-        "@root/hashes/src/core/constants/index.hash.md"
-      ],
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-mcp-config-00000001"
+      "sig_id": "SIG-mcp-config-9589a895"
     },
     "mcp/index": {
       "file_path": "@root/src/mcp/index.ts",
@@ -385,54 +819,615 @@
       "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
       "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-mcp-index-00000001"
+      "sig_id": "SIG-mcp-index-7e5fcd00"
     },
     "mcp/manager": {
       "file_path": "@root/src/mcp/manager.ts",
       "hash_reference": "@root/hashes/src/mcp/manager.hash.md",
       "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
-      "dependencies": [
-        "@root/hashes/src/mcp/config.hash.md"
-      ],
+      "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-mcp-manager-00000001"
+      "sig_id": "SIG-mcp-manager-6d25e5c5"
+    },
+    "mcp/schema": {
+      "file_path": "@root/src/mcp/schema.ts",
+      "hash_reference": "@root/hashes/src/mcp/schema.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-mcp-schema-f126f718"
+    },
+    "providers/anthropic/errors": {
+      "file_path": "@root/src/providers/anthropic/errors.ts",
+      "hash_reference": "@root/hashes/src/providers/anthropic/errors.hash.md",
+      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-providers-anthropic-errors-4cec0266"
+    },
+    "providers/anthropic": {
+      "file_path": "@root/src/providers/anthropic/index.ts",
+      "hash_reference": "@root/hashes/src/providers/anthropic/index.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-providers-anthropic-index-8d07f19b"
+    },
+    "providers/anthropic/model": {
+      "file_path": "@root/src/providers/anthropic/model.ts",
+      "hash_reference": "@root/hashes/src/providers/anthropic/model.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-providers-anthropic-model-ea54432d"
+    },
+    "providers/anthropic/stream": {
+      "file_path": "@root/src/providers/anthropic/stream.ts",
+      "hash_reference": "@root/hashes/src/providers/anthropic/stream.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-providers-anthropic-stream-756c1d62"
+    },
+    "providers/anthropic/toolResult": {
+      "file_path": "@root/src/providers/anthropic/toolResult.ts",
+      "hash_reference": "@root/hashes/src/providers/anthropic/toolResult.hash.md",
+      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-providers-anthropic-toolResult-f0d13fa6"
+    },
+    "providers/anthropic/tools": {
+      "file_path": "@root/src/providers/anthropic/tools.ts",
+      "hash_reference": "@root/hashes/src/providers/anthropic/tools.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-providers-anthropic-tools-65a65b18"
+    },
+    "providers/bootstrap": {
+      "file_path": "@root/src/providers/bootstrap.ts",
+      "hash_reference": "@root/hashes/src/providers/bootstrap.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-providers-bootstrap-1a99148c"
     },
     "providers/cost": {
       "file_path": "@root/src/providers/cost.ts",
       "hash_reference": "@root/hashes/src/providers/cost.hash.md",
-      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
-      "dependencies": [
-        "@root/hashes/src/core/cost.hash.md",
-        "@root/hashes/src/providers/types.hash.md"
-      ],
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-providers-cost-00000001"
+      "sig_id": "SIG-providers-cost-4cd3ec18"
+    },
+    "providers/google": {
+      "file_path": "@root/src/providers/google/index.ts",
+      "hash_reference": "@root/hashes/src/providers/google/index.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-providers-google-index-27327036"
+    },
+    "providers/google/runtime": {
+      "file_path": "@root/src/providers/google/runtime.ts",
+      "hash_reference": "@root/hashes/src/providers/google/runtime.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-providers-google-runtime-e44004c2"
+    },
+    "providers/google/schema": {
+      "file_path": "@root/src/providers/google/schema.ts",
+      "hash_reference": "@root/hashes/src/providers/google/schema.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-providers-google-schema-710aed70"
+    },
+    "providers/google/stream": {
+      "file_path": "@root/src/providers/google/stream.ts",
+      "hash_reference": "@root/hashes/src/providers/google/stream.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-providers-google-stream-8f8504aa"
     },
     "providers/image": {
       "file_path": "@root/src/providers/image.ts",
       "hash_reference": "@root/hashes/src/providers/image.hash.md",
-      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
-      "dependencies": [
-        "@root/hashes/src/providers/anthropic/index.hash.md"
-      ],
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-providers-image-00000001"
+      "sig_id": "SIG-providers-image-35c4fc0f"
+    },
+    "providers/ollama": {
+      "file_path": "@root/src/providers/ollama/index.ts",
+      "hash_reference": "@root/hashes/src/providers/ollama/index.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-providers-ollama-index-7be15240"
+    },
+    "providers/ollama/runtime": {
+      "file_path": "@root/src/providers/ollama/runtime.ts",
+      "hash_reference": "@root/hashes/src/providers/ollama/runtime.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-providers-ollama-runtime-ca1f7639"
+    },
+    "providers/ollama/schema": {
+      "file_path": "@root/src/providers/ollama/schema.ts",
+      "hash_reference": "@root/hashes/src/providers/ollama/schema.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-providers-ollama-schema-24ee3597"
+    },
+    "providers/ollama/stream": {
+      "file_path": "@root/src/providers/ollama/stream.ts",
+      "hash_reference": "@root/hashes/src/providers/ollama/stream.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-providers-ollama-stream-88360f26"
+    },
+    "providers/openai": {
+      "file_path": "@root/src/providers/openai/index.ts",
+      "hash_reference": "@root/hashes/src/providers/openai/index.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-providers-openai-index-46ae0caa"
+    },
+    "providers/openai/runtime": {
+      "file_path": "@root/src/providers/openai/runtime.ts",
+      "hash_reference": "@root/hashes/src/providers/openai/runtime.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-providers-openai-runtime-c780a92f"
+    },
+    "providers/openai/stream": {
+      "file_path": "@root/src/providers/openai/stream.ts",
+      "hash_reference": "@root/hashes/src/providers/openai/stream.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-providers-openai-stream-59cfb4ac"
+    },
+    "providers/openaiCompatible/schema": {
+      "file_path": "@root/src/providers/openaiCompatible/schema.ts",
+      "hash_reference": "@root/hashes/src/providers/openaiCompatible/schema.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-providers-openaiCompatible-schema-f3c3d20b"
+    },
+    "providers/preferences": {
+      "file_path": "@root/src/providers/preferences/index.ts",
+      "hash_reference": "@root/hashes/src/providers/preferences/index.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-providers-preferences-index-6e628c5d"
+    },
+    "providers/router/capabilities": {
+      "file_path": "@root/src/providers/router/capabilities.ts",
+      "hash_reference": "@root/hashes/src/providers/router/capabilities.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-providers-router-capabilities-b7c4827a"
+    },
+    "providers/router/execution": {
+      "file_path": "@root/src/providers/router/execution.ts",
+      "hash_reference": "@root/hashes/src/providers/router/execution.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-providers-router-execution-b7811018"
+    },
+    "providers/router/health": {
+      "file_path": "@root/src/providers/router/health.ts",
+      "hash_reference": "@root/hashes/src/providers/router/health.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-providers-router-health-500c9336"
+    },
+    "providers/router/index": {
+      "file_path": "@root/src/providers/router/index.ts",
+      "hash_reference": "@root/hashes/src/providers/router/index.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-providers-router-index-b1505979"
+    },
+    "providers/router/parallel": {
+      "file_path": "@root/src/providers/router/parallel.ts",
+      "hash_reference": "@root/hashes/src/providers/router/parallel.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-providers-router-parallel-3ca7289d"
+    },
+    "providers/router/registry": {
+      "file_path": "@root/src/providers/router/registry.ts",
+      "hash_reference": "@root/hashes/src/providers/router/registry.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-providers-router-registry-6f455e95"
+    },
+    "providers/router/reliability": {
+      "file_path": "@root/src/providers/router/reliability.ts",
+      "hash_reference": "@root/hashes/src/providers/router/reliability.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-providers-router-reliability-da7f8779"
+    },
+    "providers/router/scoring": {
+      "file_path": "@root/src/providers/router/scoring.ts",
+      "hash_reference": "@root/hashes/src/providers/router/scoring.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-providers-router-scoring-a77f1027"
+    },
+    "providers/router/selection": {
+      "file_path": "@root/src/providers/router/selection.ts",
+      "hash_reference": "@root/hashes/src/providers/router/selection.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-providers-router-selection-4ba71788"
+    },
+    "providers/router/streaming": {
+      "file_path": "@root/src/providers/router/streaming.ts",
+      "hash_reference": "@root/hashes/src/providers/router/streaming.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-providers-router-streaming-779f3917"
+    },
+    "providers/schema": {
+      "file_path": "@root/src/providers/schema.ts",
+      "hash_reference": "@root/hashes/src/providers/schema.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-providers-schema-a80c72a6"
+    },
+    "providers/types": {
+      "file_path": "@root/src/providers/types.ts",
+      "hash_reference": "@root/hashes/src/providers/types.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-providers-types-9e4b527f"
+    },
+    "providers/xai": {
+      "file_path": "@root/src/providers/xai/index.ts",
+      "hash_reference": "@root/hashes/src/providers/xai/index.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-providers-xai-index-526a533a"
+    },
+    "providers/xai/runtime": {
+      "file_path": "@root/src/providers/xai/runtime.ts",
+      "hash_reference": "@root/hashes/src/providers/xai/runtime.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-providers-xai-runtime-6cd26d61"
+    },
+    "providers/xai/stream": {
+      "file_path": "@root/src/providers/xai/stream.ts",
+      "hash_reference": "@root/hashes/src/providers/xai/stream.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-providers-xai-stream-06538af5"
+    },
+    "tokens/budget/index": {
+      "file_path": "@root/src/tokens/budget/index.ts",
+      "hash_reference": "@root/hashes/src/tokens/budget/index.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tokens-budget-index-70e5fd89"
+    },
+    "tokens/cache": {
+      "file_path": "@root/src/tokens/cache/index.ts",
+      "hash_reference": "@root/hashes/src/tokens/cache/index.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tokens-cache-index-797f8334"
+    },
+    "tokens/cache/persistence": {
+      "file_path": "@root/src/tokens/cache/persistence.ts",
+      "hash_reference": "@root/hashes/src/tokens/cache/persistence.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tokens-cache-persistence-3aaeb948"
+    },
+    "tokens/cache/schema": {
+      "file_path": "@root/src/tokens/cache/schema.ts",
+      "hash_reference": "@root/hashes/src/tokens/cache/schema.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tokens-cache-schema-87b70e92"
+    },
+    "tokens/pruning/index": {
+      "file_path": "@root/src/tokens/pruning/index.ts",
+      "hash_reference": "@root/hashes/src/tokens/pruning/index.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tokens-pruning-index-08499f93"
+    },
+    "tools/bash": {
+      "file_path": "@root/src/tools/bash.ts",
+      "hash_reference": "@root/hashes/src/tools/bash.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tools-bash-364f6f77"
+    },
+    "tools/edit": {
+      "file_path": "@root/src/tools/edit.ts",
+      "hash_reference": "@root/hashes/src/tools/edit.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tools-edit-64537d28"
+    },
+    "tools/glob": {
+      "file_path": "@root/src/tools/glob.ts",
+      "hash_reference": "@root/hashes/src/tools/glob.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tools-glob-72792128"
+    },
+    "tools/grep": {
+      "file_path": "@root/src/tools/grep.ts",
+      "hash_reference": "@root/hashes/src/tools/grep.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tools-grep-32c3f32f"
+    },
+    "tools/index": {
+      "file_path": "@root/src/tools/index.ts",
+      "hash_reference": "@root/hashes/src/tools/index.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tools-index-35aac1f3"
+    },
+    "tools/path": {
+      "file_path": "@root/src/tools/path.ts",
+      "hash_reference": "@root/hashes/src/tools/path.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tools-path-2c3a3ef2"
+    },
+    "tools/read": {
+      "file_path": "@root/src/tools/read.ts",
+      "hash_reference": "@root/hashes/src/tools/read.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tools-read-565e9419"
+    },
+    "tools/schema": {
+      "file_path": "@root/src/tools/schema.ts",
+      "hash_reference": "@root/hashes/src/tools/schema.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tools-schema-107cd0ad"
+    },
+    "tools/types": {
+      "file_path": "@root/src/tools/types.ts",
+      "hash_reference": "@root/hashes/src/tools/types.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tools-types-596e0153"
+    },
+    "tools/write": {
+      "file_path": "@root/src/tools/write.ts",
+      "hash_reference": "@root/hashes/src/tools/write.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tools-write-ba5f6c07"
+    },
+    "tui/app": {
+      "file_path": "@root/src/tui/app.tsx",
+      "hash_reference": "@root/hashes/src/tui/app.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tui-app-868bff0c"
     },
     "tui/commands/fuzzy": {
       "file_path": "@root/src/tui/commands/fuzzy.ts",
       "hash_reference": "@root/hashes/src/tui/commands/fuzzy.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tui-commands-fuzzy-4edd8a1d"
+    },
+    "tui/commands/modes": {
+      "file_path": "@root/src/tui/commands/modes.ts",
+      "hash_reference": "@root/hashes/src/tui/commands/modes.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tui-commands-modes-d7135bd0"
+    },
+    "tui/components/AgentPipeline": {
+      "file_path": "@root/src/tui/components/AgentPipeline.tsx",
+      "hash_reference": "@root/hashes/src/tui/components/AgentPipeline.hash.md",
       "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
       "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-tui-commands-fuzzy-00000001"
+      "sig_id": "SIG-tui-components-AgentPipeline-2b9b4b73"
+    },
+    "tui/components/CommandPalette": {
+      "file_path": "@root/src/tui/components/CommandPalette.tsx",
+      "hash_reference": "@root/hashes/src/tui/components/CommandPalette.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tui-components-CommandPalette-2bb54e7b"
+    },
+    "tui/components/ConversationThread": {
+      "file_path": "@root/src/tui/components/ConversationThread.tsx",
+      "hash_reference": "@root/hashes/src/tui/components/ConversationThread.hash.md",
+      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tui-components-ConversationThread-c56549e3"
+    },
+    "tui/components/FileMentionPalette": {
+      "file_path": "@root/src/tui/components/FileMentionPalette.tsx",
+      "hash_reference": "@root/hashes/src/tui/components/FileMentionPalette.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tui-components-FileMentionPalette-d9bcac77"
+    },
+    "tui/components/LogPanel": {
+      "file_path": "@root/src/tui/components/LogPanel.tsx",
+      "hash_reference": "@root/hashes/src/tui/components/LogPanel.hash.md",
+      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tui-components-LogPanel-576ea507"
+    },
+    "tui/components/MarkdownText": {
+      "file_path": "@root/src/tui/components/MarkdownText.tsx",
+      "hash_reference": "@root/hashes/src/tui/components/MarkdownText.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tui-components-MarkdownText-b63108ae"
+    },
+    "tui/components/MetaPanel": {
+      "file_path": "@root/src/tui/components/MetaPanel.tsx",
+      "hash_reference": "@root/hashes/src/tui/components/MetaPanel.hash.md",
+      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tui-components-MetaPanel-422f67aa"
+    },
+    "tui/components/OutputPanel": {
+      "file_path": "@root/src/tui/components/OutputPanel.tsx",
+      "hash_reference": "@root/hashes/src/tui/components/OutputPanel.hash.md",
+      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tui-components-OutputPanel-d3b8c706"
+    },
+    "tui/components/PendingApprovalsPanel": {
+      "file_path": "@root/src/tui/components/PendingApprovalsPanel.tsx",
+      "hash_reference": "@root/hashes/src/tui/components/PendingApprovalsPanel.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tui-components-PendingApprovalsPanel-afd9826e"
+    },
+    "tui/components/PromptInput": {
+      "file_path": "@root/src/tui/components/PromptInput.tsx",
+      "hash_reference": "@root/hashes/src/tui/components/PromptInput.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tui-components-PromptInput-98b459d7"
+    },
+    "tui/components/ShortcutsOverlay": {
+      "file_path": "@root/src/tui/components/ShortcutsOverlay.tsx",
+      "hash_reference": "@root/hashes/src/tui/components/ShortcutsOverlay.hash.md",
+      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tui-components-ShortcutsOverlay-433bf5b9"
+    },
+    "tui/components/Spinner": {
+      "file_path": "@root/src/tui/components/Spinner.tsx",
+      "hash_reference": "@root/hashes/src/tui/components/Spinner.hash.md",
+      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tui-components-Spinner-d379f228"
+    },
+    "tui/components/StatusBar": {
+      "file_path": "@root/src/tui/components/StatusBar.tsx",
+      "hash_reference": "@root/hashes/src/tui/components/StatusBar.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tui-components-StatusBar-15640c3e"
+    },
+    "tui/components/WelcomePanel": {
+      "file_path": "@root/src/tui/components/WelcomePanel.tsx",
+      "hash_reference": "@root/hashes/src/tui/components/WelcomePanel.hash.md",
+      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tui-components-WelcomePanel-5bdae937"
+    },
+    "tui/focus/index": {
+      "file_path": "@root/src/tui/focus/index.ts",
+      "hash_reference": "@root/hashes/src/tui/focus/index.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tui-focus-index-c49dbdbb"
     },
     "tui/history": {
       "file_path": "@root/src/tui/history/index.ts",
       "hash_reference": "@root/hashes/src/tui/history/index.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tui-history-index-7ab9962e"
+    },
+    "tui/hooks/useFileMentions": {
+      "file_path": "@root/src/tui/hooks/useFileMentions.ts",
+      "hash_reference": "@root/hashes/src/tui/hooks/useFileMentions.hash.md",
       "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
       "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-tui-history-00000001"
+      "sig_id": "SIG-tui-hooks-useFileMentions-5122163d"
+    },
+    "tui/hooks/useOwlRuntimeActions": {
+      "file_path": "@root/src/tui/hooks/useOwlRuntimeActions.ts",
+      "hash_reference": "@root/hashes/src/tui/hooks/useOwlRuntimeActions.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tui-hooks-useOwlRuntimeActions-54197da5"
+    },
+    "tui/hooks/usePromptHistory": {
+      "file_path": "@root/src/tui/hooks/usePromptHistory.ts",
+      "hash_reference": "@root/hashes/src/tui/hooks/usePromptHistory.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tui-hooks-usePromptHistory-cc4e5162"
     },
     "tui/hooks/useScrollableList": {
       "file_path": "@root/src/tui/hooks/useScrollableList.ts",
@@ -440,99 +1435,63 @@
       "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
       "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-tui-hooks-scroll-00000001"
+      "sig_id": "SIG-tui-hooks-useScrollableList-220ad3d6"
+    },
+    "tui/hooks/useSlashPalette": {
+      "file_path": "@root/src/tui/hooks/useSlashPalette.ts",
+      "hash_reference": "@root/hashes/src/tui/hooks/useSlashPalette.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tui-hooks-useSlashPalette-1ec908e0"
     },
     "tui/hooks/useTerminalAnimation": {
       "file_path": "@root/src/tui/hooks/useTerminalAnimation.ts",
       "hash_reference": "@root/hashes/src/tui/hooks/useTerminalAnimation.hash.md",
       "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
-      "dependencies": [
-        "@root/hashes/src/core/constants/index.hash.md"
-      ],
+      "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-tui-hooks-animation-00000001"
+      "sig_id": "SIG-tui-hooks-useTerminalAnimation-72a804e2"
+    },
+    "tui/markdown/index": {
+      "file_path": "@root/src/tui/markdown/index.ts",
+      "hash_reference": "@root/hashes/src/tui/markdown/index.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tui-markdown-index-71754bfd"
     },
     "tui/mentions/files": {
       "file_path": "@root/src/tui/mentions/files.ts",
       "hash_reference": "@root/hashes/src/tui/mentions/files.hash.md",
-      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
       "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-tui-mentions-files-00000001"
+      "sig_id": "SIG-tui-mentions-files-4a42b894"
     },
     "tui/mentions": {
       "file_path": "@root/src/tui/mentions/index.ts",
       "hash_reference": "@root/hashes/src/tui/mentions/index.hash.md",
-      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
-      "dependencies": [
-        "@root/hashes/src/providers/image.hash.md",
-        "@root/hashes/src/core/constants/index.hash.md"
-      ],
-      "fidelity_level": "Active",
-      "sig_id": "SIG-tui-mentions-00000001"
-    },
-    "tui/components/AgentPipeline": {
-      "file_path": "@root/src/tui/components/AgentPipeline.tsx",
-      "hash_reference": "@root/hashes/src/tui/components/AgentPipeline.hash.md",
-      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
-      "dependencies": [
-        "@root/hashes/src/tui/hooks/useTerminalAnimation.hash.md",
-        "@root/hashes/src/core/constants/index.hash.md"
-      ],
-      "fidelity_level": "Active",
-      "sig_id": "SIG-tui-cmp-agentpipeline-00000001"
-    },
-    "tui/components/CommandPalette": {
-      "file_path": "@root/src/tui/components/CommandPalette.tsx",
-      "hash_reference": "@root/hashes/src/tui/components/CommandPalette.hash.md",
-      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
-      "dependencies": [
-        "@root/hashes/src/tui/commands/fuzzy.hash.md",
-        "@root/hashes/src/core/constants/index.hash.md"
-      ],
-      "fidelity_level": "Active",
-      "sig_id": "SIG-tui-cmp-cmdpalette-00000001"
-    },
-    "tui/components/FileMentionPalette": {
-      "file_path": "@root/src/tui/components/FileMentionPalette.tsx",
-      "hash_reference": "@root/hashes/src/tui/components/FileMentionPalette.hash.md",
-      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
-      "dependencies": [
-        "@root/hashes/src/tui/mentions/files.hash.md",
-        "@root/hashes/src/tui/mentions/index.hash.md"
-      ],
-      "fidelity_level": "Active",
-      "sig_id": "SIG-tui-cmp-filemention-00000001"
-    },
-    "tui/components/MarkdownText": {
-      "file_path": "@root/src/tui/components/MarkdownText.tsx",
-      "hash_reference": "@root/hashes/src/tui/components/MarkdownText.hash.md",
-      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
       "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-tui-cmp-markdowntext-00000001"
+      "sig_id": "SIG-tui-mentions-index-4118cb3e"
     },
-    "tui/components/ShortcutsOverlay": {
-      "file_path": "@root/src/tui/components/ShortcutsOverlay.tsx",
-      "hash_reference": "@root/hashes/src/tui/components/ShortcutsOverlay.hash.md",
-      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
-      "dependencies": [
-        "@root/hashes/src/core/constants/index.hash.md"
-      ],
+    "tui/state": {
+      "file_path": "@root/src/tui/state.ts",
+      "hash_reference": "@root/hashes/src/tui/state.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-tui-cmp-shortcuts-00000001"
+      "sig_id": "SIG-tui-state-c39b75de"
     },
-    "tui/components/WelcomePanel": {
-      "file_path": "@root/src/tui/components/WelcomePanel.tsx",
-      "hash_reference": "@root/hashes/src/tui/components/WelcomePanel.hash.md",
-      "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
-      "dependencies": [
-        "@root/hashes/src/tui/components/AgentPipeline.hash.md",
-        "@root/hashes/src/core/constants/index.hash.md",
-        "@root/hashes/src/core/cost.hash.md"
-      ],
+    "tui/status/visuals": {
+      "file_path": "@root/src/tui/status/visuals.ts",
+      "hash_reference": "@root/hashes/src/tui/status/visuals.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-tui-cmp-welcomepanel-00000001"
+      "sig_id": "SIG-tui-status-visuals-e4a26808"
     }
   }
 }

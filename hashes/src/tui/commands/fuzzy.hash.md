@@ -1,8 +1,8 @@
-State_ID: BigInt(0x0000000000000095)
-Git_SHA: f4a3b2a1b0c9d8e7
-Source_SHA256: f4a3b2a1b0c9d8e7f6a5b4c3d2e1f0a9b8c7d6e5f4a3b2a1b0c9d8e7f6a5b4c3
-Grammar_Lock: "@root/hashes/grammar/typescript/typescript.hash.md"
-Fidelity: DECLARED
+State_ID: BigInt(0x4edd8a1d5369e943)
+Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
+Source_SHA256: 4edd8a1d5369e943a92a215c16b184527ff3ccd8ff8326e4bc44eea36d00b913
+Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
+Fidelity: ACTIVE
 ---
 
 ## @Owl.TUI.Commands.Fuzzy (src/tui/commands/fuzzy.ts)

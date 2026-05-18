@@ -1,8 +1,8 @@
-State_ID: BigInt(0x0000000000000056)
-Git_SHA: 4f73af824a093a64419faed765a702836965fe50
-Source_SHA256: e896a1ded86c4bb28a0ac07814172fb42dd4ab883221ef986480edf1e3f0985d
+State_ID: BigInt(0x4b94cd40bd3d7cfc)
+Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
+Source_SHA256: 4b94cd40bd3d7cfcca34602a03855ce0d2093445d60ddd5b0f133b764cd096f7
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
-Fidelity: DECLARED
+Fidelity: ACTIVE
 ---
 
 ## @Owl.Commands.Core.Deep (src/commands/core/deep.ts)

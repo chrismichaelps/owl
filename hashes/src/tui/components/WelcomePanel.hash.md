@@ -1,8 +1,8 @@
-State_ID: BigInt(0x00000000000000a5)
-Git_SHA: f5a6b7c8d9e0f1a2
-Source_SHA256: f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6
+State_ID: BigInt(0x5bdae9376843db27)
+Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
+Source_SHA256: 5bdae9376843db271cc9cd8724e0fcbd83bb9697ac17c627da6bcc1269bb3293
 Grammar_Lock: "@root/hashes/grammar/typescript/typescript.hash.md"
-Fidelity: DECLARED
+Fidelity: ACTIVE
 ---
 
 ## @Owl.TUI.Components.WelcomePanel (src/tui/components/WelcomePanel.tsx)

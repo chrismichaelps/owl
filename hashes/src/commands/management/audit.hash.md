@@ -1,8 +1,8 @@
-State_ID: BigInt(0x0000000000000061)
-Git_SHA: 45c6800bcea148e9ab367104707f7e30b7d58ca3
-Source_SHA256: 08107a084f1c560e201d73052c0b4d78daa771c0cefdabd5ce6e852b45f6a500
+State_ID: BigInt(0x38311efc3885befa)
+Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
+Source_SHA256: 38311efc3885befa52cb8826325f90cca470010ab1726038937786b10999b70b
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
-Fidelity: DECLARED
+Fidelity: ACTIVE
 ---
 
 ## @Owl.Commands.Management.Audit (src/commands/management/audit.ts)

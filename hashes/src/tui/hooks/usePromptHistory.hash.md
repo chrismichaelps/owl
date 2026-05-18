@@ -1,8 +1,8 @@
-State_ID: BigInt(0x0000000000000041)
-Git_SHA: e960ac9f0de476b270ebb1d7d3e751c79d10db39
-Source_SHA256: 673e0497b9ed877b857a5f43711a64db3207d6d1038e5253c365a5836d6d94c8
-Grammar_Lock: "@root/hashes/grammar/react/react.hash.md"
-Fidelity: DECLARED
+State_ID: BigInt(0xcc4e5162973e7483)
+Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
+Source_SHA256: cc4e5162973e74838e95f724c1a92a19a277e8cc4be8933f95104c9303c52659
+Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
+Fidelity: ACTIVE
 ---
 
 ## @Owl.TUI.Hooks.PromptHistory (src/tui/hooks/usePromptHistory.ts)

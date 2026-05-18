@@ -1,8 +1,8 @@
-State_ID: BigInt(0x0000000000000040)
-Git_SHA: a5d0d44eb4c1a43ade80a823360bfb8da0e57add
-Source_SHA256: 058054ce5673eecd17c4972b0fbe9a0307e3c01623860d96eb7695092411b85a
-Grammar_Lock: "@root/hashes/grammar/react/react.hash.md"
-Fidelity: DECLARED
+State_ID: BigInt(0xc56549e3ef86741b)
+Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
+Source_SHA256: c56549e3ef86741b14e79861bdeddf8db3813c1d95df7799c80d72673672fdf1
+Grammar_Lock: "@root/hashes/grammar/typescript/typescript.hash.md"
+Fidelity: ACTIVE
 ---
 
 ## @Owl.TUI.Components.ConversationThread (src/tui/components/ConversationThread.tsx)

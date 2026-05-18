@@ -1,8 +1,8 @@
-State_ID: BigInt(0x0000000000000091)
-Git_SHA: b8c7d6e5f4a3b2a1
-Source_SHA256: b8c7d6e5f4a3b2a1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b7
+State_ID: BigInt(0x7e5fcd0058afdbcf)
+Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
+Source_SHA256: 7e5fcd0058afdbcfaac9b1e129435a8d0ec77328901bc825e684bea2f896098f
 Grammar_Lock: "@root/hashes/grammar/typescript/typescript.hash.md"
-Fidelity: DECLARED
+Fidelity: ACTIVE
 ---
 
 ## @Owl.MCP (src/mcp/index.ts)

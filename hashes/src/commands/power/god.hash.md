@@ -1,8 +1,8 @@
-State_ID: BigInt(0x000000000000006A)
-Git_SHA: 6761e2231cf557af57aa655249d13198dfa1ea22
-Source_SHA256: ace1d781dfe1866db769951a21f47863119319a6934814e453ba1758515aa14f
+State_ID: BigInt(0x858e1f5a0dbf5d89)
+Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
+Source_SHA256: 858e1f5a0dbf5d890e3bb5812ed3a65a6def98f7c9a989bec418e28fdfeea068
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
-Fidelity: DECLARED
+Fidelity: ACTIVE
 ---
 
 ## @Owl.Commands.Power.God (src/commands/power/god.ts)

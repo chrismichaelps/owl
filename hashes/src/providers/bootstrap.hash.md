@@ -1,8 +1,8 @@
-State_ID: BigInt(0x0000000000000058)
-Git_SHA: 06df5791bfbe5a97aa4216e8ece760e7ee760895
-Source_SHA256: 544a169167caa86b796a6d71401a6530ffc42044a385156ee0e7f57e72c12f02
+State_ID: BigInt(0x1a99148caf96c533)
+Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
+Source_SHA256: 1a99148caf96c53324fe38ea601c6f78adb25bc8f973bf43750d149fbdd0e0c2
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
-Fidelity: DECLARED
+Fidelity: ACTIVE
 ---
 
 ## @Owl.Providers.Bootstrap (src/providers/bootstrap.ts)

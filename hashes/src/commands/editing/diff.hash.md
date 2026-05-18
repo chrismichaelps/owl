@@ -1,8 +1,8 @@
-State_ID: BigInt(0x000000000000005C)
-Git_SHA: 6fbaa71a291dc181fb847d9944dcf5c09c0eb7f0
-Source_SHA256: ac1cb6a839e2eafffcc3856a28fcf11a3a35000c9bc545e9a42ebe6753c0dcef
+State_ID: BigInt(0x15997ec9a0f8ebed)
+Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
+Source_SHA256: 15997ec9a0f8ebedb70737fa12f7b2807fd987c04516a6d545a918d932d06565
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
-Fidelity: DECLARED
+Fidelity: ACTIVE
 ---
 
 ## @Owl.Commands.Editing.Diff (src/commands/editing/diff.ts)

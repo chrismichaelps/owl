@@ -1,8 +1,8 @@
-State_ID: BigInt(0x0000000000000069)
-Git_SHA: 6761e2231cf557af57aa655249d13198dfa1ea22
-Source_SHA256: 122e00e1603d4f3b42c32e5a3792994a8d01d6cd5a6436b99c2b653746996930
+State_ID: BigInt(0x5460814c2019fefd)
+Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
+Source_SHA256: 5460814c2019fefdd63c587ad386b139917e2a5a3646e3a95ff44168a6f1cfbf
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
-Fidelity: DECLARED
+Fidelity: ACTIVE
 ---
 
 ## @Owl.Commands.Power.Economy (src/commands/power/economy.ts)

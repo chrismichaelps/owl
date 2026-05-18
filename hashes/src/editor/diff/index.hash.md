@@ -1,8 +1,8 @@
-State_ID: BigInt(0x0000000000000031)
-Git_SHA: d3de64991c1e025b52d39baeb56b625307e8f5a4
-Source_SHA256: 107de81181243dc55db63a9f16d712f5b186874961aa6d9ffddea5beb53814b6
-Grammar_Lock: "@root/hashes/grammar/typescript/typescript.hash.md"
-Fidelity: DECLARED
+State_ID: BigInt(0xea4a746b78f66500)
+Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
+Source_SHA256: ea4a746b78f66500b9be12446057d9189e6521dee2ce75941e3bb0691cfce1cb
+Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
+Fidelity: ACTIVE
 ---
 
 ## @Owl.Editor.Diff (src/editor/diff/index.ts)

@@ -1,8 +1,8 @@
-State_ID: BigInt(0x0000000000000022)
-Git_SHA: de8896649bc9401c15389d9ce6433ae70f1a8bab
-Source_SHA256: 7a128be14157d3a863653befcab90d149c597a009bff993fa4f0c298f023a1d3
-Grammar_Lock: "@root/hashes/grammar/typescript/typescript.hash.md"
-Fidelity: DECLARED
+State_ID: BigInt(0x2732703653c9dd56)
+Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
+Source_SHA256: 2732703653c9dd56b31816dd677e04f7b7e8254bd052d51e6966503092b2f505
+Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
+Fidelity: ACTIVE
 ---
 
 ## @Owl.Providers.Google (src/providers/google/index.ts)

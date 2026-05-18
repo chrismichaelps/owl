@@ -1,8 +1,8 @@
-State_ID: BigInt(0x0000000000000060)
-Git_SHA: 6fbaa71a291dc181fb847d9944dcf5c09c0eb7f0
+State_ID: BigInt(0xb85b9079df44ed28)
+Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
 Source_SHA256: b85b9079df44ed280bfec6761cae08742304fbbdc1ec41204df6d689c304a4d1
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
-Fidelity: DECLARED
+Fidelity: ACTIVE
 ---
 
 ## @Owl.Commands.Editing.Undo (src/commands/editing/undo.ts)

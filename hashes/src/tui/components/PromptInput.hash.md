@@ -1,8 +1,8 @@
-State_ID: BigInt(0x0000000000000029)
-Git_SHA: 1e742d8287218bf3d22885f8ea364fe682a36770
-Source_SHA256: a6b2b5ba9f704d5dce91f6eb8291455cd857e2cfd313a08feb1185a596b722a7
-Grammar_Lock: "@root/hashes/grammar/react/react.hash.md"
-Fidelity: DECLARED
+State_ID: BigInt(0x98b459d71fe146c2)
+Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
+Source_SHA256: 98b459d71fe146c218f7d4c1695cd04ee2b74e72ca1acc8e89da248f4225029c
+Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
+Fidelity: ACTIVE
 ---
 
 ## @Owl.TUI.Components.PromptInput (src/tui/components/PromptInput.tsx)

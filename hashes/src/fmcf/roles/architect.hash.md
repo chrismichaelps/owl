@@ -1,8 +1,8 @@
-State_ID: BigInt(0x0000000000000016)
-Git_SHA: ad091135d8d9083717a044f82e0307e4c2defb32
-Source_SHA256: 55fe4fb63a4e1ea080e913d26e3308eb4a90802a23f1e5b286effcfa36c14858
+State_ID: BigInt(0x1a9d4b7e71490684)
+Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
+Source_SHA256: 1a9d4b7e71490684d5010aae2ca89ce6f468fd222a785091c1f4323092c12c7e
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
-Fidelity: DECLARED
+Fidelity: ACTIVE
 ---
 
 ## @Owl.FMCF.Roles.Architect (src/fmcf/roles/architect.ts)

@@ -1,8 +1,8 @@
-State_ID: BigInt(0x00000000000000a0)
-Git_SHA: a0b1c2d3e4f5a6b7
-Source_SHA256: a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1
+State_ID: BigInt(0x2b9b4b7384eed767)
+Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
+Source_SHA256: 2b9b4b7384eed7671fbe533b0ca009ea1bdfc51cb3dea9cce36af88035e54ef0
 Grammar_Lock: "@root/hashes/grammar/typescript/typescript.hash.md"
-Fidelity: DECLARED
+Fidelity: ACTIVE
 ---
 
 ## @Owl.TUI.Components.AgentPipeline (src/tui/components/AgentPipeline.tsx)

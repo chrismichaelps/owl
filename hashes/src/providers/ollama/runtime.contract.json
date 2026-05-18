@@ -1,0 +1,22 @@
+{
+  "module": "@root/src/providers/ollama/runtime.ts",
+  "state_id": "BigInt(0xca1f76392c670283)",
+  "interface": {
+    "inputs": [],
+    "outputs": [],
+    "error_modes": []
+  },
+  "architecture": {
+    "depth_score": 0.5,
+    "depth_status": "MEDIUM",
+    "leverage": "MEDIUM",
+    "locality": "MEDIUM",
+    "seam_capacity": "INTERNAL",
+    "coupling_complexity": 0,
+    "interface_stability": 1,
+    "leverage_delta": "+0.00",
+    "locality_impact": "Registry mirror created from live source topology."
+  },
+  "dependencies": [],
+  "variants": []
+}

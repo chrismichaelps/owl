@@ -1,8 +1,8 @@
-State_ID: BigInt(0x0000000000000053)
-Git_SHA: 6761e2231cf557af57aa655249d13198dfa1ea22
-Source_SHA256: 097f1fed5a9e3352dc9c7518a862d5c61182c03826f5340b9b30f7c4a5ba89e7
+State_ID: BigInt(0x12536b63f0c72d58)
+Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
+Source_SHA256: 12536b63f0c72d58d6e1e427171a8b9ddc5602585b739ce71575460f907c4570
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
-Fidelity: DECLARED
+Fidelity: ACTIVE
 ---
 
 ## @Owl.Commands.Analysis.Friction (src/commands/analysis/friction.ts)

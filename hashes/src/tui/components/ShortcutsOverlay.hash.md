@@ -1,8 +1,8 @@
-State_ID: BigInt(0x00000000000000a4)
-Git_SHA: e4f5a6b7c8d9e0f1
-Source_SHA256: e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5
+State_ID: BigInt(0x433bf5b96daf7e16)
+Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
+Source_SHA256: 433bf5b96daf7e1651f0be055973cd3d5dbdd94c7f1a4d65538e90c2a857b76f
 Grammar_Lock: "@root/hashes/grammar/typescript/typescript.hash.md"
-Fidelity: DECLARED
+Fidelity: ACTIVE
 ---
 
 ## @Owl.TUI.Components.ShortcutsOverlay (src/tui/components/ShortcutsOverlay.tsx)

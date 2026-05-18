@@ -1,8 +1,8 @@
-State_ID: BigInt(0x0000000000000051)
-Git_SHA: da56a6d328d9b1fae041e91050918aa0b6e21494
+State_ID: BigInt(0x619a9c68118e1459)
+Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
 Source_SHA256: 619a9c68118e1459fbce2f4e488eef79f5909f141eadb4722c5745573998408a
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
-Fidelity: DECLARED
+Fidelity: ACTIVE
 ---
 
 ## @Owl.Commands.Analysis.Brain (src/commands/analysis/brain.ts)

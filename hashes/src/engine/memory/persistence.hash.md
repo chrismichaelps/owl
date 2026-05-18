@@ -1,8 +1,8 @@
-State_ID: BigInt(0x0000000000000085)
-Git_SHA: f1234567890abcdef1234567890abcdef1234567
-Source_SHA256: f1234567890abcdef1234567890abcdef12345678901234567890abcdef123456
+State_ID: BigInt(0xa40b2495f35d3f96)
+Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
+Source_SHA256: a40b2495f35d3f9644f082089a7808f148f374a04c3d912ac4a00e52e6f3bf27
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
-Fidelity: DECLARED
+Fidelity: ACTIVE
 ---
 
 ## @Owl.Engine.Memory.Persistence (src/engine/memory/persistence.ts)

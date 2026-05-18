@@ -1,8 +1,8 @@
-State_ID: BigInt(0x00000000000000a1)
-Git_SHA: b1c2d3e4f5a6b7c8
-Source_SHA256: b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2
-Grammar_Lock: "@root/hashes/grammar/typescript/typescript.hash.md"
-Fidelity: DECLARED
+State_ID: BigInt(0x2bb54e7b29283481)
+Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
+Source_SHA256: 2bb54e7b29283481e58408cf7bfe041e0015564d78932529e7fe4054b07ca9cc
+Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
+Fidelity: ACTIVE
 ---
 
 ## @Owl.TUI.Components.CommandPalette (src/tui/components/CommandPalette.tsx)

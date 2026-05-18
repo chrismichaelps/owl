@@ -1,8 +1,8 @@
-State_ID: BigInt(0x000000000000005F)
-Git_SHA: 6fbaa71a291dc181fb847d9944dcf5c09c0eb7f0
-Source_SHA256: 6e300de94e07debf808950d46ebd9ee819f62aecca9471379cf56b840e14fb54
+State_ID: BigInt(0x8e9287c17297011c)
+Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
+Source_SHA256: 8e9287c17297011ca01b730cf328d9739ee80c9f0654bc769c7d651826f43335
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
-Fidelity: DECLARED
+Fidelity: ACTIVE
 ---
 
 ## @Owl.Commands.Editing.Refactor (src/commands/editing/refactor.ts)

@@ -1,8 +1,8 @@
-State_ID: BigInt(0x0000000000000074)
-Git_SHA: b08b51254f38dd6138e55dbe56ad187ff73866f5
-Source_SHA256: 8f1fa6c96f9d5fa2d2e903a13e701397c7f42b2f8adee159d2d70fb3eb991662
+State_ID: BigInt(0x57a3bbdc74a6e4c7)
+Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
+Source_SHA256: 57a3bbdc74a6e4c75676fd3d3ef51b967b2100678d38963437ad00fe8340a02a
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
-Fidelity: DECLARED
+Fidelity: ACTIVE
 ---
 
 ## @Owl.Engine.Orchestrator (src/engine/orchestrator/index.ts)

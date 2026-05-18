@@ -1,8 +1,8 @@
-State_ID: BigInt(0x0000000000000081)
-Git_SHA: bcdef1234567890abcdef1234567890abcdef123
-Source_SHA256: bcdef1234567890abcdef1234567890abcdef1234567890abcdef12345678901
+State_ID: BigInt(0xa1ac504f4128f8e5)
+Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
+Source_SHA256: a1ac504f4128f8e554e5e54c8c4a8d7c292be6c8c892ae1aada74634bbf29471
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
-Fidelity: DECLARED
+Fidelity: ACTIVE
 ---
 
 ## @Owl.Commands.Utils.Prompt (src/commands/utils/prompt.ts)

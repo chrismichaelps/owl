@@ -1,8 +1,8 @@
-State_ID: BigInt(0x0000000000000082)
-Git_SHA: cdef1234567890abcdef1234567890abcdef1234
-Source_SHA256: cdef1234567890abcdef1234567890abcdef12345678901234567890abcdef12
+State_ID: BigInt(0xc99e404e68cbbc5c)
+Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
+Source_SHA256: c99e404e68cbbc5cee8d471d23f2ce48ac4a4f301d7b86e05f67549c4488dd62
 Grammar_Lock: "@root/hashes/grammar/typescript/typescript.hash.md"
-Fidelity: DECLARED
+Fidelity: ACTIVE
 ---
 
 ## @Owl.Core.Cost (src/core/cost.ts)

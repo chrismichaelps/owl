@@ -1,8 +1,8 @@
-State_ID: BigInt(0x000000000000002a)
-Git_SHA: bcdd88c31523b2c371528d153c91214fb34715e3
-Source_SHA256: 3d29d35e9efbcbd5213ea51975e7e9da34c51cf92d89e6240b1bb93b3bd968bd
-Grammar_Lock: "@root/hashes/grammar/react/react.hash.md"
-Fidelity: DECLARED
+State_ID: BigInt(0xd379f2287fd96b6b)
+Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
+Source_SHA256: d379f2287fd96b6b634a278eb273be1b793c1d33834619d5429e0b5602cc8d64
+Grammar_Lock: "@root/hashes/grammar/typescript/typescript.hash.md"
+Fidelity: ACTIVE
 ---
 
 ## @Owl.TUI.Components.Spinner (src/tui/components/Spinner.tsx)

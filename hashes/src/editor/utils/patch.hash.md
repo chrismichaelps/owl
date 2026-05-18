@@ -1,8 +1,8 @@
-State_ID: BigInt(0x0000000000000036)
-Git_SHA: b635ad0602f346f8eb07380bfb954838e91266b3
-Source_SHA256: ec493a3df295d4b819220d7eb1ef2c85982c234f0c93eb98daa3795558bacc37
-Grammar_Lock: "@root/hashes/grammar/typescript/typescript.hash.md"
-Fidelity: DECLARED
+State_ID: BigInt(0x3d6d26784acf2138)
+Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
+Source_SHA256: 3d6d26784acf2138891ecda97b5e8b30ae8c8c3fd456ab945d58590c522e2d53
+Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
+Fidelity: ACTIVE
 ---
 
 ## @Owl.Editor.Utils.Patch (src/editor/utils/patch.ts)

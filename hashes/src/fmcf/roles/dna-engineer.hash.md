@@ -1,8 +1,8 @@
-State_ID: BigInt(0x0000000000000017)
-Git_SHA: ad091135d8d9083717a044f82e0307e4c2defb32
+State_ID: BigInt(0x62a668c03edfd065)
+Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
 Source_SHA256: 62a668c03edfd06566df38eb2421acf4dc2309a15e89e08983f588c4f7cb64b6
 Grammar_Lock: "@root/hashes/grammar/typescript/typescript.hash.md"
-Fidelity: DECLARED
+Fidelity: ACTIVE
 ---
 
 ## @Owl.FMCF.Roles.DNAEngineer (src/fmcf/roles/dna-engineer.ts)

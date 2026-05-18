@@ -1,8 +1,8 @@
-State_ID: BigInt(0x0000000000000025)
-Git_SHA: b6b78075c6642d82327f887c2c3bdd57c3eeb2a1
-Source_SHA256: 07065eed46dfb18fb5a0c6b2b3b81ec00b14db433592e7f3247f98fffdcc74af
-Grammar_Lock: "@root/hashes/grammar/react/react.hash.md"
-Fidelity: DECLARED
+State_ID: BigInt(0xd3b8c7060c59c79a)
+Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
+Source_SHA256: d3b8c7060c59c79ab970eaa8a6826da28ba9a8b839492cd073878a4ee469b4ba
+Grammar_Lock: "@root/hashes/grammar/typescript/typescript.hash.md"
+Fidelity: ACTIVE
 ---
 
 ## @Owl.TUI.Components.OutputPanel (src/tui/components/OutputPanel.tsx)

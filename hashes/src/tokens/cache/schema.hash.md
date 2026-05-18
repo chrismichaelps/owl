@@ -1,8 +1,8 @@
-State_ID: BigInt(0x0000000000000079)
-Git_SHA: 9e5c31596b36f990f88d402b533fcfc1104cbe87
+State_ID: BigInt(0x87b70e92d149ec60)
+Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
 Source_SHA256: 87b70e92d149ec6011a10401e328b903ca4a0699ecea4f6d2145e5414975667c
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
-Fidelity: DECLARED
+Fidelity: ACTIVE
 ---
 
 ## @Owl.Tokens.Cache.Schema (src/tokens/cache/schema.ts)

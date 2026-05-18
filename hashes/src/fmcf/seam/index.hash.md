@@ -1,8 +1,8 @@
-State_ID: BigInt(0x000000000000001A)
-Git_SHA: ad091135d8d9083717a044f82e0307e4c2defb32
-Source_SHA256: 25af2d6ec0dc65afb890dbc963a795fbd712f434ec282930ddf4698f5022173c
+State_ID: BigInt(0x0f427562687c1ceb)
+Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
+Source_SHA256: 0f427562687c1ceb2ce256e4ec2e767844c20f812380747dd6a00694aac628e7
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
-Fidelity: DECLARED
+Fidelity: ACTIVE
 ---
 
 ## @Owl.FMCF.Seam (src/fmcf/seam/index.ts)

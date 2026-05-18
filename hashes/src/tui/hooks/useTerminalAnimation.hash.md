@@ -1,8 +1,8 @@
-State_ID: BigInt(0x0000000000000098)
-Git_SHA: c9d8e7f6a5b4c3d2
-Source_SHA256: c9d8e7f6a5b4c3d2e1f0a9b8c7d6e5f4a3b2a1b0c9d8e7f6a5b4c3d2e1f0a9b8
+State_ID: BigInt(0x72a804e2f6119b7a)
+Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
+Source_SHA256: 72a804e2f6119b7a956464c2f818239654d40d7c6d5bdd66df9399f84889072b
 Grammar_Lock: "@root/hashes/grammar/typescript/typescript.hash.md"
-Fidelity: DECLARED
+Fidelity: ACTIVE
 ---
 
 ## @Owl.TUI.Hooks.Animation (src/tui/hooks/useTerminalAnimation.ts)
