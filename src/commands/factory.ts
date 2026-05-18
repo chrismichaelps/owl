@@ -24,6 +24,7 @@ import { makeAuditCommand } from "./management/audit.js"
 import { makeCacheCommand } from "./management/cache.js"
 import { makeClearCommand } from "./management/clear.js"
 import { makeCompactCommand } from "./management/compact.js"
+import { makeDoctorCommand } from "./management/doctor.js"
 import { makeExportCommand } from "./management/export.js"
 import { makeHelpCommand } from "./management/help.js"
 import { makeHistoryCommand } from "./management/history.js"
@@ -118,6 +119,14 @@ export const makeCommandHandlers = (
       deps.contextManager,
       deps.contextCache,
     ),
+    makeDoctorCommand({
+      providerRouter: deps.providerRouter,
+      mcpManager: deps.mcpManager,
+      builtInTools: deps.builtInTools,
+      sessionMemory: deps.sessionMemory,
+      usageMetrics: deps.usageMetrics,
+      contextCache: deps.contextCache,
+    }),
     makeCacheCommand(deps.contextCache),
     makeHistoryCommand(deps.sessionMemory, projectRoot),
     makeInitCommand(deps.fs, projectRoot),

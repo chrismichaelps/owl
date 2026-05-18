@@ -1,10 +1,10 @@
 {
-  "contract_id": "CTR-cmd-management-doctor-00000001",
+  "contract_id": "CTR-cmd-management-doctor-3306b7c5",
   "module": "@Owl.Commands.Management.Doctor src/commands/management/doctor.ts",
   "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
   "depth_score": "0.72 — DEEP (runtime readiness behind one Command)",
   "seam_capacity": "INTERNAL",
-  "sig_id": "SIG-cmd-management-doctor-00000001",
+  "sig_id": "SIG-commands-management-doctor-3306b7c5",
   "interface": {
     "signatures": [
       "makeDoctorCommand(deps: DoctorCommandDependencies) => CommandHandler",

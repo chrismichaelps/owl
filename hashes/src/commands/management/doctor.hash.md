@@ -1,9 +1,9 @@
-State_ID: BigInt(0x0000000000000000)
-Git_SHA: PENDING
-Source_SHA256: PENDING_SOURCE
+State_ID: BigInt(0x3306b7c57a507605)
+Git_SHA: 491eb0ba774a0e7ba96d1c698169e83a2d4a5125
+Source_SHA256: 3306b7c57a5076052980df213e7f6e2abdaccafb07598e92974765b23898f68a
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
-Fidelity: SIGNATURE
-Registry_Sync: 2026-05-18T01:12:00Z
+Fidelity: ACTIVE
+Registry_Sync: 2026-05-18T01:36:00Z
 ---
 
 ## @Owl.Commands.Management.Doctor (src/commands/management/doctor.ts)
@@ -16,7 +16,7 @@ Registry_Sync: 2026-05-18T01:12:00Z
 - depth_score: 0.72
 - depth_status: DEEP
 - seam_capacity: INTERNAL
-- SIG_ID: SIG-cmd-management-doctor-00000001
+- SIG_ID: SIG-commands-management-doctor-3306b7c5
 
 ### [Linkage]
 - Grammar: `@root/hashes/grammar/effect/effect.hash.md`

@@ -211,7 +211,7 @@
       "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
       "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-commands-factory-7143a98a"
+      "sig_id": "SIG-commands-factory-67aa83c0"
     },
     "commands/management/audit": {
       "file_path": "@root/src/commands/management/audit.ts",
@@ -443,7 +443,7 @@
       "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
       "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-core-constants-commands-4c675753"
+      "sig_id": "SIG-core-constants-commands-b2c63648"
     },
     "core/constants/editor": {
       "file_path": "@root/src/core/constants/editor.ts",
@@ -1513,8 +1513,8 @@
         "@root/hashes/src/engine/metrics/index.hash.md",
         "@root/hashes/src/tokens/cache/index.hash.md"
       ],
-      "fidelity_level": "Signature",
-      "sig_id": "SIG-cmd-management-doctor-00000001"
+      "fidelity_level": "Active",
+      "sig_id": "SIG-commands-management-doctor-3306b7c5"
     }
   }
 }

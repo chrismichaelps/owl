@@ -47,6 +47,7 @@ export const COMMAND_CONSTANTS = {
   CACHE_CLEAR_SUBCOMMAND: "clear",
   PENDING_MUTATION_LIMIT: 100,
   COMPARE_RESPONSE_SEPARATOR: "\n\n---\n\n",
+  DOCTOR_SCORE_DECIMALS: 2,
 } as const
 
 /** @Owl.Core.Constants.Compact - Conversation compaction command policy */
