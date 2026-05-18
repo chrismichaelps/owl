@@ -43,7 +43,7 @@
       "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
       "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-cli-runtime-a6d9d474"
+      "sig_id": "SIG-cli-runtime-f53e76af"
     },
     "commands/analysis/analyze": {
       "file_path": "@root/src/commands/analysis/analyze.ts",
@@ -1310,7 +1310,7 @@
       "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
       "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-tui-app-d1e5dab4"
+      "sig_id": "SIG-tui-app-752288a5"
     },
     "tui/commands/fuzzy": {
       "file_path": "@root/src/tui/commands/fuzzy.ts",
@@ -1382,7 +1382,7 @@
       "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
       "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-tui-components-MetaPanel-422f67aa"
+      "sig_id": "SIG-tui-components-MetaPanel-d3cf8be5"
     },
     "tui/components/OutputPanel": {
       "file_path": "@root/src/tui/components/OutputPanel.tsx",
@@ -1430,7 +1430,7 @@
       "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
       "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-tui-components-StatusBar-3b04c9ce"
+      "sig_id": "SIG-tui-components-StatusBar-f814a22f"
     },
     "tui/components/WelcomePanel": {
       "file_path": "@root/src/tui/components/WelcomePanel.tsx",
@@ -1468,9 +1468,9 @@
       "file_path": "@root/src/tui/hooks/useOwlRuntimeActions.ts",
       "hash_reference": "@root/hashes/src/tui/hooks/useOwlRuntimeActions.hash.md",
       "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
-      "dependencies": [],
+      "dependencies": ["@root/hashes/src/tools/permissionState.hash.md"],
       "fidelity_level": "Active",
-      "sig_id": "SIG-tui-hooks-useOwlRuntimeActions-54197da5"
+      "sig_id": "SIG-tui-hooks-useOwlRuntimeActions-a1e8ed70"
     },
     "tui/hooks/usePromptHistory": {
       "file_path": "@root/src/tui/hooks/usePromptHistory.ts",
@@ -1534,7 +1534,7 @@
       "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
       "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-tui-state-c39b75de"
+      "sig_id": "SIG-tui-state-330644c0"
     },
     "tui/status/visuals": {
       "file_path": "@root/src/tui/status/visuals.ts",

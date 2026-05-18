@@ -1,6 +1,6 @@
-State_ID: BigInt(0x3b04c9ce3f9cf791)
-Git_SHA: 5b4a396d5f1d6c2c5459c8ad48ffd1e459516082
-Source_SHA256: 3b04c9ce3f9cf7911dc2ad2cf9cab099497a90b941a867f440039439fa26ab65
+State_ID: BigInt(0xf814a22f8a4d9cc3)
+Git_SHA: 8c574e7ae88d2c472e80f4908473ef70cbfe5469
+Source_SHA256: f814a22f8a4d9cc3989b335ca633529628e9bea59741be3d5db443c29eb828c6
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
 Fidelity: ACTIVE
 ---
@@ -14,7 +14,7 @@ Fidelity: ACTIVE
 - depth_score: 0.65 — SHALLOW (status display)
 - seam_capacity: INTERNAL (status rendering)
 - leverage: LOW (displays status text)
-- SIG_ID: SIG-tui-components-status-00000001
+- SIG_ID: SIG-tui-components-status-f814a22f
 
 ### [Linkage]
 - Grammar: `@root/hashes/grammar/react/react.hash.md`
@@ -23,4 +23,5 @@ Fidelity: ACTIVE
 ### [Architecture]
 - Bottom-anchored status display
 - Shows current mode and status
+- Shows current Permission mode in the persistent bottom chrome
 - Simple text-based status indicator

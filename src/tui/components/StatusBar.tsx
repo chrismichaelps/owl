@@ -9,9 +9,11 @@ import {
   TUI_ROUTING_COPY,
   TUI_TOKEN_PRESSURE_COPY,
   resolveModeCostBudget,
+  TOOL_PERMISSION_MODES,
 } from "../../core/constants/index.js"
 import type { AgentStatus } from "../state.js"
 import type { Mode, ProviderId } from "../../core/schema/index.js"
+import type { ToolPermissionMode } from "../../tools/index.js"
 import {
   TOKEN_PRESSURE_LEVEL,
   resolveTokenPressure,
@@ -25,6 +27,7 @@ interface StatusBarProps {
   readonly mode: string
   readonly providerOverride: ProviderId | null
   readonly privacyMode: boolean
+  readonly permissionMode: ToolPermissionMode
   readonly model: string | null
   readonly routingMode: Mode | null
   readonly pendingMutationCount: number
@@ -73,6 +76,7 @@ export const StatusBar: React.FC<StatusBarProps> = memo(
     mode,
     providerOverride,
     privacyMode,
+    permissionMode,
     model,
     routingMode,
     pendingMutationCount,
@@ -115,6 +119,15 @@ export const StatusBar: React.FC<StatusBarProps> = memo(
           ) : null}
           <Text color={STATUS_COLOR[status]}>{status.toUpperCase()}</Text>
           <Text color="cyan">route:{providerOverride ?? "auto"}</Text>
+          <Text
+            color={
+              permissionMode === TOOL_PERMISSION_MODES.BYPASS_PERMISSIONS
+                ? "red"
+                : "yellow"
+            }
+          >
+            perm:{permissionMode}
+          </Text>
           {privacyMode ? <Text color="yellow">privacy:local</Text> : null}
           {pendingMutationCount > 0 ? (
             <Text color="yellow">pending:{String(pendingMutationCount)}</Text>

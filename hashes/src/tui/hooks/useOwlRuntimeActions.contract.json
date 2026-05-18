@@ -2,8 +2,20 @@
   "module": "@root/src/tui/hooks/useOwlRuntimeActions.ts",
   "state_id": "BigInt(0x54197da55bd98a5f)",
   "interface": {
-    "inputs": [],
-    "outputs": [],
+    "inputs": [
+      {
+        "name": "ToolPermissionState",
+        "type": "EffectService",
+        "invariants": "must be the same runtime service used by command dispatch and built-in tools"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "OwlAction.SET_PERMISSION_MODE",
+        "type": "TUI action",
+        "complexity": "O(1)"
+      }
+    ],
     "error_modes": []
   },
   "architecture": {
@@ -17,6 +29,6 @@
     "leverage_delta": "+0.00",
     "locality_impact": "Registry mirror created from live source topology."
   },
-  "dependencies": [],
+  "dependencies": ["@root/hashes/src/tools/permissionState.contract.json"],
   "variants": []
 }

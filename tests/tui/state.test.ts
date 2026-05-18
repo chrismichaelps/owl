@@ -15,7 +15,10 @@ import {
   type OwlAppState,
   type OwlAction,
 } from "../../src/tui/state"
-import { TUI_FOCUS } from "../../src/core/constants/index.js"
+import {
+  TOOL_PERMISSION_MODES,
+  TUI_FOCUS,
+} from "../../src/core/constants/index.js"
 
 /** Build a minimal InferenceResponse-like fixture */
 function makeResponse(
@@ -91,6 +94,10 @@ describe("INITIAL_STATE shape", () => {
 
   it("starts with privacy mode disabled", () => {
     expect(INITIAL_STATE.privacyMode).toBe(false)
+  })
+
+  it("starts with default Permission mode", () => {
+    expect(INITIAL_STATE.permissionMode).toBe(TOOL_PERMISSION_MODES.DEFAULT)
   })
 
   it("starts at turn 0", () => {
@@ -366,6 +373,16 @@ describe("SET_PRIVACY_MODE action", () => {
   })
 })
 
+describe("SET_PERMISSION_MODE action", () => {
+  it("records visible session Permission mode", () => {
+    const next = reduce(INITIAL_STATE, {
+      type: "SET_PERMISSION_MODE",
+      mode: TOOL_PERMISSION_MODES.BYPASS_PERMISSIONS,
+    })
+    expect(next.permissionMode).toBe(TOOL_PERMISSION_MODES.BYPASS_PERMISSIONS)
+  })
+})
+
 describe("SET_FOCUSED_PANEL action", () => {
   it("updates the active workbench panel", () => {
     const next = reduce(INITIAL_STATE, {
@@ -448,6 +465,15 @@ describe("RESET action", () => {
     }
     const next = reduce(s, { type: "RESET" })
     expect(next.privacyMode).toBe(true)
+  })
+
+  it("preserves Permission mode across reset", () => {
+    const s = {
+      ...INITIAL_STATE,
+      permissionMode: TOOL_PERMISSION_MODES.BYPASS_PERMISSIONS,
+    }
+    const next = reduce(s, { type: "RESET" })
+    expect(next.permissionMode).toBe(TOOL_PERMISSION_MODES.BYPASS_PERMISSIONS)
   })
 
   it("preserves panel focus across reset", () => {

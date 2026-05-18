@@ -16,9 +16,14 @@
  */
 import { Chunk } from "effect"
 import type { TokenUsage, ProviderId, Mode } from "../core/schema/index.js"
-import { AGENT_STATUS, TUI_MAX_LOG_LINES } from "../core/constants/index.js"
+import {
+  AGENT_STATUS,
+  TOOL_PERMISSION_MODES,
+  TUI_MAX_LOG_LINES,
+} from "../core/constants/index.js"
 import { TUI_FOCUS } from "../core/constants/index.js"
 import type { FocusedPanel } from "./focus/index.js"
+import type { ToolPermissionMode } from "../tools/index.js"
 
 export type AgentStatus = (typeof AGENT_STATUS)[keyof typeof AGENT_STATUS]
 
@@ -99,6 +104,7 @@ export interface OwlAppState {
   readonly routingMode: Mode | null
   readonly providerOverride: ProviderId | null
   readonly privacyMode: boolean
+  readonly permissionMode: ToolPermissionMode
   readonly latencyMs: number | null
   readonly turnCount: number
   readonly turns: readonly ConversationTurn[]
@@ -120,6 +126,7 @@ export type OwlAction =
       readonly provider: ProviderId | null
     }
   | { readonly type: "SET_PRIVACY_MODE"; readonly enabled: boolean }
+  | { readonly type: "SET_PERMISSION_MODE"; readonly mode: ToolPermissionMode }
   | { readonly type: "APPEND_STREAM"; readonly text: string }
   | { readonly type: "CLEAR_STREAM" }
   | {
@@ -145,6 +152,7 @@ export const INITIAL_STATE: OwlAppState = {
   routingMode: null,
   providerOverride: null,
   privacyMode: false,
+  permissionMode: TOOL_PERMISSION_MODES.DEFAULT,
   latencyMs: null,
   turnCount: 0,
   turns: [],
@@ -216,6 +224,10 @@ export function owlReducer(state: OwlAppState, action: OwlAction): OwlAppState {
     case "SET_PRIVACY_MODE":
       return { ...state, privacyMode: action.enabled }
 
+    /** @Owl.TUI.State.Reducer.SET_PERMISSION_MODE — Tracks session Permission mode */
+    case "SET_PERMISSION_MODE":
+      return { ...state, permissionMode: action.mode }
+
     /** @Owl.TUI.State.Reducer.APPEND_STREAM — Accumulates streaming text */
     case "APPEND_STREAM":
       return {
@@ -244,6 +256,7 @@ export function owlReducer(state: OwlAppState, action: OwlAction): OwlAppState {
         totalEstimatedCostUsd: state.totalEstimatedCostUsd,
         providerOverride: state.providerOverride,
         privacyMode: state.privacyMode,
+        permissionMode: state.permissionMode,
         turnCount: state.turnCount,
         turns: state.turns,
         pendingMutations: state.pendingMutations,

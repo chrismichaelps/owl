@@ -76,6 +76,7 @@ import type { CommandRegistry } from "../commands/registry.js"
 import type { RoutingPreferences } from "../providers/preferences/index.js"
 import type { PendingMutationStore } from "../editor/pending/index.js"
 import type { ContextCache } from "../tokens/cache/index.js"
+import type { ToolPermissionState } from "../tools/index.js"
 import type { ConfigError } from "effect/ConfigError"
 import type {
   CachePersistenceError,
@@ -96,7 +97,8 @@ export type OwlRuntime = ManagedRuntime.ManagedRuntime<
   | CommandRegistry
   | RoutingPreferences
   | PendingMutationStore
-  | ContextCache,
+  | ContextCache
+  | ToolPermissionState,
   | ConfigError
   | SessionMemoryPersistenceError
   | SessionMemoryValidationError

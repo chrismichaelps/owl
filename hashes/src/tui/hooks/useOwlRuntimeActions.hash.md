@@ -1,9 +1,9 @@
-State_ID: BigInt(0x54197da55bd98a5f)
-Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
-Source_SHA256: 54197da55bd98a5f9c9530ce17ebf57f287ba4cde37d8a5d5d2d1068f770d89b
+State_ID: BigInt(0xa1e8ed70aed9065d)
+Git_SHA: 8c574e7ae88d2c472e80f4908473ef70cbfe5469
+Source_SHA256: a1e8ed70aed9065df6f60a62a798d409f2169673eb6e5658339d24f62bd1b6d1
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
 Fidelity: ACTIVE
-Registry_Sync: 2026-05-18T01:02:15.287Z
+Registry_Sync: 2026-05-18T04:12:00Z
 ---
 
 ## @root/src/tui/hooks/useOwlRuntimeActions.ts
@@ -15,7 +15,7 @@ Registry_Sync: 2026-05-18T01:02:15.287Z
 - depth_score: 0.50
 - depth_status: MEDIUM
 - seam_capacity: INTERNAL
-- SIG_ID: SIG-tui-hooks-useOwlRuntimeActions-54197da5
+- SIG_ID: SIG-tui-hooks-useOwlRuntimeActions-a1e8ed70
 
 ### [Linkage]
 - Grammar: `@root/hashes/grammar/effect/effect.hash.md`
@@ -23,4 +23,4 @@ Registry_Sync: 2026-05-18T01:02:15.287Z
 
 
 ### [Architecture]
-- Registry mirror generated from live source topology.
+- Synchronizes routing, privacy, pending Mutation, and Permission mode state from the runtime.

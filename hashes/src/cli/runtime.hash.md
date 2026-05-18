@@ -1,6 +1,6 @@
-State_ID: BigInt(0xa6d9d4743703d722)
-Git_SHA: 17c4050cfdac862684e6092f1faff2daa7394d47
-Source_SHA256: a6d9d4743703d722fdddf6057625b8e74a8b0488b92baaed8f1313870c6c45ce
+State_ID: BigInt(0xf53e76af02df526b)
+Git_SHA: 8c574e7ae88d2c472e80f4908473ef70cbfe5469
+Source_SHA256: f53e76af02df526b593d14f6015124e93962902bc798162de898f0a623fb1e0d
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
 Fidelity: ACTIVE
 ---
@@ -8,7 +8,7 @@ Fidelity: ACTIVE
 ## @Owl.CLI.Runtime (src/cli/runtime.ts)
 
 ### [Signatures]
-- `OwlRuntime: ManagedRuntime<Orchestrator | CommandRegistry, ConfigError>`
+- `OwlRuntime: ManagedRuntime<Orchestrator | CommandRegistry | ToolPermissionState, ConfigError>`
 - `makeOwlRuntime(projectRoot) => OwlRuntime`
 - `ProviderBootstrapLive` dependency forced before exposed Orchestrator
 - `TokenBudgetLive` dependency available to Orchestrator
@@ -19,7 +19,7 @@ Fidelity: ACTIVE
 - depth_score: 0.95 — DEEP (composition root plus Provider bootstrap, TokenBudget, UsageMetrics, and RoutingPreference enforcement)
 - seam_capacity: BACKBONE (managed runtime lifecycle)
 - leverage: CRITICAL (wires Orchestrator, Context, Memory, Router)
-- SIG_ID: SIG-cli-runtime-a6d9d474
+- SIG_ID: SIG-cli-runtime-f53e76af
 
 ### [Linkage]
 - Grammar: `@root/hashes/grammar/effect/effect.hash.md`
@@ -33,3 +33,4 @@ Fidelity: ACTIVE
 - UsageMetrics is shared so Orchestrator recording appears in `/status`.
 - RoutingPreferences is shared so `/model` affects the next Orchestrator Inference.
 - ToolPermissionState is shared so `/permissions` affects `/tools` visibility and built-in tool execution.
+- ToolPermissionState is exposed to the TUI runtime so session chrome can display the active Permission mode.

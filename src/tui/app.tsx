@@ -225,6 +225,7 @@ export const App: React.FC<AppProps> = ({
         mode={mode}
         providerOverride={state.providerOverride}
         privacyMode={state.privacyMode}
+        permissionMode={state.permissionMode}
         model={state.model}
         routingMode={state.routingMode}
         pendingMutationCount={Chunk.size(state.pendingMutations)}

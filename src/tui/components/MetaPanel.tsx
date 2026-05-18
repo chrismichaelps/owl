@@ -2,7 +2,10 @@
 import React, { memo } from "react"
 import { Box, Text } from "ink"
 import { formatEstimatedCostUsd } from "../../core/cost.js"
-import { TUI_ROUTING_COPY } from "../../core/constants/index.js"
+import {
+  TOOL_PERMISSION_MODES,
+  TUI_ROUTING_COPY,
+} from "../../core/constants/index.js"
 import type { OwlAppState } from "../state.js"
 import { PendingApprovalsPanel } from "./PendingApprovalsPanel.js"
 
@@ -80,6 +83,15 @@ export const MetaPanel: React.FC<MetaPanelProps> = memo(
           label="Privacy"
           value={state.privacyMode ? "local" : "off"}
           valueColor={state.privacyMode ? "yellow" : "gray"}
+        />
+        <MetricRow
+          label="Perm"
+          value={state.permissionMode}
+          valueColor={
+            state.permissionMode === TOOL_PERMISSION_MODES.BYPASS_PERMISSIONS
+              ? "red"
+              : "yellow"
+          }
         />
         <MetricRow
           label="In tokens"

@@ -7,12 +7,17 @@
   "sig_id": "SIG-tui-components-status-00000001",
   "interface": {
     "signatures": [
-      "StatusBar(props: StatusBarProps) => ReactElement"
+      "StatusBar(props: StatusBarProps) => ReactElement",
+      "StatusBarProps.permissionMode: ToolPermissionMode"
     ],
     "error_modes": [],
-    "invariants": []
+    "invariants": [
+      "StatusBar MUST render active Permission mode in the persistent session chrome"
+    ]
   },
-  "responsibilities": [],
+  "responsibilities": [
+    "Surface ref-cli-aligned Permission mode in the always-visible status area"
+  ],
   "prohibited": [],
   "created_at": "2026-05-14T15:55:47.200563Z"
 }

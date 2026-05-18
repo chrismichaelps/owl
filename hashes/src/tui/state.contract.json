@@ -9,12 +9,19 @@
     "signatures": [
       "owlReducer(state: OwlAppState, action: OwlAction) => OwlAppState",
       "INITIAL_STATE: OwlAppState",
-      "ResponseSnapshot: Interface"
+      "ResponseSnapshot: Interface",
+      "OwlAppState.permissionMode: ToolPermissionMode",
+      "OwlAction.SET_PERMISSION_MODE updates session Permission visibility"
     ],
     "error_modes": [],
-    "invariants": []
+    "invariants": [
+      "Permission mode MUST default to default",
+      "Permission mode MUST mirror ToolPermissionState snapshots from the runtime"
+    ]
   },
-  "responsibilities": [],
+  "responsibilities": [
+    "Track the visible Permission mode for the active TUI Session"
+  ],
   "prohibited": [],
   "created_at": "2026-05-14T15:55:47.198187Z"
 }

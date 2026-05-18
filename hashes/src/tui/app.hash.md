@@ -1,6 +1,6 @@
-State_ID: BigInt(0xd1e5dab41848bf94)
-Git_SHA: 17aac6a64ad21f503da780d4cc8d5f7b2be5e041
-Source_SHA256: d1e5dab41848bf94216b54e228baed34ec2a0005b171b9e78900891d1a3be51e
+State_ID: BigInt(0x752288a5aa9201fc)
+Git_SHA: 8c574e7ae88d2c472e80f4908473ef70cbfe5469
+Source_SHA256: 752288a5aa9201fc07723c0c6c936c3b49c79e1b9b0aad12b25c1382e6a80f7b
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
 Fidelity: ACTIVE
 Drift_Fixed: 2026-05-16T16:06:00Z
@@ -16,7 +16,7 @@ Drift_Fixed: 2026-05-16T16:06:00Z
 - depth_score: 0.82 — DEEP (main layout shell)
 - seam_capacity: BACKBONE (connects all TUI components)
 - leverage: CRITICAL (renders entire UI)
-- SIG_ID: SIG-tui-app-d1e5dab4
+- SIG_ID: SIG-tui-app-752288a5
 
 ### [Linkage]
 - Grammar: `@root/hashes/grammar/typescript/typescript.hash.md`
@@ -38,4 +38,5 @@ Drift_Fixed: 2026-05-16T16:06:00Z
 - Keyboard input dispatched via Ink useInput at the root level
 - Orchestrator streaming events dispatch to reducer via callback — no shared refs
 - Layout: WelcomePanel (top) / ConversationThread (scroll) / CommandPalette | FileMentionPalette (overlays) / PromptInput (bottom) / MetaPanel + StatusBar + LogPanel (fixed)
+- Passes Permission mode state into StatusBar and MetaPanel for ref-cli-aligned session visibility
 - Mounts McpManager from AppProps.mcpManager — optional (no MCP = servers=[])  

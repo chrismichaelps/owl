@@ -7,12 +7,17 @@
   "sig_id": "SIG-tui-components-meta-00000001",
   "interface": {
     "signatures": [
-      "MetaPanel(props: MetaPanelProps) => ReactElement"
+      "MetaPanel(props: MetaPanelProps) => ReactElement",
+      "MetaPanel reads OwlAppState.permissionMode"
     ],
     "error_modes": [],
-    "invariants": []
+    "invariants": [
+      "MetaPanel MUST show Permission mode beside routing and privacy metadata"
+    ]
   },
-  "responsibilities": [],
+  "responsibilities": [
+    "Expose active Permission mode in detailed runtime metadata"
+  ],
   "prohibited": [],
   "created_at": "2026-05-14T15:55:47.200149Z"
 }

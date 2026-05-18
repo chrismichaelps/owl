@@ -6,6 +6,7 @@ import { Orchestrator } from "../../engine/orchestrator/index.js"
 import { CommandRegistry } from "../../commands/registry.js"
 import { parseCommand } from "../../commands/parser.js"
 import { RoutingPreferences } from "../../providers/preferences/index.js"
+import { ToolPermissionState } from "../../tools/index.js"
 import { PendingMutationStore } from "../../editor/pending/index.js"
 import {
   AGENT_STATUS,
@@ -63,16 +64,23 @@ export function useOwlRuntimeActions(
   const syncRoutingPreferences = useCallback(() => {
     const effect = Effect.gen(function* () {
       const routingPreferences = yield* RoutingPreferences
-      return yield* routingPreferences.snapshot()
+      const toolPermissionState = yield* ToolPermissionState
+      const routingSnapshot = yield* routingPreferences.snapshot()
+      const permissionSnapshot = yield* toolPermissionState.snapshot()
+      return Data.struct({ routingSnapshot, permissionSnapshot })
     })
     return runtime.runPromise(effect).then((snapshot) => {
       dispatch({
         type: "SET_PROVIDER_OVERRIDE",
-        provider: snapshot.preferredProvider ?? null,
+        provider: snapshot.routingSnapshot.preferredProvider ?? null,
       })
       dispatch({
         type: "SET_PRIVACY_MODE",
-        enabled: snapshot.privacyMode,
+        enabled: snapshot.routingSnapshot.privacyMode,
+      })
+      dispatch({
+        type: "SET_PERMISSION_MODE",
+        mode: snapshot.permissionSnapshot.mode,
       })
     })
   }, [dispatch, runtime])
@@ -204,9 +212,11 @@ export function useOwlRuntimeActions(
       const effect = Effect.gen(function* () {
         const registry = yield* CommandRegistry
         const routingPreferences = yield* RoutingPreferences
+        const toolPermissionState = yield* ToolPermissionState
         const parsed = yield* parseCommand(raw)
         const result = yield* registry.dispatch(parsed)
         const preferenceSnapshot = yield* routingPreferences.snapshot()
+        const permissionSnapshot = yield* toolPermissionState.snapshot()
         const pendingMutations = yield* readPendingMutationSummaries
         commandCounterRef.current += 1
         dispatch({
@@ -216,6 +226,10 @@ export function useOwlRuntimeActions(
         dispatch({
           type: "SET_PRIVACY_MODE",
           enabled: preferenceSnapshot.privacyMode,
+        })
+        dispatch({
+          type: "SET_PERMISSION_MODE",
+          mode: permissionSnapshot.mode,
         })
         dispatch({
           type: "SET_PENDING_MUTATIONS",

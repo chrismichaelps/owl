@@ -7,8 +7,8 @@
   "sig_id": "SIG-cli-runtime-00000001",
   "interface": {
     "signatures": [
-      "makeOwlRuntime(projectRoot: string) => ManagedRuntime<Orchestrator | CommandRegistry, ConfigError>",
-      "OwlRuntime: ManagedRuntime<Orchestrator | CommandRegistry, ConfigError>"
+      "makeOwlRuntime(projectRoot: string) => ManagedRuntime<Orchestrator | CommandRegistry | ToolPermissionState, ConfigError>",
+      "OwlRuntime: ManagedRuntime<Orchestrator | CommandRegistry | ToolPermissionState, ConfigError>"
     ],
     "error_modes": [
       "ConfigError when required Provider configuration is missing"
@@ -37,6 +37,7 @@
     "Wire Provider adapters through ProviderBootstrap before Inference",
     "Share RoutingPreferences between /model Command and Orchestrator Inference",
     "Share ToolPermissionState between /permissions, /tools, and built-in tool execution",
+    "Expose ToolPermissionState to the TUI runtime so session chrome can display Permission mode",
     "Share UsageMetrics between Orchestrator recording and /status display",
     "Expose only Orchestrator and CommandRegistry to the TUI"
   ],
