@@ -1,9 +1,9 @@
-State_ID: BigInt(0xcd1132e8492e3942)
-Git_SHA: 5bdeb9e46595c197a80043cc29039e5cc6934f58
-Source_SHA256: cd1132e8492e394284f9609d061ffcc63af4c4b069a9b0f4894ee8df885e7796
+State_ID: BigInt(0x6a980656be7cf13b)
+Git_SHA: d3c6a7c5049212a7869cdca8b4988e784a0a45b0
+Source_SHA256: 6a980656be7cf13be72985d0f11d4596c7c9b02e42efb1740ee976c6be148ba9
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
 Fidelity: ACTIVE
-Registry_Sync: 2026-05-18T02:35:00Z
+Registry_Sync: 2026-05-18T03:05:00Z
 
 ---
 
@@ -18,7 +18,7 @@ Registry_Sync: 2026-05-18T02:35:00Z
 - depth_score: 0.50
 - depth_status: MEDIUM
 - seam_capacity: INTERNAL
-- SIG_ID: SIG-commands-management-tools-cd1132e8
+- SIG_ID: SIG-commands-management-tools-6a980656
 
 ### [Linkage]
 
@@ -27,4 +27,4 @@ Registry_Sync: 2026-05-18T02:35:00Z
 
 ### [Architecture]
 
-- Registry mirror renders ToolRisk and Permission visibility.
+- Registry mirror renders ToolRisk and active Permission mode visibility.

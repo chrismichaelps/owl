@@ -1,9 +1,9 @@
-State_ID: BigInt(0xe0e2bb883a7c0125)
-Git_SHA: 5bdeb9e46595c197a80043cc29039e5cc6934f58
-Source_SHA256: e0e2bb883a7c0125b89868759b614cd5ee02f25aca782689a61dbe1cd501816f
+State_ID: BigInt(0x194cb82be34f2faf)
+Git_SHA: d3c6a7c5049212a7869cdca8b4988e784a0a45b0
+Source_SHA256: 194cb82be34f2faf5c2dbb7bb6204e07b4dc10d7f8cd59bf3ddc6750a2fe7a87
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
 Fidelity: ACTIVE
-Registry_Sync: 2026-05-18T02:35:00Z
+Registry_Sync: 2026-05-18T03:05:00Z
 
 ---
 
@@ -18,7 +18,7 @@ Registry_Sync: 2026-05-18T02:35:00Z
 - depth_score: 0.50
 - depth_status: MEDIUM
 - seam_capacity: INTERNAL
-- SIG_ID: SIG-tools-index-e0e2bb88
+- SIG_ID: SIG-tools-index-194cb82b
 
 ### [Linkage]
 
@@ -27,4 +27,4 @@ Registry_Sync: 2026-05-18T02:35:00Z
 
 ### [Architecture]
 
-- Registry mirror exposes ToolRisk and Permission seams.
+- Registry mirror exposes ToolRisk, Permission, and Permission state seams.

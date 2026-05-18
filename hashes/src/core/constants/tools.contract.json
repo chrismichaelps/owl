@@ -1,6 +1,6 @@
 {
   "module": "@root/src/core/constants/tools.ts",
-  "state_id": "BigInt(0x5289a3f3a25569a1)",
+  "state_id": "BigInt(0x3533992a58f09056)",
   "interface": {
     "inputs": [],
     "outputs": [],
@@ -19,7 +19,8 @@
   },
   "dependencies": [
     "@root/hashes/src/tools/risk.contract.json",
-    "@root/hashes/src/tools/permission.contract.json"
+    "@root/hashes/src/tools/permission.contract.json",
+    "@root/hashes/src/tools/permissionState.contract.json"
   ],
   "variants": []
 }

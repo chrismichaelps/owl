@@ -1,0 +1,40 @@
+{
+  "contract_id": "CTR-tools-permission-state-d67a0026",
+  "module": "@Owl.Tools.PermissionState src/tools/permissionState.ts",
+  "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
+  "depth_score": "0.72 — DEEP (small state interface over Ref-backed Permission mode)",
+  "seam_capacity": "CRITICAL",
+  "sig_id": "SIG-tools-permission-state-d67a0026",
+  "interface": {
+    "signatures": [
+      "ToolPermissionState.getMode() => Effect<ToolPermissionMode>",
+      "ToolPermissionState.setMode(mode: ToolPermissionMode) => Effect<void>",
+      "ToolPermissionState.snapshot() => Effect<ToolPermissionSnapshot>",
+      "parseToolPermissionMode(value: string) => Option<ToolPermissionMode>"
+    ],
+    "error_modes": [],
+    "invariants": [
+      "Permission mode state MUST default to default",
+      "Permission mode state MUST only accept ref-cli external Permission modes",
+      "Permission mode snapshots MUST expose ordered modes as Chunk",
+      "Permission mode state MUST be session-local and Ref-backed"
+    ]
+  },
+  "responsibilities": [
+    "Store the active Permission mode for the current Session",
+    "Expose deterministic Permission mode parsing",
+    "Provide runtime state for commands and TUI visibility"
+  ],
+  "prohibited": [
+    "MUST NOT persist Permission mode to disk in this slice",
+    "MUST NOT use native arrays for ordered mode snapshots",
+    "MUST NOT mutate module-level state",
+    "MUST NOT bypass ToolRisk for BLOCKED invocations"
+  ],
+  "dependencies": [
+    "@root/hashes/src/tools/permission.contract.json",
+    "@root/hashes/src/core/constants/tools.hash.md"
+  ],
+  "domain_refs": ["docs/CONTEXT.md#Permission"],
+  "variants": []
+}

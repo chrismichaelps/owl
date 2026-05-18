@@ -32,6 +32,7 @@ import { makeInitCommand } from "./management/init.js"
 import { makeMcpCommand } from "./management/mcp.js"
 import { makeMemoryCommand } from "./management/memory.js"
 import { makeModelCommand } from "./management/model.js"
+import { makePermissionsCommand } from "./management/permissions.js"
 import { makePrivacyCommand } from "./management/privacy.js"
 import { makeProvidersCommand } from "./management/providers.js"
 import { makeRegistryCommand } from "./management/registry.js"
@@ -57,6 +58,7 @@ import type { McpManagerService } from "../mcp/index.js"
 import type { RoutingPreferencesService } from "../providers/preferences/index.js"
 import type { ProviderRouterService } from "../providers/router/index.js"
 import type { BuiltInToolsService } from "../tools/index.js"
+import type { ToolPermissionStateService } from "../tools/index.js"
 import type { CommandRegistryService } from "./registry.js"
 import type { CommandHandler } from "./types.js"
 
@@ -77,6 +79,7 @@ export interface CommandFactoryDependencies {
   readonly routingPreferences: RoutingPreferencesService
   readonly providerRouter: ProviderRouterService
   readonly builtInTools: BuiltInToolsService
+  readonly toolPermissionState: ToolPermissionStateService
 }
 
 /** @Owl.Commands.Factory.Core - Create all non-help slash commands */
@@ -132,9 +135,10 @@ export const makeCommandHandlers = (
     makeInitCommand(deps.fs, projectRoot),
     makeExportCommand(deps.sessionMemory, projectRoot),
     makeMcpCommand(deps.mcpManager),
-    makeToolsCommand(deps.builtInTools),
+    makeToolsCommand(deps.builtInTools, deps.toolPermissionState),
     makeMemoryCommand(deps.sessionMemory),
     makeModelCommand(deps.routingPreferences, deps.providerRouter),
+    makePermissionsCommand(deps.toolPermissionState),
     makePrivacyCommand(deps.routingPreferences),
     makeProvidersCommand(
       deps.providerRouter,

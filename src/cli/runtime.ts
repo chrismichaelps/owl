@@ -38,7 +38,10 @@
 import { Effect, Layer, ManagedRuntime } from "effect"
 import path from "node:path"
 import { loadMcpConfig, makeMcpManagerLayer } from "../mcp/index.js"
-import { makeBuiltInToolsLive } from "../tools/index.js"
+import {
+  makeBuiltInToolsLive,
+  ToolPermissionStateLive,
+} from "../tools/index.js"
 import { OWLConfigLive } from "../core/config/index.js"
 import {
   CACHE_CONSTANTS,
@@ -158,6 +161,7 @@ export const makeOwlRuntime = (projectRoot: string): OwlRuntime => {
     ProviderRouterLive,
     RoutingPreferencesLive,
     builtInToolsLayer,
+    ToolPermissionStateLive,
     providerAdapterLayer,
     RoleContextLive,
     RollbackSystemLive,

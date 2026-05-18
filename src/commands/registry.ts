@@ -41,6 +41,7 @@ import { McpManager } from "../mcp/index.js"
 import { RoutingPreferences } from "../providers/preferences/index.js"
 import { ProviderRouter } from "../providers/router/index.js"
 import { BuiltInTools } from "../tools/index.js"
+import { ToolPermissionState } from "../tools/index.js"
 import { EditingPipeline } from "../editor/pipeline/index.js"
 import { PendingMutationStore } from "../editor/pending/index.js"
 import { RollbackSystem } from "../editor/rollback/index.js"
@@ -197,6 +198,7 @@ export const makeCommandRegistryLive = (
   | RoutingPreferences
   | ProviderRouter
   | BuiltInTools
+  | ToolPermissionState
 > =>
   Layer.effect(
     CommandRegistry,
@@ -216,6 +218,7 @@ export const makeCommandRegistryLive = (
       const routingPreferences = yield* RoutingPreferences
       const providerRouter = yield* ProviderRouter
       const builtInTools = yield* BuiltInTools
+      const toolPermissionState = yield* ToolPermissionState
 
       const mapRef = yield* Ref.make<HashMap.HashMap<string, CommandHandler>>(
         HashMap.empty(),
@@ -239,6 +242,7 @@ export const makeCommandRegistryLive = (
           routingPreferences,
           providerRouter,
           builtInTools,
+          toolPermissionState,
         },
         projectRoot,
       )

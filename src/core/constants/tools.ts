@@ -57,6 +57,20 @@ export const TOOL_PERMISSION_BEHAVIORS = {
   ASK: "ask",
 } as const
 
+/** @Owl.Core.Constants.ToolPermissionModeOrder - User-addressable Permission modes */
+export const TOOL_PERMISSION_MODE_ORDER = Chunk.make(
+  TOOL_PERMISSION_MODES.DEFAULT,
+  TOOL_PERMISSION_MODES.ACCEPT_EDITS,
+  TOOL_PERMISSION_MODES.BYPASS_PERMISSIONS,
+  TOOL_PERMISSION_MODES.PLAN,
+  TOOL_PERMISSION_MODES.DONT_ASK,
+)
+
+/** @Owl.Core.Constants.ToolPermissionModeSet - Permission mode membership */
+export const TOOL_PERMISSION_MODE_SET = HashSet.fromIterable(
+  TOOL_PERMISSION_MODE_ORDER,
+)
+
 /** @Owl.Core.Constants.ToolRiskBash - Bash command risk vocabulary */
 export const TOOL_RISK_BASH = {
   TOKEN_SPLIT_PATTERN: /\s+/u,

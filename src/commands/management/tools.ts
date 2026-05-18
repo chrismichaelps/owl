@@ -2,16 +2,21 @@
 import { Chunk, Effect } from "effect"
 import { formatToolPermission, formatToolRisk } from "../../tools/index.js"
 import type { BuiltInToolsService } from "../../tools/index.js"
+import type { ToolPermissionStateService } from "../../tools/index.js"
 import type { ToolRiskLevel } from "../../tools/index.js"
 import type { CommandHandler, CommandResult } from "../types.js"
 
 /** @Owl.Commands.Management.Tools.Factory - Create the /tools handler */
-export function makeToolsCommand(tools: BuiltInToolsService): CommandHandler {
+export function makeToolsCommand(
+  tools: BuiltInToolsService,
+  permissionState: ToolPermissionStateService,
+): CommandHandler {
   return {
     name: "tools",
     description: "Show built-in agent tools and model visibility: /tools",
     execute: (): Effect.Effect<CommandResult> =>
-      Effect.sync(() => {
+      Effect.gen(function* () {
+        const mode = yield* permissionState.getMode()
         const allTools = tools.listAllTools()
         const modelVisible = Chunk.filter(allTools, (tool) => tool.modelVisible)
         const internalOnly = Chunk.filter(
@@ -29,8 +34,8 @@ export function makeToolsCommand(tools: BuiltInToolsService): CommandHandler {
             `${prefix} ${tool.name} [${formatToolRisk(
               tools.assessToolRisk(tool.name),
             )}; permission: ${formatToolPermission(
-              tools.assessToolPermission(tool.name),
-            )}] — ${tool.description.split("\n")[0] ?? ""}`
+              tools.assessToolPermission(tool.name, undefined, mode),
+            )}; mode: ${mode}] — ${tool.description.split("\n")[0] ?? ""}`
 
         const modelLines = Chunk.map(modelVisible, format("✓"))
         const internalLines = Chunk.map(internalOnly, format("•"))

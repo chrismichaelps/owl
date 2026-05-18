@@ -5,6 +5,10 @@ import { join } from "node:path"
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
 import { Effect } from "effect"
 import { BuiltInTools, makeBuiltInToolsLive } from "../../src/tools/index.js"
+import {
+  ToolPermissionState,
+  ToolPermissionStateLive,
+} from "../../src/tools/permissionState.js"
 import { makeToolsCommand } from "../../src/commands/management/tools.js"
 
 let projectRoot = ""
@@ -13,10 +17,14 @@ const runToolsCommand = (): Promise<string> =>
   Effect.runPromise(
     Effect.gen(function* () {
       const tools = yield* BuiltInTools
-      const command = makeToolsCommand(tools)
+      const permissionState = yield* ToolPermissionState
+      const command = makeToolsCommand(tools, permissionState)
       const result = yield* command.execute([])
       return result.output
-    }).pipe(Effect.provide(makeBuiltInToolsLive(projectRoot))),
+    }).pipe(
+      Effect.provide(makeBuiltInToolsLive(projectRoot)),
+      Effect.provide(ToolPermissionStateLive),
+    ),
   )
 
 beforeEach(async () => {
@@ -35,6 +43,7 @@ describe("/tools command", () => {
     expect(output).toContain("Model-visible")
     expect(output).toContain("✓ Read [low")
     expect(output).toContain("permission: allow")
+    expect(output).toContain("mode: default")
     expect(output).toContain("✓ Glob [low")
     expect(output).toContain("✓ Grep [low")
     expect(output).toContain("Internal-only")

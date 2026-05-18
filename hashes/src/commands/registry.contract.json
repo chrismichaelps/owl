@@ -15,17 +15,20 @@
     "error_modes": [],
     "invariants": [
       "CommandRegistry MUST inject the shared UsageMetrics service into /status",
-      "CommandRegistry MUST inject the shared RoutingPreferences service into /model"
+      "CommandRegistry MUST inject the shared RoutingPreferences service into /model",
+      "CommandRegistry MUST inject the shared ToolPermissionState service into /permissions and /tools"
     ]
   },
   "responsibilities": [
     "Register all Command handlers with their service dependencies",
     "Ensure /status shares UsageMetrics with Orchestrator",
-    "Ensure /model shares RoutingPreferences with Orchestrator"
+    "Ensure /model shares RoutingPreferences with Orchestrator",
+    "Ensure /permissions and /tools share ToolPermissionState"
   ],
   "prohibited": [
     "MUST NOT construct a separate UsageMetrics service for Command handlers",
-    "MUST NOT construct a separate RoutingPreferences service for Command handlers"
+    "MUST NOT construct a separate RoutingPreferences service for Command handlers",
+    "MUST NOT construct a separate ToolPermissionState service for Command handlers"
   ],
   "created_at": "2026-05-14T15:55:47.205836Z"
 }

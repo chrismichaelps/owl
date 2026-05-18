@@ -1,6 +1,6 @@
-State_ID: BigInt(0x9910b9d48a88464c)
-Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
-Source_SHA256: 9910b9d48a88464c39943e244e755d08258c2a615b96e2593ef8caa567c0194a
+State_ID: BigInt(0x1d2a18ad01c2d7be)
+Git_SHA: d3c6a7c5049212a7869cdca8b4988e784a0a45b0
+Source_SHA256: 1d2a18ad01c2d7bedd65b1e078a6aad7346ff3e4ff21e8d3ab524c23770c7d0d
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
 Fidelity: ACTIVE
 ---
@@ -17,7 +17,7 @@ Fidelity: ACTIVE
 - depth_score: 0.85 — DEEP (composition root with 20+ command handlers)
 - seam_capacity: BACKBONE (central command dispatch hub)
 - leverage: CRITICAL (orchestrates all command registration and dispatch)
-- SIG_ID: SIG-cmd-registry-00000001
+- SIG_ID: SIG-cmd-registry-1d2a18ad
 
 ### [Linkage]
 - Grammar: `@root/hashes/grammar/effect/effect.hash.md`
@@ -33,3 +33,4 @@ Fidelity: ACTIVE
 - Registers: Core (task, deep, quick, plan), Power (raw, god, economy), Analysis (analyze, brain, seams, depth, friction, grill), Editing (edit, inject, create, refactor, diff, apply, undo), Management (role, registry, audit, status, clear, memory, model)
 - Injects shared UsageMetrics into `/status`.
 - Injects shared RoutingPreferences into `/model`.
+- Injects shared ToolPermissionState into `/permissions` and `/tools`.

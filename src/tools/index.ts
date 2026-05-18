@@ -111,6 +111,15 @@ export const makeBuiltInToolsLive = (cwd: string): Layer.Layer<BuiltInTools> =>
 export type { BuiltInToolsService } from "./types.js"
 export { classifyToolRisk, formatToolRisk }
 export { resolveToolPermission, formatToolPermission }
+export {
+  ToolPermissionState,
+  ToolPermissionStateLive,
+  parseToolPermissionMode,
+} from "./permissionState.js"
+export type {
+  ToolPermissionSnapshot,
+  ToolPermissionStateService,
+} from "./permissionState.js"
 export type {
   ToolPermissionBehavior,
   ToolPermissionDecision,

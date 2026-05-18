@@ -1,0 +1,36 @@
+{
+  "contract_id": "CTR-commands-management-permissions-7da04798",
+  "module": "@Owl.Commands.Management.Permissions src/commands/management/permissions.ts",
+  "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
+  "depth_score": "0.68 — MEDIUM (command renderer over Permission state)",
+  "seam_capacity": "INTERNAL",
+  "sig_id": "SIG-commands-management-permissions-7da04798",
+  "interface": {
+    "signatures": [
+      "makePermissionsCommand(state: ToolPermissionStateService) => CommandHandler"
+    ],
+    "error_modes": [
+      "CommandParseError when requested Permission mode is unknown"
+    ],
+    "invariants": [
+      "/permissions with no args MUST show current Permission mode",
+      "/permissions status MUST show current Permission mode",
+      "/permissions <mode> MUST update session Permission mode",
+      "Output MUST list valid modes from centralized constants"
+    ]
+  },
+  "responsibilities": [
+    "Expose Permission mode status and updates through slash command dispatch",
+    "Render valid Permission modes for discoverability",
+    "Keep Permission state changes deterministic and session-local"
+  ],
+  "prohibited": [
+    "MUST NOT mutate Permission mode outside ToolPermissionState",
+    "MUST NOT accept unknown modes",
+    "MUST NOT execute tools",
+    "MUST NOT persist Permission mode in this slice"
+  ],
+  "dependencies": ["@root/hashes/src/tools/permissionState.contract.json"],
+  "domain_refs": ["docs/CONTEXT.md#Permission", "docs/CONTEXT.md#Command"],
+  "variants": []
+}
