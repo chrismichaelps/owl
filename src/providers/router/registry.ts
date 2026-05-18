@@ -14,23 +14,19 @@ export const makeProviderRegistryRef = (): Effect.Effect<ProviderRegistryRef> =>
 /** @Owl.Providers.Router.ProviderIds - List provider IDs deterministically */
 export const listProviderIds = (
   registryRef: ProviderRegistryRef,
-): Effect.Effect<readonly string[]> =>
+): Effect.Effect<Chunk.Chunk<string>> =>
   Ref.get(registryRef).pipe(
     Effect.map((registry) =>
-      Chunk.toReadonlyArray(
-        Chunk.sort(Chunk.fromIterable(HashMap.keys(registry)), Order.string),
-      ),
+      Chunk.sort(Chunk.fromIterable(HashMap.keys(registry)), Order.string),
     ),
   )
 
 /** @Owl.Providers.Router.Capabilities - List capabilities deterministically */
 export const listProviderCapabilities = (
   registryRef: ProviderRegistryRef,
-): Effect.Effect<readonly ProviderCapability[]> =>
+): Effect.Effect<Chunk.Chunk<ProviderCapability>> =>
   Ref.get(registryRef).pipe(
-    Effect.map((registry) =>
-      Chunk.toReadonlyArray(sortCapabilities(providerCapabilities(registry))),
-    ),
+    Effect.map((registry) => sortCapabilities(providerCapabilities(registry))),
   )
 
 /** @Owl.Providers.Router.RegisterRef - Register provider in internal registry */

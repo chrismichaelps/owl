@@ -156,16 +156,18 @@ export interface ProviderRouterService {
   /**
    * List all registered provider IDs
    *
-   * @returns Array of provider IDs
+   * @returns Chunk of provider IDs
    */
-  readonly listProviders: () => Effect.Effect<readonly string[]>
+  readonly listProviders: () => Effect.Effect<Chunk.Chunk<string>>
 
   /**
    * List all registered provider model capabilities
    *
-   * @returns Sorted array of ProviderCapability records
+   * @returns Sorted Chunk of ProviderCapability records
    */
-  readonly listCapabilities: () => Effect.Effect<readonly ProviderCapability[]>
+  readonly listCapabilities: () => Effect.Effect<
+    Chunk.Chunk<ProviderCapability>
+  >
 
   /**
    * List provider reliability observations collected during this session
@@ -173,7 +175,7 @@ export interface ProviderRouterService {
    * @returns Sorted provider reliability rows. Empty until providers are attempted.
    */
   readonly listReliability: () => Effect.Effect<
-    readonly ProviderReliabilityStatus[]
+    Chunk.Chunk<ProviderReliabilityStatus>
   >
 
   /**
@@ -182,7 +184,7 @@ export interface ProviderRouterService {
    * @returns Sorted provider health statuses. Provider failures are captured
    * as data so observability commands can render partial system health.
    */
-  readonly checkHealth: () => Effect.Effect<readonly ProviderHealthStatus[]>
+  readonly checkHealth: () => Effect.Effect<Chunk.Chunk<ProviderHealthStatus>>
 }
 
 /** @Owl.Providers.Router.Adapter - Effect-TS service definition */

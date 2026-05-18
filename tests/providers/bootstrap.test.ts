@@ -1,5 +1,5 @@
 /** @Owl.Tests.Providers.Bootstrap - Provider startup registration tests */
-import { ConfigProvider, Effect, Layer } from "effect"
+import { Chunk, ConfigProvider, Effect, Layer } from "effect"
 import { describe, expect, it } from "vitest"
 import { OWLConfigLive } from "../../src/core/config/index.js"
 import {
@@ -49,7 +49,9 @@ describe("ProviderBootstrapLive", () => {
       }).pipe(Effect.provide(Layer.merge(providerLayer, liveLayer))),
     )
 
-    expect(result.bootstrap.registeredProviders).toEqual(["ollama"])
-    expect(result.providers).toEqual(["ollama"])
+    expect(Chunk.toReadonlyArray(result.bootstrap.registeredProviders)).toEqual(
+      ["ollama"],
+    )
+    expect(Chunk.toReadonlyArray(result.providers)).toEqual(["ollama"])
   })
 })

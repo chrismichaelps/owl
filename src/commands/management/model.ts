@@ -90,9 +90,7 @@ export function makeModelCommand(
           )
         }
 
-        const registeredProviders = Chunk.fromIterable(
-          yield* providerRouter.listProviders(),
-        )
+        const registeredProviders = yield* providerRouter.listProviders()
         if (
           !Chunk.some(registeredProviders, (id) => id === requestedProvider)
         ) {

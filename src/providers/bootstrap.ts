@@ -17,7 +17,7 @@ import type { ProviderRouterService } from "./router/index.js"
 
 /** @Owl.Providers.Bootstrap.Service - Startup registration evidence */
 export interface ProviderBootstrapService {
-  readonly registeredProviders: readonly string[]
+  readonly registeredProviders: Chunk.Chunk<string>
 }
 
 /** @Owl.Providers.Bootstrap.Tag - Marker service for Provider initialization */
@@ -78,7 +78,7 @@ export const ProviderBootstrapLive = Layer.effect(
     )
 
     return Data.struct({
-      registeredProviders: Chunk.toReadonlyArray(registeredProviders),
+      registeredProviders,
     }) satisfies ProviderBootstrapService
   }),
 )

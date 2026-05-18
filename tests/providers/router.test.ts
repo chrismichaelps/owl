@@ -1,6 +1,6 @@
 /** @Owl.Tests.Providers.Router - Multi-provider routing logic tests */
 import { describe, it, expect } from "vitest"
-import { Effect } from "effect"
+import { Chunk, Effect } from "effect"
 import * as Stream from "effect/Stream"
 import {
   ProviderRouter,
@@ -442,7 +442,7 @@ describe("ProviderRouter", () => {
     const reliability = await Effect.runPromise(
       program.pipe(Effect.provide(ProviderRouterLive)),
     )
-    expect(reliability).toEqual([
+    expect(Chunk.toReadonlyArray(reliability)).toEqual([
       {
         provider: "anthropic",
         successes: 0,
@@ -666,10 +666,11 @@ describe("ProviderRouter", () => {
     const capabilities = await Effect.runPromise(
       program.pipe(Effect.provide(ProviderRouterLive)),
     )
-    expect(capabilities.map((capability) => capability.providerId)).toEqual([
-      "anthropic",
-      "openai",
-    ])
+    expect(
+      Chunk.toReadonlyArray(
+        Chunk.map(capabilities, (capability) => capability.providerId),
+      ),
+    ).toEqual(["anthropic", "openai"])
   })
 
   it("lists registered providers deterministically", async () => {
@@ -686,7 +687,7 @@ describe("ProviderRouter", () => {
     const providers = await Effect.runPromise(
       program.pipe(Effect.provide(ProviderRouterLive)),
     )
-    expect(providers).toEqual(["anthropic", "openai"])
+    expect(Chunk.toReadonlyArray(providers)).toEqual(["anthropic", "openai"])
   })
 
   it("checks registered provider health deterministically", async () => {
@@ -703,7 +704,7 @@ describe("ProviderRouter", () => {
     const health = await Effect.runPromise(
       program.pipe(Effect.provide(ProviderRouterLive)),
     )
-    expect(health).toEqual([
+    expect(Chunk.toReadonlyArray(health)).toEqual([
       { provider: "anthropic", healthy: true, message: null },
       {
         provider: "openai",

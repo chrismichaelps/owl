@@ -39,7 +39,7 @@ const inspectProviderHealth = (
 /** @Owl.Providers.Router.HealthCheck - Run registered provider health checks */
 export const checkProviderHealth = (
   registryRef: ProviderRegistryRef,
-): Effect.Effect<readonly ProviderHealthStatus[]> =>
+): Effect.Effect<Chunk.Chunk<ProviderHealthStatus>> =>
   Ref.get(registryRef).pipe(
     Effect.flatMap((registry) => {
       const providerIds = Chunk.sort(
@@ -62,7 +62,5 @@ export const checkProviderHealth = (
           : inspectProviderHealth(provider)
       })
     }),
-    Effect.map((statuses) =>
-      Chunk.toReadonlyArray(Chunk.fromIterable(statuses)),
-    ),
+    Effect.map((statuses) => Chunk.fromIterable(statuses)),
   )

@@ -76,11 +76,9 @@ export function makeProvidersCommand(
     execute: (): Effect.Effect<CommandResult, CommandParseError> =>
       Effect.gen(function* () {
         const preferences = yield* routingPreferences.snapshot()
-        const health = Chunk.fromIterable(yield* router.checkHealth())
-        const reliability = Chunk.fromIterable(yield* router.listReliability())
-        const capabilities = Chunk.fromIterable(
-          yield* router.listCapabilities(),
-        )
+        const health = yield* router.checkHealth()
+        const reliability = yield* router.listReliability()
+        const capabilities = yield* router.listCapabilities()
         const healthSection = Chunk.isEmpty(health)
           ? ""
           : "\nProvider health:\n" +

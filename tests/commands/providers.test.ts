@@ -1,6 +1,6 @@
 /** @Owl.Tests.Commands.Providers - Provider capability command tests */
 import { describe, expect, it } from "vitest"
-import { Effect } from "effect"
+import { Chunk, Effect } from "effect"
 import {
   makeProvidersCommand,
   formatProviderCapability,
@@ -37,12 +37,17 @@ const makeRouter = (
   completeWithCallback: () =>
     Effect.die("completeWithCallback not used in providers command"),
   listProviders: () =>
-    Effect.succeed(capabilities.map((capability) => capability.providerId)),
-  listCapabilities: () => Effect.succeed(capabilities),
-  listReliability: () => Effect.succeed([]),
+    Effect.succeed(
+      Chunk.map(
+        Chunk.fromIterable(capabilities),
+        (capability) => capability.providerId,
+      ),
+    ),
+  listCapabilities: () => Effect.succeed(Chunk.fromIterable(capabilities)),
+  listReliability: () => Effect.succeed(Chunk.empty()),
   checkHealth: () =>
     Effect.succeed(
-      capabilities.map((capability) => ({
+      Chunk.map(Chunk.fromIterable(capabilities), (capability) => ({
         provider: capability.providerId,
         healthy: true,
         message: null,
@@ -150,15 +155,15 @@ describe("makeProvidersCommand", () => {
     const router = {
       ...makeRouter([CAPABILITY]),
       listReliability: () =>
-        Effect.succeed([
-          {
+        Effect.succeed(
+          Chunk.make({
             provider: "anthropic",
             successes: 2,
             failures: 1,
             consecutiveFailures: 0,
             score: 0.67,
-          },
-        ]),
+          }),
+        ),
     } satisfies ProviderRouterService
 
     const output = await run(

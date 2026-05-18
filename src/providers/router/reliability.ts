@@ -107,25 +107,23 @@ export const providerReliabilityScores = (
 /** @Owl.Providers.Router.ReliabilitySnapshot - Observable routing memory */
 export const providerReliabilitySnapshot = (
   ref: ProviderReliabilityRef,
-): Effect.Effect<readonly ProviderReliabilityStatus[]> =>
+): Effect.Effect<Chunk.Chunk<ProviderReliabilityStatus>> =>
   Ref.get(ref).pipe(
     Effect.map((statsByProvider) =>
-      Chunk.toReadonlyArray(
-        Chunk.sortWith(
-          Chunk.map(
-            Chunk.fromIterable(HashMap.entries(statsByProvider)),
-            ([provider, stats]) =>
-              Data.struct({
-                provider,
-                successes: stats.successes,
-                failures: stats.failures,
-                consecutiveFailures: stats.consecutiveFailures,
-                score: reliabilityScore(stats),
-              }),
-          ),
-          (status) => status.provider,
-          Order.string,
+      Chunk.sortWith(
+        Chunk.map(
+          Chunk.fromIterable(HashMap.entries(statsByProvider)),
+          ([provider, stats]) =>
+            Data.struct({
+              provider,
+              successes: stats.successes,
+              failures: stats.failures,
+              consecutiveFailures: stats.consecutiveFailures,
+              score: reliabilityScore(stats),
+            }),
         ),
+        (status) => status.provider,
+        Order.string,
       ),
     ),
   )

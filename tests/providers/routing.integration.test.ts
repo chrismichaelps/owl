@@ -1,6 +1,6 @@
 /** @Owl.Tests.Providers.RoutingIntegration - ProviderRouter registered adapter flow */
 import { describe, expect, it } from "vitest"
-import { Effect } from "effect"
+import { Chunk, Effect } from "effect"
 import * as Stream from "effect/Stream"
 import {
   ProviderRouter,
@@ -165,6 +165,6 @@ describe("ProviderRouter integration", () => {
       }),
     )
 
-    expect(providers).toContain("anthropic")
+    expect(Chunk.toReadonlyArray(providers)).toContain("anthropic")
   })
 })
