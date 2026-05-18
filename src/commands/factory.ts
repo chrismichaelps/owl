@@ -16,6 +16,7 @@ import { makeCreateCommand } from "./editing/create.js"
 import { makeDiffCommand } from "./editing/diff.js"
 import { makeEditCommand } from "./editing/edit.js"
 import { makeInjectCommand } from "./editing/inject.js"
+import { makePendingCommand } from "./editing/pending.js"
 import { makeRejectCommand } from "./editing/reject.js"
 import { makeRefactorCommand } from "./editing/refactor.js"
 import { makeUndoCommand } from "./editing/undo.js"
@@ -100,6 +101,7 @@ export const makeCommandHandlers = (
     makeCreateCommand(deps.fs, projectRoot),
     makeRefactorCommand(deps.orchestrator),
     makeDiffCommand(deps.rollback, deps.pendingMutations),
+    makePendingCommand(deps.pendingMutations),
     makeApplyCommand(deps.pipeline, deps.pendingMutations, projectRoot),
     makeRejectCommand(deps.pendingMutations),
     makeUndoCommand(deps.rollback, projectRoot),
