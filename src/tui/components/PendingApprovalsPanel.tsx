@@ -33,6 +33,9 @@ const PendingApprovalRow = memo(function PendingApprovalRow({
       <Text color="gray" dimColor>
         /diff {mutation.mutationId} · /apply {mutation.mutationId}
       </Text>
+      <Text color="gray" dimColor>
+        {TUI_PENDING_APPROVALS.SHORTCUT_HINT}
+      </Text>
     </Box>
   )
 })

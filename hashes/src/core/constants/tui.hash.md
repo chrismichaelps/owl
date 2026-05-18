@@ -1,9 +1,9 @@
-State_ID: BigInt(0x75f7cd203b57ac13)
-Git_SHA: 5b4a396d5f1d6c2c5459c8ad48ffd1e459516082
-Source_SHA256: 75f7cd203b57ac1387a402f91d88981b6e6852f7712eedd600dde015a451c4ee
+State_ID: BigInt(0x5ce20523374e8b82)
+Git_SHA: 17aac6a64ad21f503da780d4cc8d5f7b2be5e041
+Source_SHA256: 5ce20523374e8b82a65ca4b2466250555a92d4e6fc9474db5ce984acd7626fa1
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
 Fidelity: ACTIVE
-Registry_Sync: 2026-05-18T01:02:15.287Z
+Registry_Sync: 2026-05-18T01:55:00Z
 ---
 
 ## @root/src/core/constants/tui.ts
@@ -15,7 +15,7 @@ Registry_Sync: 2026-05-18T01:02:15.287Z
 - depth_score: 0.50
 - depth_status: MEDIUM
 - seam_capacity: INTERNAL
-- SIG_ID: SIG-core-constants-tui-d9c7e4a8
+- SIG_ID: SIG-core-constants-tui-5ce20523
 
 ### [Linkage]
 - Grammar: `@root/hashes/grammar/effect/effect.hash.md`

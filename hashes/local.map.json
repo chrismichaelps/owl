@@ -523,7 +523,7 @@
       "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
       "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-core-constants-tui-75f7cd20"
+      "sig_id": "SIG-core-constants-tui-5ce20523"
     },
     "core/cost": {
       "file_path": "@root/src/core/cost.ts",
@@ -1259,7 +1259,7 @@
       "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
       "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-tui-app-868bff0c"
+      "sig_id": "SIG-tui-app-d1e5dab4"
     },
     "tui/commands/fuzzy": {
       "file_path": "@root/src/tui/commands/fuzzy.ts",
@@ -1347,7 +1347,7 @@
       "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
       "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-tui-components-PendingApprovalsPanel-afd9826e"
+      "sig_id": "SIG-tui-components-PendingApprovalsPanel-30105d7f"
     },
     "tui/components/PromptInput": {
       "file_path": "@root/src/tui/components/PromptInput.tsx",
@@ -1355,7 +1355,7 @@
       "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
       "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-tui-components-PromptInput-98b459d7"
+      "sig_id": "SIG-tui-components-PromptInput-3ebd01f9"
     },
     "tui/components/ShortcutsOverlay": {
       "file_path": "@root/src/tui/components/ShortcutsOverlay.tsx",
@@ -1508,8 +1508,8 @@
       "dependencies": [
         "@root/hashes/src/core/constants/tui.hash.md"
       ],
-      "fidelity_level": "Signature",
-      "sig_id": "SIG-tui-pending-shortcuts-00000001"
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tui-pending-shortcuts-d7835d0b"
     },
     "commands/management/doctor": {
       "file_path": "@root/src/commands/management/doctor.ts",

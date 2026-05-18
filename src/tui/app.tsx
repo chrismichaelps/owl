@@ -213,6 +213,7 @@ export const App: React.FC<AppProps> = ({
           state.pendingMutations,
           (mutation) => mutation.mutationId,
         )}
+        focusedPanel={state.focusedPanel}
       />
 
       {/* Status bar */}

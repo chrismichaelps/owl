@@ -1,7 +1,7 @@
 /** @Owl.TUI.Components.PromptInput - REPL prompt with mode prefix, history nav, slash dispatch */
 import React, { memo, useCallback, useRef, useState } from "react"
 import { Box, Text, useInput, useWindowSize } from "ink"
-import type { Chunk } from "effect"
+import { Option, type Chunk } from "effect"
 import {
   COMMAND_CONSTANTS,
   TUI_WELCOME,
@@ -12,6 +12,7 @@ import type { Mode } from "../../core/schema/index.js"
 import { usePromptHistory } from "../hooks/usePromptHistory.js"
 import { useFileMentions } from "../hooks/useFileMentions.js"
 import { useSlashPalette } from "../hooks/useSlashPalette.js"
+import { resolvePendingApprovalShortcut } from "../pending/shortcuts.js"
 import type { PaletteCommand } from "../commands/fuzzy.js"
 import { FileMentionPalette } from "./FileMentionPalette.js"
 
@@ -30,6 +31,7 @@ interface PromptInputProps {
   }) => void
   readonly commands: readonly PaletteCommand[]
   readonly pendingMutationIds: Chunk.Chunk<string>
+  readonly focusedPanel: string
 }
 
 /** @Owl.TUI.Components.PromptInput.Component - Command entry with history */
@@ -45,6 +47,7 @@ export const PromptInput: React.FC<PromptInputProps> = memo(
     onPaletteChange,
     commands,
     pendingMutationIds,
+    focusedPanel,
   }) => {
     // Refs hold the authoritative current value — readable inside useInput without stale closures.
     // State is only used to trigger re-renders.
@@ -84,6 +87,18 @@ export const PromptInput: React.FC<PromptInputProps> = memo(
         // Read from refs — never from stale state closure
         const cur = valueRef.current
         const inMention = mentions.isMentionInput(cur)
+
+        if (cur.length === 0) {
+          const shortcut = resolvePendingApprovalShortcut(
+            input,
+            focusedPanel,
+            pendingMutationIds,
+          )
+          if (Option.isSome(shortcut)) {
+            onCommand(shortcut.value.command)
+            return
+          }
+        }
 
         if (input === TUI_TRIGGERS.HELP && cur.length === 0) {
           onShortcuts()

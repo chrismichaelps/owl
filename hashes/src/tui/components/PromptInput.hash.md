@@ -1,6 +1,6 @@
-State_ID: BigInt(0x98b459d71fe146c2)
-Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
-Source_SHA256: 98b459d71fe146c218f7d4c1695cd04ee2b74e72ca1acc8e89da248f4225029c
+State_ID: BigInt(0x3ebd01f9d40c7094)
+Git_SHA: 17aac6a64ad21f503da780d4cc8d5f7b2be5e041
+Source_SHA256: 3ebd01f9d40c70941213c6a869e84a19995bd50cfa845cb1202314cd02fe2cc2
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
 Fidelity: ACTIVE
 ---
@@ -14,7 +14,7 @@ Fidelity: ACTIVE
 - depth_score: 0.78 — DEEP (user input handling)
 - seam_capacity: CRITICAL (primary input)
 - leverage: HIGH (user interaction entry point)
-- SIG_ID: SIG-tui-components-prompt-00000001
+- SIG_ID: SIG-tui-components-PromptInput-3ebd01f9
 
 ### [Linkage]
 - Grammar: `@root/hashes/grammar/react/react.hash.md`

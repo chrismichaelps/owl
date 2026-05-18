@@ -1,6 +1,6 @@
-State_ID: BigInt(0x868bff0c6b275edb)
-Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
-Source_SHA256: 868bff0c6b275edb664cce393e63a0e19cede647cc36864a192c1a92133458e7
+State_ID: BigInt(0xd1e5dab41848bf94)
+Git_SHA: 17aac6a64ad21f503da780d4cc8d5f7b2be5e041
+Source_SHA256: d1e5dab41848bf94216b54e228baed34ec2a0005b171b9e78900891d1a3be51e
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
 Fidelity: ACTIVE
 Drift_Fixed: 2026-05-16T16:06:00Z
@@ -16,7 +16,7 @@ Drift_Fixed: 2026-05-16T16:06:00Z
 - depth_score: 0.82 — DEEP (main layout shell)
 - seam_capacity: BACKBONE (connects all TUI components)
 - leverage: CRITICAL (renders entire UI)
-- SIG_ID: SIG-tui-app-00000001
+- SIG_ID: SIG-tui-app-d1e5dab4
 
 ### [Linkage]
 - Grammar: `@root/hashes/grammar/typescript/typescript.hash.md`

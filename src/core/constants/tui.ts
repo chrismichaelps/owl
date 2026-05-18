@@ -186,6 +186,7 @@ export const TUI_SHORTCUTS = [
   ["ctrl+c", "Quit Owl"],
   ["↑ / ↓", "Navigate prompt history or palettes"],
   ["tab", "Accept selected slash command or file mention"],
+  ["metrics:a/d/r", "Apply, diff, or reject first pending edit"],
   ["/", "Open slash command palette"],
   ["@file", "Attach project files to context"],
   ["/model", "Inspect or override provider routing"],
@@ -203,6 +204,13 @@ export const TUI_PENDING_APPROVALS = {
   FILE_PREVIEW_LIMIT: 2,
   EMPTY_LABEL: "No pending edits",
   TITLE: "Pending edits",
+  SHORTCUT_HINT: "focus metrics: a apply · d diff · r reject",
+  APPLY_KEY: "a",
+  DIFF_KEY: "d",
+  REJECT_KEY: "r",
+  APPLY_COMMAND: "apply",
+  DIFF_COMMAND: "diff",
+  REJECT_COMMAND: "reject",
 } as const
 
 /** @Owl.Core.Constants.TUIPendingArguments - Commands accepting Mutation IDs */

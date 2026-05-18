@@ -1,9 +1,9 @@
-State_ID: BigInt(0xafd9826ef8c24013)
-Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
-Source_SHA256: afd9826ef8c240138ddb7df11d36b0454a1a634e5c83156dad8d1f30e2bf790e
+State_ID: BigInt(0x30105d7f54b0664e)
+Git_SHA: 17aac6a64ad21f503da780d4cc8d5f7b2be5e041
+Source_SHA256: 30105d7f54b0664ea6d0796a4a42fbd2dcdc04ffd084a64e809fd13ca691698b
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
 Fidelity: ACTIVE
-Registry_Sync: 2026-05-18T01:02:15.287Z
+Registry_Sync: 2026-05-18T01:55:00Z
 ---
 
 ## @root/src/tui/components/PendingApprovalsPanel.tsx
@@ -15,7 +15,7 @@ Registry_Sync: 2026-05-18T01:02:15.287Z
 - depth_score: 0.50
 - depth_status: MEDIUM
 - seam_capacity: INTERNAL
-- SIG_ID: SIG-tui-components-PendingApprovalsPanel-afd9826e
+- SIG_ID: SIG-tui-components-PendingApprovalsPanel-30105d7f
 
 ### [Linkage]
 - Grammar: `@root/hashes/grammar/effect/effect.hash.md`

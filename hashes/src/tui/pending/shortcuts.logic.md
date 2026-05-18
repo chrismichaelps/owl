@@ -1,6 +1,6 @@
 ---
 Module: @root/src/tui/pending/shortcuts.ts
-State_ID: BigInt(0x0000000000000000)
+State_ID: BigInt(0xd7835d0b0243124f)
 ---
 
 # Logic Blueprint: @Owl.TUI.Pending.Shortcuts src/tui/pending/shortcuts.ts

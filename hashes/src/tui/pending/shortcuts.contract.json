@@ -1,10 +1,10 @@
 {
-  "contract_id": "CTR-tui-pending-shortcuts-00000001",
+  "contract_id": "CTR-tui-pending-shortcuts-d7835d0b",
   "module": "@Owl.TUI.Pending.Shortcuts src/tui/pending/shortcuts.ts",
   "grammar_lock": "@root/hashes/grammar/react/react.hash.md",
   "depth_score": "0.70 — DEEP (keyboard approval policy behind one resolver)",
   "seam_capacity": "INTERNAL",
-  "sig_id": "SIG-tui-pending-shortcuts-00000001",
+  "sig_id": "SIG-tui-pending-shortcuts-d7835d0b",
   "interface": {
     "signatures": [
       "resolvePendingApprovalShortcut(input: string, focusedPanel: string, pendingMutationIds: Chunk<string>) => Option<PendingApprovalShortcut>"
