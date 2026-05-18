@@ -4,7 +4,7 @@
   "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
   "depth_score": "0.68 — MEDIUM (in-memory only, no persistence)",
   "seam_capacity": "INTERNAL",
-  "sig_id": "SIG-engine-memory-65fd3e01",
+  "sig_id": "SIG-engine-memory-b1447ab0",
   "interface": {
     "signatures": [
       "SessionMemory: Context.Tag<SessionMemory, SessionMemoryService>",
@@ -21,7 +21,8 @@
     "invariants": [
       "listSessions MUST return deterministic sorted Session ids",
       "Session lifecycle state MUST remain inside SessionMemory",
-      "Persistent SessionMemory MUST not drop inactive Sessions during active Session writes."
+      "Persistent SessionMemory MUST not drop inactive Sessions during active Session writes.",
+      "resumeSession for an unknown Session id MUST create an empty Session, not clone active turns."
     ]
   },
   "responsibilities": [

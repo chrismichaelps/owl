@@ -82,6 +82,20 @@ describe("SessionMemory.startSession", () => {
     expect(result.id).toBe("s-resume")
     expect(Chunk.size(result.turns)).toBe(1)
   })
+
+  it("resumeSession starts unknown sessions empty", async () => {
+    const turns = await run(
+      Effect.gen(function* () {
+        const mem = yield* SessionMemory
+        yield* mem.startSession("sess-source")
+        yield* mem.recordTurn(makeTurn(1))
+        yield* mem.resumeSession("sess-empty")
+        return yield* mem.getTurns()
+      }),
+    )
+
+    expect(Chunk.size(turns)).toBe(0)
+  })
 })
 
 describe("SessionMemory.recordTurn / getTurns", () => {

@@ -202,10 +202,9 @@ const makeService = (
     Effect.gen(function* () {
       if (sessionId !== undefined) {
         yield* Ref.update(stateRef, (state) => {
-          const activeTurns = getSessionTurns(state, state.activeSessionId)
           const nextTurns = Option.getOrElse(
             HashMap.get(state.sessions, sessionId),
-            () => activeTurns,
+            () => Chunk.empty<SessionTurn>(),
           )
           return Data.struct({
             activeSessionId: sessionId,

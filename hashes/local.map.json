@@ -1,8 +1,8 @@
 {
   "shard_id": "@root/src",
-  "state_anchor": "BigInt(0x65fd3e01990305a0)",
+  "state_anchor": "BigInt(0xb1447ab03a939922)",
   "parent_bridge": "@root/hashes/local.map.json",
-  "git_anchor": "c97f45a6ba4e73cb435d7470064364c5f231ab85",
+  "git_anchor": "b6ce7584f4fbf0625faa2c5993c2a623affadc17",
   "cache_integrity": "VERIFIED",
   "nodes": {
     "cli/args": {
@@ -697,7 +697,7 @@
       "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
       "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-engine-memory-65fd3e01"
+      "sig_id": "SIG-engine-memory-b1447ab0"
     },
     "engine/memory/persistence": {
       "file_path": "@root/src/engine/memory/persistence.ts",
