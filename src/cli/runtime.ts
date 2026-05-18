@@ -40,7 +40,10 @@ import path from "node:path"
 import { loadMcpConfig, makeMcpManagerLayer } from "../mcp/index.js"
 import { makeBuiltInToolsLive } from "../tools/index.js"
 import { OWLConfigLive } from "../core/config/index.js"
-import { SESSION_MEMORY_CONSTANTS } from "../core/constants/index.js"
+import {
+  CACHE_CONSTANTS,
+  SESSION_MEMORY_CONSTANTS,
+} from "../core/constants/index.js"
 import {
   Orchestrator,
   makeOrchestratorLive,
@@ -68,11 +71,15 @@ import { TLIExecutorLive } from "../editor/tli/index.js"
 import { GovernanceEngineLive } from "../fmcf/governance/index.js"
 import { makeCommandRegistryLive } from "../commands/registry.js"
 import { TokenBudgetLive } from "../tokens/budget/index.js"
+import { makePersistentContextCacheLive } from "../tokens/cache/index.js"
 import type { CommandRegistry } from "../commands/registry.js"
 import type { RoutingPreferences } from "../providers/preferences/index.js"
 import type { PendingMutationStore } from "../editor/pending/index.js"
+import type { ContextCache } from "../tokens/cache/index.js"
 import type { ConfigError } from "effect/ConfigError"
 import type {
+  CachePersistenceError,
+  CacheValidationError,
   SessionMemoryPersistenceError,
   SessionMemoryValidationError,
 } from "../core/errors/index.js"
@@ -85,8 +92,16 @@ import type {
  * - CommandRegistry: For slash command handling
  */
 export type OwlRuntime = ManagedRuntime.ManagedRuntime<
-  Orchestrator | CommandRegistry | RoutingPreferences | PendingMutationStore,
-  ConfigError | SessionMemoryPersistenceError | SessionMemoryValidationError
+  | Orchestrator
+  | CommandRegistry
+  | RoutingPreferences
+  | PendingMutationStore
+  | ContextCache,
+  | ConfigError
+  | SessionMemoryPersistenceError
+  | SessionMemoryValidationError
+  | CachePersistenceError
+  | CacheValidationError
 >
 
 /**
@@ -101,6 +116,13 @@ export const makeOwlRuntime = (projectRoot: string): OwlRuntime => {
       projectRoot,
       SESSION_MEMORY_CONSTANTS.STORAGE_DIR,
       SESSION_MEMORY_CONSTANTS.STORAGE_FILE,
+    ),
+  )
+  const contextCacheLayer = makePersistentContextCacheLive(
+    path.join(
+      projectRoot,
+      CACHE_CONSTANTS.STORAGE_DIR,
+      CACHE_CONSTANTS.STORAGE_FILE,
     ),
   )
 
@@ -130,6 +152,7 @@ export const makeOwlRuntime = (projectRoot: string): OwlRuntime => {
   const leafLayer = Layer.mergeAll(
     providerSupportLayer,
     ContextManagerLive,
+    contextCacheLayer,
     sessionMemoryLayer,
     UsageMetricsLive,
     ProviderRouterLive,

@@ -33,6 +33,7 @@ import { ContextManager } from "../engine/context/index.js"
 import { UsageMetrics } from "../engine/metrics/index.js"
 import { Orchestrator } from "../engine/orchestrator/index.js"
 import { SessionMemory } from "../engine/memory/index.js"
+import { ContextCache } from "../tokens/cache/index.js"
 import { RoleContext } from "../fmcf/roles/architect.js"
 import { HashRegistry } from "../fmcf/registry/index.js"
 import { HashRegistryLive } from "../fmcf/registry/index.js"
@@ -170,6 +171,7 @@ export const CommandRegistryLive = Layer.effect(
  * - EditingPipeline (for editing commands)
  * - RollbackSystem (for undo/diff commands)
  * - ContextManager (for clear command)
+ * - ContextCache (for compact/cache commands)
  * - SessionMemory (for memory/status commands)
  * - RoleContext (for role command)
  * - RoutingPreferences (for model command)
@@ -184,6 +186,7 @@ export const makeCommandRegistryLive = (
   never,
   | Orchestrator
   | ContextManager
+  | ContextCache
   | UsageMetrics
   | SessionMemory
   | RoleContext
@@ -207,6 +210,7 @@ export const makeCommandRegistryLive = (
       const sessionMemory = yield* SessionMemory
       const usageMetrics = yield* UsageMetrics
       const contextManager = yield* ContextManager
+      const contextCache = yield* ContextCache
       const fs = yield* FileSystem.FileSystem
       const roleCtx = yield* RoleContext
       const routingPreferences = yield* RoutingPreferences
@@ -229,6 +233,7 @@ export const makeCommandRegistryLive = (
           sessionMemory,
           usageMetrics,
           contextManager,
+          contextCache,
           fs,
           roleCtx,
           routingPreferences,

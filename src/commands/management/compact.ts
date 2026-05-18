@@ -11,6 +11,7 @@ import type { CommandParseError } from "../../core/errors/index.js"
 import type { Message } from "../../core/schema/index.js"
 import type { ContextManagerService } from "../../engine/context/index.js"
 import type { OrchestratorService } from "../../engine/orchestrator/index.js"
+import type { ContextCacheService } from "../../tokens/cache/index.js"
 import { estimateConversationTokens } from "../../tokens/pruning/index.js"
 import { makeCommandTaskId } from "../utils/ids.js"
 import type { CommandHandler, CommandResult } from "../types.js"
@@ -37,6 +38,7 @@ const toCommandParseError = (error: unknown): CommandParseErrorClass =>
 export function makeCompactCommand(
   orchestrator: OrchestratorService,
   contextManager: ContextManagerService,
+  contextCache: ContextCacheService,
 ): CommandHandler {
   return {
     name: COMPACT_CONSTANTS.COMMAND_NAME,
@@ -56,6 +58,10 @@ export function makeCompactCommand(
         const messagesArray = Chunk.toReadonlyArray(messages)
         const tokensBefore = estimateConversationTokens(messagesArray)
         const compactedAt = new Date().toISOString()
+        const compactTaskId = makeCommandTaskId(
+          COMPACT_CONSTANTS.COMMAND_NAME,
+          makeCompactTaskSeed(messages),
+        )
         const summaryResponse = yield* Effect.acquireUseRelease(
           contextManager
             .getSystemPrompt()
@@ -66,10 +72,7 @@ export function makeCompactCommand(
             ),
           () =>
             orchestrator.run({
-              id: makeCommandTaskId(
-                COMPACT_CONSTANTS.COMMAND_NAME,
-                makeCompactTaskSeed(messages),
-              ),
+              id: compactTaskId,
               prompt: COMPACT_CONSTANTS.TASK_PROMPT,
               mode: COMPACT_CONSTANTS.MODE,
               createdAt: compactedAt,
@@ -91,11 +94,23 @@ export function makeCompactCommand(
           Chunk.toReadonlyArray(Chunk.make(compactedMessage)),
         )
         const saved = tokensBefore - tokensAfter
+        const cacheResult = yield* contextCache
+          .store(compactTaskId, {
+            summary: summaryResponse.content,
+            tokenCount: Math.max(0, saved),
+            trustScore: 1,
+          })
+          .pipe(Effect.either)
+        const cacheLine =
+          cacheResult._tag === "Right"
+            ? "\n  Cached: " + compactTaskId
+            : "\n  Cache warning: " + String(cacheResult.left)
 
         return {
           output:
             `✓ Compacted: ${String(Chunk.size(messages))} messages → 1 summary\n` +
-            `  Tokens: ~${String(tokensBefore)} → ~${String(tokensAfter)} (saved ~${String(Math.max(0, saved))})`,
+            `  Tokens: ~${String(tokensBefore)} → ~${String(tokensAfter)} (saved ~${String(Math.max(0, saved))})` +
+            cacheLine,
         }
       }),
   }

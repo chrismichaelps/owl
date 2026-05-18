@@ -21,6 +21,7 @@ import { makeRejectCommand } from "./editing/reject.js"
 import { makeRefactorCommand } from "./editing/refactor.js"
 import { makeUndoCommand } from "./editing/undo.js"
 import { makeAuditCommand } from "./management/audit.js"
+import { makeCacheCommand } from "./management/cache.js"
 import { makeClearCommand } from "./management/clear.js"
 import { makeCompactCommand } from "./management/compact.js"
 import { makeExportCommand } from "./management/export.js"
@@ -45,6 +46,7 @@ import type { ContextManagerService } from "../engine/context/index.js"
 import type { UsageMetricsService } from "../engine/metrics/index.js"
 import type { SessionMemoryService } from "../engine/memory/index.js"
 import type { OrchestratorService } from "../engine/orchestrator/index.js"
+import type { ContextCacheService } from "../tokens/cache/index.js"
 import type { EditingPipelineService } from "../editor/pipeline/index.js"
 import type { PendingMutationStoreService } from "../editor/pending/index.js"
 import type { RollbackSystemService } from "../editor/rollback/index.js"
@@ -68,6 +70,7 @@ export interface CommandFactoryDependencies {
   readonly sessionMemory: SessionMemoryService
   readonly usageMetrics: UsageMetricsService
   readonly contextManager: ContextManagerService
+  readonly contextCache: ContextCacheService
   readonly fs: FileSystem.FileSystem
   readonly roleCtx: RoleContextService
   readonly routingPreferences: RoutingPreferencesService
@@ -110,7 +113,8 @@ export const makeCommandHandlers = (
     makeAuditCommand(deps.orchestrator),
     makeStatusCommand(deps.sessionMemory, deps.usageMetrics),
     makeClearCommand(deps.contextManager),
-    makeCompactCommand(deps.orchestrator, deps.contextManager),
+    makeCompactCommand(deps.orchestrator, deps.contextManager, deps.contextCache),
+    makeCacheCommand(deps.contextCache),
     makeHistoryCommand(deps.sessionMemory, projectRoot),
     makeInitCommand(deps.fs, projectRoot),
     makeExportCommand(deps.sessionMemory, projectRoot),

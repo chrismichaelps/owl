@@ -1,7 +1,7 @@
 /**
  * @Owl.Commands.Compact.Tests - Regression coverage for context compaction
  */
-import { Chunk, Effect, Ref } from "effect"
+import { Chunk, Effect, Option, Ref } from "effect"
 import { describe, expect, it, vi } from "vitest"
 import {
   CommandParseError,
@@ -10,6 +10,7 @@ import {
 import type { Message } from "../../src/core/schema/index.js"
 import type { ContextManagerService } from "../../src/engine/context/index.js"
 import type { OrchestratorService } from "../../src/engine/orchestrator/index.js"
+import type { ContextCacheService } from "../../src/tokens/cache/index.js"
 import { makeCompactCommand } from "../../src/commands/management/compact.js"
 
 const makeMessage = (content: string): Message => ({
@@ -53,6 +54,14 @@ const makeResponse = (content: string) => ({
   latencyMs: 1,
 })
 
+const makeNoopCache = (): ContextCacheService => ({
+  store: () => Effect.void,
+  get: () => Effect.succeed(Option.none()),
+  invalidate: () => Effect.void,
+  invalidateAll: () => Effect.void,
+  totalSavedTokens: () => Effect.succeed(0),
+})
+
 describe("makeCompactCommand", () => {
   it("skips compaction when the conversation is too short", async () => {
     const run = vi.fn(() => Effect.succeed(makeResponse("unused")))
@@ -69,6 +78,7 @@ describe("makeCompactCommand", () => {
             getSessionSummary: () => Effect.succeed("summary"),
           } satisfies OrchestratorService,
           context,
+          makeNoopCache(),
         )
         return yield* command.execute(Chunk.toReadonlyArray(Chunk.empty()))
       }),
@@ -95,6 +105,7 @@ describe("makeCompactCommand", () => {
             getSessionSummary: () => Effect.succeed("summary"),
           } satisfies OrchestratorService,
           context,
+          makeNoopCache(),
         )
         const output = yield* command.execute(
           Chunk.toReadonlyArray(Chunk.empty()),
@@ -130,6 +141,7 @@ describe("makeCompactCommand", () => {
         getSessionSummary: () => Effect.succeed("summary"),
       } satisfies OrchestratorService,
       context,
+      makeNoopCache(),
     )
     const error = await Effect.runPromise(
       Effect.flip(command.execute(Chunk.toReadonlyArray(Chunk.empty()))),
@@ -138,5 +150,36 @@ describe("makeCompactCommand", () => {
 
     expect(error).toBeInstanceOf(CommandParseError)
     expect(systemPrompt).toBe("original")
+  })
+
+  it("stores compacted summaries in ContextCache", async () => {
+    const store = vi.fn<ContextCacheService["store"]>(() => Effect.void)
+    const result = await Effect.runPromise(
+      Effect.gen(function* () {
+        const context = yield* makeContext()
+        for (const message of Chunk.make("one", "two", "three", "four")) {
+          yield* context.addMessage(makeMessage(message))
+        }
+        const command = makeCompactCommand(
+          {
+            run: () =>
+              Effect.succeed(makeResponse("## Conversation Summary\nDone")),
+            runParallel: () =>
+              Effect.succeed(Chunk.make(makeResponse("unused"))),
+            runStream: () => Effect.succeed(makeResponse("unused")),
+            getSessionSummary: () => Effect.succeed("summary"),
+          } satisfies OrchestratorService,
+          context,
+          {
+            ...makeNoopCache(),
+            store,
+          },
+        )
+        return yield* command.execute([])
+      }),
+    )
+
+    expect(result.output).toContain("Cached:")
+    expect(store).toHaveBeenCalledOnce()
   })
 })

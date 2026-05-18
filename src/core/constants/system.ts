@@ -13,6 +13,8 @@ export const CACHE_CONSTANTS = {
   MIN_TRUST_SCORE: 0,
   MAX_TRUST_SCORE: 1,
   PERSISTENCE_SCHEMA_VERSION: 1,
+  STORAGE_DIR: ".owl",
+  STORAGE_FILE: "context-cache.json",
 } as const
 
 /** @Owl.Core.Constants.SessionMemory - Session persistence and retention bounds */
