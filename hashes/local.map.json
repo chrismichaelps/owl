@@ -1229,6 +1229,16 @@
       "fidelity_level": "Active",
       "sig_id": "SIG-tools-read-565e9419"
     },
+    "tools/risk": {
+      "file_path": "@root/src/tools/risk.ts",
+      "hash_reference": "@root/hashes/src/tools/risk.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [
+        "@root/hashes/src/core/constants/tools.hash.md"
+      ],
+      "fidelity_level": "Signature",
+      "sig_id": "SIG-tools-risk-00000001"
+    },
     "tools/schema": {
       "file_path": "@root/src/tools/schema.ts",
       "hash_reference": "@root/hashes/src/tools/schema.hash.md",

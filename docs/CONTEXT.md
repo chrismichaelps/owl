@@ -207,6 +207,15 @@ Canonical business concept definitions. Every module name, seam name, and interf
 
 ---
 
+### ToolRisk
+- **Definition:** A deterministic safety classification for a built-in tool invocation before execution.
+- **Canonical name:** ToolRisk
+- **Not:** "permission", "approval", "sandbox" — those may consume ToolRisk, but ToolRisk is the classification artifact.
+- **Seams:** ToolRisk → BuiltInTools (CRITICAL), ToolRisk → Permission (EXPLORATORY)
+- **Example:** A Bash command containing `rm -rf` is classified as BLOCKED before any process is started.
+
+---
+
 ### ContextCache
 - **Definition:** A trust-scored reusable summary store that lets Owl reuse prior context without reloading or re-summarizing the same architectural information.
 - **Canonical name:** ContextCache

@@ -1,0 +1,40 @@
+{
+  "contract_id": "CTR-tools-risk-00000001",
+  "module": "@Owl.Tools.Risk src/tools/risk.ts",
+  "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
+  "depth_score": "0.74 — DEEP (tool safety policy behind pure resolver)",
+  "seam_capacity": "CRITICAL",
+  "sig_id": "SIG-tools-risk-00000001",
+  "interface": {
+    "signatures": [
+      "classifyToolRisk(toolName: string, input?: Record<string, unknown>) => ToolRiskAssessment",
+      "formatToolRisk(assessment: ToolRiskAssessment) => string"
+    ],
+    "error_modes": [],
+    "invariants": [
+      "ToolRisk classification MUST be pure and deterministic",
+      "ToolRisk classification MUST use centralized constants",
+      "ToolRisk classification MUST NOT execute tools",
+      "ToolRisk classification MUST NOT inspect the file system",
+      "Bash risk MUST be classified from command text before execution"
+    ]
+  },
+  "responsibilities": [
+    "Classify built-in tool calls for safety visibility",
+    "Provide a reusable policy seam for future Permission decisions",
+    "Surface low/medium/high/blocked risk categories to commands and TUI"
+  ],
+  "prohibited": [
+    "MUST NOT call BuiltInTools.callTool",
+    "MUST NOT mutate permission state",
+    "MUST NOT hardcode command allowlists outside constants",
+    "MUST NOT use native Set for membership checks"
+  ],
+  "dependencies": [
+    "@root/hashes/src/core/constants/tools.hash.md"
+  ],
+  "domain_refs": [
+    "docs/CONTEXT.md#ToolRisk"
+  ],
+  "variants": []
+}
