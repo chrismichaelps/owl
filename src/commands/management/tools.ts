@@ -1,6 +1,6 @@
 /** @Owl.Commands.Management.Tools - Inspect built-in agent tool surface */
 import { Chunk, Effect } from "effect"
-import { formatToolRisk } from "../../tools/index.js"
+import { formatToolPermission, formatToolRisk } from "../../tools/index.js"
 import type { BuiltInToolsService } from "../../tools/index.js"
 import type { ToolRiskLevel } from "../../tools/index.js"
 import type { CommandHandler, CommandResult } from "../types.js"
@@ -28,6 +28,8 @@ export function makeToolsCommand(tools: BuiltInToolsService): CommandHandler {
           }) =>
             `${prefix} ${tool.name} [${formatToolRisk(
               tools.assessToolRisk(tool.name),
+            )}; permission: ${formatToolPermission(
+              tools.assessToolPermission(tool.name),
             )}] — ${tool.description.split("\n")[0] ?? ""}`
 
         const modelLines = Chunk.map(modelVisible, format("✓"))

@@ -69,6 +69,20 @@ describe("BuiltInTools", () => {
     expect(risk.level).toBe("blocked")
   })
 
+  it("exposes Permission decisions for built-in tools", async () => {
+    const permission = await Effect.runPromise(
+      Effect.gen(function* () {
+        const tools = yield* BuiltInTools
+        return tools.assessToolPermission(TOOL_NAMES.BASH, {
+          command: "node scripts/migrate.js",
+        })
+      }).pipe(Effect.provide(makeBuiltInToolsLive(projectRoot))),
+    )
+
+    expect(permission.behavior).toBe("ask")
+    expect(permission.risk.level).toBe("high")
+  })
+
   it("denies blocked ToolRisk invocations before execution", async () => {
     await writeFile(join(projectRoot, "keep.txt"), "safe\n")
 

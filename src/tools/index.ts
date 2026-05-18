@@ -22,6 +22,7 @@ import { GlobTool } from "./glob.js"
 import { GrepTool } from "./grep.js"
 import { TOOL_RISK_LEVELS } from "../core/constants/index.js"
 import { ToolExecutionError } from "../core/errors/index.js"
+import { resolveToolPermission, formatToolPermission } from "./permission.js"
 import { classifyToolRisk, formatToolRisk } from "./risk.js"
 import type { BuiltInTool, BuiltInToolsService } from "./types.js"
 import type { McpTool } from "../mcp/manager.js"
@@ -79,6 +80,9 @@ export const makeBuiltInToolsLive = (cwd: string): Layer.Layer<BuiltInTools> =>
 
     assessToolRisk: classifyToolRisk,
 
+    assessToolPermission: (name, input, mode) =>
+      resolveToolPermission(classifyToolRisk(name, input), mode),
+
     callTool: (name, input) => {
       const toolOpt = HashMap.get(TOOL_MAP, name)
       if (Option.isNone(toolOpt)) {
@@ -106,4 +110,10 @@ export const makeBuiltInToolsLive = (cwd: string): Layer.Layer<BuiltInTools> =>
 
 export type { BuiltInToolsService } from "./types.js"
 export { classifyToolRisk, formatToolRisk }
+export { resolveToolPermission, formatToolPermission }
+export type {
+  ToolPermissionBehavior,
+  ToolPermissionDecision,
+  ToolPermissionMode,
+} from "./permission.js"
 export type { ToolRiskAssessment, ToolRiskLevel } from "./risk.js"

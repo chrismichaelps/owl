@@ -10,6 +10,7 @@ Canonical business concept definitions. Every module name, seam name, and interf
 ---
 
 ### Task
+
 - **Definition:** A unit of developer intent submitted to Owl for execution — a natural language request paired with the code context in which it must be resolved.
 - **Canonical name:** Task
 - **Not:** "prompt", "query", "request", "job" — these are infrastructure terms; Task is the domain noun.
@@ -19,6 +20,7 @@ Canonical business concept definitions. Every module name, seam name, and interf
 ---
 
 ### Mutation
+
 - **Definition:** A deterministic code change produced by the Shadow role — a precise, scoped alteration to one or more source files validated by FMCF governance before application.
 - **Canonical name:** Mutation
 - **Not:** "edit", "change", "patch", "modification" — these are informal; Mutation is the governed artifact.
@@ -28,6 +30,7 @@ Canonical business concept definitions. Every module name, seam name, and interf
 ---
 
 ### Provider
+
 - **Definition:** An external LLM service that Owl routes inference requests to — identified by name, capability profile, and pricing tier.
 - **Canonical name:** Provider
 - **Not:** "model", "API", "backend", "service" — these are sub-concepts; Provider is the routing entity.
@@ -37,6 +40,7 @@ Canonical business concept definitions. Every module name, seam name, and interf
 ---
 
 ### ProviderRouter
+
 - **Definition:** The intelligent routing engine that selects the optimal Provider for each inference request based on task complexity, cost, latency, and runtime pressure.
 - **Canonical name:** ProviderRouter
 - **Not:** "model selector", "router", "dispatcher" — these miss the scoring and fallback semantics.
@@ -46,6 +50,7 @@ Canonical business concept definitions. Every module name, seam name, and interf
 ---
 
 ### Mode
+
 - **Definition:** A named runtime execution profile that controls reasoning depth, token budget, approval flow, and provider selection across the entire Owl session.
 - **Canonical name:** Mode
 - **Not:** "setting", "configuration", "preset" — these miss the runtime-enforcement semantics.
@@ -55,6 +60,7 @@ Canonical business concept definitions. Every module name, seam name, and interf
 ---
 
 ### Token
+
 - **Definition:** The atomic unit of LLM context consumption — tracked per request, per session, and per provider to enforce budgets and enable cost observability.
 - **Canonical name:** Token
 - **Not:** "credit", "unit", "character" — Token is the LLM-standard term.
@@ -64,6 +70,7 @@ Canonical business concept definitions. Every module name, seam name, and interf
 ---
 
 ### TokenBudget
+
 - **Definition:** A runtime-enforced constraint that caps token consumption per Task, per session, or per provider — preventing runaway costs and enforcing Economy Mode.
 - **Canonical name:** TokenBudget
 - **Not:** "limit", "cap", "quota" — these are generic; TokenBudget is the governed constraint.
@@ -73,6 +80,7 @@ Canonical business concept definitions. Every module name, seam name, and interf
 ---
 
 ### Pipeline
+
 - **Definition:** The ordered, 7-stage execution flow through which every Mutation passes: Architectural Analysis → Contract Planning → Diff Generation → Impact Analysis → Approval → TLI → Verification.
 - **Canonical name:** Pipeline
 - **Not:** "workflow", "process", "steps" — Pipeline is the specific 7-stage artifact.
@@ -82,6 +90,7 @@ Canonical business concept definitions. Every module name, seam name, and interf
 ---
 
 ### Command
+
 - **Definition:** A slash-prefixed developer instruction that triggers a specific Owl behavior — parsed, validated, and dispatched to the appropriate engine subsystem.
 - **Canonical name:** Command
 - **Not:** "slash command", "instruction", "directive" — Command is the parsed artifact.
@@ -91,6 +100,7 @@ Canonical business concept definitions. Every module name, seam name, and interf
 ---
 
 ### Governance
+
 - **Definition:** FMCF v3.5 rule enforcement applied at runtime to every Mutation — including Hash-First Hard-Lock, Seam Test Gate, Contract Diff Engine, and Grammar Drift Detector.
 - **Canonical name:** Governance
 - **Not:** "validation", "rules", "checks" — Governance is the constitutional enforcement layer.
@@ -100,6 +110,7 @@ Canonical business concept definitions. Every module name, seam name, and interf
 ---
 
 ### Session
+
 - **Definition:** A continuous, stateful interaction between a developer and Owl — bounded by process start and termination, persisting conversation history, active Mode, and registry state.
 - **Canonical name:** Session
 - **Not:** "conversation", "context", "chat" — Session implies statefulness and lifecycle management.
@@ -109,6 +120,7 @@ Canonical business concept definitions. Every module name, seam name, and interf
 ---
 
 ### Registry
+
 - **Definition:** The FMCF hash-based source of truth for architectural state — the /hashes/ directory containing Grammar Shards, .hash.md files, seams.json, and all forensic records.
 - **Canonical name:** Registry
 - **Not:** "hashes", "metadata", "store" — Registry is the authoritative brain of the system.
@@ -118,6 +130,7 @@ Canonical business concept definitions. Every module name, seam name, and interf
 ---
 
 ### Rollback
+
 - **Definition:** The deterministic restoration of pre-Mutation system state — files, Registry entries, hashes, and governance records — guaranteed to execute correctly on any exit.
 - **Canonical name:** Rollback
 - **Not:** "undo", "revert", "restore" — Rollback implies atomicity and governance record preservation.
@@ -127,6 +140,7 @@ Canonical business concept definitions. Every module name, seam name, and interf
 ---
 
 ### Diff
+
 - **Definition:** A structured, syntax-highlighted, FMCF-annotated view of the changes a Mutation will apply — displayed in the Center Panel before Approval.
 - **Canonical name:** Diff
 - **Not:** "changes", "delta", "patch" — Diff is the visual artifact shown for developer review.
@@ -136,6 +150,7 @@ Canonical business concept definitions. Every module name, seam name, and interf
 ---
 
 ### Seam
+
 - **Definition:** A boundary in the source code where behavior can change without editing callers — the location of a pluggable interface. One adapter = hypothetical; two adapters = real Seam.
 - **Canonical name:** Seam
 - **Not:** "interface", "boundary", "abstraction" — Seam is the FMCF architectural location term.
@@ -145,6 +160,7 @@ Canonical business concept definitions. Every module name, seam name, and interf
 ---
 
 ### TUI
+
 - **Definition:** The terminal user interface through which developers interact with Owl — a three-panel, keyboard-first display built with Ink/React providing real-time observability.
 - **Canonical name:** TUI
 - **Not:** "UI", "terminal", "display" — TUI is the specific three-panel Ink runtime.
@@ -154,6 +170,7 @@ Canonical business concept definitions. Every module name, seam name, and interf
 ---
 
 ### Turn
+
 - **Definition:** A single completed prompt-response cycle within a Session — one developer input paired with one Owl response, timestamped and persisted in the Conversation Thread.
 - **Canonical name:** Turn
 - **Not:** "message", "exchange", "interaction" — Turn is the archived unit of conversation history.
@@ -163,6 +180,7 @@ Canonical business concept definitions. Every module name, seam name, and interf
 ---
 
 ### Streaming
+
 - **Definition:** The real-time, incremental delivery of Provider output tokens to the TUI as they are generated — enabling live display of partially-complete responses before inference completes.
 - **Canonical name:** Streaming
 - **Not:** "live output", "realtime", "chunk delivery" — Streaming is the governed delivery mode.
@@ -172,6 +190,7 @@ Canonical business concept definitions. Every module name, seam name, and interf
 ---
 
 ### Inference
+
 - **Definition:** The LLM computation process triggered by a Task — routing through ProviderRouter, executing against the selected Provider, and returning a complete InferenceResponse (or streaming chunks).
 - **Canonical name:** Inference
 - **Not:** "completion", "generation", "API call" — Inference is the full governed round-trip.
@@ -181,6 +200,7 @@ Canonical business concept definitions. Every module name, seam name, and interf
 ---
 
 ### RoutingPreference
+
 - **Definition:** A developer-selected Provider preference that deterministically overrides automatic ProviderRouter scoring until cleared.
 - **Canonical name:** RoutingPreference
 - **Not:** "model setting", "provider flag", "routing hint" — RoutingPreference is runtime state that changes Provider selection behavior.
@@ -190,6 +210,7 @@ Canonical business concept definitions. Every module name, seam name, and interf
 ---
 
 ### UsageMetrics
+
 - **Definition:** Runtime-observed Inference usage totals for Tokens, Provider calls, Model selection, and latency within the active Session.
 - **Canonical name:** UsageMetrics
 - **Not:** "analytics", "logs", "stats" — UsageMetrics is deterministic runtime accounting, not external telemetry.
@@ -199,6 +220,7 @@ Canonical business concept definitions. Every module name, seam name, and interf
 ---
 
 ### RuntimeDiagnostic
+
 - **Definition:** A read-only health report that summarizes Owl runtime readiness across configuration, Providers, tools, MCP servers, and UsageMetrics.
 - **Canonical name:** RuntimeDiagnostic
 - **Not:** "doctor screen", "debug report", "health check" — RuntimeDiagnostic is the governed diagnostic artifact returned by the Command system.
@@ -208,6 +230,7 @@ Canonical business concept definitions. Every module name, seam name, and interf
 ---
 
 ### ToolRisk
+
 - **Definition:** A deterministic safety classification for a built-in tool invocation before execution.
 - **Canonical name:** ToolRisk
 - **Not:** "permission", "approval", "sandbox" — those may consume ToolRisk, but ToolRisk is the classification artifact.
@@ -216,7 +239,18 @@ Canonical business concept definitions. Every module name, seam name, and interf
 
 ---
 
+### Permission
+
+- **Definition:** A deterministic tool-use decision derived from ToolRisk and the active permission Mode before any tool execution.
+- **Canonical name:** Permission
+- **Not:** "risk", "approval", "prompt" — Permission consumes ToolRisk and decides allow, ask, or deny behavior.
+- **Seams:** Permission → BuiltInTools (CRITICAL), Permission → CommandRegistry (CRITICAL)
+- **Example:** In plan Mode, a read-only Read tool is allowed while a file Mutation tool is denied.
+
+---
+
 ### ContextCache
+
 - **Definition:** A trust-scored reusable summary store that lets Owl reuse prior context without reloading or re-summarizing the same architectural information.
 - **Canonical name:** ContextCache
 - **Not:** "history", "memory", "prompt cache" — ContextCache stores reusable summaries, not raw conversation turns or provider-side prompt cache markers.

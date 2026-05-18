@@ -1,6 +1,6 @@
 {
   "module": "@root/src/core/constants/tools.ts",
-  "state_id": "BigInt(0xebfac268c5f8ef36)",
+  "state_id": "BigInt(0x5289a3f3a25569a1)",
   "interface": {
     "inputs": [],
     "outputs": [],
@@ -18,7 +18,8 @@
     "locality_impact": "Registry mirror created from live source topology."
   },
   "dependencies": [
-    "@root/hashes/src/tools/risk.contract.json"
+    "@root/hashes/src/tools/risk.contract.json",
+    "@root/hashes/src/tools/permission.contract.json"
   ],
   "variants": []
 }

@@ -1,6 +1,6 @@
 {
   "module": "@root/src/tools/index.ts",
-  "state_id": "BigInt(0x35aac1f3fcf444c0)",
+  "state_id": "BigInt(0xe0e2bb883a7c0125)",
   "interface": {
     "inputs": [],
     "outputs": [],
@@ -10,7 +10,8 @@
     "invariants": [
       "BuiltInTools.callTool MUST classify ToolRisk before executing a tool",
       "BuiltInTools.callTool MUST deny BLOCKED ToolRisk invocations",
-      "BuiltInTools.callTool MUST preserve current behavior for LOW, MEDIUM, and HIGH risks until Permission mode is implemented"
+      "BuiltInTools.callTool MUST preserve current behavior for LOW, MEDIUM, and HIGH risks until interactive Permission enforcement is implemented",
+      "BuiltInToolsService MUST expose deterministic Permission decisions for commands and TUI visibility"
     ]
   },
   "architecture": {
@@ -25,7 +26,8 @@
     "locality_impact": "Registry mirror created from live source topology."
   },
   "dependencies": [
-    "@root/hashes/src/tools/risk.contract.json"
+    "@root/hashes/src/tools/risk.contract.json",
+    "@root/hashes/src/tools/permission.contract.json"
   ],
   "variants": []
 }

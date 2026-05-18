@@ -1,6 +1,6 @@
 {
   "module": "@root/src/tools/types.ts",
-  "state_id": "BigInt(0x596e0153d7ef2851)",
+  "state_id": "BigInt(0xe360f6d6100c943e)",
   "interface": {
     "inputs": [],
     "outputs": [],
@@ -17,6 +17,9 @@
     "leverage_delta": "+0.00",
     "locality_impact": "Registry mirror created from live source topology."
   },
-  "dependencies": [],
+  "dependencies": [
+    "@root/hashes/src/tools/risk.contract.json",
+    "@root/hashes/src/tools/permission.contract.json"
+  ],
   "variants": []
 }

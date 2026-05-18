@@ -345,9 +345,12 @@
       "file_path": "@root/src/commands/management/tools.ts",
       "hash_reference": "@root/hashes/src/commands/management/tools.hash.md",
       "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
-      "dependencies": [],
+      "dependencies": [
+        "@root/hashes/src/tools/risk.hash.md",
+        "@root/hashes/src/tools/permission.hash.md"
+      ],
       "fidelity_level": "Active",
-      "sig_id": "SIG-commands-management-tools-a639e7e8"
+      "sig_id": "SIG-commands-management-tools-cd1132e8"
     },
     "commands/parser": {
       "file_path": "@root/src/commands/parser.ts",
@@ -513,9 +516,12 @@
       "file_path": "@root/src/core/constants/tools.ts",
       "hash_reference": "@root/hashes/src/core/constants/tools.hash.md",
       "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
-      "dependencies": [],
+      "dependencies": [
+        "@root/hashes/src/tools/risk.hash.md",
+        "@root/hashes/src/tools/permission.hash.md"
+      ],
       "fidelity_level": "Active",
-      "sig_id": "SIG-core-constants-tools-e63ce905"
+      "sig_id": "SIG-core-constants-tools-5289a3f3"
     },
     "core/constants/tui": {
       "file_path": "@root/src/core/constants/tui.ts",
@@ -1209,9 +1215,12 @@
       "file_path": "@root/src/tools/index.ts",
       "hash_reference": "@root/hashes/src/tools/index.hash.md",
       "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
-      "dependencies": [],
+      "dependencies": [
+        "@root/hashes/src/tools/risk.hash.md",
+        "@root/hashes/src/tools/permission.hash.md"
+      ],
       "fidelity_level": "Active",
-      "sig_id": "SIG-tools-index-377d4843"
+      "sig_id": "SIG-tools-index-e0e2bb88"
     },
     "tools/path": {
       "file_path": "@root/src/tools/path.ts",
@@ -1233,11 +1242,20 @@
       "file_path": "@root/src/tools/risk.ts",
       "hash_reference": "@root/hashes/src/tools/risk.hash.md",
       "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": ["@root/hashes/src/core/constants/tools.hash.md"],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tools-risk-23cfac6d"
+    },
+    "tools/permission": {
+      "file_path": "@root/src/tools/permission.ts",
+      "hash_reference": "@root/hashes/src/tools/permission.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
       "dependencies": [
+        "@root/hashes/src/tools/risk.hash.md",
         "@root/hashes/src/core/constants/tools.hash.md"
       ],
       "fidelity_level": "Active",
-      "sig_id": "SIG-tools-risk-23cfac6d"
+      "sig_id": "SIG-tools-permission-3552f24b"
     },
     "tools/schema": {
       "file_path": "@root/src/tools/schema.ts",
@@ -1251,9 +1269,12 @@
       "file_path": "@root/src/tools/types.ts",
       "hash_reference": "@root/hashes/src/tools/types.hash.md",
       "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
-      "dependencies": [],
+      "dependencies": [
+        "@root/hashes/src/tools/risk.hash.md",
+        "@root/hashes/src/tools/permission.hash.md"
+      ],
       "fidelity_level": "Active",
-      "sig_id": "SIG-tools-types-51c1e471"
+      "sig_id": "SIG-tools-types-e360f6d6"
     },
     "tools/write": {
       "file_path": "@root/src/tools/write.ts",
@@ -1515,9 +1536,7 @@
       "file_path": "@root/src/tui/pending/shortcuts.ts",
       "hash_reference": "@root/hashes/src/tui/pending/shortcuts.hash.md",
       "grammar_ref": "@root/hashes/grammar/react/react.hash.md",
-      "dependencies": [
-        "@root/hashes/src/core/constants/tui.hash.md"
-      ],
+      "dependencies": ["@root/hashes/src/core/constants/tui.hash.md"],
       "fidelity_level": "Active",
       "sig_id": "SIG-tui-pending-shortcuts-d7835d0b"
     },

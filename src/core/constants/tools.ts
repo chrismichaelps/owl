@@ -41,6 +41,22 @@ export const TOOL_RISK_LEVELS = {
   BLOCKED: "blocked",
 } as const
 
+/** @Owl.Core.Constants.ToolPermissionModes - Ref-cli aligned Permission modes */
+export const TOOL_PERMISSION_MODES = {
+  ACCEPT_EDITS: "acceptEdits",
+  BYPASS_PERMISSIONS: "bypassPermissions",
+  DEFAULT: "default",
+  DONT_ASK: "dontAsk",
+  PLAN: "plan",
+} as const
+
+/** @Owl.Core.Constants.ToolPermissionBehaviors - Permission decision outcomes */
+export const TOOL_PERMISSION_BEHAVIORS = {
+  ALLOW: "allow",
+  DENY: "deny",
+  ASK: "ask",
+} as const
+
 /** @Owl.Core.Constants.ToolRiskBash - Bash command risk vocabulary */
 export const TOOL_RISK_BASH = {
   TOKEN_SPLIT_PATTERN: /\s+/u,

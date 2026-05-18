@@ -1,26 +1,30 @@
-State_ID: BigInt(0x377d48433dc3c0db)
-Git_SHA: d1dbb988d762910c2d3a7140fdb8e3fb963698a6
-Source_SHA256: 377d48433dc3c0db0f72dbb0521ccce7791391f637e24ff37386793ba1a5acd5
+State_ID: BigInt(0xe0e2bb883a7c0125)
+Git_SHA: 5bdeb9e46595c197a80043cc29039e5cc6934f58
+Source_SHA256: e0e2bb883a7c0125b89868759b614cd5ee02f25aca782689a61dbe1cd501816f
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
 Fidelity: ACTIVE
-Registry_Sync: 2026-05-18T02:25:00Z
+Registry_Sync: 2026-05-18T02:35:00Z
+
 ---
 
 ## @root/src/tools/index.ts
 
 ### [Signatures]
+
 - Source module mirrored from `src/tools/index.ts`.
 
 ### [Governance]
+
 - depth_score: 0.50
 - depth_status: MEDIUM
 - seam_capacity: INTERNAL
-- SIG_ID: SIG-tools-index-377d4843
+- SIG_ID: SIG-tools-index-e0e2bb88
 
 ### [Linkage]
+
 - Grammar: `@root/hashes/grammar/effect/effect.hash.md`
 - Parent: `@root/hashes/local.map.json`
 
-
 ### [Architecture]
-- Registry mirror generated from live source topology.
+
+- Registry mirror exposes ToolRisk and Permission seams.
