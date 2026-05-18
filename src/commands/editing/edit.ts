@@ -14,7 +14,7 @@
  * @example
  * /edit src/utils.ts "const x = 1" "const x: number = 1"
  */
-import { Effect } from "effect"
+import { Chunk, Effect } from "effect"
 import { COMMAND_CONSTANTS } from "../../core/constants/index.js"
 import { CommandParseError } from "../../core/errors/index.js"
 import type { PendingMutationStoreService } from "../../editor/pending/index.js"
@@ -45,7 +45,7 @@ export function formatEditOutput(
     String(first.diff.linesRemoved) +
     " removed | mutation " +
     mutationId
-  const impact = formatMutationImpactBlock([first.diff])
+  const impact = formatMutationImpactBlock(Chunk.make(first.diff))
   const patch = formatUnifiedDiff(first.file, first.diff.hunks)
 
   return patch.length > 0

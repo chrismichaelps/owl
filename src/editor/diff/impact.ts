@@ -66,10 +66,10 @@ const emptyMutationImpactSummary: MutationImpactSummary = Data.struct({
 
 /** @Owl.Editor.Diff.Impact.Summary - Summarize multiple file impacts */
 export const summarizeMutationImpact = (
-  diffs: readonly FileDiff[],
+  diffs: Chunk.Chunk<FileDiff>,
 ): MutationImpactSummary =>
   Chunk.reduce(
-    Chunk.map(Chunk.fromIterable(diffs), makeMutationImpact),
+    Chunk.map(diffs, makeMutationImpact),
     emptyMutationImpactSummary,
     (summary, impact) =>
       Data.struct({
@@ -86,9 +86,9 @@ export const summarizeMutationImpact = (
 
 /** @Owl.Editor.Diff.Impact.Inline - Render one-line impact summary */
 export const formatMutationImpactInline = (
-  diffs: readonly FileDiff[],
+  diffs: Chunk.Chunk<FileDiff>,
 ): string => {
-  if (diffs.length === 0) return "impact unavailable"
+  if (Chunk.isEmpty(diffs)) return "impact unavailable"
   const summary = summarizeMutationImpact(diffs)
   return (
     summary.severity +
@@ -118,11 +118,11 @@ const formatImpactLine = (impact: MutationImpact): string =>
 
 /** @Owl.Editor.Diff.Impact.Format - Render compact impact overlay */
 export const formatMutationImpactBlock = (
-  diffs: readonly FileDiff[],
+  diffs: Chunk.Chunk<FileDiff>,
 ): string => {
-  if (diffs.length === 0) return "Impact overlay\n- no file changes"
+  if (Chunk.isEmpty(diffs)) return "Impact overlay\n- no file changes"
 
-  const impacts = Chunk.map(Chunk.fromIterable(diffs), makeMutationImpact)
+  const impacts = Chunk.map(diffs, makeMutationImpact)
   const added = Chunk.reduce(impacts, 0, (total, impact) => {
     return total + impact.linesAdded
   })

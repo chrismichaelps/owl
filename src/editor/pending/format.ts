@@ -11,7 +11,7 @@ export const formatPendingMutationLine = (
   const previewDiffs = Chunk.map(mutation.previews, (preview) => preview.diff)
   const impact = Chunk.isEmpty(previewDiffs)
     ? ""
-    : " · " + formatMutationImpactInline(Chunk.toReadonlyArray(previewDiffs))
+    : " · " + formatMutationImpactInline(previewDiffs)
 
   return (
     mutation.mutationId +

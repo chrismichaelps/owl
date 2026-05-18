@@ -33,7 +33,7 @@ const formatPreviewDiff = (
   return (
     preview.file +
     "\n" +
-    formatMutationImpactBlock([preview.diff]) +
+    formatMutationImpactBlock(Chunk.make(preview.diff)) +
     "\n\n```" +
     fence +
     "\n" +
