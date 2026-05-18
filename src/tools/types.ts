@@ -7,6 +7,7 @@
 import type { Chunk, Effect } from "effect"
 import type { McpTool } from "../mcp/manager.js"
 import type { ToolExecutionError } from "../core/errors/index.js"
+import type { ToolRiskAssessment, ToolRiskLevel } from "./risk.js"
 
 /** Internal descriptor for a built-in tool */
 export interface BuiltInTool {
@@ -26,8 +27,13 @@ export interface BuiltInToolsService {
     readonly name: string
     readonly description: string
     readonly modelVisible: boolean
+    readonly riskLevel: ToolRiskLevel
   }>
   readonly getTools: () => Chunk.Chunk<McpTool>
+  readonly assessToolRisk: (
+    name: string,
+    input?: Record<string, unknown>,
+  ) => ToolRiskAssessment
   readonly callTool: (
     name: string,
     input: Record<string, unknown>,

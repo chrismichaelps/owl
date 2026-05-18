@@ -1,9 +1,9 @@
-State_ID: BigInt(0xebfac268c5f8ef36)
-Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
-Source_SHA256: ebfac268c5f8ef3676e7815fb561eefdeec9c072cbe7d046199c1beafbc8a572
+State_ID: BigInt(0xe63ce90552c665af)
+Git_SHA: fce688042c97859fe34944133550418daa486e91
+Source_SHA256: e63ce90552c665afa892c16dabb00e7a3c328d23a42abcc7ab621cd79b2be936
 Grammar_Lock: "@root/hashes/grammar/typescript/typescript.hash.md"
 Fidelity: ACTIVE
-Registry_Sync: 2026-05-18T01:02:15.287Z
+Registry_Sync: 2026-05-18T02:18:00Z
 ---
 
 ## @root/src/core/constants/tools.ts
@@ -15,7 +15,7 @@ Registry_Sync: 2026-05-18T01:02:15.287Z
 - depth_score: 0.50
 - depth_status: MEDIUM
 - seam_capacity: INTERNAL
-- SIG_ID: SIG-core-constants-tools-ebfac268
+- SIG_ID: SIG-core-constants-tools-e63ce905
 
 ### [Linkage]
 - Grammar: `@root/hashes/grammar/typescript/typescript.hash.md`

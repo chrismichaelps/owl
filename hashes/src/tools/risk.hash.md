@@ -1,9 +1,9 @@
-State_ID: BigInt(0x0000000000000000)
-Git_SHA: PENDING
-Source_SHA256: PENDING_SOURCE
+State_ID: BigInt(0x23cfac6d5aee94c3)
+Git_SHA: fce688042c97859fe34944133550418daa486e91
+Source_SHA256: 23cfac6d5aee94c3a8a6f882cabb74a827bd95d07a13a3d9b6ac809ce3d11fd7
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
-Fidelity: SIGNATURE
-Registry_Sync: 2026-05-18T02:08:00Z
+Fidelity: ACTIVE
+Registry_Sync: 2026-05-18T02:18:00Z
 ---
 
 ## @Owl.Tools.Risk (src/tools/risk.ts)
@@ -16,7 +16,7 @@ Registry_Sync: 2026-05-18T02:08:00Z
 - depth_score: 0.74
 - depth_status: DEEP
 - seam_capacity: CRITICAL
-- SIG_ID: SIG-tools-risk-00000001
+- SIG_ID: SIG-tools-risk-23cfac6d
 
 ### [Linkage]
 - Grammar: `@root/hashes/grammar/effect/effect.hash.md`

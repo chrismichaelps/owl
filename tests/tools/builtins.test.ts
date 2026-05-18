@@ -56,6 +56,19 @@ describe("BuiltInTools", () => {
     expect(names).not.toContain(TOOL_NAMES.BASH)
   })
 
+  it("exposes ToolRisk assessments for built-in tools", async () => {
+    const risk = await Effect.runPromise(
+      Effect.gen(function* () {
+        const tools = yield* BuiltInTools
+        return tools.assessToolRisk(TOOL_NAMES.BASH, {
+          command: "rm -rf dist",
+        })
+      }).pipe(Effect.provide(makeBuiltInToolsLive(projectRoot))),
+    )
+
+    expect(risk.level).toBe("blocked")
+  })
+
   it("writes, reads, and edits files inside the project root", async () => {
     const writeOutput = await runTool(TOOL_NAMES.WRITE, {
       file_path: "src/example.txt",

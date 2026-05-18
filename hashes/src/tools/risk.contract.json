@@ -1,10 +1,10 @@
 {
-  "contract_id": "CTR-tools-risk-00000001",
+  "contract_id": "CTR-tools-risk-23cfac6d",
   "module": "@Owl.Tools.Risk src/tools/risk.ts",
   "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
   "depth_score": "0.74 — DEEP (tool safety policy behind pure resolver)",
   "seam_capacity": "CRITICAL",
-  "sig_id": "SIG-tools-risk-00000001",
+  "sig_id": "SIG-tools-risk-23cfac6d",
   "interface": {
     "signatures": [
       "classifyToolRisk(toolName: string, input?: Record<string, unknown>) => ToolRiskAssessment",

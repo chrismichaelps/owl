@@ -1,3 +1,5 @@
+import { Chunk, HashSet } from "effect"
+
 /** @Owl.Core.Constants.ToolNames - Canonical names for built-in agentic tools */
 export const TOOL_NAMES = {
   BASH: "Bash",
@@ -29,4 +31,46 @@ export const TOOL_CONSTANTS = {
   TOOL_RESULT_MAX_CHARS: 50_000,
   TOOL_RESULT_TRUNCATION_PREFIX: "\n… [tool result truncated, ",
   TOOL_RESULT_TRUNCATION_SUFFIX: " chars omitted]",
+} as const
+
+/** @Owl.Core.Constants.ToolRisk - Canonical ToolRisk classifications */
+export const TOOL_RISK_LEVELS = {
+  LOW: "low",
+  MEDIUM: "medium",
+  HIGH: "high",
+  BLOCKED: "blocked",
+} as const
+
+/** @Owl.Core.Constants.ToolRiskBash - Bash command risk vocabulary */
+export const TOOL_RISK_BASH = {
+  TOKEN_SPLIT_PATTERN: /\s+/u,
+  READ_ONLY_COMMANDS: HashSet.fromIterable([
+    "cat",
+    "find",
+    "git",
+    "grep",
+    "head",
+    "ls",
+    "pwd",
+    "rg",
+    "sed",
+    "tail",
+    "wc",
+  ]),
+  BLOCKED_PATTERNS: Chunk.make(
+    "rm -rf",
+    "sudo ",
+    "chmod -r",
+    "chown -r",
+    "mkfs",
+    "dd if=",
+    "dd of=",
+    "shutdown",
+    "reboot",
+    "curl ",
+    "wget ",
+    "| sh",
+    "| bash",
+    "> /dev/",
+  ),
 } as const

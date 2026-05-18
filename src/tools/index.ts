@@ -21,6 +21,7 @@ import { EditTool } from "./edit.js"
 import { GlobTool } from "./glob.js"
 import { GrepTool } from "./grep.js"
 import { ToolExecutionError } from "../core/errors/index.js"
+import { classifyToolRisk, formatToolRisk } from "./risk.js"
 import type { BuiltInTool, BuiltInToolsService } from "./types.js"
 import type { McpTool } from "../mcp/manager.js"
 
@@ -69,10 +70,13 @@ export const makeBuiltInToolsLive = (cwd: string): Layer.Layer<BuiltInTools> =>
           name: tool.name,
           description: tool.description,
           modelVisible: tool.modelVisible,
+          riskLevel: classifyToolRisk(tool.name).level,
         }),
       ),
 
     getTools: () => TOOL_DESCRIPTORS,
+
+    assessToolRisk: classifyToolRisk,
 
     callTool: (name, input) => {
       const toolOpt = HashMap.get(TOOL_MAP, name)
@@ -91,3 +95,5 @@ export const makeBuiltInToolsLive = (cwd: string): Layer.Layer<BuiltInTools> =>
   } satisfies BuiltInToolsService)
 
 export type { BuiltInToolsService } from "./types.js"
+export { classifyToolRisk, formatToolRisk }
+export type { ToolRiskAssessment, ToolRiskLevel } from "./risk.js"

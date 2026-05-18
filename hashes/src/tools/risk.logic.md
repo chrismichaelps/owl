@@ -1,6 +1,6 @@
 ---
 Module: @root/src/tools/risk.ts
-State_ID: BigInt(0x0000000000000000)
+State_ID: BigInt(0x23cfac6d5aee94c3)
 ---
 
 # Logic Blueprint: @Owl.Tools.Risk src/tools/risk.ts

@@ -347,7 +347,7 @@
       "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
       "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-commands-management-tools-41e59369"
+      "sig_id": "SIG-commands-management-tools-a639e7e8"
     },
     "commands/parser": {
       "file_path": "@root/src/commands/parser.ts",
@@ -515,7 +515,7 @@
       "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
       "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-core-constants-tools-ebfac268"
+      "sig_id": "SIG-core-constants-tools-e63ce905"
     },
     "core/constants/tui": {
       "file_path": "@root/src/core/constants/tui.ts",
@@ -1211,7 +1211,7 @@
       "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
       "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-tools-index-35aac1f3"
+      "sig_id": "SIG-tools-index-c486981c"
     },
     "tools/path": {
       "file_path": "@root/src/tools/path.ts",
@@ -1236,8 +1236,8 @@
       "dependencies": [
         "@root/hashes/src/core/constants/tools.hash.md"
       ],
-      "fidelity_level": "Signature",
-      "sig_id": "SIG-tools-risk-00000001"
+      "fidelity_level": "Active",
+      "sig_id": "SIG-tools-risk-23cfac6d"
     },
     "tools/schema": {
       "file_path": "@root/src/tools/schema.ts",
@@ -1253,7 +1253,7 @@
       "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
       "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-tools-types-596e0153"
+      "sig_id": "SIG-tools-types-51c1e471"
     },
     "tools/write": {
       "file_path": "@root/src/tools/write.ts",
