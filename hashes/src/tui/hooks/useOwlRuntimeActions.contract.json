@@ -1,6 +1,6 @@
 {
   "module": "@root/src/tui/hooks/useOwlRuntimeActions.ts",
-  "state_id": "BigInt(0x6c3c6aa9c1ff00d8)",
+  "state_id": "BigInt(0x51c9281ecb7a55f8)",
   "interface": {
     "inputs": [
       {
@@ -26,7 +26,13 @@
         "complexity": "O(n)"
       }
     ],
-    "error_modes": []
+    "error_modes": [],
+    "signatures": [
+      "RuntimeActions dispatch SET_EXECUTION_STAGE during prompt and command lifecycles"
+    ],
+    "invariants": [
+      "Runtime action handlers MUST expose analysis, routing, streaming, verification, command, idle, and error stages through reducer actions."
+    ]
   },
   "architecture": {
     "depth_score": 0.5,
@@ -44,5 +50,8 @@
     "@root/hashes/src/engine/memory/index.contract.json",
     "@root/hashes/src/tui/session/sync.contract.json"
   ],
-  "variants": []
+  "variants": [],
+  "responsibilities": [
+    "Surface visible execution stage for runtime observability"
+  ]
 }

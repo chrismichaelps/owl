@@ -2,10 +2,12 @@
 import { HashMap, Option } from "effect"
 import {
   TUI_ROLE_COLORS,
+  TUI_EXECUTION_STAGE_LABELS,
   TUI_STATUS_COLORS,
   TUI_STATUS_ICONS,
   TUI_VISUAL_FALLBACKS,
 } from "../../core/constants/index.js"
+import type { TuiExecutionStage } from "../../core/constants/index.js"
 import type { ActiveRole, AgentStatus } from "../state.js"
 
 const resolve = (
@@ -25,3 +27,7 @@ export const resolveStatusColor = (status: AgentStatus): string =>
 /** @Owl.TUI.Status.Visuals.RoleColor - Resolve role color */
 export const resolveRoleColor = (role: NonNullable<ActiveRole>): string =>
   resolve(TUI_ROLE_COLORS, role, TUI_VISUAL_FALLBACKS.COLOR)
+
+/** @Owl.TUI.Status.Visuals.StageLabel - Resolve execution stage label */
+export const resolveExecutionStageLabel = (stage: TuiExecutionStage): string =>
+  resolve(TUI_EXECUTION_STAGE_LABELS, stage, stage)

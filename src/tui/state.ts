@@ -20,9 +20,11 @@ import {
   AGENT_STATUS,
   TOOL_PERMISSION_MODES,
   TUI_MAX_LOG_LINES,
+  TUI_EXECUTION_STAGES,
 } from "../core/constants/index.js"
 import { TUI_FOCUS } from "../core/constants/index.js"
 import type { FocusedPanel } from "./focus/index.js"
+import type { TuiExecutionStage } from "../core/constants/index.js"
 import type { ToolPermissionMode } from "../tools/index.js"
 
 export type AgentStatus = (typeof AGENT_STATUS)[keyof typeof AGENT_STATUS]
@@ -111,6 +113,7 @@ export interface OwlAppState {
   readonly streamingContent: string
   readonly pendingMutations: Chunk.Chunk<PendingMutationSummary>
   readonly focusedPanel: FocusedPanel
+  readonly executionStage: TuiExecutionStage
 }
 
 /** @Owl.TUI.State.Action - Discriminated union of all state transitions */
@@ -135,6 +138,10 @@ export type OwlAction =
       readonly pendingMutations: Chunk.Chunk<PendingMutationSummary>
     }
   | { readonly type: "SET_FOCUSED_PANEL"; readonly panel: FocusedPanel }
+  | {
+      readonly type: "SET_EXECUTION_STAGE"
+      readonly stage: TuiExecutionStage
+    }
   | { readonly type: "RESET" }
 
 /** @Owl.TUI.State.Initial - Default state for new sessions */
@@ -160,6 +167,7 @@ export const INITIAL_STATE: OwlAppState = {
   streamingContent: "",
   pendingMutations: Chunk.empty(),
   focusedPanel: TUI_FOCUS.RESPONSE,
+  executionStage: TUI_EXECUTION_STAGES.IDLE,
 }
 
 /**
@@ -252,6 +260,10 @@ export function owlReducer(state: OwlAppState, action: OwlAction): OwlAppState {
     case "SET_FOCUSED_PANEL":
       return { ...state, focusedPanel: action.panel }
 
+    /** @Owl.TUI.State.Reducer.SET_EXECUTION_STAGE — Tracks visible runtime stage */
+    case "SET_EXECUTION_STAGE":
+      return { ...state, executionStage: action.stage }
+
     /** @Owl.TUI.State.Reducer.RESET — Returns to idle, preserves metrics */
     case "RESET":
       return {
@@ -266,6 +278,7 @@ export function owlReducer(state: OwlAppState, action: OwlAction): OwlAppState {
         turns: state.turns,
         pendingMutations: state.pendingMutations,
         focusedPanel: state.focusedPanel,
+        executionStage: TUI_EXECUTION_STAGES.IDLE,
       }
   }
 }

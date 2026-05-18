@@ -22,3 +22,7 @@ State_ID: BigInt(0x6c3c6aa9c1ff00d8)
 
 - Missing dependencies: fail through the caller's typed error channel.
 - Empty input collections: preserve deterministic no-op behavior.
+
+## Execution Stage Observability
+
+- Prompt execution dispatches analysis, routing, streaming, verification, idle, and error stages at lifecycle boundaries. Command execution dispatches command, idle, and error stages.

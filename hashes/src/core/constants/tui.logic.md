@@ -19,3 +19,7 @@ State_ID: BigInt(0xd9c7e4a8432b50ee)
 
 - Missing dependencies: fail through the caller's typed error channel.
 - Empty input collections: preserve deterministic no-op behavior.
+
+## Execution Stage Observability
+
+- Expose TUI_EXECUTION_STAGES and TUI_EXECUTION_STAGE_LABELS so execution stage copy is centralized.

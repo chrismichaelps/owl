@@ -1,9 +1,9 @@
-State_ID: BigInt(0xa0d0b8e82a0cbdc8)
-Git_SHA: f1b13413fd4d8ec3343ed363319d201316149bc6
-Source_SHA256: a0d0b8e82a0cbdc8b9bcd795d9606a6bd41e1e54e3ffcf1060c6d68729795776
+State_ID: BigInt(0x89b01fb38b541881)
+Git_SHA: e44dbd9d3e552a3bc9b1aa2e5c8ab21d64ca7da6
+Source_SHA256: 89b01fb38b54188114d7eaa2de969a9f201a84207599cb1d527c2be57417aa54
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
 Fidelity: ACTIVE
-Registry_Sync: 2026-05-18T03:29:56Z
+Registry_Sync: 2026-05-18T15:08:52Z
 
 ---
 
@@ -19,7 +19,7 @@ Registry_Sync: 2026-05-18T03:29:56Z
 - depth_score: 0.82 — DEEP (main layout shell)
 - seam_capacity: BACKBONE (connects all TUI components)
 - leverage: CRITICAL (renders entire UI)
-- SIG_ID: SIG-tui-app-a0d0b8e8
+- SIG_ID: SIG-tui-app-89b01fb3
 
 ### [Linkage]
 
@@ -46,3 +46,4 @@ Registry_Sync: 2026-05-18T03:29:56Z
 - Passes Permission mode state into StatusBar and MetaPanel for session visibility
 - Applies startup Permission mode, optional Session resume, Privacy mode, and Provider override before optional initial prompt execution
 - Mounts McpManager from AppProps.mcpManager — optional (no MCP = servers=[])
+- Passes execution stage state into the left rail, metrics rail, and bottom status bar.

@@ -18,6 +18,8 @@ import {
   TOKEN_PRESSURE_LEVEL,
   resolveTokenPressure,
 } from "../status/tokenPressure.js"
+import { resolveExecutionStageLabel } from "../status/visuals.js"
+import type { TuiExecutionStage } from "../../core/constants/index.js"
 
 interface StatusBarProps {
   readonly status: AgentStatus
@@ -30,6 +32,7 @@ interface StatusBarProps {
   readonly permissionMode: ToolPermissionMode
   readonly model: string | null
   readonly routingMode: Mode | null
+  readonly executionStage: TuiExecutionStage
   readonly pendingMutationCount: number
 }
 
@@ -79,6 +82,7 @@ export const StatusBar: React.FC<StatusBarProps> = memo(
     permissionMode,
     model,
     routingMode,
+    executionStage,
     pendingMutationCount,
   }) => {
     const pressure = resolveTokenPressure(
@@ -118,6 +122,9 @@ export const StatusBar: React.FC<StatusBarProps> = memo(
             </Text>
           ) : null}
           <Text color={STATUS_COLOR[status]}>{status.toUpperCase()}</Text>
+          <Text color="cyan">
+            stage:{resolveExecutionStageLabel(executionStage)}
+          </Text>
           <Text color="cyan">route:{providerOverride ?? "auto"}</Text>
           <Text
             color={

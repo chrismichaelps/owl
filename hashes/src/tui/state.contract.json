@@ -4,7 +4,7 @@
   "grammar_lock": "@root/hashes/grammar/react/react.hash.md",
   "depth_score": "0.80 — DEEP (pure state transition logic)",
   "seam_capacity": "INTERNAL (tui state)",
-  "sig_id": "SIG-tui-state-44d58707",
+  "sig_id": "SIG-tui-state-518624e5",
   "interface": {
     "signatures": [
       "owlReducer(state: OwlAppState, action: OwlAction) => OwlAppState",
@@ -12,18 +12,22 @@
       "ResponseSnapshot: Interface",
       "OwlAction.SET_TURNS replaces visible conversation turns from SessionMemory",
       "OwlAppState.permissionMode: ToolPermissionMode",
-      "OwlAction.SET_PERMISSION_MODE updates session Permission visibility"
+      "OwlAction.SET_PERMISSION_MODE updates session Permission visibility",
+      "OwlAppState.executionStage: TuiExecutionStage",
+      "OwlAction.SET_EXECUTION_STAGE updates visible runtime stage"
     ],
     "error_modes": [],
     "invariants": [
       "Permission mode MUST default to default",
       "Permission mode MUST mirror ToolPermissionState snapshots from the runtime",
-      "SET_TURNS MUST replace visible conversation turns without altering Provider routing state"
+      "SET_TURNS MUST replace visible conversation turns without altering Provider routing state",
+      "Execution stage MUST reset to idle on RESET."
     ]
   },
   "responsibilities": [
     "Track the visible Permission mode for the active TUI Session",
-    "Replace visible conversation turns after Session lifecycle commands"
+    "Replace visible conversation turns after Session lifecycle commands",
+    "Surface visible execution stage for runtime observability"
   ],
   "prohibited": [],
   "created_at": "2026-05-14T15:55:47.198187Z"

@@ -8,6 +8,7 @@ import {
 } from "../../core/constants/index.js"
 import type { OwlAppState } from "../state.js"
 import { PendingApprovalsPanel } from "./PendingApprovalsPanel.js"
+import { resolveExecutionStageLabel } from "../status/visuals.js"
 
 interface MetaPanelProps {
   readonly state: OwlAppState
@@ -73,6 +74,11 @@ export const MetaPanel: React.FC<MetaPanelProps> = memo(
               ? "blueBright"
               : "white"
           }
+        />
+        <MetricRow
+          label="Stage"
+          value={resolveExecutionStageLabel(state.executionStage)}
+          valueColor="cyan"
         />
         <MetricRow
           label="Override"

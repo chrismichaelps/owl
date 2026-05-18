@@ -1,9 +1,9 @@
-State_ID: BigInt(0x44d58707de5b9515)
-Git_SHA: 185e899580c525113a3ee902cef52174ecabeee9
-Source_SHA256: 44d58707de5b95155462eb0abda355d540f34848e6956c1c6f5254413e1362d3
+State_ID: BigInt(0x518624e539d9a946)
+Git_SHA: e44dbd9d3e552a3bc9b1aa2e5c8ab21d64ca7da6
+Source_SHA256: 518624e539d9a94638db296b8593d4765635a65663fcfcfe666ebfe0995cf9fd
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
 Fidelity: ACTIVE
-Registry_Sync: 2026-05-18T14:55:43Z
+Registry_Sync: 2026-05-18T15:08:52Z
 
 ---
 
@@ -34,7 +34,7 @@ Registry_Sync: 2026-05-18T14:55:43Z
 - depth_score: 0.80 — DEEP (pure state transition logic)
 - seam_capacity: INTERNAL (tui state)
 - leverage: HIGH (manages logs, token counts, status, and responses)
-- SIG_ID: SIG-tui-state-44d58707
+- SIG_ID: SIG-tui-state-518624e5
 
 ### [Linkage]
 
@@ -52,3 +52,4 @@ Registry_Sync: 2026-05-18T14:55:43Z
 - ConversationTurn union enables type-narrowing at render time (inference vs command)
 - SET_TURNS allows Session lifecycle commands to refresh visible history without touching routing state
 - AgentStatus and ActiveRole drive FMCF pipeline animation in AgentPipeline component
+- Tracks visible executionStage as pure reducer state and resets it deterministically.

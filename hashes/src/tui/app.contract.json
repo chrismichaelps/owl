@@ -4,14 +4,15 @@
   "grammar_lock": "@root/hashes/grammar/react/react.hash.md",
   "depth_score": "0.82 — DEEP (main layout shell)",
   "seam_capacity": "BACKBONE (connects all TUI components)",
-  "sig_id": "SIG-tui-app-a0d0b8e8",
+  "sig_id": "SIG-tui-app-89b01fb3",
   "interface": {
     "signatures": [
       "OwlApp(props: OwlAppProps) => ReactElement",
       "AppProps.initialPermissionMode?: ToolPermissionMode",
       "AppProps.initialPrivacyMode?: boolean",
       "AppProps.initialResumeSessionId?: string | null",
-      "AppProps.initialProviderOverride?: ProviderId | null"
+      "AppProps.initialProviderOverride?: ProviderId | null",
+      "App passes OwlAppState.executionStage to LogPanel, MetaPanel, and StatusBar"
     ],
     "error_modes": [],
     "invariants": [
@@ -19,7 +20,8 @@
       "Startup Resume Session id MUST be applied before optional initial prompt execution",
       "Startup Privacy mode MUST be applied before startup Provider override",
       "Startup Provider override MUST be applied before optional initial prompt execution",
-      "Startup Provider override MUST route through CommandRegistry /model dispatch"
+      "Startup Provider override MUST route through CommandRegistry /model dispatch",
+      "Execution stage state MUST be rendered without duplicating lifecycle logic inside presentation components."
     ]
   },
   "responsibilities": [
@@ -27,7 +29,8 @@
     "Initialize visible and runtime Permission mode from CLI startup args",
     "Initialize SessionMemory from CLI startup Resume Session id",
     "Initialize visible and runtime Privacy mode from CLI startup args",
-    "Initialize visible and runtime Provider override from CLI startup args"
+    "Initialize visible and runtime Provider override from CLI startup args",
+    "Surface visible execution stage for runtime observability"
   ],
   "prohibited": [
     "MUST NOT resolve pending Mutation approval shortcuts inline; use @root/src/tui/pending/shortcuts.ts"

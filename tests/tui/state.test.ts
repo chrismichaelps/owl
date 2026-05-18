@@ -107,6 +107,10 @@ describe("INITIAL_STATE shape", () => {
   it("starts focused on the response panel", () => {
     expect(INITIAL_STATE.focusedPanel).toBe(TUI_FOCUS.RESPONSE)
   })
+
+  it("starts at idle execution stage", () => {
+    expect(INITIAL_STATE.executionStage).toBe("idle")
+  })
 })
 
 describe("SET_STATUS action", () => {
@@ -424,6 +428,16 @@ describe("SET_FOCUSED_PANEL action", () => {
   })
 })
 
+describe("SET_EXECUTION_STAGE action", () => {
+  it("updates the visible runtime stage", () => {
+    const next = reduce(INITIAL_STATE, {
+      type: "SET_EXECUTION_STAGE",
+      stage: "streaming",
+    })
+    expect(next.executionStage).toBe("streaming")
+  })
+})
+
 describe("RESET action", () => {
   it("returns to idle status", () => {
     const s = { ...INITIAL_STATE, status: "inferring" as const }
@@ -514,6 +528,15 @@ describe("RESET action", () => {
     }
     const next = reduce(s, { type: "RESET" })
     expect(next.focusedPanel).toBe(TUI_FOCUS.LOGS)
+  })
+
+  it("resets execution stage to idle", () => {
+    const s = {
+      ...INITIAL_STATE,
+      executionStage: "streaming" as const,
+    }
+    const next = reduce(s, { type: "RESET" })
+    expect(next.executionStage).toBe("idle")
   })
 })
 

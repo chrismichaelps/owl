@@ -110,6 +110,34 @@ export const TUI_RUNTIME_COPY = {
   ADAPTIVE_ROUTE_PREFIX: "↗ Route escalated",
 } as const
 
+/** @Owl.Core.Constants.TUIExecutionStages - Visible runtime execution stages */
+export const TUI_EXECUTION_STAGES = {
+  IDLE: "idle",
+  ANALYSIS: "analysis",
+  ROUTING: "routing",
+  STREAMING: "streaming",
+  VERIFICATION: "verification",
+  COMMAND: "command",
+  ERROR: "error",
+} as const
+
+export type TuiExecutionStage =
+  (typeof TUI_EXECUTION_STAGES)[keyof typeof TUI_EXECUTION_STAGES]
+
+/** @Owl.Core.Constants.TUIExecutionStageLabels - Stage label lookup */
+export const TUI_EXECUTION_STAGE_LABELS: HashMap.HashMap<
+  TuiExecutionStage,
+  string
+> = HashMap.fromIterable([
+  [TUI_EXECUTION_STAGES.IDLE, "Idle"],
+  [TUI_EXECUTION_STAGES.ANALYSIS, "Analysis"],
+  [TUI_EXECUTION_STAGES.ROUTING, "Routing"],
+  [TUI_EXECUTION_STAGES.STREAMING, "Streaming"],
+  [TUI_EXECUTION_STAGES.VERIFICATION, "Verification"],
+  [TUI_EXECUTION_STAGES.COMMAND, "Command"],
+  [TUI_EXECUTION_STAGES.ERROR, "Error"],
+])
+
 /** @Owl.Core.Constants.TUIRoutingCopy - Routing mode display labels */
 export const TUI_ROUTING_COPY = {
   LABEL: "Route",

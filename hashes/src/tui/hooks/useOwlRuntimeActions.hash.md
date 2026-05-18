@@ -1,9 +1,9 @@
-State_ID: BigInt(0x6c3c6aa9c1ff00d8)
-Git_SHA: 185e899580c525113a3ee902cef52174ecabeee9
-Source_SHA256: 6c3c6aa9c1ff00d8f7d87f2bec33fc9c634a1fef0bc1526cc7930ccefa110508
+State_ID: BigInt(0x51c9281ecb7a55f8)
+Git_SHA: e44dbd9d3e552a3bc9b1aa2e5c8ab21d64ca7da6
+Source_SHA256: 51c9281ecb7a55f8fcffb5ee7bce5c23b22e6c4a3968c99a6c0633bc47da7591
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
 Fidelity: ACTIVE
-Registry_Sync: 2026-05-18T14:55:43Z
+Registry_Sync: 2026-05-18T15:08:52Z
 
 ---
 
@@ -18,7 +18,7 @@ Registry_Sync: 2026-05-18T14:55:43Z
 - depth_score: 0.50
 - depth_status: MEDIUM
 - seam_capacity: INTERNAL
-- SIG_ID: SIG-tui-hooks-useOwlRuntimeActions-6c3c6aa9
+- SIG_ID: SIG-tui-hooks-useOwlRuntimeActions-51c9281e
 
 ### [Linkage]
 
@@ -28,3 +28,4 @@ Registry_Sync: 2026-05-18T14:55:43Z
 ### [Architecture]
 
 - Synchronizes routing, privacy, pending Mutation, Permission mode, and visible Session turns from the runtime.
+- Dispatches execution stage transitions for analysis, routing, streaming, verification, command, cancellation, and errors.

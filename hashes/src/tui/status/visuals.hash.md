@@ -1,26 +1,31 @@
-State_ID: BigInt(0xe4a26808a0b159ba)
-Git_SHA: 394e2dc49d8e980117dfaf68a4f26f18687d41c2
-Source_SHA256: e4a26808a0b159bae52e9c3616db9d4a195336e8ff5f3d02d3060b2309e566f8
+State_ID: BigInt(0xe3b2e7a1e3aadb2c)
+Git_SHA: e44dbd9d3e552a3bc9b1aa2e5c8ab21d64ca7da6
+Source_SHA256: e3b2e7a1e3aadb2c146ae2ec8975c152cf99499935db22ba642b30b8865c46c5
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
 Fidelity: ACTIVE
-Registry_Sync: 2026-05-18T01:02:15.287Z
+Registry_Sync: 2026-05-18T15:08:52Z
+
 ---
 
 ## @root/src/tui/status/visuals.ts
 
 ### [Signatures]
+
 - Source module mirrored from `src/tui/status/visuals.ts`.
 
 ### [Governance]
+
 - depth_score: 0.50
 - depth_status: MEDIUM
 - seam_capacity: INTERNAL
-- SIG_ID: SIG-tui-status-visuals-e4a26808
+- SIG_ID: SIG-tui-status-visuals-e3b2e7a1
 
 ### [Linkage]
+
 - Grammar: `@root/hashes/grammar/effect/effect.hash.md`
 - Parent: `@root/hashes/local.map.json`
 
-
 ### [Architecture]
+
 - Registry mirror generated from live source topology.
+- Resolves execution stage labels through the centralized TUI constants lookup.

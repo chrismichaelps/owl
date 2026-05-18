@@ -1,10 +1,17 @@
 {
   "module": "@root/src/core/constants/tui.ts",
-  "state_id": "BigInt(0xd9c7e4a8432b50ee)",
+  "state_id": "BigInt(0x18bd1c5219c0469b)",
   "interface": {
     "inputs": [],
     "outputs": [],
-    "error_modes": []
+    "error_modes": [],
+    "signatures": [
+      "TUI_EXECUTION_STAGES: Record<string, TuiExecutionStage>",
+      "TUI_EXECUTION_STAGE_LABELS: HashMap<TuiExecutionStage, string>"
+    ],
+    "invariants": [
+      "Execution stage vocabulary MUST remain centralized in TUI constants."
+    ]
   },
   "architecture": {
     "depth_score": 0.5,
@@ -17,8 +24,9 @@
     "leverage_delta": "+0.00",
     "locality_impact": "Registry mirror created from live source topology."
   },
-  "dependencies": [
-    "@root/hashes/src/tui/pending/shortcuts.contract.json"
-  ],
-  "variants": []
+  "dependencies": ["@root/hashes/src/tui/pending/shortcuts.contract.json"],
+  "variants": [],
+  "responsibilities": [
+    "Surface visible execution stage for runtime observability"
+  ]
 }

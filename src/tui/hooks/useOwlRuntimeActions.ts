@@ -14,6 +14,7 @@ import {
   EFFECT_TAGS,
   JS_TYPES,
   TUI_CONSTANTS,
+  TUI_EXECUTION_STAGES,
   TUI_ROUTING_COPY,
   TUI_RUNTIME_COPY,
 } from "../../core/constants/index.js"
@@ -98,6 +99,10 @@ export function useOwlRuntimeActions(
 
       dispatch({ type: "RESET" })
       dispatch({
+        type: "SET_EXECUTION_STAGE",
+        stage: TUI_EXECUTION_STAGES.ANALYSIS,
+      })
+      dispatch({
         type: "ADD_LOG",
         msg: "▶ Task: " + prompt.slice(0, TUI_CONSTANTS.TASK_LOG_PREVIEW_CHARS),
       })
@@ -120,9 +125,17 @@ export function useOwlRuntimeActions(
           })
         }
 
+        dispatch({
+          type: "SET_EXECUTION_STAGE",
+          stage: TUI_EXECUTION_STAGES.ROUTING,
+        })
         dispatch({ type: "ADD_LOG", msg: "◆ Routing to provider…" })
         dispatch({ type: "SET_ROLE", role: "DNA Engineer" })
         dispatch({ type: "SET_STATUS", status: AGENT_STATUS.INFERRING })
+        dispatch({
+          type: "SET_EXECUTION_STAGE",
+          stage: TUI_EXECUTION_STAGES.STREAMING,
+        })
         dispatch({ type: "ADD_LOG", msg: "◈ Streaming…" })
         dispatch({ type: "CLEAR_STREAM" })
 
@@ -142,6 +155,10 @@ export function useOwlRuntimeActions(
         )
 
         dispatch({ type: "SET_ROLE", role: "Forensic Guardian" })
+        dispatch({
+          type: "SET_EXECUTION_STAGE",
+          stage: TUI_EXECUTION_STAGES.VERIFICATION,
+        })
         if (
           response.requestedMode !== undefined &&
           response.routingMode !== undefined &&
@@ -186,9 +203,17 @@ export function useOwlRuntimeActions(
         .catch((error: unknown) => {
           if (isInterrupted(error)) {
             dispatch({ type: "SET_STATUS", status: AGENT_STATUS.IDLE })
+            dispatch({
+              type: "SET_EXECUTION_STAGE",
+              stage: TUI_EXECUTION_STAGES.IDLE,
+            })
             return
           }
           const msg = errorMessage(error)
+          dispatch({
+            type: "SET_EXECUTION_STAGE",
+            stage: TUI_EXECUTION_STAGES.ERROR,
+          })
           dispatch({ type: "SET_ERROR", error: msg })
           dispatch({
             type: "ADD_LOG",
@@ -208,12 +233,20 @@ export function useOwlRuntimeActions(
     if (fiber === null) return
     activeFiberRef.current = null
     dispatch({ type: "SET_STATUS", status: AGENT_STATUS.IDLE })
+    dispatch({
+      type: "SET_EXECUTION_STAGE",
+      stage: TUI_EXECUTION_STAGES.IDLE,
+    })
     dispatch({ type: "ADD_LOG", msg: "⊘ Cancelled" })
     void runtime.runPromise(Fiber.interrupt(fiber))
   }, [dispatch, runtime])
 
   const handleCommand = useCallback(
     (raw: string) => {
+      dispatch({
+        type: "SET_EXECUTION_STAGE",
+        stage: TUI_EXECUTION_STAGES.COMMAND,
+      })
       const effect = Effect.gen(function* () {
         const registry = yield* CommandRegistry
         const sessionMemory = yield* SessionMemory
@@ -267,10 +300,18 @@ export function useOwlRuntimeActions(
             timestamp: new Date().toISOString(),
           },
         })
+        dispatch({
+          type: "SET_EXECUTION_STAGE",
+          stage: TUI_EXECUTION_STAGES.IDLE,
+        })
       })
       void runtime.runPromise(effect).catch((error: unknown) => {
         const msg = errorMessage(error)
         commandCounterRef.current += 1
+        dispatch({
+          type: "SET_EXECUTION_STAGE",
+          stage: TUI_EXECUTION_STAGES.ERROR,
+        })
         dispatch({
           type: "ADD_LOG",
           msg:

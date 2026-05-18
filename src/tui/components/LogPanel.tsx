@@ -5,21 +5,24 @@ import type { AgentStatus, ActiveRole } from "../state.js"
 import { AgentPipeline } from "./AgentPipeline.js"
 import { TUI_LOG_PANEL } from "../../core/constants/index.js"
 import {
+  resolveExecutionStageLabel,
   resolveRoleColor,
   resolveStatusColor,
   resolveStatusIcon,
 } from "../status/visuals.js"
+import type { TuiExecutionStage } from "../../core/constants/index.js"
 
 interface LogPanelProps {
   readonly logs: readonly string[]
   readonly status: AgentStatus
   readonly activeRole: ActiveRole
+  readonly executionStage: TuiExecutionStage
   readonly focused: boolean
 }
 
 /** @Owl.TUI.Components.LogPanel.Component - Left panel with logs and role badge */
 export const LogPanel: React.FC<LogPanelProps> = memo(
-  ({ logs, status, activeRole, focused }) => (
+  ({ logs, status, activeRole, executionStage, focused }) => (
     <Box
       flexDirection="column"
       borderStyle="round"
@@ -39,6 +42,13 @@ export const LogPanel: React.FC<LogPanelProps> = memo(
           {resolveStatusIcon(status)}
         </Text>
         <Text color={resolveStatusColor(status)}>{status.toUpperCase()}</Text>
+      </Box>
+
+      <Box marginTop={1}>
+        <Text color="gray">Stage: </Text>
+        <Text color="cyan" bold>
+          {resolveExecutionStageLabel(executionStage)}
+        </Text>
       </Box>
 
       {/* Active role */}

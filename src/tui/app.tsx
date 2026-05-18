@@ -264,6 +264,7 @@ export const App: React.FC<AppProps> = ({
             logs={state.logs}
             status={state.status}
             activeRole={state.activeRole}
+            executionStage={state.executionStage}
             focused={state.focusedPanel === TUI_FOCUS.LOGS}
           />
           <OutputPanel
@@ -320,6 +321,7 @@ export const App: React.FC<AppProps> = ({
         permissionMode={state.permissionMode}
         model={state.model}
         routingMode={state.routingMode}
+        executionStage={state.executionStage}
         pendingMutationCount={Chunk.size(state.pendingMutations)}
       />
     </Box>
