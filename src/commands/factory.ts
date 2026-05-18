@@ -36,6 +36,7 @@ import { makePermissionsCommand } from "./management/permissions.js"
 import { makePrivacyCommand } from "./management/privacy.js"
 import { makeProvidersCommand } from "./management/providers.js"
 import { makeRegistryCommand } from "./management/registry.js"
+import { makeResumeCommand } from "./management/resume.js"
 import { makeRoleCommand } from "./management/role.js"
 import { makeStatusCommand } from "./management/status.js"
 import { makeToolsCommand } from "./management/tools.js"
@@ -114,6 +115,7 @@ export const makeCommandHandlers = (
     makeUndoCommand(deps.rollback, projectRoot),
     makeRoleCommand(deps.roleCtx),
     makeRegistryCommand(deps.hashRegistry),
+    makeResumeCommand(deps.sessionMemory),
     makeAuditCommand(deps.orchestrator),
     makeStatusCommand(deps.sessionMemory, deps.usageMetrics),
     makeClearCommand(deps.contextManager),

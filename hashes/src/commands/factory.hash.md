@@ -1,26 +1,30 @@
-State_ID: BigInt(0x182ff21ebcd7431a)
-Git_SHA: d3c6a7c5049212a7869cdca8b4988e784a0a45b0
-Source_SHA256: 182ff21ebcd7431a6ed974c2c418202ec13209cd1b15fcbe7b6a007aa4eab640
+State_ID: BigInt(0x182149fc0d9d2490)
+Git_SHA: 2fcb8a42455d8bbc71b152f6c893a1d8706db7e6
+Source_SHA256: 182149fc0d9d2490907bbc983b9c2f477c7748e7ffe276b1af76c4ea725c998c
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
 Fidelity: ACTIVE
-Registry_Sync: 2026-05-18T03:05:00Z
+Registry_Sync: 2026-05-18T03:34:21Z
+
 ---
 
 ## @root/src/commands/factory.ts
 
 ### [Signatures]
+
 - Source module mirrored from `src/commands/factory.ts`.
 
 ### [Governance]
+
 - depth_score: 0.50
 - depth_status: MEDIUM
 - seam_capacity: INTERNAL
-- SIG_ID: SIG-commands-factory-182ff21e
+- SIG_ID: SIG-commands-factory-182149fc
 
 ### [Linkage]
+
 - Grammar: `@root/hashes/grammar/effect/effect.hash.md`
 - Parent: `@root/hashes/local.map.json`
 
-
 ### [Architecture]
-- Registry mirror injects ToolPermissionState into /tools and /permissions.
+
+- Registry mirror injects SessionMemory into /resume, /history, /memory, and /status.

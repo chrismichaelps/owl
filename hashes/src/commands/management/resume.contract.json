@@ -1,0 +1,47 @@
+{
+  "module": "@root/src/commands/management/resume.ts",
+  "state_id": "BigInt(0x09e0c728be9ad141)",
+  "interface": {
+    "inputs": [
+      {
+        "name": "args",
+        "type": "readonly string[]",
+        "invariants": "First argument is an optional Session id"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "CommandHandler",
+        "type": "CommandHandler",
+        "complexity": "O(1)"
+      },
+      {
+        "name": "CommandResult.output",
+        "type": "string",
+        "complexity": "O(1)"
+      }
+    ],
+    "error_modes": [
+      "SessionMemoryValidationError wrapped by CommandParseError",
+      "SessionMemoryPersistenceError wrapped by CommandParseError"
+    ],
+    "invariants": [
+      "Resume MUST delegate to SessionMemory.resumeSession",
+      "Resume MUST NOT mutate ContextManager or Provider routing state",
+      "Empty args MUST report the active Session id without starting a new Session"
+    ]
+  },
+  "architecture": {
+    "depth_score": 0.62,
+    "depth_status": "MEDIUM",
+    "leverage": "MEDIUM",
+    "locality": "HIGH",
+    "seam_capacity": "INTERNAL",
+    "coupling_complexity": 0.2,
+    "interface_stability": 1,
+    "leverage_delta": "+0.00",
+    "locality_impact": "Keeps Session switching behind the SessionMemory Interface."
+  },
+  "dependencies": ["@root/hashes/src/engine/memory/index.contract.json"],
+  "variants": []
+}
