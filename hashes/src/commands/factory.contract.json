@@ -18,5 +18,8 @@
     "locality_impact": "Registry mirror created from live source topology."
   },
   "dependencies": [],
+  "planned_dependencies": [
+    "@root/hashes/src/commands/management/doctor.hash.md"
+  ],
   "variants": []
 }

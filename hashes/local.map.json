@@ -1,6 +1,6 @@
 {
   "shard_id": "@root/src",
-  "state_anchor": "BigInt(0xa1131ba251866c99)",
+  "state_anchor": "BigInt(0x5a19bc70180cd653)",
   "parent_bridge": "@root/hashes/local.map.json",
   "git_anchor": "5b4a396d5f1d6c2c5459c8ad48ffd1e459516082",
   "cache_integrity": "VERIFIED",
@@ -1500,6 +1500,21 @@
       "dependencies": [],
       "fidelity_level": "Active",
       "sig_id": "SIG-tui-status-tokenPressure-90b537a5"
+    },
+    "commands/management/doctor": {
+      "file_path": "@root/src/commands/management/doctor.ts",
+      "hash_reference": "@root/hashes/src/commands/management/doctor.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": [
+        "@root/hashes/src/providers/router/index.hash.md",
+        "@root/hashes/src/mcp/manager.hash.md",
+        "@root/hashes/src/tools/index.hash.md",
+        "@root/hashes/src/engine/memory/index.hash.md",
+        "@root/hashes/src/engine/metrics/index.hash.md",
+        "@root/hashes/src/tokens/cache/index.hash.md"
+      ],
+      "fidelity_level": "Signature",
+      "sig_id": "SIG-cmd-management-doctor-00000001"
     }
   }
 }

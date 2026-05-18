@@ -1,0 +1,52 @@
+{
+  "contract_id": "CTR-cmd-management-doctor-00000001",
+  "module": "@Owl.Commands.Management.Doctor src/commands/management/doctor.ts",
+  "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
+  "depth_score": "0.72 — DEEP (runtime readiness behind one Command)",
+  "seam_capacity": "INTERNAL",
+  "sig_id": "SIG-cmd-management-doctor-00000001",
+  "interface": {
+    "signatures": [
+      "makeDoctorCommand(deps: DoctorCommandDependencies) => CommandHandler",
+      "formatDoctorSection(title: string, lines: Chunk<string>) => string"
+    ],
+    "error_modes": [
+      "CommandParseError when a dependency reports an unrecoverable diagnostic failure"
+    ],
+    "invariants": [
+      "`/doctor` MUST be read-only",
+      "`/doctor` MUST NOT trigger Provider Inference",
+      "`/doctor` MUST report RuntimeDiagnostic sections deterministically",
+      "`/doctor` MUST use ProviderRouter public inspection methods",
+      "`/doctor` MUST use MCP and tool public inspection methods"
+    ]
+  },
+  "responsibilities": [
+    "Display RuntimeDiagnostic readiness for Providers, MCP, tools, Session, UsageMetrics, and ContextCache",
+    "Keep diagnostic output deterministic and safe when API keys are absent",
+    "Surface actionable warnings without mutating runtime state"
+  ],
+  "prohibited": [
+    "MUST NOT call Orchestrator or Provider adapters directly",
+    "MUST NOT read process.env",
+    "MUST NOT mutate RoutingPreference, SessionMemory, UsageMetrics, ContextCache, or MCP state",
+    "MUST NOT duplicate ProviderRouter scoring logic"
+  ],
+  "dependencies": [
+    "@root/hashes/src/core/constants/commands.hash.md",
+    "@root/hashes/src/core/errors/index.hash.md",
+    "@root/hashes/src/engine/memory/index.hash.md",
+    "@root/hashes/src/engine/metrics/index.hash.md",
+    "@root/hashes/src/mcp/manager.hash.md",
+    "@root/hashes/src/providers/router/index.hash.md",
+    "@root/hashes/src/tools/index.hash.md",
+    "@root/hashes/src/tokens/cache/index.hash.md"
+  ],
+  "domain_refs": [
+    "docs/CONTEXT.md#RuntimeDiagnostic",
+    "docs/CONTEXT.md#ProviderRouter",
+    "docs/CONTEXT.md#UsageMetrics",
+    "docs/CONTEXT.md#ContextCache"
+  ],
+  "variants": []
+}

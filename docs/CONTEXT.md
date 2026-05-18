@@ -1,6 +1,6 @@
 ---
 Project: Owl
-Last_Updated: 2026-05-14T22:10:00Z
+Last_Updated: 2026-05-18T01:12:00Z
 ---
 
 # Owl Domain Glossary
@@ -195,6 +195,15 @@ Canonical business concept definitions. Every module name, seam name, and interf
 - **Not:** "analytics", "logs", "stats" — UsageMetrics is deterministic runtime accounting, not external telemetry.
 - **Seams:** UsageMetrics → Orchestrator (CRITICAL), UsageMetrics → CommandRegistry (CRITICAL)
 - **Example:** `/status` showing 3 Provider calls, 12,400 total Tokens, Anthropic as the top Provider, and 1,250ms average latency.
+
+---
+
+### RuntimeDiagnostic
+- **Definition:** A read-only health report that summarizes Owl runtime readiness across configuration, Providers, tools, MCP servers, and UsageMetrics.
+- **Canonical name:** RuntimeDiagnostic
+- **Not:** "doctor screen", "debug report", "health check" — RuntimeDiagnostic is the governed diagnostic artifact returned by the Command system.
+- **Seams:** RuntimeDiagnostic → CommandRegistry (CRITICAL), RuntimeDiagnostic → ProviderRouter (CRITICAL), RuntimeDiagnostic → MCP (INTERNAL)
+- **Example:** `/doctor` reporting registered Providers, disconnected MCP servers, visible tools, and current Token pressure without performing Inference.
 
 ---
 
