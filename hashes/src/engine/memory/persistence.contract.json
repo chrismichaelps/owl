@@ -4,30 +4,33 @@
   "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
   "depth_score": "0.78",
   "seam_capacity": "CRITICAL",
-  "sig_id": "SIG-engine-memory-persist-00000001",
+  "sig_id": "SIG-engine-memory-persist-1855d916",
   "interface": {
     "signatures": [
       "makeEmptyState(sessionId: string) => SessionMemoryState",
       "boundTurns(turns: readonly SessionTurn[]) => readonly SessionTurn[]",
       "decodeSessionTurn(turn) => Effect<SessionTurn, SessionMemoryValidationError>",
-      "decodePersistedSessionState(storagePath, raw) => Effect<SessionMemoryState, SessionMemoryPersistenceError>"
+      "decodePersistedSessionState(storagePath, raw) => Effect<SessionMemoryState, SessionMemoryPersistenceError>",
+      "decodePersistedSessionState bounds every persisted StoredSession turns array"
     ],
     "error_modes": [
-      "SessionMemoryValidationError \u2014 negative numeric fields",
-      "SessionMemoryPersistenceError \u2014 JSON parse failure",
-      "SessionMemoryPersistenceError \u2014 schema version mismatch"
+      "SessionMemoryValidationError — negative numeric fields",
+      "SessionMemoryPersistenceError — JSON parse failure",
+      "SessionMemoryPersistenceError — schema version mismatch"
     ],
     "invariants": [
       "turns.length <= MAX_TURNS after boundTurns",
       "tokensUsed >= 0",
-      "estimatedCostUsd >= 0 when present"
+      "estimatedCostUsd >= 0 when present",
+      "Persisted Session decoding MUST preserve all known Sessions and bound every turn list."
     ]
   },
   "responsibilities": [
     "Make empty state",
     "Bound turns",
     "Decode turn",
-    "Decode persisted state"
+    "Decode persisted state",
+    "Persist and restore multiple Sessions deterministically"
   ],
   "prohibited": [
     "Accept negative token counts",

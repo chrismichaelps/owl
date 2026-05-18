@@ -16,10 +16,17 @@ export const SessionTurnSchema = Schema.Struct({
 })
 export type SessionTurn = Schema.Schema.Type<typeof SessionTurnSchema>
 
+export const StoredSessionSchema = Schema.Struct({
+  sessionId: Schema.String,
+  turns: Schema.Array(SessionTurnSchema),
+})
+export type StoredSession = Schema.Schema.Type<typeof StoredSessionSchema>
+
 export const SessionMemoryStateSchema = Schema.Struct({
   version: Schema.Number,
   sessionId: Schema.String,
   turns: Schema.Array(SessionTurnSchema),
+  sessions: Schema.optional(Schema.Array(StoredSessionSchema)),
 })
 export type SessionMemoryState = Schema.Schema.Type<
   typeof SessionMemoryStateSchema

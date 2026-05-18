@@ -253,4 +253,59 @@ describe("PersistentSessionMemory", () => {
     expect(Chunk.size(result.turns)).toBe(1)
     expect(Chunk.unsafeGet(result.turns, 0).taskId).toBe("task-1")
   })
+
+  it("persists multiple sessions across layer re-creation", async () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "owl-session-"))
+    const storagePath = path.join(dir, "session-memory.json")
+
+    await Effect.runPromise(
+      Effect.gen(function* () {
+        const mem = yield* SessionMemory
+        yield* mem.startSession("sess-a")
+        yield* mem.recordTurn(makeTurn(1))
+        yield* mem.startSession("sess-b")
+        yield* mem.recordTurn(makeTurn(2))
+      }).pipe(Effect.provide(makePersistentSessionMemoryLive(storagePath))),
+    )
+
+    const result = await Effect.runPromise(
+      Effect.gen(function* () {
+        const mem = yield* SessionMemory
+        const sessions = yield* mem.listSessions()
+        yield* mem.resumeSession("sess-a")
+        const turns = yield* mem.getTurns()
+        return { sessions, turns }
+      }).pipe(Effect.provide(makePersistentSessionMemoryLive(storagePath))),
+    )
+
+    expect(Chunk.toReadonlyArray(result.sessions)).toEqual([
+      "sess-000000",
+      "sess-a",
+      "sess-b",
+    ])
+    expect(Chunk.size(result.turns)).toBe(1)
+    expect(Chunk.unsafeGet(result.turns, 0).taskId).toBe("task-1")
+  })
+
+  it("continues generated session ids after persisted generated sessions", async () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "owl-session-"))
+    const storagePath = path.join(dir, "session-memory.json")
+
+    await Effect.runPromise(
+      Effect.gen(function* () {
+        const mem = yield* SessionMemory
+        yield* mem.startSession()
+        yield* mem.startSession()
+      }).pipe(Effect.provide(makePersistentSessionMemoryLive(storagePath))),
+    )
+
+    const id = await Effect.runPromise(
+      Effect.gen(function* () {
+        const mem = yield* SessionMemory
+        return yield* mem.startSession()
+      }).pipe(Effect.provide(makePersistentSessionMemoryLive(storagePath))),
+    )
+
+    expect(id).toBe("sess-000003")
+  })
 })

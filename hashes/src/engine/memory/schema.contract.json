@@ -4,24 +4,29 @@
   "grammar_lock": "@root/hashes/grammar/typescript/typescript.hash.md",
   "depth_score": "0.55",
   "seam_capacity": "INTERNAL",
-  "sig_id": "SIG-engine-memory-schema-00000001",
+  "sig_id": "SIG-engine-memory-schema-bc37ea76",
   "interface": {
     "signatures": [
       "SessionTurnSchema: Schema.Struct",
       "SessionMemoryStateSchema: Schema.Struct",
       "type SessionTurn",
-      "type SessionMemoryState"
+      "type SessionMemoryState",
+      "StoredSessionSchema: Schema.Struct",
+      "type StoredSession",
+      "SessionMemoryState.sessions?: readonly StoredSession[]"
     ],
     "error_modes": [],
     "invariants": [
       "All required fields must be present",
-      "Optional fields default to undefined"
+      "Optional fields default to undefined",
+      "SessionMemoryState MUST support backward-compatible active turns and multi-Session persistence."
     ]
   },
   "responsibilities": [
     "Define SessionTurn schema",
     "Define SessionMemoryState schema",
-    "Export inferred types"
+    "Export inferred types",
+    "Persist and restore multiple Sessions deterministically"
   ],
   "prohibited": [
     "Add business logic to schema",

@@ -27,6 +27,7 @@ export const makeEmptyState = (sessionId: string): SessionMemoryState =>
     version: SESSION_MEMORY_CONSTANTS.PERSISTENCE_SCHEMA_VERSION,
     sessionId,
     turns: [],
+    sessions: [],
   })
 
 export const boundTurns = (
@@ -101,6 +102,14 @@ export const decodePersistedSessionState = (
             Data.struct({
               ...state,
               turns: boundTurns(state.turns),
+              sessions: Chunk.toReadonlyArray(
+                Chunk.map(Chunk.fromIterable(state.sessions ?? []), (session) =>
+                  Data.struct({
+                    sessionId: session.sessionId,
+                    turns: boundTurns(session.turns),
+                  }),
+                ),
+              ),
             }),
           )
         : Effect.fail(

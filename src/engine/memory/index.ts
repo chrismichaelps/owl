@@ -30,10 +30,16 @@ import {
 export {
   SessionMemoryStateSchema,
   SessionTurnSchema,
+  StoredSessionSchema,
   type SessionMemoryState,
+  type StoredSession,
   type SessionTurn,
 } from "./schema.js"
-import type { SessionMemoryState, SessionTurn } from "./schema.js"
+import type {
+  SessionMemoryState,
+  StoredSession,
+  SessionTurn,
+} from "./schema.js"
 
 /** @Owl.Engine.Memory.Service - Session memory interface */
 export interface SessionMemoryService {
@@ -93,22 +99,76 @@ const compareSessionIds = (left: string, right: string): -1 | 0 | 1 => {
   return 0
 }
 
-const fromPersistedState = (state: SessionMemoryState): SessionRuntimeState =>
-  Data.struct({
+const storePersistedSession = (
+  store: SessionStore,
+  session: StoredSession,
+): SessionStore =>
+  HashMap.set(store, session.sessionId, Chunk.fromIterable(session.turns))
+
+const fromPersistedState = (state: SessionMemoryState): SessionRuntimeState => {
+  const persisted = Chunk.fromIterable(state.sessions ?? [])
+  const persistedStore = Chunk.reduce(
+    persisted,
+    HashMap.empty<string, Chunk.Chunk<SessionTurn>>(),
+    storePersistedSession,
+  )
+  const activeFallback = Option.getOrElse(
+    HashMap.get(persistedStore, state.sessionId),
+    () => Chunk.empty<SessionTurn>(),
+  )
+  const activeTurns =
+    state.turns.length > 0 ? Chunk.fromIterable(state.turns) : activeFallback
+
+  return Data.struct({
     activeSessionId: state.sessionId,
-    sessions: HashMap.set(
-      HashMap.empty<string, Chunk.Chunk<SessionTurn>>(),
-      state.sessionId,
-      Chunk.fromIterable(state.turns),
-    ),
+    sessions: HashMap.set(persistedStore, state.sessionId, activeTurns),
+  })
+}
+
+const toStoredSession = (
+  state: SessionRuntimeState,
+  sessionId: string,
+): StoredSession =>
+  Data.struct({
+    sessionId,
+    turns: Chunk.toReadonlyArray(getSessionTurns(state, sessionId)),
   })
 
-const toPersistedState = (state: SessionRuntimeState): SessionMemoryState =>
-  Data.struct({
+const sortedSessionIds = (state: SessionRuntimeState): Chunk.Chunk<string> =>
+  Chunk.sort(
+    Chunk.fromIterable(HashMap.keys(state.sessions)),
+    compareSessionIds,
+  )
+
+const toPersistedState = (state: SessionRuntimeState): SessionMemoryState => {
+  const activeTurns = Chunk.toReadonlyArray(
+    getSessionTurns(state, state.activeSessionId),
+  )
+  const sessions = Chunk.toReadonlyArray(
+    Chunk.map(sortedSessionIds(state), (sessionId) =>
+      toStoredSession(state, sessionId),
+    ),
+  )
+
+  return Data.struct({
     version: SESSION_MEMORY_CONSTANTS.PERSISTENCE_SCHEMA_VERSION,
     sessionId: state.activeSessionId,
-    turns: Chunk.toReadonlyArray(getSessionTurns(state, state.activeSessionId)),
+    turns: activeTurns,
+    sessions,
   })
+}
+
+const parseGeneratedSessionCounter = (sessionId: string): number => {
+  const prefix = SESSION_MEMORY_CONSTANTS.SESSION_ID_PREFIX + "-"
+  if (!sessionId.startsWith(prefix)) return 0
+  const suffix = sessionId.slice(prefix.length)
+  return /^\d+$/.test(suffix) ? Number(suffix) : 0
+}
+
+const nextCounterFromState = (state: SessionRuntimeState): number =>
+  Chunk.reduce(sortedSessionIds(state), 0, (max, sessionId) =>
+    Math.max(max, parseGeneratedSessionCounter(sessionId)),
+  )
 
 const makeService = (
   stateRef: Ref.Ref<SessionRuntimeState>,
@@ -192,14 +252,7 @@ const makeService = (
     )
 
   const listSessions = (): Effect.Effect<Chunk.Chunk<string>> =>
-    Ref.get(stateRef).pipe(
-      Effect.map((state) =>
-        Chunk.sort(
-          Chunk.fromIterable(HashMap.keys(state.sessions)),
-          compareSessionIds,
-        ),
-      ),
-    )
+    Ref.get(stateRef).pipe(Effect.map(sortedSessionIds))
 
   const summarize = (): Effect.Effect<string> =>
     Ref.get(stateRef).pipe(
@@ -231,10 +284,9 @@ const makeService = (
 export const SessionMemoryLive = Layer.effect(
   SessionMemory,
   Effect.gen(function* () {
-    const counterRef = yield* Ref.make(0)
-    const stateRef = yield* Ref.make<SessionRuntimeState>(
-      fromPersistedState(makeEmptyState(formatSessionId(0))),
-    )
+    const initialState = fromPersistedState(makeEmptyState(formatSessionId(0)))
+    const counterRef = yield* Ref.make(nextCounterFromState(initialState))
+    const stateRef = yield* Ref.make<SessionRuntimeState>(initialState)
     return makeService(stateRef, counterRef, noPersist)
   }),
 )
@@ -272,10 +324,9 @@ export const makePersistentSessionMemoryLive = (
           )
         : makeEmptyState(formatSessionId(0))
 
-      const counterRef = yield* Ref.make(0)
-      const stateRef = yield* Ref.make<SessionRuntimeState>(
-        fromPersistedState(initialState),
-      )
+      const runtimeState = fromPersistedState(initialState)
+      const counterRef = yield* Ref.make(nextCounterFromState(runtimeState))
+      const stateRef = yield* Ref.make<SessionRuntimeState>(runtimeState)
       const persist: PersistSessionSnapshot = (state) =>
         fs.makeDirectory(path.dirname(storagePath), { recursive: true }).pipe(
           Effect.mapError(
