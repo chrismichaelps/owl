@@ -7,6 +7,7 @@ export const CLI_FLAGS = {
   QUICK: ["--quick", "-q"],
   DEEP: ["--deep", "-d"],
   ECONOMY: ["--economy", "-e"],
+  MODE: "--mode",
   MODE_PREFIX: "--mode=",
   PERMISSION_MODE: "--permission-mode",
   PERMISSION_MODE_PREFIX: "--permission-mode=",

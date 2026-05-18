@@ -111,6 +111,22 @@ describe("--mode= flag", () => {
   it("ignores --mode= (empty value) and falls back to standard", () => {
     expect(parseArgs(["--mode="]).mode).toBe("standard")
   })
+
+  it("parses separated mode values", () => {
+    expect(parseArgs(["--mode", "deep"]).mode).toBe("deep")
+  })
+
+  it("does not treat a separated mode value as the prompt", () => {
+    const parsed = parseArgs(["--mode", "quick", "actual prompt"])
+    expect(parsed.mode).toBe("quick")
+    expect(parsed.prompt).toBe("actual prompt")
+  })
+
+  it("leaves unknown separated mode values available as prompt text", () => {
+    const parsed = parseArgs(["--mode", "invalid"])
+    expect(parsed.mode).toBe("standard")
+    expect(parsed.prompt).toBe("invalid")
+  })
 })
 
 describe("--permission-mode= flag", () => {

@@ -1,9 +1,14 @@
 {
   "module": "@root/src/core/constants/commands.ts",
-  "state_id": "BigInt(0x3e2587eb230da9d4)",
+  "state_id": "BigInt(0x227d1885928290a2)",
   "interface": {
     "inputs": [],
     "outputs": [
+      {
+        "name": "CLI_FLAGS.MODE",
+        "type": "string",
+        "complexity": "O(1)"
+      },
       {
         "name": "CLI_FLAGS.PERMISSION_MODE_PREFIX",
         "type": "string",
