@@ -1,6 +1,6 @@
 {
   "module": "@root/src/core/constants/commands.ts",
-  "state_id": "BigInt(0x05ad4eeca69f9017)",
+  "state_id": "BigInt(0x3b858c94236ce640)",
   "interface": {
     "inputs": [],
     "outputs": [

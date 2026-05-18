@@ -8,6 +8,7 @@ export const CLI_FLAGS = {
   DEEP: ["--deep", "-d"],
   ECONOMY: ["--economy", "-e"],
   MODE_PREFIX: "--mode=",
+  PERMISSION_MODE: "--permission-mode",
   PERMISSION_MODE_PREFIX: "--permission-mode=",
 } as const
 

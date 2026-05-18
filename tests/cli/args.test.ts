@@ -131,6 +131,24 @@ describe("--permission-mode= flag", () => {
       TOOL_PERMISSION_MODES.DEFAULT,
     )
   })
+
+  it("parses separated Permission mode values", () => {
+    expect(parseArgs(["--permission-mode", "dontAsk"]).permissionMode).toBe(
+      TOOL_PERMISSION_MODES.DONT_ASK,
+    )
+  })
+
+  it("does not treat a separated Permission mode value as the prompt", () => {
+    const parsed = parseArgs(["--permission-mode", "plan", "actual prompt"])
+    expect(parsed.permissionMode).toBe(TOOL_PERMISSION_MODES.PLAN)
+    expect(parsed.prompt).toBe("actual prompt")
+  })
+
+  it("leaves unknown separated Permission mode values available as prompt text", () => {
+    const parsed = parseArgs(["--permission-mode", "invalid"])
+    expect(parsed.permissionMode).toBe(TOOL_PERMISSION_MODES.DEFAULT)
+    expect(parsed.prompt).toBe("invalid")
+  })
 })
 
 describe("short flag aliases", () => {

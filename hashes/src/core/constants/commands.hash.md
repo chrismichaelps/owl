@@ -1,9 +1,9 @@
-State_ID: BigInt(0x05ad4eeca69f9017)
-Git_SHA: f47cd6855f93081e4222c7b3c31dc9b4151717f5
-Source_SHA256: 05ad4eeca69f901788b921e8c56a21c69255bdde44d280e16a0412d9ee044f35
+State_ID: BigInt(0x3b858c94236ce640)
+Git_SHA: 9f2a29b549054b8680582668d3106ca892bb7f4c
+Source_SHA256: 3b858c94236ce640a5c464ac06a41555e3f15352e7a1b7393f67bd5ee3d7e4ea
 Grammar_Lock: "@root/hashes/grammar/effect/effect.hash.md"
 Fidelity: ACTIVE
-Registry_Sync: 2026-05-18T04:32:00Z
+Registry_Sync: 2026-05-18T04:55:00Z
 
 ---
 
@@ -18,7 +18,7 @@ Registry_Sync: 2026-05-18T04:32:00Z
 - depth_score: 0.50
 - depth_status: MEDIUM
 - seam_capacity: INTERNAL
-- SIG_ID: SIG-core-constants-commands-05ad4eec
+- SIG_ID: SIG-core-constants-commands-3b858c94
 
 ### [Linkage]
 

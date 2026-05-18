@@ -65,10 +65,22 @@ export function parseArgs(argv: readonly string[]): ParsedArgs {
   let help = false
   let version = false
 
-  for (const arg of argv) {
+  for (let index = 0; index < argv.length; index++) {
+    const arg = argv[index]
+    if (arg === undefined) continue
+
     if (arg.startsWith(CLI_FLAGS.MODE_PREFIX)) {
       const val = arg.slice(CLI_FLAGS.MODE_PREFIX.length)
       if (isValidMode(val)) mode = val
+    } else if (arg === CLI_FLAGS.PERMISSION_MODE) {
+      const val = argv[index + 1]
+      if (val !== undefined) {
+        const parsed = parseToolPermissionMode(val)
+        if (Option.isSome(parsed)) {
+          permissionMode = parsed.value
+          index++
+        }
+      }
     } else if (arg.startsWith(CLI_FLAGS.PERMISSION_MODE_PREFIX)) {
       const val = arg.slice(CLI_FLAGS.PERMISSION_MODE_PREFIX.length)
       const parsed = parseToolPermissionMode(val)
