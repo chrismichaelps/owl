@@ -10,6 +10,7 @@ export const CLI_FLAGS = {
   MODE_PREFIX: "--mode=",
   PERMISSION_MODE: "--permission-mode",
   PERMISSION_MODE_PREFIX: "--permission-mode=",
+  DANGEROUSLY_SKIP_PERMISSIONS: "--dangerously-skip-permissions",
 } as const
 
 /** @Owl.Core.Constants.CLIFlagSets - Command line flag membership lookups */
@@ -86,6 +87,10 @@ export const CLI_CONSTANTS = {
     [
       "--permission-mode=<mode>",
       "Set tool permissions: default, acceptEdits, bypassPermissions, plan, dontAsk",
+    ],
+    [
+      "--dangerously-skip-permissions",
+      "Start with bypassPermissions for non-blocked tools",
     ],
     ["--quick, -q", "Use quick mode"],
     ["--deep, -d", "Use deep mode"],

@@ -149,6 +149,21 @@ describe("--permission-mode= flag", () => {
     expect(parsed.permissionMode).toBe(TOOL_PERMISSION_MODES.DEFAULT)
     expect(parsed.prompt).toBe("invalid")
   })
+
+  it("maps the skip-permissions alias to bypassPermissions", () => {
+    expect(parseArgs(["--dangerously-skip-permissions"]).permissionMode).toBe(
+      TOOL_PERMISSION_MODES.BYPASS_PERMISSIONS,
+    )
+  })
+
+  it("does not treat the skip-permissions alias as a prompt", () => {
+    const parsed = parseArgs([
+      "--dangerously-skip-permissions",
+      "actual prompt",
+    ])
+    expect(parsed.permissionMode).toBe(TOOL_PERMISSION_MODES.BYPASS_PERMISSIONS)
+    expect(parsed.prompt).toBe("actual prompt")
+  })
 })
 
 describe("short flag aliases", () => {

@@ -8,6 +8,7 @@
  * - Position: owl "prompt" (mode defaults to standard)
  * - Mode flags: owl --deep "prompt", owl -d "prompt"
  * - Mode option: owl --mode=deep "prompt"
+ * - Permission option: owl --permission-mode=plan, owl --dangerously-skip-permissions
  * - Metadata: owl --help, owl --version
  *
  * @example
@@ -72,6 +73,8 @@ export function parseArgs(argv: readonly string[]): ParsedArgs {
     if (arg.startsWith(CLI_FLAGS.MODE_PREFIX)) {
       const val = arg.slice(CLI_FLAGS.MODE_PREFIX.length)
       if (isValidMode(val)) mode = val
+    } else if (arg === CLI_FLAGS.DANGEROUSLY_SKIP_PERMISSIONS) {
+      permissionMode = TOOL_PERMISSION_MODES.BYPASS_PERMISSIONS
     } else if (arg === CLI_FLAGS.PERMISSION_MODE) {
       const val = argv[index + 1]
       if (val !== undefined) {

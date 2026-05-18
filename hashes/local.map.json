@@ -11,7 +11,7 @@
       "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
       "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-cli-args-07f55ede"
+      "sig_id": "SIG-cli-args-09a6a92b"
     },
     "cli/help": {
       "file_path": "@root/src/cli/help.ts",
@@ -454,7 +454,7 @@
       "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
       "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-core-constants-commands-3b858c94"
+      "sig_id": "SIG-core-constants-commands-3e2587eb"
     },
     "core/constants/editor": {
       "file_path": "@root/src/core/constants/editor.ts",

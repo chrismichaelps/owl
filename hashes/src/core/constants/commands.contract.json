@@ -1,11 +1,16 @@
 {
   "module": "@root/src/core/constants/commands.ts",
-  "state_id": "BigInt(0x3b858c94236ce640)",
+  "state_id": "BigInt(0x3e2587eb230da9d4)",
   "interface": {
     "inputs": [],
     "outputs": [
       {
         "name": "CLI_FLAGS.PERMISSION_MODE_PREFIX",
+        "type": "string",
+        "complexity": "O(1)"
+      },
+      {
+        "name": "CLI_FLAGS.DANGEROUSLY_SKIP_PERMISSIONS",
         "type": "string",
         "complexity": "O(1)"
       },
