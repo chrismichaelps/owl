@@ -2,9 +2,9 @@
   "contract_id": "CTR-engine-memory-00000001",
   "module": "@Owl.Engine.Memory src/engine/memory/index.ts",
   "grammar_lock": "@root/hashes/grammar/effect/effect.hash.md",
-  "depth_score": "0.68 \u2014 MEDIUM (in-memory only, no persistence)",
+  "depth_score": "0.68 — MEDIUM (in-memory only, no persistence)",
   "seam_capacity": "INTERNAL",
-  "sig_id": "SIG-engine-memory-00000001",
+  "sig_id": "SIG-engine-memory-52e5bff6",
   "interface": {
     "signatures": [
       "SessionMemory: Context.Tag<SessionMemory, SessionMemoryService>",
@@ -12,10 +12,14 @@
       "startSession(sessionId?: string) => Effect<string>",
       "recordTurn(turn: SessionTurn) => Effect<void>",
       "getTurns() => Effect<readonly SessionTurn[]>",
+      "listSessions() => Effect<Chunk<string>>",
       "summarize() => Effect<string>"
     ],
     "error_modes": [],
-    "invariants": []
+    "invariants": [
+      "listSessions MUST return deterministic sorted Session ids",
+      "Session lifecycle state MUST remain inside SessionMemory"
+    ]
   },
   "responsibilities": [],
   "prohibited": [],

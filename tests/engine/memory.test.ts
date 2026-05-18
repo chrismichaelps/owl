@@ -206,6 +206,27 @@ describe("SessionMemory.summarize", () => {
   })
 })
 
+describe("SessionMemory.listSessions", () => {
+  it("lists known Session ids in deterministic order", async () => {
+    const sessions = await run(
+      Effect.gen(function* () {
+        const mem = yield* SessionMemory
+        yield* mem.startSession("sess-b")
+        yield* mem.startSession("sess-a")
+        yield* mem.resumeSession("sess-c")
+        return yield* mem.listSessions()
+      }),
+    )
+
+    expect(Chunk.toReadonlyArray(sessions)).toEqual([
+      "sess-000000",
+      "sess-a",
+      "sess-b",
+      "sess-c",
+    ])
+  })
+})
+
 describe("PersistentSessionMemory", () => {
   it("persists turns across layer re-creation", async () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), "owl-session-"))

@@ -39,6 +39,7 @@ import { makeProvidersCommand } from "./management/providers.js"
 import { makeRegistryCommand } from "./management/registry.js"
 import { makeResumeCommand } from "./management/resume.js"
 import { makeRoleCommand } from "./management/role.js"
+import { makeSessionsCommand } from "./management/sessions.js"
 import { makeStatusCommand } from "./management/status.js"
 import { makeToolsCommand } from "./management/tools.js"
 import { makeCompareCommand } from "./power/compare.js"
@@ -117,6 +118,7 @@ export const makeCommandHandlers = (
     makeRoleCommand(deps.roleCtx),
     makeRegistryCommand(deps.hashRegistry),
     makeResumeCommand(deps.sessionMemory),
+    makeSessionsCommand(deps.sessionMemory),
     makeAuditCommand(deps.orchestrator),
     makeStatusCommand(deps.sessionMemory, deps.usageMetrics),
     makeClearCommand(deps.contextManager),

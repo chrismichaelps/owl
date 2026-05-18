@@ -1,8 +1,8 @@
 {
   "shard_id": "@root/src",
-  "state_anchor": "BigInt(0x6c3c6aa9c1ff00d8)",
+  "state_anchor": "BigInt(0x52e5bff60dfacd82)",
   "parent_bridge": "@root/hashes/local.map.json",
-  "git_anchor": "185e899580c525113a3ee902cef52174ecabeee9",
+  "git_anchor": "11bd08dcb8efcd66015b64292dec79708f034bab",
   "cache_integrity": "VERIFIED",
   "nodes": {
     "cli/args": {
@@ -211,7 +211,7 @@
       "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
       "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-commands-factory-c4a8966f"
+      "sig_id": "SIG-commands-factory-2be9a3d7"
     },
     "commands/management/audit": {
       "file_path": "@root/src/commands/management/audit.ts",
@@ -697,7 +697,7 @@
       "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
       "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-engine-memory-index-faa2e198"
+      "sig_id": "SIG-engine-memory-52e5bff6"
     },
     "engine/memory/persistence": {
       "file_path": "@root/src/engine/memory/persistence.ts",
@@ -1601,6 +1601,14 @@
       ],
       "fidelity_level": "Active",
       "sig_id": "SIG-tui-session-sync-080090e3"
+    },
+    "commands/management/sessions": {
+      "file_path": "@root/src/commands/management/sessions.ts",
+      "hash_reference": "@root/hashes/src/commands/management/sessions.hash.md",
+      "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
+      "dependencies": ["@root/hashes/src/engine/memory/index.contract.json"],
+      "fidelity_level": "Active",
+      "sig_id": "SIG-commands-management-sessions-942d273e"
     }
   }
 }

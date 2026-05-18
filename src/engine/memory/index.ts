@@ -48,6 +48,7 @@ export interface SessionMemoryService {
     turn: SessionTurn,
   ) => Effect.Effect<void, SessionMemoryFailure>
   readonly getTurns: () => Effect.Effect<Chunk.Chunk<SessionTurn>>
+  readonly listSessions: () => Effect.Effect<Chunk.Chunk<string>>
   readonly summarize: () => Effect.Effect<string>
 }
 
@@ -85,6 +86,12 @@ const getSessionTurns = (
   Option.getOrElse(HashMap.get(state.sessions, sessionId), () =>
     Chunk.empty<SessionTurn>(),
   )
+
+const compareSessionIds = (left: string, right: string): -1 | 0 | 1 => {
+  if (left < right) return -1
+  if (left > right) return 1
+  return 0
+}
 
 const fromPersistedState = (state: SessionMemoryState): SessionRuntimeState =>
   Data.struct({
@@ -184,6 +191,16 @@ const makeService = (
       Effect.map((state) => getSessionTurns(state, state.activeSessionId)),
     )
 
+  const listSessions = (): Effect.Effect<Chunk.Chunk<string>> =>
+    Ref.get(stateRef).pipe(
+      Effect.map((state) =>
+        Chunk.sort(
+          Chunk.fromIterable(HashMap.keys(state.sessions)),
+          compareSessionIds,
+        ),
+      ),
+    )
+
   const summarize = (): Effect.Effect<string> =>
     Ref.get(stateRef).pipe(
       Effect.map((state) => {
@@ -205,6 +222,7 @@ const makeService = (
     getSessionId,
     recordTurn,
     getTurns,
+    listSessions,
     summarize,
   }
 }

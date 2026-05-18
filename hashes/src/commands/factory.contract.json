@@ -1,6 +1,6 @@
 {
   "module": "@root/src/commands/factory.ts",
-  "state_id": "BigInt(0xc4a8966f3827febd)",
+  "state_id": "BigInt(0x2be9a3d7ad9eff28)",
   "interface": {
     "inputs": [],
     "outputs": [],
@@ -21,7 +21,8 @@
     "@root/hashes/src/tools/permissionState.contract.json",
     "@root/hashes/src/commands/management/permissions.contract.json",
     "@root/hashes/src/commands/management/new.contract.json",
-    "@root/hashes/src/commands/management/resume.contract.json"
+    "@root/hashes/src/commands/management/resume.contract.json",
+    "@root/hashes/src/commands/management/sessions.contract.json"
   ],
   "planned_dependencies": [
     "@root/hashes/src/commands/management/doctor.hash.md"
