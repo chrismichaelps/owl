@@ -5,6 +5,7 @@
  */
 import { describe, it, expect } from "vitest"
 import { isValidMode, parseArgs, VALID_MODES } from "../../src/cli/args.js"
+import { TOOL_PERMISSION_MODES } from "../../src/core/constants/index.js"
 
 describe("VALID_MODES", () => {
   it("includes standard", () => {
@@ -57,6 +58,11 @@ describe("parseArgs with no arguments", () => {
     const { version } = parseArgs([])
     expect(version).toBe(false)
   })
+
+  it("defaults permission mode to default", () => {
+    const { permissionMode } = parseArgs([])
+    expect(permissionMode).toBe(TOOL_PERMISSION_MODES.DEFAULT)
+  })
 })
 
 describe("metadata flags", () => {
@@ -104,6 +110,26 @@ describe("--mode= flag", () => {
 
   it("ignores --mode= (empty value) and falls back to standard", () => {
     expect(parseArgs(["--mode="]).mode).toBe("standard")
+  })
+})
+
+describe("--permission-mode= flag", () => {
+  it("parses bypassPermissions", () => {
+    expect(
+      parseArgs(["--permission-mode=bypassPermissions"]).permissionMode,
+    ).toBe(TOOL_PERMISSION_MODES.BYPASS_PERMISSIONS)
+  })
+
+  it("parses plan", () => {
+    expect(parseArgs(["--permission-mode=plan"]).permissionMode).toBe(
+      TOOL_PERMISSION_MODES.PLAN,
+    )
+  })
+
+  it("ignores unknown Permission modes", () => {
+    expect(parseArgs(["--permission-mode=invalid"]).permissionMode).toBe(
+      TOOL_PERMISSION_MODES.DEFAULT,
+    )
   })
 })
 
@@ -193,6 +219,7 @@ describe("edge cases", () => {
     expect(result).toStrictEqual({
       mode: "standard",
       prompt: null,
+      permissionMode: TOOL_PERMISSION_MODES.DEFAULT,
       help: false,
       version: false,
     })

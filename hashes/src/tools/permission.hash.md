@@ -33,4 +33,4 @@ Registry_Sync: 2026-05-18T02:35:00Z
 
 - Pure Permission resolver.
 - Consumes ToolRisk without executing tools.
-- Mirrors ref-cli external Permission mode vocabulary.
+- Mirrors registered external Permission mode vocabulary.

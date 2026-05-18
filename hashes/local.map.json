@@ -2,7 +2,7 @@
   "shard_id": "@root/src",
   "state_anchor": "BigInt(0x5a19bc70180cd653)",
   "parent_bridge": "@root/hashes/local.map.json",
-  "git_anchor": "5b4a396d5f1d6c2c5459c8ad48ffd1e459516082",
+  "git_anchor": "f47cd6855f93081e4222c7b3c31dc9b4151717f5",
   "cache_integrity": "VERIFIED",
   "nodes": {
     "cli/args": {
@@ -11,7 +11,7 @@
       "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
       "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-cli-args-d81c6282"
+      "sig_id": "SIG-cli-args-abf67835"
     },
     "cli/help": {
       "file_path": "@root/src/cli/help.ts",
@@ -35,7 +35,7 @@
       "grammar_ref": "@root/hashes/grammar/typescript/typescript.hash.md",
       "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-cli-run-6a4d5894"
+      "sig_id": "SIG-cli-run-3d57291f"
     },
     "cli/runtime": {
       "file_path": "@root/src/cli/runtime.ts",
@@ -454,7 +454,7 @@
       "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
       "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-core-constants-commands-b2c63648"
+      "sig_id": "SIG-core-constants-commands-05ad4eec"
     },
     "core/constants/editor": {
       "file_path": "@root/src/core/constants/editor.ts",
@@ -1310,7 +1310,7 @@
       "grammar_ref": "@root/hashes/grammar/effect/effect.hash.md",
       "dependencies": [],
       "fidelity_level": "Active",
-      "sig_id": "SIG-tui-app-752288a5"
+      "sig_id": "SIG-tui-app-983da875"
     },
     "tui/commands/fuzzy": {
       "file_path": "@root/src/tui/commands/fuzzy.ts",

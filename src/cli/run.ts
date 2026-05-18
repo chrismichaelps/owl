@@ -52,7 +52,7 @@ export async function runCli(
   output: CliOutput = DEFAULT_OUTPUT,
   renderer: CliRenderer = DEFAULT_RENDERER,
 ): Promise<void> {
-  const { mode, prompt, help, version } = parseArgs(argv)
+  const { mode, prompt, permissionMode, help, version } = parseArgs(argv)
 
   if (help) {
     output.stdout(formatCliHelp())
@@ -72,6 +72,7 @@ export async function runCli(
         runtime,
         projectRoot,
         initialMode: mode,
+        initialPermissionMode: permissionMode,
         initialPrompt: prompt,
       }),
     )

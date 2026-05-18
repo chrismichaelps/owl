@@ -16,7 +16,7 @@
     "error_modes": [],
     "invariants": [
       "Permission mode state MUST default to default",
-      "Permission mode state MUST only accept ref-cli external Permission modes",
+      "Permission mode state MUST only accept registered external Permission modes",
       "Permission mode snapshots MUST expose ordered modes as Chunk",
       "Permission mode state MUST be session-local and Ref-backed"
     ]

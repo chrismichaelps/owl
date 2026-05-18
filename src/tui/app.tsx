@@ -42,14 +42,21 @@ import { moveFocusPanel } from "./focus/index.js"
 import type { Mode } from "../core/schema/index.js"
 import type { OwlRuntime } from "../cli/runtime.js"
 import { CommandRegistry } from "../commands/registry.js"
-import { AGENT_STATUS, TUI_FOCUS } from "../core/constants/index.js"
+import { ToolPermissionState } from "../tools/index.js"
+import {
+  AGENT_STATUS,
+  TOOL_PERMISSION_MODES,
+  TUI_FOCUS,
+} from "../core/constants/index.js"
 import type { PaletteCommand } from "./commands/fuzzy.js"
+import type { ToolPermissionMode } from "../tools/index.js"
 
 /** @Owl.TUI.App.Props - Component props */
 interface AppProps {
   readonly runtime: OwlRuntime
   readonly projectRoot?: string
   readonly initialMode?: Mode
+  readonly initialPermissionMode?: ToolPermissionMode
   readonly initialPrompt?: string | null
 }
 
@@ -58,6 +65,7 @@ export const App: React.FC<AppProps> = ({
   runtime,
   projectRoot = process.cwd(),
   initialMode = "standard",
+  initialPermissionMode = TOOL_PERMISSION_MODES.DEFAULT,
   initialPrompt,
 }) => {
   useApp() // access to exit()
@@ -123,15 +131,26 @@ export const App: React.FC<AppProps> = ({
     dispatch({ type: "ADD_LOG", msg: `Mode → ${newMode}` })
   }, [])
 
-  /** Auto-submit initial prompt on mount */
+  /** Apply startup Permission mode before optional initial prompt */
   useEffect(() => {
     if (didSubmitInitialPromptRef.current) return
     didSubmitInitialPromptRef.current = true
 
-    if (initialPrompt != null && initialPrompt.trim().length > 0) {
-      handleSubmit(initialPrompt.trim(), initialMode)
-    }
-  }, [handleSubmit, initialMode, initialPrompt])
+    const effect = Effect.gen(function* () {
+      const permissionState = yield* ToolPermissionState
+      yield* permissionState.setMode(initialPermissionMode)
+    })
+
+    void runtime.runPromise(effect).then(() => {
+      dispatch({
+        type: "SET_PERMISSION_MODE",
+        mode: initialPermissionMode,
+      })
+      if (initialPrompt != null && initialPrompt.trim().length > 0) {
+        handleSubmit(initialPrompt.trim(), initialMode)
+      }
+    })
+  }, [handleSubmit, initialMode, initialPermissionMode, initialPrompt, runtime])
 
   useEffect(() => {
     const effect = Effect.gen(function* () {

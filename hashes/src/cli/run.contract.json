@@ -15,11 +15,13 @@
     ],
     "invariants": [
       "argv must be string[]",
-      "projectRoot must be absolute"
+      "projectRoot must be absolute",
+      "initial Permission mode MUST be passed to App before initial prompt execution"
     ]
   },
   "responsibilities": [
     "Bootstrap runtime from args",
+    "Pass startup Permission mode into the TUI App",
     "Mount TUI",
     "Handle process exit"
   ],

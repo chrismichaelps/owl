@@ -9,12 +9,15 @@
     "signatures": [
       "VALID_MODES: readonly string[]",
       "parseArgs(argv: readonly string[]) => ParsedArgs",
-      "ParsedArgs: { mode: Mode; prompt: string | null }"
+      "ParsedArgs: { mode: Mode; prompt: string | null; permissionMode: ToolPermissionMode }"
     ],
     "error_modes": [],
-    "invariants": []
+    "invariants": [
+      "Permission mode MUST default to default",
+      "Unknown Permission mode flags MUST be ignored deterministically"
+    ]
   },
-  "responsibilities": [],
+  "responsibilities": ["Parse startup Permission mode without side effects"],
   "prohibited": [],
   "created_at": "2026-05-14T15:55:47.204305Z"
 }

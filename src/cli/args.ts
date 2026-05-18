@@ -16,14 +16,17 @@
  * parseArgs([]) // { mode: "standard", prompt: null }
  */
 import type { Mode } from "../core/schema/index.js"
-import { Chunk, HashSet } from "effect"
+import { Chunk, HashSet, Option } from "effect"
 import {
   CLI_FLAGS,
   CLI_FLAG_SETS,
   MODE_IDS,
   MODE_ID_SET,
   MODES,
+  TOOL_PERMISSION_MODES,
 } from "../core/constants/index.js"
+import { parseToolPermissionMode } from "../tools/index.js"
+import type { ToolPermissionMode } from "../tools/index.js"
 
 /** @Owl.CLI.Args.ValidModes - Supported operating modes */
 export const VALID_MODES: readonly string[] = Chunk.toReadonlyArray(MODE_IDS)
@@ -40,6 +43,8 @@ export interface ParsedArgs {
   readonly mode: Mode
   /** Initial prompt (null if not provided) */
   readonly prompt: string | null
+  /** Initial tool Permission mode for this session */
+  readonly permissionMode: ToolPermissionMode
   /** Print help and exit before runtime boot */
   readonly help: boolean
   /** Print version and exit before runtime boot */
@@ -56,6 +61,7 @@ export interface ParsedArgs {
 export function parseArgs(argv: readonly string[]): ParsedArgs {
   let mode: Mode = "standard"
   let prompt: string | null = null
+  let permissionMode: ToolPermissionMode = TOOL_PERMISSION_MODES.DEFAULT
   let help = false
   let version = false
 
@@ -63,6 +69,10 @@ export function parseArgs(argv: readonly string[]): ParsedArgs {
     if (arg.startsWith(CLI_FLAGS.MODE_PREFIX)) {
       const val = arg.slice(CLI_FLAGS.MODE_PREFIX.length)
       if (isValidMode(val)) mode = val
+    } else if (arg.startsWith(CLI_FLAGS.PERMISSION_MODE_PREFIX)) {
+      const val = arg.slice(CLI_FLAGS.PERMISSION_MODE_PREFIX.length)
+      const parsed = parseToolPermissionMode(val)
+      if (Option.isSome(parsed)) permissionMode = parsed.value
     } else if (HashSet.has(CLI_FLAG_SETS.HELP, arg)) {
       help = true
     } else if (HashSet.has(CLI_FLAG_SETS.VERSION, arg)) {
@@ -78,5 +88,5 @@ export function parseArgs(argv: readonly string[]): ParsedArgs {
     }
   }
 
-  return { mode, prompt, help, version }
+  return { mode, prompt, permissionMode, help, version }
 }

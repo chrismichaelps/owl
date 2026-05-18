@@ -8,6 +8,7 @@ export const CLI_FLAGS = {
   DEEP: ["--deep", "-d"],
   ECONOMY: ["--economy", "-e"],
   MODE_PREFIX: "--mode=",
+  PERMISSION_MODE_PREFIX: "--permission-mode=",
 } as const
 
 /** @Owl.Core.Constants.CLIFlagSets - Command line flag membership lookups */
@@ -75,11 +76,16 @@ export const CLI_CONSTANTS = {
   BINARY_NAME: "owl",
   VERSION: "0.1.0",
   DESCRIPTION: "AI coding agent CLI governed by FMCF",
-  USAGE: 'owl [--mode=<mode>] [--quick|--deep|--economy] ["prompt"]',
+  USAGE:
+    'owl [--mode=<mode>] [--permission-mode=<mode>] [--quick|--deep|--economy] ["prompt"]',
   OPTIONS: [
     ["--help, -h", "Show this help text"],
     ["--version, -v", "Show the Owl CLI version"],
     ["--mode=<mode>", "Set mode: standard, quick, deep, economy, god"],
+    [
+      "--permission-mode=<mode>",
+      "Set tool permissions: default, acceptEdits, bypassPermissions, plan, dontAsk",
+    ],
     ["--quick, -q", "Use quick mode"],
     ["--deep, -d", "Use deep mode"],
     ["--economy, -e", "Use economy mode"],

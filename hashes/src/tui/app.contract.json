@@ -7,13 +7,17 @@
   "sig_id": "SIG-tui-app-00000001",
   "interface": {
     "signatures": [
-      "OwlApp(props: OwlAppProps) => ReactElement"
+      "OwlApp(props: OwlAppProps) => ReactElement",
+      "AppProps.initialPermissionMode?: ToolPermissionMode"
     ],
     "error_modes": [],
-    "invariants": []
+    "invariants": [
+      "Startup Permission mode MUST be applied before optional initial prompt execution"
+    ]
   },
   "responsibilities": [
-    "Route Metrics-panel pending Mutation shortcuts through CommandRegistry dispatch"
+    "Route Metrics-panel pending Mutation shortcuts through CommandRegistry dispatch",
+    "Initialize visible and runtime Permission mode from CLI startup args"
   ],
   "prohibited": [
     "MUST NOT resolve pending Mutation approval shortcuts inline; use @root/src/tui/pending/shortcuts.ts"

@@ -15,13 +15,13 @@
       "Permission resolution MUST be pure and deterministic",
       "Permission resolution MUST consume ToolRisk instead of reclassifying tool input",
       "BLOCKED ToolRisk MUST always resolve to deny",
-      "Permission modes MUST match the ref-cli external permission vocabulary",
+      "Permission modes MUST match the registered external Permission vocabulary",
       "Permission decisions MUST be represented as Effect-hashable domain data"
     ]
   },
   "responsibilities": [
     "Resolve allow, ask, or deny behavior from ToolRisk and permission Mode",
-    "Expose ref-cli-compatible permission mode vocabulary",
+    "Expose registered Permission mode vocabulary",
     "Provide a visible policy seam for tool commands before interactive prompts exist"
   ],
   "prohibited": [

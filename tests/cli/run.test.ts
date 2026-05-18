@@ -3,6 +3,7 @@ import type { ReactElement } from "react"
 import { describe, expect, it } from "vitest"
 import { formatCliHelp, formatCliVersion } from "../../src/cli/help.js"
 import { formatFatalError, runCli } from "../../src/cli/run.js"
+import { TOOL_PERMISSION_MODES } from "../../src/core/constants/index.js"
 
 describe("formatFatalError", () => {
   it("formats Error instances for process stderr", () => {
@@ -55,5 +56,26 @@ describe("runCli metadata flags", () => {
     })
 
     expect(rendered?.props.projectRoot).toBe(projectRoot)
+  })
+
+  it("passes initial Permission mode into the TUI app", async () => {
+    let rendered:
+      | ReactElement<{ readonly initialPermissionMode?: string }>
+      | undefined
+
+    await runCli(["--permission-mode=plan"], process.cwd(), undefined, {
+      render: (element) => {
+        rendered = element as ReactElement<{
+          readonly initialPermissionMode?: string
+        }>
+        return {
+          waitUntilExit: () => Promise.resolve(),
+        }
+      },
+    })
+
+    expect(rendered?.props.initialPermissionMode).toBe(
+      TOOL_PERMISSION_MODES.PLAN,
+    )
   })
 })
