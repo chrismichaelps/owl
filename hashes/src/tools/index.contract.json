@@ -4,7 +4,14 @@
   "interface": {
     "inputs": [],
     "outputs": [],
-    "error_modes": []
+    "error_modes": [
+      "ToolExecutionError when ToolRisk is BLOCKED before execution"
+    ],
+    "invariants": [
+      "BuiltInTools.callTool MUST classify ToolRisk before executing a tool",
+      "BuiltInTools.callTool MUST deny BLOCKED ToolRisk invocations",
+      "BuiltInTools.callTool MUST preserve current behavior for LOW, MEDIUM, and HIGH risks until Permission mode is implemented"
+    ]
   },
   "architecture": {
     "depth_score": 0.5,
