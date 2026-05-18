@@ -176,6 +176,14 @@ export const TUI_SHORTCUTS_LAYOUT = {
   KEY_COLUMN_WIDTH: 11,
 } as const
 
+/** @Owl.Core.Constants.TUIPendingApprovals - Pending edit approval rail */
+export const TUI_PENDING_APPROVALS = {
+  VISIBLE_ITEMS: 4,
+  FILE_PREVIEW_LIMIT: 2,
+  EMPTY_LABEL: "No pending edits",
+  TITLE: "Pending edits",
+} as const
+
 /** @Owl.Core.Constants.TUI - Panel width ratios (left/center/right) */
 export const TUI_PANEL_WIDTHS = {
   LEFT: 0.3,

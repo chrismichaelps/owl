@@ -4,6 +4,7 @@ import { Box, Text } from "ink"
 import { formatEstimatedCostUsd } from "../../core/cost.js"
 import { TUI_ROUTING_COPY } from "../../core/constants/index.js"
 import type { OwlAppState } from "../state.js"
+import { PendingApprovalsPanel } from "./PendingApprovalsPanel.js"
 
 interface MetaPanelProps {
   readonly state: OwlAppState
@@ -105,6 +106,7 @@ export const MetaPanel: React.FC<MetaPanelProps> = memo(({ state }) => (
       />
     </Box>
 
+    <PendingApprovalsPanel mutations={state.pendingMutations} />
     {/* FMCF roles legend */}
     <Text color="gray">{"─".repeat(22)}</Text>
     <Text color="gray" dimColor>

@@ -70,6 +70,7 @@ import { makeCommandRegistryLive } from "../commands/registry.js"
 import { TokenBudgetLive } from "../tokens/budget/index.js"
 import type { CommandRegistry } from "../commands/registry.js"
 import type { RoutingPreferences } from "../providers/preferences/index.js"
+import type { PendingMutationStore } from "../editor/pending/index.js"
 import type { ConfigError } from "effect/ConfigError"
 import type {
   SessionMemoryPersistenceError,
@@ -84,7 +85,7 @@ import type {
  * - CommandRegistry: For slash command handling
  */
 export type OwlRuntime = ManagedRuntime.ManagedRuntime<
-  Orchestrator | CommandRegistry | RoutingPreferences,
+  Orchestrator | CommandRegistry | RoutingPreferences | PendingMutationStore,
   ConfigError | SessionMemoryPersistenceError | SessionMemoryValidationError
 >
 

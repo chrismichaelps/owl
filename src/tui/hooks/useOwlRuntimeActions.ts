@@ -1,11 +1,12 @@
 /** @Owl.TUI.Hooks.RuntimeActions - Runtime-backed TUI event handlers */
 import { useCallback, useRef } from "react"
 import type { Dispatch } from "react"
-import { Effect, Fiber } from "effect"
+import { Chunk, Data, Effect, Fiber } from "effect"
 import { Orchestrator } from "../../engine/orchestrator/index.js"
 import { CommandRegistry } from "../../commands/registry.js"
 import { parseCommand } from "../../commands/parser.js"
 import { RoutingPreferences } from "../../providers/preferences/index.js"
+import { PendingMutationStore } from "../../editor/pending/index.js"
 import {
   AGENT_STATUS,
   EFFECT_TAGS,
@@ -34,6 +35,19 @@ const isInterrupted = (error: unknown): boolean =>
 
 const errorMessage = (error: unknown): string =>
   error instanceof Error ? error.message : String(error)
+
+const readPendingMutationSummaries = Effect.gen(function* () {
+  const pending = yield* PendingMutationStore
+  const mutations = yield* pending.list()
+  return Chunk.map(mutations, (mutation) =>
+    Data.struct({
+      mutationId: mutation.mutationId,
+      files: Chunk.map(mutation.targets, (target) => target.file),
+      previewCount: Chunk.size(mutation.previews),
+      createdAt: mutation.createdAt,
+    }),
+  )
+})
 
 export function useOwlRuntimeActions(
   runtime: OwlRuntime,
@@ -193,6 +207,7 @@ export function useOwlRuntimeActions(
         const parsed = yield* parseCommand(raw)
         const result = yield* registry.dispatch(parsed)
         const preferenceSnapshot = yield* routingPreferences.snapshot()
+        const pendingMutations = yield* readPendingMutationSummaries
         commandCounterRef.current += 1
         dispatch({
           type: "SET_PROVIDER_OVERRIDE",
@@ -201,6 +216,10 @@ export function useOwlRuntimeActions(
         dispatch({
           type: "SET_PRIVACY_MODE",
           enabled: preferenceSnapshot.privacyMode,
+        })
+        dispatch({
+          type: "SET_PENDING_MUTATIONS",
+          pendingMutations,
         })
         dispatch({
           type: "ADD_LOG",

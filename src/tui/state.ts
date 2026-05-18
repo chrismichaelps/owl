@@ -12,7 +12,9 @@
  * - Metrics: Token counts, provider, latency, turn count
  * - Turns: Full conversation history
  * - Streaming: In-progress response text
+ * - Pending approvals: Previewed edit mutations waiting for apply/reject
  */
+import { Chunk } from "effect"
 import type { TokenUsage, ProviderId, Mode } from "../core/schema/index.js"
 import { AGENT_STATUS, TUI_MAX_LOG_LINES } from "../core/constants/index.js"
 
@@ -57,6 +59,14 @@ export type ConversationTurn =
   | InferenceConversationTurn
   | CommandConversationTurn
 
+/** @Owl.TUI.State.PendingMutation - Previewed edit approval summary */
+export interface PendingMutationSummary {
+  readonly mutationId: string
+  readonly files: Chunk.Chunk<string>
+  readonly previewCount: number
+  readonly createdAt: string
+}
+
 /**
  * @Owl.TUI.State.Response - Plain response snapshot (safe subset of InferenceResponse)
  */
@@ -91,6 +101,7 @@ export interface OwlAppState {
   readonly turnCount: number
   readonly turns: readonly ConversationTurn[]
   readonly streamingContent: string
+  readonly pendingMutations: Chunk.Chunk<PendingMutationSummary>
 }
 
 /** @Owl.TUI.State.Action - Discriminated union of all state transitions */
@@ -108,6 +119,10 @@ export type OwlAction =
   | { readonly type: "SET_PRIVACY_MODE"; readonly enabled: boolean }
   | { readonly type: "APPEND_STREAM"; readonly text: string }
   | { readonly type: "CLEAR_STREAM" }
+  | {
+      readonly type: "SET_PENDING_MUTATIONS"
+      readonly pendingMutations: Chunk.Chunk<PendingMutationSummary>
+    }
   | { readonly type: "RESET" }
 
 /** @Owl.TUI.State.Initial - Default state for new sessions */
@@ -130,6 +145,7 @@ export const INITIAL_STATE: OwlAppState = {
   turnCount: 0,
   turns: [],
   streamingContent: "",
+  pendingMutations: Chunk.empty(),
 }
 
 /**
@@ -206,6 +222,10 @@ export function owlReducer(state: OwlAppState, action: OwlAction): OwlAppState {
     case "CLEAR_STREAM":
       return { ...state, streamingContent: "" }
 
+    /** @Owl.TUI.State.Reducer.SET_PENDING_MUTATIONS — Syncs edit approval queue */
+    case "SET_PENDING_MUTATIONS":
+      return { ...state, pendingMutations: action.pendingMutations }
+
     /** @Owl.TUI.State.Reducer.RESET — Returns to idle, preserves metrics */
     case "RESET":
       return {
@@ -217,6 +237,7 @@ export function owlReducer(state: OwlAppState, action: OwlAction): OwlAppState {
         privacyMode: state.privacyMode,
         turnCount: state.turnCount,
         turns: state.turns,
+        pendingMutations: state.pendingMutations,
       }
   }
 }

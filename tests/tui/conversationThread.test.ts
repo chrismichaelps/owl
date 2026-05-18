@@ -2,8 +2,10 @@
 // ESLint cannot resolve Effect's Result type in test context
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { describe, it, expect } from "vitest"
+import { Chunk } from "effect"
 import { owlReducer, INITIAL_STATE } from "../../src/tui/state"
 
 const TURN = {
@@ -63,5 +65,35 @@ describe("ADD_TURN action", () => {
       turn: COMMAND_TURN,
     })
     expect(next.turns).toEqual([COMMAND_TURN])
+  })
+
+  it("tracks pending edit approvals separately from conversation turns", () => {
+    const pendingMutations = Chunk.make({
+      mutationId: "edit-abc",
+      files: Chunk.make("src/example.ts"),
+      previewCount: 1,
+      createdAt: "2026-05-17T10:00:00Z",
+    })
+    const next = owlReducer(INITIAL_STATE, {
+      type: "SET_PENDING_MUTATIONS",
+      pendingMutations,
+    })
+    expect(Chunk.size(next.pendingMutations)).toBe(1)
+    expect(next.turns).toHaveLength(0)
+  })
+
+  it("RESET preserves pending edit approvals", () => {
+    const pendingMutations = Chunk.make({
+      mutationId: "edit-abc",
+      files: Chunk.make("src/example.ts"),
+      previewCount: 1,
+      createdAt: "2026-05-17T10:00:00Z",
+    })
+    let state = owlReducer(INITIAL_STATE, {
+      type: "SET_PENDING_MUTATIONS",
+      pendingMutations,
+    })
+    state = owlReducer(state, { type: "RESET" })
+    expect(Chunk.size(state.pendingMutations)).toBe(1)
   })
 })
