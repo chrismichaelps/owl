@@ -14,15 +14,16 @@ interface LogPanelProps {
   readonly logs: readonly string[]
   readonly status: AgentStatus
   readonly activeRole: ActiveRole
+  readonly focused: boolean
 }
 
 /** @Owl.TUI.Components.LogPanel.Component - Left panel with logs and role badge */
 export const LogPanel: React.FC<LogPanelProps> = memo(
-  ({ logs, status, activeRole }) => (
+  ({ logs, status, activeRole, focused }) => (
     <Box
       flexDirection="column"
       borderStyle="round"
-      borderColor="blue"
+      borderColor={focused ? "blueBright" : "blue"}
       paddingX={1}
       width={TUI_LOG_PANEL.PANEL_WIDTH}
       flexShrink={0}

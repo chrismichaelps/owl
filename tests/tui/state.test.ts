@@ -15,6 +15,7 @@ import {
   type OwlAppState,
   type OwlAction,
 } from "../../src/tui/state"
+import { TUI_FOCUS } from "../../src/core/constants/index.js"
 
 /** Build a minimal InferenceResponse-like fixture */
 function makeResponse(
@@ -94,6 +95,10 @@ describe("INITIAL_STATE shape", () => {
 
   it("starts at turn 0", () => {
     expect(INITIAL_STATE.turnCount).toBe(0)
+  })
+
+  it("starts focused on the response panel", () => {
+    expect(INITIAL_STATE.focusedPanel).toBe(TUI_FOCUS.RESPONSE)
   })
 })
 
@@ -361,6 +366,16 @@ describe("SET_PRIVACY_MODE action", () => {
   })
 })
 
+describe("SET_FOCUSED_PANEL action", () => {
+  it("updates the active workbench panel", () => {
+    const next = reduce(INITIAL_STATE, {
+      type: "SET_FOCUSED_PANEL",
+      panel: TUI_FOCUS.METRICS,
+    })
+    expect(next.focusedPanel).toBe(TUI_FOCUS.METRICS)
+  })
+})
+
 describe("RESET action", () => {
   it("returns to idle status", () => {
     const s = { ...INITIAL_STATE, status: "inferring" as const }
@@ -433,6 +448,15 @@ describe("RESET action", () => {
     }
     const next = reduce(s, { type: "RESET" })
     expect(next.privacyMode).toBe(true)
+  })
+
+  it("preserves panel focus across reset", () => {
+    const s = {
+      ...INITIAL_STATE,
+      focusedPanel: TUI_FOCUS.LOGS,
+    }
+    const next = reduce(s, { type: "RESET" })
+    expect(next.focusedPanel).toBe(TUI_FOCUS.LOGS)
   })
 })
 

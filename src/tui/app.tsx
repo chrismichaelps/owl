@@ -38,10 +38,11 @@ import { CommandPalette } from "./components/CommandPalette.js"
 import { ShortcutsOverlay } from "./components/ShortcutsOverlay.js"
 import { useOwlRuntimeActions } from "./hooks/useOwlRuntimeActions.js"
 import { owlReducer, INITIAL_STATE } from "./state.js"
+import { moveFocusPanel } from "./focus/index.js"
 import type { Mode } from "../core/schema/index.js"
 import type { OwlRuntime } from "../cli/runtime.js"
 import { CommandRegistry } from "../commands/registry.js"
-import { AGENT_STATUS } from "../core/constants/index.js"
+import { AGENT_STATUS, TUI_FOCUS } from "../core/constants/index.js"
 import type { PaletteCommand } from "./commands/fuzzy.js"
 
 /** @Owl.TUI.App.Props - Component props */
@@ -94,6 +95,26 @@ export const App: React.FC<AppProps> = ({
       if (key.escape) setShortcutsOpen(false)
     },
     { isActive: shortcutsOpen },
+  )
+
+  useInput(
+    (_input, key) => {
+      if (key.leftArrow) {
+        dispatch({
+          type: "SET_FOCUSED_PANEL",
+          panel: moveFocusPanel(state.focusedPanel, -1),
+        })
+        return
+      }
+
+      if (key.rightArrow) {
+        dispatch({
+          type: "SET_FOCUSED_PANEL",
+          panel: moveFocusPanel(state.focusedPanel, 1),
+        })
+      }
+    },
+    { isActive: !shortcutsOpen && !paletteState.open },
   )
 
   /** Update mode (affects PromptInput border color and token budget) */
@@ -151,14 +172,19 @@ export const App: React.FC<AppProps> = ({
             logs={state.logs}
             status={state.status}
             activeRole={state.activeRole}
+            focused={state.focusedPanel === TUI_FOCUS.LOGS}
           />
           <OutputPanel
             status={state.status}
             turns={state.turns}
             error={state.error}
             streamingContent={state.streamingContent}
+            focused={state.focusedPanel === TUI_FOCUS.RESPONSE}
           />
-          <MetaPanel state={state} />
+          <MetaPanel
+            state={state}
+            focused={state.focusedPanel === TUI_FOCUS.METRICS}
+          />
         </Box>
       )}
 

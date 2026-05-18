@@ -1,4 +1,4 @@
-import { HashMap, HashSet } from "effect"
+import { Chunk, HashMap, HashSet } from "effect"
 
 /** @Owl.Core.Constants.TUI - Terminal UI refresh and layout */
 export const TUI_REFRESH_INTERVAL_MS = 100
@@ -80,6 +80,20 @@ export const TUI_ROLE_COLORS: HashMap.HashMap<string, string> =
     ["Shadow", "magenta"],
     ["Forensic Guardian", "green"],
   ])
+
+/** @Owl.Core.Constants.TUIFocus - Navigable workbench panels */
+export const TUI_FOCUS = {
+  LOGS: "logs",
+  RESPONSE: "response",
+  METRICS: "metrics",
+} as const
+
+/** @Owl.Core.Constants.TUIFocusOrder - Left-to-right panel focus order */
+export const TUI_FOCUS_ORDER: Chunk.Chunk<string> = Chunk.make(
+  TUI_FOCUS.LOGS,
+  TUI_FOCUS.RESPONSE,
+  TUI_FOCUS.METRICS,
+)
 
 /** @Owl.Core.Constants.TUIRuntime - TUI IDs and preview limits */
 export const TUI_CONSTANTS = {

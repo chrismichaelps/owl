@@ -17,6 +17,8 @@
 import { Chunk } from "effect"
 import type { TokenUsage, ProviderId, Mode } from "../core/schema/index.js"
 import { AGENT_STATUS, TUI_MAX_LOG_LINES } from "../core/constants/index.js"
+import { TUI_FOCUS } from "../core/constants/index.js"
+import type { FocusedPanel } from "./focus/index.js"
 
 export type AgentStatus = (typeof AGENT_STATUS)[keyof typeof AGENT_STATUS]
 
@@ -102,6 +104,7 @@ export interface OwlAppState {
   readonly turns: readonly ConversationTurn[]
   readonly streamingContent: string
   readonly pendingMutations: Chunk.Chunk<PendingMutationSummary>
+  readonly focusedPanel: FocusedPanel
 }
 
 /** @Owl.TUI.State.Action - Discriminated union of all state transitions */
@@ -123,6 +126,7 @@ export type OwlAction =
       readonly type: "SET_PENDING_MUTATIONS"
       readonly pendingMutations: Chunk.Chunk<PendingMutationSummary>
     }
+  | { readonly type: "SET_FOCUSED_PANEL"; readonly panel: FocusedPanel }
   | { readonly type: "RESET" }
 
 /** @Owl.TUI.State.Initial - Default state for new sessions */
@@ -146,6 +150,7 @@ export const INITIAL_STATE: OwlAppState = {
   turns: [],
   streamingContent: "",
   pendingMutations: Chunk.empty(),
+  focusedPanel: TUI_FOCUS.RESPONSE,
 }
 
 /**
@@ -226,6 +231,10 @@ export function owlReducer(state: OwlAppState, action: OwlAction): OwlAppState {
     case "SET_PENDING_MUTATIONS":
       return { ...state, pendingMutations: action.pendingMutations }
 
+    /** @Owl.TUI.State.Reducer.SET_FOCUSED_PANEL — Tracks active workbench panel */
+    case "SET_FOCUSED_PANEL":
+      return { ...state, focusedPanel: action.panel }
+
     /** @Owl.TUI.State.Reducer.RESET — Returns to idle, preserves metrics */
     case "RESET":
       return {
@@ -238,6 +247,7 @@ export function owlReducer(state: OwlAppState, action: OwlAction): OwlAppState {
         turnCount: state.turnCount,
         turns: state.turns,
         pendingMutations: state.pendingMutations,
+        focusedPanel: state.focusedPanel,
       }
   }
 }

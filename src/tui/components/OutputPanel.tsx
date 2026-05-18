@@ -13,11 +13,12 @@ interface OutputPanelProps {
   readonly turns: readonly ConversationTurn[]
   readonly error: string | null
   readonly streamingContent: string
+  readonly focused: boolean
 }
 
 /** @Owl.TUI.Components.OutputPanel.Component - Center panel with response area */
 export const OutputPanel: React.FC<OutputPanelProps> = memo(
-  ({ status, turns, error, streamingContent }) => {
+  ({ status, turns, error, streamingContent, focused }) => {
     const { rows } = useWindowSize()
     // Reserve rows for: border(2) + header(1) + marginTop(1) + statusbar(3) + prompt(4)
     const visibleRows = Math.max(
@@ -55,7 +56,7 @@ export const OutputPanel: React.FC<OutputPanelProps> = memo(
       <Box
         flexDirection="column"
         borderStyle="round"
-        borderColor="green"
+        borderColor={focused ? "greenBright" : "green"}
         paddingX={1}
         flexGrow={1}
       >
