@@ -20,6 +20,7 @@ import { WriteTool } from "./write.js"
 import { EditTool } from "./edit.js"
 import { GlobTool } from "./glob.js"
 import { GrepTool } from "./grep.js"
+import { TOOL_RISK_LEVELS } from "../core/constants/index.js"
 import { ToolExecutionError } from "../core/errors/index.js"
 import { classifyToolRisk, formatToolRisk } from "./risk.js"
 import type { BuiltInTool, BuiltInToolsService } from "./types.js"
@@ -85,6 +86,15 @@ export const makeBuiltInToolsLive = (cwd: string): Layer.Layer<BuiltInTools> =>
           new ToolExecutionError({
             tool: name,
             reason: "Built-in tool not found",
+          }),
+        )
+      }
+      const risk = classifyToolRisk(name, input)
+      if (risk.level === TOOL_RISK_LEVELS.BLOCKED) {
+        return Effect.fail(
+          new ToolExecutionError({
+            tool: name,
+            reason: "Blocked ToolRisk: " + risk.reason,
           }),
         )
       }

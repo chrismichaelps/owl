@@ -69,6 +69,23 @@ describe("BuiltInTools", () => {
     expect(risk.level).toBe("blocked")
   })
 
+  it("denies blocked ToolRisk invocations before execution", async () => {
+    await writeFile(join(projectRoot, "keep.txt"), "safe\n")
+
+    const result = await runToolEither(TOOL_NAMES.BASH, {
+      command: "rm -rf keep.txt",
+    })
+
+    expect(result._tag).toBe("Left")
+    if (result._tag === "Left") {
+      expect(result.left).toBeInstanceOf(ToolExecutionError)
+      expect(result.left.reason).toContain("Blocked ToolRisk")
+    }
+    await expect(readFile(join(projectRoot, "keep.txt"), "utf8")).resolves.toBe(
+      "safe\n",
+    )
+  })
+
   it("writes, reads, and edits files inside the project root", async () => {
     const writeOutput = await runTool(TOOL_NAMES.WRITE, {
       file_path: "src/example.txt",
