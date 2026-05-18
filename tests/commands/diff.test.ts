@@ -1,6 +1,6 @@
 /** @Owl.Tests.Commands.Diff - Pending and rollback diff command tests */
 import { describe, expect, it } from "vitest"
-import { Effect } from "effect"
+import { Chunk, Effect } from "effect"
 import { makeDiffCommand } from "../../src/commands/editing/diff.js"
 import {
   PendingMutationStore,
@@ -54,14 +54,12 @@ describe("makeDiffCommand", () => {
         const pending = yield* PendingMutationStore
         yield* pending.put(
           "edit-preview",
-          [
-            {
-              file: "src/a.ts",
-              oldString: "const value = 1",
-              newString: "const value = 2",
-            },
-          ],
-          [PREVIEW],
+          Chunk.make({
+            file: "src/a.ts",
+            oldString: "const value = 1",
+            newString: "const value = 2",
+          }),
+          Chunk.make(PREVIEW),
         )
         const command = makeDiffCommand(makeRollback(), pending)
         const result = yield* command.execute(["edit-preview"])
@@ -82,14 +80,12 @@ describe("makeDiffCommand", () => {
         const pending = yield* PendingMutationStore
         yield* pending.put(
           "edit-preview",
-          [
-            {
-              file: "src/a.ts",
-              oldString: "const value = 1",
-              newString: "const value = 2",
-            },
-          ],
-          [PREVIEW],
+          Chunk.make({
+            file: "src/a.ts",
+            oldString: "const value = 1",
+            newString: "const value = 2",
+          }),
+          Chunk.make(PREVIEW),
         )
         const command = makeDiffCommand(makeRollback(), pending)
         const result = yield* command.execute([

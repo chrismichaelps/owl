@@ -101,8 +101,8 @@ export function makeRejectCommand(
         } else {
           yield* pending.put(
             mutationId,
-            Chunk.toReadonlyArray(selection.remainingTargets),
-            Chunk.toReadonlyArray(selection.remainingPreviews),
+            selection.remainingTargets,
+            selection.remainingPreviews,
           )
         }
 

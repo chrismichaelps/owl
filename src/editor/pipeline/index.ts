@@ -20,7 +20,7 @@
  * const result = yield* Effect.flatMap(EditingPipeline, (p) =>
  *   p.execute({
  *     mutationId: "edit-1",
- *     targets: [{ file: "src/foo.ts", oldString: "old", newString: "new" }],
+ *     targets: Chunk.make({ file: "src/foo.ts", oldString: "old", newString: "new" }),
  *     projectRoot: "/project",
  *     autoApprove: true,
  *   })
@@ -54,7 +54,7 @@ import { RollbackSystem } from "../rollback/index.js"
  * @example
  * const input: PipelineInput = {
  *   mutationId: "edit-1",
- *   targets: [{ file: "src/foo.ts", oldString: "old", newString: "new" }],
+ *   targets: Chunk.make({ file: "src/foo.ts", oldString: "old", newString: "new" }),
  *   projectRoot: "/path/to/project",
  *   autoApprove: false, // Requires TUI approval
  *   subsystemId: "subsystem-engine", // For invariant validation
@@ -63,7 +63,7 @@ import { RollbackSystem } from "../rollback/index.js"
  */
 export interface PipelineInput {
   readonly mutationId: string
-  readonly targets: readonly TLITarget[]
+  readonly targets: Chunk.Chunk<TLITarget>
   readonly projectRoot: string
   readonly autoApprove: boolean
   readonly subsystemId?: string
@@ -86,8 +86,8 @@ export interface PipelineMutationResult {
 export interface PipelineResult {
   readonly mutationId: string
   readonly completedStage: PipelineStage
-  readonly results: readonly PipelineMutationResult[]
-  readonly shardSplitWarnings: readonly string[]
+  readonly results: Chunk.Chunk<PipelineMutationResult>
+  readonly shardSplitWarnings: Chunk.Chunk<string>
   readonly approved: boolean
   readonly rolledBack: boolean
 }
@@ -213,8 +213,8 @@ export const EditingPipelineLive = Layer.effect(
           return {
             mutationId: input.mutationId,
             completedStage: PIPELINE_STAGES[4],
-            results: Chunk.toReadonlyArray(mutationResults),
-            shardSplitWarnings: Chunk.toReadonlyArray(shardSplitWarnings),
+            results: mutationResults,
+            shardSplitWarnings,
             approved: false,
             rolledBack: false,
           } satisfies PipelineResult
@@ -255,8 +255,8 @@ export const EditingPipelineLive = Layer.effect(
         return {
           mutationId: input.mutationId,
           completedStage: PIPELINE_STAGES[6],
-          results: Chunk.toReadonlyArray(mutationResults),
-          shardSplitWarnings: Chunk.toReadonlyArray(shardSplitWarnings),
+          results: mutationResults,
+          shardSplitWarnings,
           approved: true,
           rolledBack: false,
         } satisfies PipelineResult

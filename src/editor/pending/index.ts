@@ -26,8 +26,8 @@ export interface PendingMutation {
 export interface PendingMutationStoreService {
   readonly put: (
     mutationId: string,
-    targets: readonly TLITarget[],
-    previews?: readonly PipelineMutationResult[],
+    targets: Chunk.Chunk<TLITarget>,
+    previews?: Chunk.Chunk<PipelineMutationResult>,
   ) => Effect.Effect<PendingMutation>
   readonly get: (
     mutationId: string,
@@ -51,14 +51,14 @@ export const PendingMutationStoreLive = Layer.effect(
 
     const put = (
       mutationId: string,
-      targets: readonly TLITarget[],
-      previews: readonly PipelineMutationResult[] = [],
+      targets: Chunk.Chunk<TLITarget>,
+      previews: Chunk.Chunk<PipelineMutationResult> = Chunk.empty(),
     ): Effect.Effect<PendingMutation> =>
       Effect.gen(function* () {
         const mutation = Data.struct({
           mutationId,
-          targets: Chunk.fromIterable(targets),
-          previews: Chunk.fromIterable(previews),
+          targets,
+          previews,
           createdAt: new Date().toISOString(),
         })
 

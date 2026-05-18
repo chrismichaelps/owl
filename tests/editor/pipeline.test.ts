@@ -3,7 +3,7 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
 import os from "node:os"
 import path from "node:path"
 import { describe, expect, it } from "vitest"
-import { Cause, Effect, Exit, Layer } from "effect"
+import { Cause, Chunk, Effect, Exit, Layer } from "effect"
 import {
   EditingPipeline,
   EditingPipelineLive,
@@ -46,13 +46,11 @@ describe("EditingPipeline rollback retention", () => {
           const pipeline = yield* EditingPipeline
           return yield* pipeline.execute({
             mutationId: "mutation-governance-1",
-            targets: [
-              {
-                file: relativeFile,
-                oldString: "const value = 1",
-                newString: "const value = 2",
-              },
-            ],
+            targets: Chunk.make({
+              file: relativeFile,
+              oldString: "const value = 1",
+              newString: "const value = 2",
+            }),
             projectRoot,
             autoApprove: false,
             subsystemId: "subsystem-editor",
@@ -109,13 +107,11 @@ const unchanged19 = 19
           const pipeline = yield* EditingPipeline
           return yield* pipeline.execute({
             mutationId: "mutation-preview-1",
-            targets: [
-              {
-                file: relativeFile,
-                oldString: "const value = 1",
-                newString: "const value = 2",
-              },
-            ],
+            targets: Chunk.make({
+              file: relativeFile,
+              oldString: "const value = 1",
+              newString: "const value = 2",
+            }),
             projectRoot,
             autoApprove: false,
           })
@@ -124,8 +120,8 @@ const unchanged19 = 19
 
       expect(result.completedStage).toBe("approval")
       expect(result.approved).toBe(false)
-      expect(result.results).toHaveLength(1)
-      expect(result.results[0]?.diff.linesAdded).toBe(1)
+      expect(Chunk.size(result.results)).toBe(1)
+      expect(Chunk.unsafeGet(result.results, 0).diff.linesAdded).toBe(1)
       expect(await readFile(absoluteFile, "utf8")).toBe(originalContent)
     } finally {
       await rm(projectRoot, { recursive: true, force: true })
@@ -169,19 +165,17 @@ const unchanged19 = 19
 
           const result = yield* pipeline.execute({
             mutationId: "mutation-undo-1",
-            targets: [
-              {
-                file: relativeFile,
-                oldString: "const value = 1",
-                newString: "const value = 2",
-              },
-            ],
+            targets: Chunk.make({
+              file: relativeFile,
+              oldString: "const value = 1",
+              newString: "const value = 2",
+            }),
             projectRoot,
             autoApprove: true,
           })
 
           expect(result.completedStage).toBe("verification")
-          expect(result.results).toHaveLength(1)
+          expect(Chunk.size(result.results)).toBe(1)
 
           const entries = yield* rollback.getEntries("mutation-undo-1")
           expect(entries).toHaveLength(1)

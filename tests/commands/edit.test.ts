@@ -22,76 +22,75 @@ const PIPELINE_RESULT: PipelineResult = {
   completedStage: "verification",
   approved: true,
   rolledBack: false,
-  shardSplitWarnings: [],
-  results: [
-    {
+  shardSplitWarnings: Chunk.empty(),
+  results: Chunk.make({
+    file: "src/a.ts",
+    oldContent: "const value = 1\n",
+    newContent: "const value = 2\n",
+    diff: {
       file: "src/a.ts",
-      oldContent: "const value = 1\n",
-      newContent: "const value = 2\n",
-      diff: {
-        file: "src/a.ts",
-        hunks: [
-          {
-            oldStart: 1,
-            oldLines: 1,
-            newStart: 1,
-            newLines: 1,
-            lines: ["-const value = 1", "+const value = 2"],
-          },
-        ],
-        linesAdded: 1,
-        linesRemoved: 1,
-        totalOldLines: 1,
-        changePercent: 0.1,
-        isShardSplit: false,
-      },
+      hunks: [
+        {
+          oldStart: 1,
+          oldLines: 1,
+          newStart: 1,
+          newLines: 1,
+          lines: ["-const value = 1", "+const value = 2"],
+        },
+      ],
+      linesAdded: 1,
+      linesRemoved: 1,
+      totalOldLines: 1,
+      changePercent: 0.1,
+      isShardSplit: false,
     },
-  ],
+  }),
 }
 
-const PIPELINE_PREVIEW = PIPELINE_RESULT.results[0]
-if (PIPELINE_PREVIEW === undefined) {
-  throw new Error("Expected test pipeline result fixture")
-}
+const PIPELINE_PREVIEW = Chunk.unsafeGet(PIPELINE_RESULT.results, 0)
+
+const makeTarget = (file: string, oldString: string, newString: string) => ({
+  file,
+  oldString,
+  newString,
+})
 
 const makePipeline = (): EditingPipelineService => ({
   execute: (input) =>
     Effect.succeed({
       ...PIPELINE_RESULT,
       mutationId: input.mutationId,
-      results: Chunk.toReadonlyArray(
-        Chunk.map(Chunk.fromIterable(input.targets), (target) => ({
+      results: Chunk.map(input.targets, (target) => ({
+        file: target.file,
+        oldContent: target.oldString + "\n",
+        newContent: target.newString + "\n",
+        diff: {
           file: target.file,
-          oldContent: target.oldString + "\n",
-          newContent: target.newString + "\n",
-          diff: {
-            file: target.file,
-            hunks: [
-              {
-                oldStart: 1,
-                oldLines: 1,
-                newStart: 1,
-                newLines: 1,
-                lines: ["-" + target.oldString, "+" + target.newString],
-              },
-            ],
-            linesAdded: 1,
-            linesRemoved: 1,
-            totalOldLines: 1,
-            changePercent: 0.1,
-            isShardSplit: false,
-          },
-        })),
-      ),
+          hunks: [
+            {
+              oldStart: 1,
+              oldLines: 1,
+              newStart: 1,
+              newLines: 1,
+              lines: ["-" + target.oldString, "+" + target.newString],
+            },
+          ],
+          linesAdded: 1,
+          linesRemoved: 1,
+          totalOldLines: 1,
+          changePercent: 0.1,
+          isShardSplit: false,
+        },
+      })),
     }),
 })
 
 const makePending = (): PendingMutationStoreService => ({
-  put: (mutationId, targets, previews = []) =>
+  put: (mutationId, targets, previews = Chunk.empty()) =>
     Effect.succeed({
       mutationId,
-      targets: Chunk.fromIterable(targets),
-      previews: Chunk.fromIterable(previews),
+      targets,
+      previews,
       createdAt: "2026-05-16T00:00:00.000Z",
     }),
   get: () => Effect.succeed(Option.none()),
@@ -149,14 +148,10 @@ describe("makeApplyCommand", () => {
         const pending = yield* PendingMutationStore
         yield* pending.put(
           "edit-example",
-          [
-            {
-              file: "src/a.ts",
-              oldString: "const value = 1",
-              newString: "const value = 2",
-            },
-          ],
-          [PIPELINE_PREVIEW],
+          Chunk.make(
+            makeTarget("src/a.ts", "const value = 1", "const value = 2"),
+          ),
+          Chunk.make(PIPELINE_PREVIEW),
         )
         const command = makeApplyCommand(makePipeline(), pending, "/project")
         const result = yield* command.execute([])
@@ -174,13 +169,12 @@ describe("makeApplyCommand", () => {
     const output = await Effect.runPromise(
       Effect.gen(function* () {
         const pending = yield* PendingMutationStore
-        const stored = yield* pending.put("edit-example", [
-          {
-            file: "src/a.ts",
-            oldString: "const value = 1",
-            newString: "const value = 2",
-          },
-        ])
+        const stored = yield* pending.put(
+          "edit-example",
+          Chunk.make(
+            makeTarget("src/a.ts", "const value = 1", "const value = 2"),
+          ),
+        )
         const command = makeApplyCommand(makePipeline(), pending, "/project")
         const result = yield* command.execute([stored.mutationId])
         const removed = yield* pending.get(stored.mutationId)
@@ -198,20 +192,18 @@ describe("makeApplyCommand", () => {
     const output = await Effect.runPromise(
       Effect.gen(function* () {
         const pending = yield* PendingMutationStore
-        yield* pending.put("edit-one", [
-          {
-            file: "src/a.ts",
-            oldString: "const value = 1",
-            newString: "const value = 2",
-          },
-        ])
-        yield* pending.put("edit-two", [
-          {
-            file: "src/b.ts",
-            oldString: "const value = 1",
-            newString: "const value = 2",
-          },
-        ])
+        yield* pending.put(
+          "edit-one",
+          Chunk.make(
+            makeTarget("src/a.ts", "const value = 1", "const value = 2"),
+          ),
+        )
+        yield* pending.put(
+          "edit-two",
+          Chunk.make(
+            makeTarget("src/b.ts", "const value = 1", "const value = 2"),
+          ),
+        )
         const command = makeApplyCommand(makePipeline(), pending, "/project")
         const result = yield* command.execute(["--all"])
         const first = yield* pending.get("edit-one")
@@ -231,18 +223,13 @@ describe("makeApplyCommand", () => {
     const output = await Effect.runPromise(
       Effect.gen(function* () {
         const pending = yield* PendingMutationStore
-        yield* pending.put("edit-multi", [
-          {
-            file: "src/a.ts",
-            oldString: "const a = 1",
-            newString: "const a = 2",
-          },
-          {
-            file: "src/b.ts",
-            oldString: "const b = 1",
-            newString: "const b = 2",
-          },
-        ])
+        yield* pending.put(
+          "edit-multi",
+          Chunk.make(
+            makeTarget("src/a.ts", "const a = 1", "const a = 2"),
+            makeTarget("src/b.ts", "const b = 1", "const b = 2"),
+          ),
+        )
         const command = makeApplyCommand(makePipeline(), pending, "/project")
         const result = yield* command.execute(["edit-multi", "src/a.ts"])
         const remaining = yield* pending.get("edit-multi")
@@ -270,13 +257,10 @@ describe("makeApplyCommand", () => {
     const exit = await Effect.runPromiseExit(
       Effect.gen(function* () {
         const pending = yield* PendingMutationStore
-        yield* pending.put("edit-multi", [
-          {
-            file: "src/a.ts",
-            oldString: "const a = 1",
-            newString: "const a = 2",
-          },
-        ])
+        yield* pending.put(
+          "edit-multi",
+          Chunk.make(makeTarget("src/a.ts", "const a = 1", "const a = 2")),
+        )
         const command = makeApplyCommand(makePipeline(), pending, "/project")
         return yield* command.execute(["edit-multi", "src/missing.ts"])
       }).pipe(Effect.provide(PendingMutationStoreLive)),
@@ -293,14 +277,10 @@ describe("makeRejectCommand", () => {
         const pending = yield* PendingMutationStore
         yield* pending.put(
           "edit-example",
-          [
-            {
-              file: "src/a.ts",
-              oldString: "const value = 1",
-              newString: "const value = 2",
-            },
-          ],
-          [PIPELINE_PREVIEW],
+          Chunk.make(
+            makeTarget("src/a.ts", "const value = 1", "const value = 2"),
+          ),
+          Chunk.make(PIPELINE_PREVIEW),
         )
         const command = makeRejectCommand(pending)
         const result = yield* command.execute([])
@@ -318,13 +298,12 @@ describe("makeRejectCommand", () => {
     const output = await Effect.runPromise(
       Effect.gen(function* () {
         const pending = yield* PendingMutationStore
-        yield* pending.put("edit-example", [
-          {
-            file: "src/a.ts",
-            oldString: "const value = 1",
-            newString: "const value = 2",
-          },
-        ])
+        yield* pending.put(
+          "edit-example",
+          Chunk.make(
+            makeTarget("src/a.ts", "const value = 1", "const value = 2"),
+          ),
+        )
         const command = makeRejectCommand(pending)
         const result = yield* command.execute(["edit-example"])
         const rejected = yield* pending.get("edit-example")
@@ -341,18 +320,13 @@ describe("makeRejectCommand", () => {
     const output = await Effect.runPromise(
       Effect.gen(function* () {
         const pending = yield* PendingMutationStore
-        yield* pending.put("edit-multi", [
-          {
-            file: "src/a.ts",
-            oldString: "const a = 1",
-            newString: "const a = 2",
-          },
-          {
-            file: "src/b.ts",
-            oldString: "const b = 1",
-            newString: "const b = 2",
-          },
-        ])
+        yield* pending.put(
+          "edit-multi",
+          Chunk.make(
+            makeTarget("src/a.ts", "const a = 1", "const a = 2"),
+            makeTarget("src/b.ts", "const b = 1", "const b = 2"),
+          ),
+        )
         const command = makeRejectCommand(pending)
         const result = yield* command.execute(["edit-multi", "src/a.ts"])
         const remaining = yield* pending.get("edit-multi")
@@ -380,20 +354,18 @@ describe("makeRejectCommand", () => {
     const output = await Effect.runPromise(
       Effect.gen(function* () {
         const pending = yield* PendingMutationStore
-        yield* pending.put("edit-one", [
-          {
-            file: "src/a.ts",
-            oldString: "const value = 1",
-            newString: "const value = 2",
-          },
-        ])
-        yield* pending.put("edit-two", [
-          {
-            file: "src/b.ts",
-            oldString: "const value = 1",
-            newString: "const value = 2",
-          },
-        ])
+        yield* pending.put(
+          "edit-one",
+          Chunk.make(
+            makeTarget("src/a.ts", "const value = 1", "const value = 2"),
+          ),
+        )
+        yield* pending.put(
+          "edit-two",
+          Chunk.make(
+            makeTarget("src/b.ts", "const value = 1", "const value = 2"),
+          ),
+        )
         const command = makeRejectCommand(pending)
         const result = yield* command.execute(["--all"])
         const first = yield* pending.get("edit-one")
@@ -415,7 +387,7 @@ describe("formatEditOutput", () => {
     expect(
       formatEditOutput("src/a.ts", "edit-empty", {
         ...PIPELINE_RESULT,
-        results: [],
+        results: Chunk.empty(),
       }),
     ).toBe("No changes applied")
   })

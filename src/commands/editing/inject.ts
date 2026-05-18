@@ -9,7 +9,7 @@
  * @example
  * /inject src/foo.ts "// end of imports" "import { bar } from './bar'"
  */
-import { Effect } from "effect"
+import { Chunk, Effect } from "effect"
 import { CommandParseError } from "../../core/errors/index.js"
 import type { EditingPipelineService } from "../../editor/pipeline/index.js"
 import type { CommandHandler, CommandResult } from "../types.js"
@@ -41,7 +41,7 @@ export function makeInjectCommand(
       return pipeline
         .execute({
           mutationId,
-          targets: [{ file, oldString: after, newString }],
+          targets: Chunk.make({ file, oldString: after, newString }),
           projectRoot,
           autoApprove: true,
         })

@@ -31,22 +31,24 @@ export function formatEditOutput(
   mutationId: string,
   result: PipelineResult,
 ): string {
-  const first = result.results[0]
-  if (first === undefined) {
+  const first = Chunk.get(result.results, 0)
+  if (first._tag === "None") {
     return "No changes applied"
   }
+
+  const mutation = first.value
 
   const header =
     "Edited " +
     file +
     " — " +
-    String(first.diff.linesAdded) +
+    String(mutation.diff.linesAdded) +
     " lines added, " +
-    String(first.diff.linesRemoved) +
+    String(mutation.diff.linesRemoved) +
     " removed | mutation " +
     mutationId
-  const impact = formatMutationImpactBlock(Chunk.make(first.diff))
-  const patch = formatUnifiedDiff(first.file, first.diff.hunks)
+  const impact = formatMutationImpactBlock(Chunk.make(mutation.diff))
+  const patch = formatUnifiedDiff(mutation.file, mutation.diff.hunks)
 
   return patch.length > 0
     ? header + "\n" + impact + "\n\n```diff\n" + patch + "\n```"
@@ -86,7 +88,7 @@ export function makeEditCommand(
         return pipeline
           .execute({
             mutationId,
-            targets: [{ file, oldString, newString }],
+            targets: Chunk.make({ file, oldString, newString }),
             projectRoot,
             autoApprove: false,
           })
@@ -95,7 +97,7 @@ export function makeEditCommand(
               pending
                 .put(
                   mutationId,
-                  [{ file, oldString, newString }],
+                  Chunk.make({ file, oldString, newString }),
                   result.results,
                 )
                 .pipe(
@@ -118,7 +120,7 @@ export function makeEditCommand(
       return pipeline
         .execute({
           mutationId,
-          targets: [{ file, oldString, newString }],
+          targets: Chunk.make({ file, oldString, newString }),
           projectRoot,
           autoApprove: true,
         })

@@ -71,7 +71,7 @@ export function makeApplyCommand(
 
           const result = yield* pipeline.execute({
             mutationId: mutation.mutationId,
-            targets: Chunk.toReadonlyArray(selection.selectedTargets),
+            targets: selection.selectedTargets,
             projectRoot,
             autoApprove: true,
           })
@@ -81,8 +81,8 @@ export function makeApplyCommand(
           } else {
             yield* pending.put(
               id,
-              Chunk.toReadonlyArray(selection.remainingTargets),
-              Chunk.toReadonlyArray(selection.remainingPreviews),
+              selection.remainingTargets,
+              selection.remainingPreviews,
             )
           }
 
@@ -97,7 +97,7 @@ export function makeApplyCommand(
           return (
             id +
             " across " +
-            String(result.results.length) +
+            String(Chunk.size(result.results)) +
             " file(s): " +
             Chunk.toReadonlyArray(appliedFiles).join(", ") +
             (Chunk.isEmpty(remainingFiles)
