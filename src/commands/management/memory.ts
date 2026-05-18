@@ -10,7 +10,7 @@
  * //   Q: Create a function...
  * //   A: Here is your function...
  */
-import { Effect } from "effect"
+import { Chunk, Effect } from "effect"
 import { truncate } from "../../core/utils/format.js"
 import { COMMAND_CONSTANTS } from "../../core/constants/index.js"
 import { formatEstimatedCostUsd } from "../../core/cost.js"
@@ -46,10 +46,11 @@ export function makeMemoryCommand(
     execute: (_args): Effect.Effect<CommandResult, CommandParseError> =>
       sessionMemory.getTurns().pipe(
         Effect.map((turns) => {
-          if (turns.length === 0) {
+          if (Chunk.isEmpty(turns)) {
             return { output: "No session turns recorded." }
           }
-          const lines = turns.map(
+          const lines = Chunk.map(
+            turns,
             (t, i) =>
               "[" +
               String(i + 1) +
@@ -74,7 +75,7 @@ export function makeMemoryCommand(
                 "...",
               ),
           )
-          return { output: lines.join("\n\n") }
+          return { output: Chunk.toReadonlyArray(lines).join("\n\n") }
         }),
       ),
   }

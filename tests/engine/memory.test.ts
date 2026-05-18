@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import { Cause, Effect } from "effect"
+import { Cause, Chunk, Effect } from "effect"
 import fs from "node:fs"
 import os from "node:os"
 import path from "node:path"
@@ -80,7 +80,7 @@ describe("SessionMemory.startSession", () => {
       }),
     )
     expect(result.id).toBe("s-resume")
-    expect(result.turns).toHaveLength(1)
+    expect(Chunk.size(result.turns)).toBe(1)
   })
 })
 
@@ -93,7 +93,7 @@ describe("SessionMemory.recordTurn / getTurns", () => {
         return yield* mem.getTurns()
       }),
     )
-    expect(turns).toHaveLength(0)
+    expect(Chunk.size(turns)).toBe(0)
   })
 
   it("records a turn and retrieves it", async () => {
@@ -105,9 +105,9 @@ describe("SessionMemory.recordTurn / getTurns", () => {
         return yield* mem.getTurns()
       }),
     )
-    expect(turns).toHaveLength(1)
-    expect(turns[0]?.taskId).toBe("task-1")
-    expect(turns[0]?.prompt).toBe("prompt 1")
+    expect(Chunk.size(turns)).toBe(1)
+    expect(Chunk.unsafeGet(turns, 0).taskId).toBe("task-1")
+    expect(Chunk.unsafeGet(turns, 0).prompt).toBe("prompt 1")
   })
 
   it("records optional runtime metadata for provider visibility", async () => {
@@ -126,10 +126,10 @@ describe("SessionMemory.recordTurn / getTurns", () => {
       }),
     )
 
-    expect(turns[0]?.provider).toBe("anthropic")
-    expect(turns[0]?.model).toBe("claude-opus-4")
-    expect(turns[0]?.estimatedCostUsd).toBe(0.003)
-    expect(turns[0]?.latencyMs).toBe(250)
+    expect(Chunk.unsafeGet(turns, 0).provider).toBe("anthropic")
+    expect(Chunk.unsafeGet(turns, 0).model).toBe("claude-opus-4")
+    expect(Chunk.unsafeGet(turns, 0).estimatedCostUsd).toBe(0.003)
+    expect(Chunk.unsafeGet(turns, 0).latencyMs).toBe(250)
   })
 
   it("records multiple turns in order", async () => {
@@ -143,8 +143,12 @@ describe("SessionMemory.recordTurn / getTurns", () => {
         return yield* mem.getTurns()
       }),
     )
-    expect(turns).toHaveLength(3)
-    expect(turns.map((t) => t.taskId)).toEqual(["task-1", "task-2", "task-3"])
+    expect(Chunk.size(turns)).toBe(3)
+    expect(Chunk.toReadonlyArray(Chunk.map(turns, (t) => t.taskId))).toEqual([
+      "task-1",
+      "task-2",
+      "task-3",
+    ])
   })
 
   it("rejects turns with negative token counts", async () => {
@@ -181,8 +185,8 @@ describe("SessionMemory.recordTurn / getTurns", () => {
       }),
     )
 
-    expect(turns).toHaveLength(SESSION_MEMORY_CONSTANTS.MAX_TURNS)
-    expect(turns[0]?.taskId).toBe("task-1")
+    expect(Chunk.size(turns)).toBe(SESSION_MEMORY_CONSTANTS.MAX_TURNS)
+    expect(Chunk.unsafeGet(turns, 0).taskId).toBe("task-1")
   })
 })
 
@@ -225,7 +229,7 @@ describe("PersistentSessionMemory", () => {
     )
 
     expect(result.id).toBe("persisted-session")
-    expect(result.turns).toHaveLength(1)
-    expect(result.turns[0]?.taskId).toBe("task-1")
+    expect(Chunk.size(result.turns)).toBe(1)
+    expect(Chunk.unsafeGet(result.turns, 0).taskId).toBe("task-1")
   })
 })

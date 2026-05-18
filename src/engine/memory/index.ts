@@ -47,7 +47,7 @@ export interface SessionMemoryService {
   readonly recordTurn: (
     turn: SessionTurn,
   ) => Effect.Effect<void, SessionMemoryFailure>
-  readonly getTurns: () => Effect.Effect<readonly SessionTurn[]>
+  readonly getTurns: () => Effect.Effect<Chunk.Chunk<SessionTurn>>
   readonly summarize: () => Effect.Effect<string>
 }
 
@@ -179,11 +179,9 @@ const makeService = (
       yield* persistCurrent()
     })
 
-  const getTurns = (): Effect.Effect<readonly SessionTurn[]> =>
+  const getTurns = (): Effect.Effect<Chunk.Chunk<SessionTurn>> =>
     Ref.get(stateRef).pipe(
-      Effect.map((state) =>
-        Chunk.toReadonlyArray(getSessionTurns(state, state.activeSessionId)),
-      ),
+      Effect.map((state) => getSessionTurns(state, state.activeSessionId)),
     )
 
   const summarize = (): Effect.Effect<string> =>

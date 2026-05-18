@@ -89,23 +89,23 @@ export function makeHistoryCommand(
 
         const turns = yield* sessionMemory.getTurns()
 
-        if (turns.length === 0) {
+        if (Chunk.isEmpty(turns)) {
           return { output: "No turns yet in this session." }
         }
 
-        const limit = parseLimit(args[0], turns.length, turns.length)
+        const turnCount = Chunk.size(turns)
+        const limit = parseLimit(args[0], turnCount, turnCount)
 
-        const turnChunk = Chunk.fromIterable(turns)
-        const recent = Chunk.takeRight(turnChunk, limit)
+        const recent = Chunk.takeRight(turns, limit)
 
         const header = Chunk.make(
-          `Session history — ${String(turns.length)} turn${turns.length === 1 ? "" : "s"}`,
+          `Session history — ${String(turnCount)} turn${turnCount === 1 ? "" : "s"}`,
           "",
         )
-        const startingIndex = turns.length - Chunk.size(recent)
+        const startingIndex = turnCount - Chunk.size(recent)
         const indexedRecent = Chunk.zip(
           recent,
-          Chunk.range(startingIndex + 1, turns.length),
+          Chunk.range(startingIndex + 1, turnCount),
         )
         const body = Chunk.flatMap(indexedRecent, ([turn, num]) => {
           const tokens = String(turn.tokensUsed) + "tok"

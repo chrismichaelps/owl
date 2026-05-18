@@ -108,7 +108,6 @@ export function makeStatusCommand(
       Effect.gen(function* () {
         const turns = yield* sessionMemory.getTurns()
         const metrics = yield* usageMetrics.snapshot()
-        const turnChunk = Chunk.fromIterable(turns)
         const providerLines = Chunk.map(
           Chunk.fromIterable(metrics.byProvider),
           formatProviderUsage,
@@ -138,13 +137,13 @@ export function makeStatusCommand(
           : ""
 
         const totalTokens = Chunk.reduce(
-          turnChunk,
+          turns,
           0,
           (sum, turn) => sum + turn.tokensUsed,
         )
         const output =
           "Session turns: " +
-          String(Chunk.size(turnChunk)) +
+          String(Chunk.size(turns)) +
           "\nTotal tokens used: " +
           String(totalTokens) +
           "\nInference calls: " +
@@ -164,7 +163,7 @@ export function makeStatusCommand(
           formatOptionalSection("Providers", providerLines) +
           formatOptionalSection("Models", modelLines) +
           formatOptionalSection("Recent inference", recentLines) +
-          formatLastTurn(turnChunk)
+          formatLastTurn(turns)
         return { output }
       }),
   }

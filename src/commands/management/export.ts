@@ -65,12 +65,9 @@ export function makeExportCommand(
         )
 
         const header = `# Owl Conversation Export\n\nExported: ${new Date().toISOString()}\n\n---\n\n`
-        const body =
-          turns.length === 0
-            ? "_No turns in this session._\n"
-            : Chunk.toReadonlyArray(
-                Chunk.map(Chunk.fromIterable(turns), formatTurn),
-              ).join("\n")
+        const body = Chunk.isEmpty(turns)
+          ? "_No turns in this session._\n"
+          : Chunk.toReadonlyArray(Chunk.map(turns, formatTurn)).join("\n")
 
         yield* Effect.tryPromise({
           try: () => writeFile(filePath, header + body, "utf8"),
@@ -83,8 +80,8 @@ export function makeExportCommand(
         })
 
         return {
-          output: `Exported ${String(turns.length)} turn${
-            turns.length === 1 ? "" : "s"
+          output: `Exported ${String(Chunk.size(turns))} turn${
+            Chunk.size(turns) === 1 ? "" : "s"
           } → ${basename(filePath)}`,
         }
       }),
